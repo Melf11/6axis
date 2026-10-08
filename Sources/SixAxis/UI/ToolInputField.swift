@@ -1,6 +1,6 @@
 import AppKit
 import SwiftUI
-import VibeCore
+import SixAxisCore
 
 /// On-canvas value box shown while drawing. Tab/⇧Tab cycle fields, ↩ creates, Esc cancels.
 struct ToolInputBox: View {

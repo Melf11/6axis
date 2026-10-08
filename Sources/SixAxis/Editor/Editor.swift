@@ -2,7 +2,7 @@ import AppKit
 import Foundation
 import Observation
 import simd
-import VibeCore
+import SixAxisCore
 
 /// Something under the cursor that can be hovered or selected.
 enum Pick: Hashable {
@@ -322,7 +322,7 @@ final class Editor {
     func open() {
         guard confirmDiscard() else { return }
         let panel = NSOpenPanel()
-        panel.allowedContentTypes = [.vibeDocument, .json]
+        panel.allowedContentTypes = [.sixAxisDocument, .json]
         panel.allowsMultipleSelection = false
         guard panel.runModal() == .OK, let url = panel.url else { return }
         open(url: url)
@@ -358,8 +358,8 @@ final class Editor {
     @discardableResult
     func saveAs() -> Bool {
         let panel = NSSavePanel()
-        panel.allowedContentTypes = [.vibeDocument]
-        panel.nameFieldStringValue = fileURL?.lastPathComponent ?? "Design.vibe360"
+        panel.allowedContentTypes = [.sixAxisDocument]
+        panel.nameFieldStringValue = fileURL?.lastPathComponent ?? "Design.6axis"
         guard panel.runModal() == .OK, let url = panel.url else { return false }
         fileURL = url
         return save()
@@ -527,5 +527,5 @@ final class Editor {
 import UniformTypeIdentifiers
 
 extension UTType {
-    static let vibeDocument = UTType(filenameExtension: "vibe360", conformingTo: .json) ?? .json
+    static let sixAxisDocument = UTType(filenameExtension: "6axis", conformingTo: .json) ?? .json
 }

@@ -1,5 +1,5 @@
 import SwiftUI
-import VibeCore
+import SixAxisCore
 
 struct MainView: View {
     @Bindable var editor: Editor

@@ -1,7 +1,7 @@
 import CoreGraphics
 import Foundation
 import simd
-import VibeCore
+import SixAxisCore
 
 /// Orbit camera around a target point. World is Z-up (3D printing convention).
 struct Camera: Equatable {

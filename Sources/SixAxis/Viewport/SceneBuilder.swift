@@ -1,7 +1,7 @@
 import AppKit
 import Foundation
 import simd
-import VibeCore
+import SixAxisCore
 
 /// Visual style of the viewport. Light and dark variants follow the system appearance.
 struct SceneStyle {

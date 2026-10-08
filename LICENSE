@@ -1,6 +1,6 @@
 MIT License
 
-Copyright (c) 2026 Vibe360 contributors
+Copyright (c) 2026 6axis contributors
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -23,7 +23,7 @@ SOFTWARE.
 -------------------------------------------------------------------------------
 Third-party components
 
-Vibe360 links dynamically against Open CASCADE Technology (OCCT),
+6axis links dynamically against Open CASCADE Technology (OCCT),
 https://dev.opencascade.org, licensed under the GNU LGPL v2.1 with the
 Open CASCADE exception. OCCT is not part of this repository. When distributing
 binaries, ship OCCT as separate, replaceable dynamic libraries together with its

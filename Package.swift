@@ -12,11 +12,11 @@ let occtLibraries = [
 ]
 
 let package = Package(
-    name: "Vibe360",
+    name: "6axis",
     platforms: [.macOS(.v14)],
     products: [
-        .executable(name: "Vibe360", targets: ["Vibe360"]),
-        .library(name: "VibeCore", targets: ["VibeCore"]),
+        .executable(name: "SixAxis", targets: ["SixAxis"]),
+        .library(name: "SixAxisCore", targets: ["SixAxisCore"]),
     ],
     targets: [
         // Thin C ABI over the OpenCASCADE C++ API.
@@ -32,22 +32,22 @@ let package = Package(
         ),
         // Document model, parametric history, sketch solver, kernel wrapper. No UI.
         .target(
-            name: "VibeCore",
+            name: "SixAxisCore",
             dependencies: ["OCCTBridge"],
-            path: "Sources/VibeCore",
+            path: "Sources/SixAxisCore",
             swiftSettings: [.swiftLanguageMode(.v5)]
         ),
         // macOS app: SwiftUI + Metal.
         .executableTarget(
-            name: "Vibe360",
-            dependencies: ["VibeCore"],
-            path: "Sources/Vibe360",
+            name: "SixAxis",
+            dependencies: ["SixAxisCore"],
+            path: "Sources/SixAxis",
             swiftSettings: [.swiftLanguageMode(.v5)]
         ),
         .testTarget(
-            name: "VibeCoreTests",
-            dependencies: ["VibeCore"],
-            path: "Tests/VibeCoreTests",
+            name: "SixAxisCoreTests",
+            dependencies: ["SixAxisCore"],
+            path: "Tests/SixAxisCoreTests",
             swiftSettings: [.swiftLanguageMode(.v5)]
         ),
     ],

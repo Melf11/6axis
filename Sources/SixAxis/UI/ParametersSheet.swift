@@ -1,5 +1,5 @@
 import SwiftUI
-import VibeCore
+import SixAxisCore
 
 /// User parameter table ("Parameter ändern" in Fusion). Any value field can reference these names.
 struct ParametersSheet: View {

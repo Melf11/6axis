@@ -1,7 +1,7 @@
 import AppKit
 import Foundation
 import simd
-import VibeCore
+import SixAxisCore
 
 extension Editor {
     var activeSketch: Sketch? { sketchId.flatMap { doc.feature($0)?.kind.sketch } }

@@ -206,7 +206,7 @@ public final class ModelBuilder: @unchecked Sendable {
             case let .shell(s):
                 try applyShell(f, s, &state, &evaluator)
             case let .importStep(imp):
-                let url = FileManager.default.temporaryDirectory.appendingPathComponent("vibe360-import-\(f.id).step")
+                let url = FileManager.default.temporaryDirectory.appendingPathComponent("6axis-import-\(f.id).step")
                 try imp.stepText.write(to: url, atomically: true, encoding: .utf8)
                 defer { try? FileManager.default.removeItem(at: url) }
                 let shape = try Shape.readSTEP(from: url)

@@ -2,20 +2,20 @@ import AppKit
 import SwiftUI
 import Foundation
 import simd
-import VibeCore
+import SixAxisCore
 
 /// Scripted UI walkthrough for development and CI:
-///   VIBE360_DEMO=1 VIBE360_SNAPSHOTS=/tmp/shots open build/Vibe360.app
+///   SIXAXIS_DEMO=1 SIXAXIS_SNAPSHOTS=/tmp/shots open build/6axis.app
 /// Drives the editor through real mouse-event code paths and writes PNG snapshots.
 @MainActor
 enum DemoScript {
     static func runIfRequested(_ editor: Editor) {
         let env = ProcessInfo.processInfo.environment
-        guard env["VIBE360_DEMO"] != nil else { return }
-        let dir = URL(fileURLWithPath: env["VIBE360_SNAPSHOTS"] ?? NSTemporaryDirectory())
+        guard env["SIXAXIS_DEMO"] != nil else { return }
+        let dir = URL(fileURLWithPath: env["SIXAXIS_SNAPSHOTS"] ?? NSTemporaryDirectory())
         try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
         Task { @MainActor in
-            await run(editor, dir: dir, keepOpen: env["VIBE360_KEEP_OPEN"] != nil)
+            await run(editor, dir: dir, keepOpen: env["SIXAXIS_KEEP_OPEN"] != nil)
         }
     }
 

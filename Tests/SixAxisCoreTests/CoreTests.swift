@@ -1,6 +1,6 @@
 import XCTest
 import simd
-@testable import VibeCore
+@testable import SixAxisCore
 
 final class ExpressionTests: XCTestCase {
     func testArithmeticAndUnits() throws {
@@ -168,9 +168,9 @@ final class KernelTests: XCTestCase {
         XCTAssertEqual(v, (800 - .pi * 25) * 10 - .pi * 4 * 4, accuracy: 0.05)
 
         let dir = FileManager.default.temporaryDirectory
-        try state.bodies[ex]!.shape.writeSTL(to: dir.appendingPathComponent("vibe-test.stl"))
-        try state.bodies[ex]!.shape.writeSTEP(to: dir.appendingPathComponent("vibe-test.step"))
-        let re = try Shape.readSTEP(from: dir.appendingPathComponent("vibe-test.step"))
+        try state.bodies[ex]!.shape.writeSTL(to: dir.appendingPathComponent("6axis-test.stl"))
+        try state.bodies[ex]!.shape.writeSTEP(to: dir.appendingPathComponent("6axis-test.step"))
+        let re = try Shape.readSTEP(from: dir.appendingPathComponent("6axis-test.step"))
         XCTAssertEqual(re.volume, v, accuracy: 0.05)
     }
 

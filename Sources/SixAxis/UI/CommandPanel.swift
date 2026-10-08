@@ -1,5 +1,5 @@
 import SwiftUI
-import VibeCore
+import SixAxisCore
 
 /// Floating dialog for the active modeling command (Fusion's command dialog).
 struct CommandPanel: View {

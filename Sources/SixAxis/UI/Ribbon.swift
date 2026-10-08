@@ -1,5 +1,5 @@
 import SwiftUI
-import VibeCore
+import SixAxisCore
 
 /// The main toolbar. Switches between the design and sketch workspaces like Fusion's contextual tabs.
 struct Ribbon: View {

@@ -1,6 +1,6 @@
 import Foundation
 import simd
-import VibeCore
+import SixAxisCore
 
 /// One value field shown next to the rubber band while drawing (Fusion's on-canvas inputs).
 struct ToolInputSpec {

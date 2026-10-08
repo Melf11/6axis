@@ -1,10 +1,10 @@
-# Vibe360
+# 6axis
 
 **Freies, natives Mac-CAD für Konstruktion und 3D-Druck – vollständig offline.**
 
-Vibe360 ist ein parametrisches 3D-CAD-Programm für macOS, das sich am bewährten Bedienkonzept von Fusion 360 orientiert: Skizze mit Abhängigkeiten → Extrusion/Drehung → Abrundung, Fase, Wandstärke – alles in einer Zeitleiste, die sich jederzeit nachträglich ändern lässt. Gebaut mit Swift, SwiftUI und Metal auf dem Open-Source-Geometriekernel OpenCASCADE.
+6axis ist ein parametrisches 3D-CAD-Programm für macOS, das sich am bewährten Bedienkonzept von Fusion 360 orientiert: Skizze mit Abhängigkeiten → Extrusion/Drehung → Abrundung, Fase, Wandstärke – alles in einer Zeitleiste, die sich jederzeit nachträglich ändern lässt. Gebaut mit Swift, SwiftUI und Metal auf dem Open-Source-Geometriekernel OpenCASCADE.
 
-*English:* Vibe360 is a free, open-source, fully offline parametric CAD app for macOS, inspired by Fusion 360's workflow and focused on mechanical design and 3D printing. The UI is currently German; contributions (including localization) are welcome.
+*English:* 6axis is a free, open-source, fully offline parametric CAD app for macOS, inspired by Fusion 360's workflow and focused on mechanical design and 3D printing. The UI is currently German; contributions (including localization) are welcome.
 
 ## Funktionen (Stand 0.1)
 
@@ -48,16 +48,16 @@ Voraussetzungen: macOS 14+, Xcode 16+ (Swift 6), [Homebrew](https://brew.sh).
 ```bash
 brew install opencascade
 swift test                      # Kern-Tests (Solver, Kernel, Parametrik)
-scripts/build-app.sh            # erzeugt build/Vibe360.app
-open build/Vibe360.app
+scripts/build-app.sh            # erzeugt build/6axis.app
+open build/6axis.app
 ```
 
-Zum Entwickeln einfach `Package.swift` in Xcode öffnen und das Schema **Vibe360** starten. OpenCASCADE an anderem Ort: `OCCT_PREFIX=/pfad/zu/occt swift build`.
+Zum Entwickeln einfach `Package.swift` in Xcode öffnen und das Schema **SixAxis** starten. OpenCASCADE an anderem Ort: `OCCT_PREFIX=/pfad/zu/occt swift build`.
 
 Automatischer UI-Durchlauf mit Screenshots (praktisch für Tests und Pull Requests):
 
 ```bash
-VIBE360_DEMO=1 VIBE360_SNAPSHOTS=/tmp/vibe-shots build/Vibe360.app/Contents/MacOS/Vibe360
+SIXAXIS_DEMO=1 SIXAXIS_SNAPSHOTS=/tmp/6axis-shots build/6axis.app/Contents/MacOS/SixAxis
 ```
 
 ## Architektur
@@ -65,13 +65,13 @@ VIBE360_DEMO=1 VIBE360_SNAPSHOTS=/tmp/vibe-shots build/Vibe360.app/Contents/MacO
 ```
 Sources/
   OCCTBridge/   C-Schnittstelle über OpenCASCADE (C++). Swift sieht nie C++.
-  VibeCore/     Modell ohne UI: Dokument, Features, Skizze, Constraint-Solver,
+  SixAxisCore/     Modell ohne UI: Dokument, Features, Skizze, Constraint-Solver,
                 Ausdrucks-Parser, parametrischer Neuaufbau mit Cache, Kernel-Wrapper.
-  Vibe360/      macOS-App: Editor-Zustand, Metal-Viewport, SwiftUI-Oberfläche.
-Tests/          Unit-Tests für VibeCore.
+  SixAxis/      macOS-App: Editor-Zustand, Metal-Viewport, SwiftUI-Oberfläche.
+Tests/          Unit-Tests für SixAxisCore.
 ```
 
-- Das **Dokument** (`CADDocument`) ist ein reiner Werttyp und wird als JSON (`.vibe360`) gespeichert. Undo bedeutet einfach: alte Kopie zurückholen.
+- Das **Dokument** (`CADDocument`) ist ein reiner Werttyp und wird als JSON (`.6axis`) gespeichert. Undo bedeutet einfach: alte Kopie zurückholen.
 - Der **ModelBuilder** spielt die Zeitleiste ab und cacht jedes Präfix per Hash. Beim Bearbeiten des letzten Features wird nur dieses neu berechnet.
 - **Topologische Referenzen** (Kanten, Flächen, Profile) speichern eine geometrische Signatur und werden beim Neuaufbau zum ähnlichsten Element aufgelöst.
 - Der **Skizzen-Solver** ist ein gedämpftes Least-Squares-Verfahren (Levenberg) mit Rang-Analyse für Freiheitsgrade.
@@ -91,5 +91,5 @@ Beiträge sind sehr willkommen – siehe [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Lizenz
 
-[MIT](LICENSE). Vibe360 nutzt OpenCASCADE Technology (LGPL 2.1 mit Ausnahme) als dynamisch gelinkte Bibliothek.
-„Fusion 360“ ist eine Marke von Autodesk, Inc.; Vibe360 ist ein unabhängiges Projekt und steht in keiner Verbindung zu Autodesk.
+[MIT](LICENSE). 6axis nutzt OpenCASCADE Technology (LGPL 2.1 mit Ausnahme) als dynamisch gelinkte Bibliothek.
+„Fusion 360“ ist eine Marke von Autodesk, Inc.; 6axis ist ein unabhängiges Projekt und steht in keiner Verbindung zu Autodesk.

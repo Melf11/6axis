@@ -1,7 +1,7 @@
 import AppKit
 import Foundation
 import simd
-import VibeCore
+import SixAxisCore
 
 extension Editor {
     var commandFeature: Feature? { command?.featureId.flatMap { doc.feature($0) } }

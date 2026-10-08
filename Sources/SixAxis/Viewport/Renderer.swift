@@ -191,7 +191,7 @@ final class Renderer: NSObject, MTKViewDelegate {
         queue = q
         super.init()
         do { try buildPipelines() } catch {
-            NSLog("Vibe360: shader build failed: \(error)")
+            NSLog("6axis: shader build failed: \(error)")
             return nil
         }
     }

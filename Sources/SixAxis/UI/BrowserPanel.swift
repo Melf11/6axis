@@ -1,5 +1,5 @@
 import SwiftUI
-import VibeCore
+import SixAxisCore
 
 /// Left-hand model tree: origin, bodies, sketches.
 struct BrowserPanel: View {

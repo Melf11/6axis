@@ -1,5 +1,5 @@
 import SwiftUI
-import VibeCore
+import SixAxisCore
 
 /// Parametric history at the bottom, with Fusion-style playback controls and rollback marker.
 struct TimelineBar: View {

@@ -1,6 +1,6 @@
 import AppKit
 import SwiftUI
-import VibeCore
+import SixAxisCore
 
 final class AppDelegate: NSObject, NSApplicationDelegate {
     var editor: Editor?
@@ -24,12 +24,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 }
 
 @main
-struct Vibe360App: App {
+struct SixAxisApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
     @State private var editor = Editor()
 
     var body: some Scene {
-        Window("Vibe360", id: "main") {
+        Window("6axis", id: "main") {
             MainView(editor: editor)
                 .frame(minWidth: 960, minHeight: 620)
                 .onAppear {

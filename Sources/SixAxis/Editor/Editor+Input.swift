@@ -1,7 +1,7 @@
 import AppKit
 import Foundation
 import simd
-import VibeCore
+import SixAxisCore
 
 extension Editor {
     // MARK: - Hover

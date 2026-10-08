@@ -1,6 +1,6 @@
 import AppKit
 import SwiftUI
-import VibeCore
+import SixAxisCore
 
 /// A command available from the search palette and the marking menu.
 struct EditorCommand: Identifiable {

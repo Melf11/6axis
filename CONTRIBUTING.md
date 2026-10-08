@@ -1,4 +1,4 @@
-# Mitmachen bei Vibe360
+# Mitmachen bei 6axis
 
 Danke, dass du helfen willst! Issues und Pull Requests auf Deutsch oder Englisch sind willkommen.
 
@@ -6,18 +6,18 @@ Danke, dass du helfen willst! Issues und Pull Requests auf Deutsch oder Englisch
 
 1. **Offline zuerst.** Keine Netzwerkzugriffe, keine Telemetrie, keine Konten.
 2. **Einfach verständlich.** Jede neue Funktion braucht einen klaren Hinweistext in der Statuszeile und, wo sinnvoll, ein Tastenkürzel.
-3. **Der Kern bleibt UI-frei.** Geometrie, Solver und Dokumentmodell gehören nach `VibeCore` und bekommen Tests.
-4. **Dateiformat ist Vertrag.** Änderungen an `CADDocument` müssen alte `.vibe360`-Dateien weiterhin öffnen können (neue Felder optional/mit Standardwert).
+3. **Der Kern bleibt UI-frei.** Geometrie, Solver und Dokumentmodell gehören nach `SixAxisCore` und bekommen Tests.
+4. **Dateiformat ist Vertrag.** Änderungen an `CADDocument` müssen alte `.6axis`-Dateien weiterhin öffnen können (neue Felder optional/mit Standardwert).
 
 ## Ablauf
 
 ```bash
 brew install opencascade
 swift test
-scripts/build-app.sh debug && open build/Vibe360.app
+scripts/build-app.sh debug && open build/6axis.app
 ```
 
-- Für UI-Änderungen: Screenshots aus dem Demo-Lauf beilegen (`VIBE360_DEMO=1 VIBE360_SNAPSHOTS=…`).
+- Für UI-Änderungen: Screenshots aus dem Demo-Lauf beilegen (`SIXAXIS_DEMO=1 SIXAXIS_SNAPSHOTS=…`).
 - Ein neues Feature im Modell besteht aus: Datentyp in `Document.swift`, Anwendung in `Builder.swift`, Test in `Tests/`, Befehl in `Editor+Commands.swift`, Dialog in `CommandPanel.swift`.
 - Neue OpenCASCADE-Funktionen werden in `OCCTBridge` als schmale C-Funktion ergänzt und in `Kernel.swift` gekapselt.
 

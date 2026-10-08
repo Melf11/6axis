@@ -1,7 +1,7 @@
 import AppKit
 import Foundation
 import UniformTypeIdentifiers
-import VibeCore
+import SixAxisCore
 
 extension Editor {
     /// Bodies to export: the selection if it contains bodies, otherwise all visible bodies.
@@ -57,7 +57,7 @@ extension Editor {
     /// Exports a temporary STL and opens it with the user's slicer (PrusaSlicer, Bambu Studio, OrcaSlicer, Cura …).
     func openInSlicer() {
         guard let shape = exportShape() else { return }
-        let dir = FileManager.default.temporaryDirectory.appendingPathComponent("Vibe360", isDirectory: true)
+        let dir = FileManager.default.temporaryDirectory.appendingPathComponent("6axis", isDirectory: true)
         try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
         let url = dir.appendingPathComponent(exportBaseName + ".stl")
         do {

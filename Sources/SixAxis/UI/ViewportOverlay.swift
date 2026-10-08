@@ -1,6 +1,6 @@
 import simd
 import SwiftUI
-import VibeCore
+import SixAxisCore
 
 /// 2D overlay drawn on top of the Metal viewport: sketch tool previews, dimensions,
 /// constraint glyphs and the extrude manipulator. Only interactive elements receive clicks.
