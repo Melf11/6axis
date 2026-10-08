@@ -338,7 +338,7 @@
 <text class="label" x="321.50" y="270.20" font-size="2.50" text-anchor="start">Datum</text>
 <text class="label" x="321.50" y="275.20" font-size="4.86" text-anchor="start">08.10.2026</text>
 <text class="label" x="231.50" y="280.20" font-size="2.50" text-anchor="start">Erstellt von</text>
-<text class="label" x="231.50" y="285.20" font-size="4.86" text-anchor="start">Tischlerei</text>
+<text class="label" x="231.50" y="285.20" font-size="4.86" text-anchor="start"></text>
 <text class="label" x="276.50" y="280.20" font-size="2.50" text-anchor="start">Software</text>
 <text class="label" x="276.50" y="285.20" font-size="4.86" text-anchor="start">6axis</text>
 <text class="label" x="321.50" y="280.20" font-size="2.50" text-anchor="start">Einheit</text>
