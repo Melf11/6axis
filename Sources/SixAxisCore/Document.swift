@@ -329,7 +329,12 @@ public struct BodyMeta: Codable, Hashable, Sendable {
 
 /// The complete persistent state of a design. Pure value type: snapshots make undo trivial.
 public struct CADDocument: Codable, Hashable, Sendable {
-    public var formatVersion = 1
+    /// File format version written by this build. History:
+    /// 1 – 0.9 and earlier
+    /// 2 – 1.0: profile anchors, topology counts on face/edge references (all optional, so 1 reads as 2)
+    public static let currentFormatVersion = 2
+
+    public var formatVersion = CADDocument.currentFormatVersion
     public var features: [Feature] = []
     public var parameters: [UserParameter] = []
     /// Number of active timeline entries (marker position). nil = all.
@@ -363,12 +368,56 @@ public struct CADDocument: Codable, Hashable, Sendable {
     public func isBodyVisible(_ id: UUID) -> Bool { bodies[id]?.visible ?? true }
 
     public func encoded() throws -> Data {
+        var doc = self
+        doc.formatVersion = Self.currentFormatVersion
         let enc = JSONEncoder()
         enc.outputFormatting = [.prettyPrinted, .sortedKeys]
-        return try enc.encode(self)
+        return try enc.encode(doc)
     }
 
+    /// Reads a document of any known format version: older files are migrated step by step,
+    /// files from a newer 6axis are refused with a clear message instead of losing data.
     public static func decode(_ data: Data) throws -> CADDocument {
-        try JSONDecoder().decode(CADDocument.self, from: data)
+        guard var json = try JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+            throw KernelError("Keine 6axis-Datei")
+        }
+        let version = json["formatVersion"] as? Int ?? 1
+        if version > currentFormatVersion {
+            throw KernelError("Die Datei wurde mit einer neueren 6axis-Version gesichert (Dateiformat \(version)). Bitte 6axis aktualisieren.")
+        }
+        for v in version..<currentFormatVersion { json = migrations[v]?(json) ?? json }
+        json["formatVersion"] = currentFormatVersion
+        let migrated = try JSONSerialization.data(withJSONObject: json)
+        do {
+            return try JSONDecoder().decode(CADDocument.self, from: migrated)
+        } catch let DecodingError.keyNotFound(key, ctx) {
+            throw KernelError("Datei unvollständig: „\(key.stringValue)“ fehlt (\(ctx.codingPath.map(\.stringValue).joined(separator: ".")))")
+        } catch let DecodingError.typeMismatch(_, ctx), let DecodingError.valueNotFound(_, ctx), let DecodingError.dataCorrupted(ctx) {
+            throw KernelError("Datei beschädigt bei „\(ctx.codingPath.map(\.stringValue).joined(separator: "."))“")
+        }
+    }
+
+    /// JSON-level migration from version n to n + 1. Add an entry whenever the format changes in a way
+    /// optional fields can't cover (renames, restructured values).
+    static let migrations: [Int: ([String: Any]) -> [String: Any]] = [
+        1: { $0 },   // 1 → 2: new fields are optional; nothing to rewrite
+    ]
+}
+
+extension CADDocument {
+    enum CodingKeys: String, CodingKey {
+        case formatVersion, features, parameters, rollback, bodies, hiddenSketches, drawing
+    }
+
+    /// Lenient: every field may be missing (older or hand-written files).
+    public init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        formatVersion = try c.decodeIfPresent(Int.self, forKey: .formatVersion) ?? 1
+        features = try c.decodeIfPresent([Feature].self, forKey: .features) ?? []
+        parameters = try c.decodeIfPresent([UserParameter].self, forKey: .parameters) ?? []
+        rollback = try c.decodeIfPresent(Int.self, forKey: .rollback)
+        bodies = try c.decodeIfPresent([UUID: BodyMeta].self, forKey: .bodies) ?? [:]
+        hiddenSketches = try c.decodeIfPresent(Set<UUID>.self, forKey: .hiddenSketches) ?? []
+        drawing = try c.decodeIfPresent(DrawingSettings.self, forKey: .drawing)
     }
 }
