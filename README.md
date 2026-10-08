@@ -19,7 +19,7 @@
 - **Drehung** um Achsen, Skizzenlinien oder Kanten
 - **Abrundung, Fase, Wandstärke**
 - **Parametrische Zeitleiste**: bearbeiten, unterdrücken, löschen, zurückrollen; Referenzen überleben Änderungen
-- **Technische Zeichnung** (⇧⌘D): normgerechte 3-Tafel-Projektion (Methode 1) mit Isometrie, automatischer Bezugsbemaßung in ganzen Millimetern, Bohrungen mit Ø und Mittellinien, Schriftfeld, automatischem Blatt/Maßstab – live synchron mit dem Modell, als PDF oder direkt drucken ([Plan](docs/technical-drawing.md))
+- **Technische Zeichnung** (⇧⌘D): normgerechte 3-Tafel-Projektion (Methode 1) mit Isometrie, automatischer Bezugsbemaßung in ganzen Millimetern, Bohrungen mit Ø und Mittellinien, Schriftfeld, automatischem Blatt/Maßstab, Positionsnummern, Stück-/Zuschnittliste, Einzelteilblättern, Schnitt A–A und Einzelheiten – live synchron mit dem Modell, als PDF, DXF (auch Einzelteile 1:1 für CNC/Laser) oder direkt drucken ([Plan](docs/technical-drawing.md))
 - **Export**: STL (3D-Druck), STEP; **Import**: STEP; **„Im Slicer öffnen“** (PrusaSlicer, Bambu Studio, OrcaSlicer, Cura …)
 - Volumen und geschätztes PLA-Gewicht der Auswahl
 - Fusion-artige Bedienung: Ribbon, Browser, ViewCube, Radialmenü per Rechtsklick, Befehlssuche mit **S**, Tastenkürzel (L, R, C, A, D, E, F, X …)

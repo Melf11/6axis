@@ -55,9 +55,15 @@ enum DemoScript {
                     s.customDimensions.append(CustomDimension(view: "front", a: Vec2(481, 309), b: Vec2(481, 581),
                                                               orientation: .vertical, offset: 14))
                     s.viewOffsets["iso"] = Vec2(15, 8)
+                    s.sectionLeft = true
+                    s.details = [DetailView(letter: "Z", view: "front", center: Vec2(19, 19), radius: 45, factor: 5)]
                 }
-                let edited = editor.drawing.generateNow(editor)
+                let editedPages = editor.drawing.generateAllNow(editor)
+                let edited = editedPages[0]
                 renderPNG(edited, to: dir.appendingPathComponent("edited.png"), pixelsPerMM: 5, highlight: "front.y.290")
+                if editedPages.count > 1 { renderPNG(editedPages[1], to: dir.appendingPathComponent("edited-parts.png"), pixelsPerMM: 5) }
+                try? edited.dxf().write(to: dir.appendingPathComponent("sheet.dxf"), atomically: true, encoding: .utf8)
+                try? editor.drawing.partsDXF(editor).write(to: dir.appendingPathComponent("parts.dxf"), atomically: true, encoding: .utf8)
                 let editedDims = edited.texts.map(\.text).filter { Int($0) != nil }
                 FileHandle.standardError.write(Data("EDITED dims=\(editedDims) custom=\(edited.dimensions.filter(\.isCustom).map(\.text))\n".utf8))
                 // Open the real drawing window and capture it.
@@ -128,6 +134,19 @@ enum DemoScript {
         board("Boden", x: 19...481, z: 0...19)
         board("Deckel", x: 19...481, z: 581...600)
         board("Fachboden", x: 19...481, z: 290...309, depth: 280)
+        // Back panel 8 mm, applied to the rear. The XZ sketch plane faces -Y (the viewer of the front view),
+        // so the boards above grow towards the front and the rear face is at y = 0; the panel goes to y ∈ [0, 8].
+        do {
+            var sk = Sketch(plane: .xz)
+            let p = [sk.addPoint(Vec2(0, 0)), sk.addPoint(Vec2(500, 0)), sk.addPoint(Vec2(500, 600)), sk.addPoint(Vec2(0, 600))]
+            for i in 0..<4 { sk.addLine(p[i], p[(i + 1) % 4]) }
+            let s = Feature(name: "Skizze Rückwand", kind: .sketch(sk))
+            var ex = ExtrudeFeature()
+            ex.profiles = [ProfileRef(sketch: s.id, sample: Vec2(250, 300))]
+            ex.distance = "-8"
+            ex.operation = .newBody
+            features += [s, Feature(name: "Rückwand", kind: .extrude(ex))]
+        }
         // Dowel holes through the horizontal boards (sketch on XY, cut upwards).
         var sk = Sketch(plane: .xy)
         sk.addCircle(center: sk.addPoint(Vec2(100, -150)), radius: 4)
@@ -139,7 +158,11 @@ enum DemoScript {
         cut.operation = .cut
         features += [hs, Feature(name: "Dübellöcher", kind: .extrude(cut))]
         editor.commit { d in
-            for f in features { if case .extrude(let e) = f.kind, e.operation == .newBody { d.bodies[f.id] = BodyMeta(name: f.name) } }
+            for f in features {
+                guard case .extrude(let e) = f.kind, e.operation == .newBody else { continue }
+                let back = f.name == "Rückwand"
+                d.bodies[f.id] = BodyMeta(name: f.name, material: back ? "Birke Multiplex" : "Eiche massiv", grain: back ? .none : .length)
+            }
         }
         editor.commit { $0.features = features; $0.drawing = { var d = DrawingSettings(); d.title = "Korpus"; d.material = "Eiche 19 mm"; d.author = "Tischlerei"; return d }() }
         if !editor.state.errors.isEmpty { FileHandle.standardError.write(Data("ERRORS \(editor.state.errors)\n".utf8)) }
