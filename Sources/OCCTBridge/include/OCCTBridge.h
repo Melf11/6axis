@@ -109,7 +109,8 @@ typedef struct {
     int32_t *polyStart;     // polyCount + 1 offsets into points
     uint8_t *polyFlags;     // OB_LINE_* per polyline
     int32_t polyCount;
-    double *circles;        // 5 * circleCount: cx, cy, r, startAngle, sweep (full circle: sweep = 2pi)
+    double *circles;        // 5 * circleCount: cx, cy, r, sweep (full circle: 2pi), unused
+    double *circleMids;     // 2 * circleCount: point in the middle of the arc
     uint8_t *circleFlags;   // OB_LINE_* per circle
     int32_t circleCount;
 } OBProjection;

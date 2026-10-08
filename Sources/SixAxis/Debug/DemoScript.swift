@@ -66,6 +66,11 @@ enum DemoScript {
                 try? editor.drawing.partsDXF(editor).write(to: dir.appendingPathComponent("parts.dxf"), atomically: true, encoding: .utf8)
                 let editedDims = edited.texts.map(\.text).filter { Int($0) != nil }
                 FileHandle.standardError.write(Data("EDITED dims=\(editedDims) custom=\(edited.dimensions.filter(\.isCustom).map(\.text))\n".utf8))
+                if let rounded = roundedBoard() {
+                    let rp = DrawingGenerator().generate(.init(parts: [.init(name: "Schneidebrett", shape: rounded)], settings: DrawingSettings(), fallbackTitle: "Schneidebrett"))
+                    renderPNG(rp, to: dir.appendingPathComponent("rounded.png"), pixelsPerMM: 6)
+                    FileHandle.standardError.write(Data("ROUNDED \(rp.texts.map(\.text).filter { $0.contains("R") || $0.contains("Ø") })\n".utf8))
+                }
                 // Open the real drawing window and capture it.
                 editor.openDrawingWindow()
                 try? await Task.sleep(nanoseconds: 2_500_000_000)
@@ -166,6 +171,30 @@ enum DemoScript {
         }
         editor.commit { $0.features = features; $0.drawing = { var d = DrawingSettings(); d.title = "Korpus"; d.material = "Eiche 19 mm"; d.author = "Tischlerei"; return d }() }
         if !editor.state.errors.isEmpty { FileHandle.standardError.write(Data("ERRORS \(editor.state.errors)\n".utf8)) }
+    }
+
+    /// Cutting board 300 × 200 × 20 with R12 corners and a Ø30 hanging hole.
+    static func roundedBoard() -> SixAxisCore.Shape? {
+        var doc = CADDocument()
+        var sk = Sketch(plane: .xy)
+        let p = [sk.addPoint(Vec2(0, 0)), sk.addPoint(Vec2(300, 0)), sk.addPoint(Vec2(300, 200)), sk.addPoint(Vec2(0, 200))]
+        for i in 0..<4 { sk.addLine(p[i], p[(i + 1) % 4]) }
+        sk.addCircle(center: sk.addPoint(Vec2(260, 160)), radius: 15)
+        let sketch = Feature(name: "S", kind: .sketch(sk))
+        var ex = ExtrudeFeature()
+        ex.profiles = [ProfileRef(sketch: sketch.id, sample: Vec2(5, 5))]
+        ex.distance = "20"
+        let e = Feature(name: "E", kind: .extrude(ex))
+        doc.features = [sketch, e]
+        guard let body = ModelBuilder().build(doc).bodies[e.id] else { return nil }
+        var fillet = FilletFeature()
+        fillet.radius = "12"
+        fillet.edges = body.edgeInfos.compactMap { info -> BodyEdgeRef? in
+            guard let info, info.kind == .line, abs(info.end.z - info.start.z) > 1 else { return nil }
+            return BodyEdgeRef(body: e.id, edge: body.edgeRef(info.index)!)
+        }
+        doc.features.append(Feature(name: "F", kind: .fillet(fillet)))
+        return ModelBuilder().build(doc).bodies[e.id]?.shape
     }
 
     static func renderPNG(_ page: DrawingPage, to url: URL, pixelsPerMM: CGFloat, highlight: String? = nil) {

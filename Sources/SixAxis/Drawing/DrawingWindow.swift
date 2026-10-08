@@ -318,7 +318,7 @@ struct DrawingWindow: View {
         case let .pan(s):
             pan = CGSize(width: s.width + v.translation.width, height: s.height + v.translation.height)
         case let .dimension(id, _, offset, normal, along):
-            let isLeader = id.contains(".hole.") || id.hasPrefix("balloon.")
+            let isLeader = id.contains(".hole.") || id.contains(".radius.") || id.hasPrefix("balloon.")
             editor.setDrawingSettingsLive { s in
                 var o = offset
                 if isLeader {

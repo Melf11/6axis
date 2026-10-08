@@ -292,3 +292,50 @@ final class DrawingStage5Tests: XCTestCase {
         XCTAssertEqual(DrawingGenerator.ratio(2), "2:1")
     }
 }
+
+final class DrawingRadiusTests: XCTestCase {
+    /// 70 × 40 × 15 board with all four vertical corners rounded.
+    func roundedBoard(radius: String) throws -> Shape {
+        var doc = CADDocument()
+        var sk = Sketch(plane: .xy)
+        let p = [sk.addPoint(Vec2(0, 0)), sk.addPoint(Vec2(70, 0)), sk.addPoint(Vec2(70, 40)), sk.addPoint(Vec2(0, 40))]
+        for i in 0..<4 { sk.addLine(p[i], p[(i + 1) % 4]) }
+        let sketch = Feature(name: "S", kind: .sketch(sk))
+        var ex = ExtrudeFeature()
+        ex.profiles = [ProfileRef(sketch: sketch.id, sample: Vec2(5, 5))]
+        ex.distance = "15"
+        let e = Feature(name: "E", kind: .extrude(ex))
+        doc.features = [sketch, e]
+        let body = try XCTUnwrap(ModelBuilder().build(doc).bodies[e.id])
+        var fillet = FilletFeature()
+        fillet.radius = radius
+        fillet.edges = body.edgeInfos.compactMap { info -> BodyEdgeRef? in
+            guard let info, info.kind == .line, abs(info.end.z - info.start.z) > 1 else { return nil }
+            return BodyEdgeRef(body: e.id, edge: body.edgeRef(info.index)!)
+        }
+        XCTAssertEqual(fillet.edges.count, 4)
+        doc.features.append(Feature(name: "F", kind: .fillet(fillet)))
+        let state = ModelBuilder().build(doc)
+        XCTAssertTrue(state.errors.isEmpty, "\(state.errors)")
+        return try XCTUnwrap(state.bodies[e.id]?.shape)
+    }
+
+    func testRoundedCornersGetRadiusDimension() throws {
+        let page = DrawingGenerator().generate(.init(shapes: [try roundedBoard(radius: "5")], settings: DrawingSettings(), fallbackTitle: "x"))
+        let radiusTexts = page.texts.filter { $0.text.contains("R5") }.map(\.text)
+        XCTAssertEqual(radiusTexts, ["4× R5"], "one callout for all four equal radii, given once")
+        XCTAssertTrue(page.dimensions.contains { $0.id == "top.radius.50" })
+        XCTAssertTrue(page.texts.contains { $0.text == "70" }, "overall size still dimensioned")
+    }
+
+    func testDecimalRadius() throws {
+        let page = DrawingGenerator().generate(.init(shapes: [try roundedBoard(radius: "2.5")], settings: DrawingSettings(), fallbackTitle: "x"))
+        XCTAssertTrue(page.texts.contains { $0.text == "4× R2,5" }, page.texts.map(\.text).description)
+    }
+
+    func testMMText() {
+        XCTAssertEqual(DrawingGenerator.mmText(8), "8")
+        XCTAssertEqual(DrawingGenerator.mmText(2.5), "2,5")
+        XCTAssertEqual(DrawingGenerator.mmText(2.04), "2")
+    }
+}

@@ -272,6 +272,10 @@ public struct Circle2D: Sendable {
     public var radius: Double
     public var full: Bool
     public var hidden: Bool
+    /// Point in the middle of the arc (for radius callouts).
+    public var mid: Vec2 = .zero
+    /// Angular extent in radians (2π for full circles).
+    public var sweep: Double = 2 * .pi
 }
 
 public struct Projection2D: Sendable {
@@ -327,9 +331,10 @@ extension Shape {
                                             outline: f & Int32(OB_LINE_OUTLINE) != 0, smooth: f & Int32(OB_LINE_SMOOTH) != 0))
         }
         for i in 0..<Int(p.circleCount) {
-            let c = p.circles + 5 * i
-            out.circles.append(Circle2D(center: Vec2(c[0], c[1]), radius: c[2], full: abs(c[4]) > 2 * .pi - 1e-6,
-                                        hidden: Int32(p.circleFlags[i]) & Int32(OB_LINE_HIDDEN) != 0))
+            let c = p.circles + 5 * i, m = p.circleMids + 2 * i
+            out.circles.append(Circle2D(center: Vec2(c[0], c[1]), radius: c[2], full: abs(c[3]) > 2 * .pi - 1e-6,
+                                        hidden: Int32(p.circleFlags[i]) & Int32(OB_LINE_HIDDEN) != 0,
+                                        mid: Vec2(m[0], m[1]), sweep: abs(c[3])))
         }
         return out
     }

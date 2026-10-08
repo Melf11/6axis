@@ -588,6 +588,7 @@ int32_t ob_hlr(const OBShape *s, const double viewDir[3], const double xDir[3], 
         std::vector<int32_t> starts;
         std::vector<uint8_t> flags;
         std::vector<double> circles;
+        std::vector<double> mids;
         std::vector<uint8_t> circleFlags;
 
         auto collect = [&](const TopoDS_Shape &compound, uint8_t flag) {
@@ -600,13 +601,11 @@ int32_t ob_hlr(const OBShape *s, const double viewDir[3], const double xDir[3], 
                         gp_Circ circ = c.Circle();
                         double f = c.FirstParameter(), l = c.LastParameter();
                         // Projected circles lie in the drawing plane; orientation of the local frame decides direction.
-                        double sweep = l - f;
-                        double a0 = f;
-                        gp_Dir n = circ.Axis().Direction();
-                        gp_Dir xd = circ.XAxis().Direction();
-                        double base = std::atan2(xd.Y(), xd.X());
-                        if (n.Z() < 0) { a0 = -l; }
-                        circles.insert(circles.end(), {circ.Location().X(), circ.Location().Y(), circ.Radius(), base + a0, sweep});
+                        // Edges of the HLR result lie in the projection plane, so evaluating the
+                        // curve gives the arc's middle point directly in drawing coordinates.
+                        gp_Pnt mid = c.Value((f + l) / 2);
+                        circles.insert(circles.end(), {circ.Location().X(), circ.Location().Y(), circ.Radius(), l - f, 0.0});
+                        mids.insert(mids.end(), {mid.X(), mid.Y()});
                         circleFlags.push_back(flag);
                     }
                     GCPnts_TangentialDeflection disc(c, 0.08, deflection);
@@ -641,6 +640,7 @@ int32_t ob_hlr(const OBShape *s, const double viewDir[3], const double xDir[3], 
         out->polyFlags = dup(flags);
         out->polyCount = (int32_t)flags.size();
         out->circles = dup(circles);
+        out->circleMids = dup(mids);
         out->circleFlags = dup(circleFlags);
         out->circleCount = (int32_t)circleFlags.size();
         return 1;
@@ -703,6 +703,7 @@ int32_t ob_face_outlines(const OBShape *s, const double viewDir[3], const double
         out->polyFlags = dup(flags);
         out->polyCount = (int32_t)flags.size();
         out->circles = (double *)std::malloc(sizeof(double));
+        out->circleMids = (double *)std::malloc(sizeof(double));
         out->circleFlags = (uint8_t *)std::malloc(1);
         return 1;
     } catch (...) {
@@ -717,6 +718,7 @@ void ob_projection_free(OBProjection *p) {
     std::free(p->polyStart);
     std::free(p->polyFlags);
     std::free(p->circles);
+    std::free(p->circleMids);
     std::free(p->circleFlags);
     std::memset(p, 0, sizeof(OBProjection));
 }

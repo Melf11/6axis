@@ -43,8 +43,9 @@ SixAxis      Drawing/   Fenster, Darstellung (Core Graphics), PDF-Export, Druck
 1. **Gesamtmaße** (Länge, Breite, Höhe) jeweils dort, wo sie in wahrer Größe erscheinen: Breite und Höhe in der Vorderansicht, Tiefe in der Seitenansicht.
 2. **Bezugsmaße** von der Anschlagkante: alle markanten Kantenlagen (Absätze, Teilekanten, Böden) werden von der linken bzw. unteren Kante aus parallel bemaßt, das kürzeste Maß innen.
 3. **Bohrungen** in der Ansicht, in der sie als Kreis erscheinen: Ø-Angabe, Mittellinien, Lage von den Bezugskanten.
-4. Jedes Maß nur **einmal**; Positionen, die schon in einer Ansicht bemaßt sind, werden in anderen weggelassen.
-5. Werte auf **ganze Millimeter** gerundet; sehr dicht liegende Lagen (< 1 mm) werden zusammengefasst.
+4. **Rundungen** (Abrundungen, Bögen) dort, wo sie in wahrer Gestalt erscheinen: „R5“ bzw. „4× R5“, Hinweislinie von außen mit Pfeil auf den Bogen (ISO 129-1).
+5. Jedes Maß nur **einmal**; Positionen, die schon in einer Ansicht bemaßt sind, werden in anderen weggelassen.
+6. Längen auf **ganze Millimeter** gerundet (Radien und Durchmesser bei Bedarf mit einer Nachkommastelle, z. B. R2,5); sehr dicht liegende Lagen (< 1 mm) werden zusammengefasst.
 
 ## Etappen
 
@@ -57,7 +58,7 @@ SixAxis      Drawing/   Fenster, Darstellung (Core Graphics), PDF-Export, Druck
 ## Stand
 
 - [x] **Etappe 1 – Grundlage**: HLR-Projektion (`ob_hlr`), Zeichnungsfenster (⇧⌘D), Blatt mit Rahmen, Zentriermarken und Schriftfeld, Vorder-/Draufsicht/Seitenansicht von links + Isometrie, automatische Blatt- und Maßstabswahl, Live-Synchronisation im Hintergrund, PDF-Export (maßstabsgetreu), Drucken
-- [~] **Etappe 2 – Automatische Bemaßung**: Gesamtmaße, Bezugsmaße von links/unten, Bohrungen (Ø, n×, Mittellinien, Lage) erledigt; offen: verdeckte Merkmale, Abstände bei sehr dichten Maßen, Schrägen und Radien
+- [~] **Etappe 2 – Automatische Bemaßung**: Gesamtmaße, Bezugsmaße von links/unten, Bohrungen (Ø, n×, Mittellinien, Lage) erledigt; Radien (R, n× R, Pfeil auf den Bogen, einmal je Blatt, Dezimalstelle mit Komma bei Bedarf), Hinweislinien weichen einander aus; offen: verdeckte Merkmale, Schrägen
 - [x] **Etappe 3 – Bearbeiten**: Maße auswählen (Hover/Klick), ziehen (Maßlinie rastet in 7-mm-Reihen ein und weicht anderen aus, Wert verschiebt sich entlang der Linie), ausblenden (⌫), eigene Maße zwischen Eckpunkten/Bohrungsmitten (D, waagerecht/senkrecht/schräg je nach Platzierung, folgen Modelländerungen), Ansichten verschieben (Projektionsflucht bleibt erhalten, Isometrie frei), Zurücksetzen-Menü, alles rückgängig machbar und in der Datei gespeichert. Stabile Maß-Kennungen („front.x.481“) halten Anpassungen über Modelländerungen hinweg
 - [x] **Etappe 4 – Mehrere Körper**: Positionsnummern (ISO 6433, verschiebbar), Stück-/Zuschnittliste über dem Schriftfeld (ISO 7573: Pos., Benennung, Anzahl, Länge × Breite × Dicke, Material), Erkennung gleicher Teile (Maße, Volumen, Topologie), Einzelteilblätter mit automatischer Ausrichtung (Länge → x, Breite → oben, Dicke → Tiefe), bis zu 4 Teile je Blatt mit eigenem Maßstab, Blattnummern „n / N“, Blatt-Reiter im Fenster, mehrseitiger PDF-Export und Druck, Schalter im Menü „Blätter“
 - [x] **Etappe 5 – Erweiterungen**: Material und Faserrichtung je Körper (Browser → Rechtsklick; Stückliste, Faserpfeil auf Einzelteilen, getrennte Positionen bei anderem Material), DXF-Export R12 (Blatt mit ISO-Ebenen; Einzelteile 1:1 für CNC/Laser mit echten Kreisen), Schnitt A–A der Seitenansicht (Schraffur je Teil wechselnd, Schnittverlauf mit Pfeilen, mit der Maus verschiebbar), Einzelheiten (Werkzeug E: Mittelpunkt und Radius klicken, Vergrößerung automatisch 2:1/5:1/…, verschiebbar, löschbar)
