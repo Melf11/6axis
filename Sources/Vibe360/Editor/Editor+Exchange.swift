@@ -50,7 +50,8 @@ extension Editor {
     /// Fine tessellation for printing: ~0.01 mm on small parts, scaled for large ones.
     private func stlDeflection(_ shape: Shape) -> Double {
         guard let bb = shape.boundingBox else { return 0.01 }
-        return max(0.005, min(0.05, simd_length(bb.max - bb.min) * 0.00005))
+        let base = max(0.005, min(0.05, simd_length(bb.max - bb.min) * 0.00005))
+        return base * AppSettings.shared.stlQuality.factor
     }
 
     /// Exports a temporary STL and opens it with the user's slicer (PrusaSlicer, Bambu Studio, OrcaSlicer, Cura …).
@@ -69,7 +70,9 @@ extension Editor {
                      "nl.ultimaker.cura", "com.prusa3d.PrusaSlicer", "com.superslicer.SuperSlicer"]
         let ws = NSWorkspace.shared
         let config = NSWorkspace.OpenConfiguration()
-        if let app = known.lazy.compactMap({ ws.urlForApplication(withBundleIdentifier: $0) }).first {
+        let preferred = AppSettings.shared.preferredSlicer
+        let order = preferred.isEmpty ? known : [preferred] + known
+        if let app = order.lazy.compactMap({ ws.urlForApplication(withBundleIdentifier: $0) }).first {
             ws.open([url], withApplicationAt: app, configuration: config)
             showToast("An Slicer übergeben")
         } else if ws.urlForApplication(toOpen: url) != nil {

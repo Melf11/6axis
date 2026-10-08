@@ -9,6 +9,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         // Needed when launched as a bare executable (swift run) rather than an .app bundle.
         NSApp.setActivationPolicy(.regular)
         NSApp.activate(ignoringOtherApps: true)
+        AppSettings.shared.applyAppearance()
     }
 
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool { true }
@@ -41,6 +42,10 @@ struct Vibe360App: App {
         .windowStyle(.hiddenTitleBar)
         .windowToolbarStyle(.unified)
         .commands { AppCommands(editor: editor) }
+
+        Settings {
+            SettingsView()
+        }
     }
 }
 

@@ -14,6 +14,7 @@ final class ViewportNSView: MTKView {
     private var builtVersion = -1
     private var builtDark = false
     private var builtScale: CGFloat = 0
+    private var builtSettings = -1
     private var sceneBuilder: SceneBuilder?
     private var lastDrag: CGPoint?
     private var rightDragged = false
@@ -89,7 +90,9 @@ final class ViewportNSView: MTKView {
 
     private func syncScene() {
         let scale = window?.backingScaleFactor ?? 2
-        guard editor.sceneVersion != builtVersion || editor.darkMode != builtDark || scale != builtScale else { return }
+        let rev = AppSettings.shared.revision
+        guard editor.sceneVersion != builtVersion || editor.darkMode != builtDark || scale != builtScale || rev != builtSettings else { return }
+        builtSettings = rev
         var b = SceneBuilder(editor: editor, scale: scale)
         b.build()
         renderer?.upload(b.scene)
@@ -210,25 +213,40 @@ final class ViewportNSView: MTKView {
 
     override func scrollWheel(with event: NSEvent) {
         let p = point(event)
+        let settings = AppSettings.shared
+        var dx = event.scrollingDeltaX, dy = event.scrollingDeltaY
+        // macOS already flipped the deltas for "natural scrolling"; undo that if the user wants physical directions.
+        if settings.ignoreNaturalScrolling && event.isDirectionInvertedFromDevice {
+            dx = -dx
+            dy = -dy
+        }
         if event.hasPreciseScrollingDeltas {
-            let dx = event.scrollingDeltaX, dy = event.scrollingDeltaY
-            let shift = event.modifierFlags.contains(.shift)
             if event.modifierFlags.contains(.command) {
-                editor.zoom(factor: 1 - dy * 0.01, at: p)
-            } else if shift != (editor.sketchId != nil) {
-                editor.pan(dx: dx, dy: dy)
+                let sign: CGFloat = settings.invertWheelZoom ? -1 : 1
+                editor.zoom(factor: 1 - sign * dy * 0.01 * settings.zoomSpeed, at: p)
             } else {
-                editor.orbit(dx: -dx * 1.4, dy: -dy * 1.4)
+                // Base action from settings; ⇧ toggles; sketches swap so two fingers pan by default.
+                var orbit = settings.trackpadSwipe == .orbit
+                if event.modifierFlags.contains(.shift) { orbit.toggle() }
+                if editor.sketchId != nil { orbit.toggle() }
+                if orbit {
+                    let sign: CGFloat = settings.invertTrackpadOrbit ? -1 : 1
+                    editor.orbit(dx: -dx * 1.4 * sign, dy: -dy * 1.4 * sign)
+                } else {
+                    let sign: CGFloat = settings.invertTrackpadPan ? -1 : 1
+                    editor.pan(dx: dx * sign, dy: dy * sign)
+                }
             }
         } else {
-            let dy = event.scrollingDeltaY
-            editor.zoom(factor: pow(1.12, -dy), at: p)
+            let sign: CGFloat = settings.invertWheelZoom ? -1 : 1
+            editor.zoom(factor: pow(1.12, -dy * sign * settings.zoomSpeed), at: p)
         }
         editor.updateHover(at: p)
     }
 
     override func magnify(with event: NSEvent) {
-        editor.zoom(factor: 1 / (1 + event.magnification), at: point(event))
+        let m = event.magnification * AppSettings.shared.zoomSpeed
+        editor.zoom(factor: 1 / (1 + m), at: point(event))
     }
 
     override func smartMagnify(with event: NSEvent) {
@@ -250,6 +268,7 @@ struct ViewportView: NSViewRepresentable {
     func makeNSView(context: Context) -> ViewportNSView { ViewportNSView(editor: editor) }
 
     func updateNSView(_ view: ViewportNSView, context: Context) {
+        _ = AppSettings.shared.revision   // redraw when preferences change
         view.needsDisplay = true
     }
 }

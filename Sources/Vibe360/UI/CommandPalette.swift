@@ -1,3 +1,4 @@
+import AppKit
 import SwiftUI
 import VibeCore
 
@@ -30,6 +31,9 @@ extension Editor {
             EditorCommand(id: "arc", title: "Bogen (3 Punkte)", symbol: "point.topleft.down.to.point.bottomright.curvepath", shortcut: "A", keywords: "arc", available: true) { self.setSketchTool(.arc) },
             EditorCommand(id: "dim", title: "Bemaßung", symbol: "ruler", shortcut: "D", keywords: "dimension maß", available: inSketch) { self.setSketchTool(.dimension) },
             EditorCommand(id: "finish", title: "Skizze fertigstellen", symbol: "checkmark.circle", keywords: "finish", available: inSketch) { self.finishSketch() },
+            EditorCommand(id: "settings", title: "Einstellungen", symbol: "gearshape", shortcut: "⌘,", keywords: "settings preferences maus scroll invertieren", available: true) {
+                NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
+            },
             EditorCommand(id: "params", title: "Parameter ändern", symbol: "function", keywords: "parameters variablen", available: true) { self.showParameters = true },
             EditorCommand(id: "stl", title: "Als STL exportieren", symbol: "square.and.arrow.up", keywords: "export 3d druck print", available: hasBodies) { self.exportSTL() },
             EditorCommand(id: "step", title: "Als STEP exportieren", symbol: "square.and.arrow.up.on.square", keywords: "export cad", available: hasBodies) { self.exportSTEP() },

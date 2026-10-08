@@ -205,6 +205,7 @@ final class Editor {
     }
 
     init() {
+        camera.orthographic = AppSettings.shared.defaultOrthographic
         rebuild()
     }
 
@@ -278,6 +279,7 @@ final class Editor {
         guard confirmDiscard() else { return }
         doc = CADDocument()
         fileURL = nil
+        camera.orthographic = AppSettings.shared.defaultOrthographic
         resetSession()
     }
 

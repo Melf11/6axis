@@ -95,6 +95,14 @@ private struct TopBar: View {
                         .disabled(!editor.canRedo)
                     IconButton(symbol: "square.and.arrow.down.on.square", help: "Sichern (⌘S)") { editor.save() }
                     IconButton(symbol: "magnifyingglass", help: "Befehlssuche (S)") { editor.showCommandPalette = true }
+                    SettingsLink {
+                        Image(systemName: "gearshape")
+                            .font(.system(size: 13, weight: .medium))
+                            .frame(width: 26, height: 26)
+                            .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .help("Einstellungen (⌘,)")
                 }
             }
             .padding(.horizontal, 12)
@@ -150,9 +158,11 @@ private struct BottomBar: View {
     private var physicalInfo: some View {
         if let p = editor.physicalSummary {
             let cm3 = p.volume / 1000
+            let settings = AppSettings.shared
+            let material = settings.material == .custom ? "" : " " + settings.material.title
             VStack(alignment: .trailing, spacing: 2) {
                 Text(p.title).font(.system(size: 11, weight: .semibold))
-                Text(String(format: "%.2f cm³ · ≈ %.1f g PLA", cm3, cm3 * 1.24))
+                Text(String(format: "%.2f cm³ · ≈ %.1f g", cm3, cm3 * settings.density) + material)
                     .font(.system(size: 11, design: .rounded))
                     .foregroundStyle(.secondary)
             }

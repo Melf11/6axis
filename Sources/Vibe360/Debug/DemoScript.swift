@@ -1,4 +1,5 @@
 import AppKit
+import SwiftUI
 import Foundation
 import simd
 import VibeCore
@@ -58,6 +59,24 @@ enum DemoScript {
 
     static func type(_ text: String) {
         for ch in text { key(String(ch), 0) }
+    }
+
+    /// Renders each settings tab offscreen (the Settings window itself is a separate scene).
+    static func renderSettings(_ dir: URL) {
+        let tabs: [(String, AnyView)] = [
+            ("12-settings-navigation", AnyView(NavigationSettings())),
+            ("13-settings-display", AnyView(DisplaySettings())),
+            ("14-settings-print", AnyView(PrintSettings())),
+        ]
+        for (name, view) in tabs {
+            let host = NSHostingView(rootView: view.frame(width: 520).fixedSize(horizontal: false, vertical: true))
+            host.frame = NSRect(origin: .zero, size: host.fittingSize)
+            host.layoutSubtreeIfNeeded()
+            guard let rep = host.bitmapImageRepForCachingDisplay(in: host.bounds) else { continue }
+            host.cacheDisplay(in: host.bounds, to: rep)
+            try? rep.representation(using: .png, properties: [:])?.write(to: dir.appendingPathComponent("\(name).png"))
+            print("DEMO: wrote \(name)")
+        }
     }
 
     static func run(_ editor: Editor, dir: URL, keepOpen: Bool) async {
@@ -143,6 +162,7 @@ enum DemoScript {
         if let sk = editor.doc.features.first?.kind.sketch {
             print("DEMO: sketch dims \(sk.constraints.compactMap { $0.kind.dimensionValue })")
         }
+        renderSettings(dir)
         print("DEMO: errors \(editor.state.errors)")
         print("DEMO: done")
         if !keepOpen {

@@ -67,7 +67,7 @@ struct SceneBuilder {
         let cmd = editor.command
         let translucentSource = (cmd?.kind == .extrude || cmd?.kind == .revolve) ? cmd?.featureId : nil
 
-        addGrid()
+        if AppSettings.shared.showGrid { addGrid() }
         addAxes()
         if cmd?.kind == .sketchPlane || editor.showOriginPlanes { addOriginPlanes() }
 

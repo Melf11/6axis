@@ -109,7 +109,8 @@ extension Editor {
 
     func orbit(dx: CGFloat, dy: CGFloat) {
         cameraAnimation = nil
-        camera.orbit(dx: Float(dx), dy: Float(dy))
+        let speed = Float(AppSettings.shared.orbitSpeed)
+        camera.orbit(dx: Float(dx) * speed, dy: Float(dy) * speed)
         requestRedraw()
     }
 
@@ -123,7 +124,7 @@ extension Editor {
         cameraAnimation = nil
         let decade = { floor(log10(max(self.camera.distance, 0.01) / 12)) }
         let before = decade()
-        camera.zoom(factor: Float(factor), at: pt)
+        camera.zoom(factor: Float(factor), at: AppSettings.shared.zoomToCursor ? pt : nil)
         if decade() != before { sceneVersion &+= 1 }   // grid density follows zoom
         requestRedraw()
     }
