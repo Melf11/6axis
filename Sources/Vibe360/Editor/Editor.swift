@@ -184,6 +184,8 @@ final class Editor {
     var showCommandPalette = false
     var showParameters = false
     var markingMenu: CGPoint?
+    /// Pointer position while the marking menu is open (drives the direction guide).
+    var markingMenuPointer: CGPoint?
     var browserVisible = true
 
     // Viewport hooks (set by the Metal view)

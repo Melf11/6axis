@@ -136,43 +136,131 @@ struct CommandPalette: View {
     }
 }
 
-/// Fusion-style radial menu on right click.
+/// Fusion-style radial (marking) menu on right click. Selection works by *direction*:
+/// a line runs from the center ring to the pointer and the item in that direction lights up,
+/// so a click anywhere in that direction picks it.
 struct MarkingMenu: View {
     @Bindable var editor: Editor
     let center: CGPoint
+    @State private var appeared = false
+
+    private var mouse: CGPoint? {
+        get { editor.markingMenuPointer }
+        nonmutating set { editor.markingMenuPointer = newValue }
+    }
+
+    private let ringRadius: CGFloat = 17
+    private let deadZone: CGFloat = 24
+    private let radiusX: CGFloat = 150
+    private let radiusY: CGFloat = 118
 
     var body: some View {
         let items = editor.markingMenuCommands
+        let positions = itemPositions(items.count)
+        let active = highlighted(items, positions)
         ZStack {
             Color.black.opacity(0.001)
-                .onTapGesture { editor.markingMenu = nil }
-            Circle()
-                .fill(.ultraThinMaterial)
-                .frame(width: 30, height: 30)
-                .overlay(Image(systemName: "xmark").font(.system(size: 10, weight: .bold)).foregroundStyle(.secondary))
-                .position(center)
-                .onTapGesture { editor.markingMenu = nil }
+
+            Canvas { ctx, _ in drawGuide(ctx, items: items, positions: positions, active: active) }
+                .allowsHitTesting(false)
+
             ForEach(Array(items.enumerated()), id: \.element.id) { i, cmd in
-                let angle = -Double.pi / 2 + Double(i) / Double(items.count) * 2 * .pi
-                let r: Double = 92
-                Button {
-                    editor.markingMenu = nil
-                    cmd.run()
-                } label: {
-                    HStack(spacing: 6) {
-                        Image(systemName: cmd.symbol).foregroundStyle(Color.accentColor)
-                        Text(cmd.title).font(.system(size: 12, weight: .medium)).lineLimit(1).fixedSize()
-                    }
-                    .padding(.horizontal, 10)
-                    .frame(height: 28)
-                    .floatingPanel(radius: 14)
-                }
-                .buttonStyle(.plain)
-                .disabled(!cmd.available)
-                .opacity(cmd.available ? 1 : 0.45)
-                .position(x: center.x + cos(angle) * r * 1.35, y: center.y + sin(angle) * r)
+                itemView(cmd, isActive: active == i)
+                    .position(appeared ? positions[i] : center)
             }
         }
-        .transition(.opacity.combined(with: .scale(scale: 0.9)))
+        .contentShape(Rectangle())
+        .onContinuousHover { phase in
+            if case let .active(p) = phase { mouse = p }
+        }
+        .onTapGesture { p in
+            mouse = p
+            let pick = highlighted(items, positions)
+            editor.markingMenu = nil
+            if let pick { items[pick].run() }
+        }
+        .animation(.snappy(duration: 0.12), value: active)
+        .onAppear {
+            mouse = center
+            withAnimation(.spring(duration: 0.22, bounce: 0.25)) { appeared = true }
+        }
+    }
+
+    private func itemView(_ cmd: EditorCommand, isActive: Bool) -> some View {
+        let fill: AnyShapeStyle = isActive ? AnyShapeStyle(Color.accentColor) : AnyShapeStyle(.regularMaterial)
+        return HStack(spacing: 6) {
+            Image(systemName: cmd.symbol)
+                .foregroundStyle(isActive ? Color.white : Color.accentColor)
+            Text(cmd.title)
+                .font(.system(size: 12, weight: .medium))
+                .foregroundStyle(isActive ? Color.white : Color.primary)
+                .lineLimit(1)
+                .fixedSize()
+        }
+        .padding(.horizontal, 11)
+        .frame(height: 28)
+        .background(Capsule().fill(fill))
+        .overlay(Capsule().strokeBorder(Color.primary.opacity(isActive ? 0 : 0.1), lineWidth: 0.5))
+        .shadow(color: .black.opacity(isActive ? 0.25 : 0.12), radius: isActive ? 8 : 6, y: 2)
+        .scaleEffect(isActive ? 1.06 : 1)
+        .opacity(cmd.available ? 1 : 0.4)
+        .allowsHitTesting(false)
+    }
+
+    /// Items on an ellipse, starting at the top, clockwise.
+    private func itemPositions(_ n: Int) -> [CGPoint] {
+        let step: CGFloat = 2 * .pi / CGFloat(max(n, 1))
+        return (0..<n).map { i -> CGPoint in
+            let a: CGFloat = -.pi / 2 + CGFloat(i) * step
+            return CGPoint(x: center.x + cos(a) * radiusX, y: center.y + sin(a) * radiusY)
+        }
+    }
+
+    /// Item whose direction (seen from the center) is closest to the pointer's direction.
+    private func highlighted(_ items: [EditorCommand], _ positions: [CGPoint]) -> Int? {
+        guard let m = mouse, hypot(m.x - center.x, m.y - center.y) > deadZone else { return nil }
+        let a = atan2(m.y - center.y, m.x - center.x)
+        var best: (Int, CGFloat)?
+        for (i, p) in positions.enumerated() {
+            var d = abs(atan2(p.y - center.y, p.x - center.x) - a)
+            if d > .pi { d = 2 * .pi - d }
+            if best == nil || d < best!.1 { best = (i, d) }
+        }
+        guard let (i, _) = best, items[i].available else { return nil }
+        return i
+    }
+
+    private func drawGuide(_ ctx: GraphicsContext, items: [EditorCommand], positions: [CGPoint], active: Int?) {
+        let ring = Path(ellipseIn: CGRect(x: center.x - ringRadius, y: center.y - ringRadius, width: ringRadius * 2, height: ringRadius * 2))
+        ctx.fill(ring, with: .color(Color(nsColor: .windowBackgroundColor).opacity(0.85)))
+        ctx.stroke(ring, with: .color(.primary.opacity(0.25)), lineWidth: 1.5)
+
+        guard let m = mouse else { return }
+        let dx = m.x - center.x, dy = m.y - center.y
+        let dist = hypot(dx, dy)
+        guard dist > deadZone else {
+            // Small cross in the dead zone: clicking here closes the menu.
+            var x = Path()
+            x.move(to: CGPoint(x: center.x - 4, y: center.y - 4)); x.addLine(to: CGPoint(x: center.x + 4, y: center.y + 4))
+            x.move(to: CGPoint(x: center.x + 4, y: center.y - 4)); x.addLine(to: CGPoint(x: center.x - 4, y: center.y + 4))
+            ctx.stroke(x, with: .color(.secondary), lineWidth: 1.5)
+            return
+        }
+        let ux = dx / dist, uy = dy / dist
+        let color: Color = active != nil ? .accentColor : .secondary
+
+        // Highlighted wedge on the ring, pointing towards the selection.
+        let angle = atan2(uy, ux)
+        let half = Double.pi / Double(max(items.count, 1))
+        var wedge = Path()
+        wedge.addArc(center: center, radius: ringRadius, startAngle: .radians(angle - half), endAngle: .radians(angle + half), clockwise: false)
+        ctx.stroke(wedge, with: .color(color), style: StrokeStyle(lineWidth: 4, lineCap: .round))
+
+        // Connection line from the ring to the pointer.
+        var line = Path()
+        line.move(to: CGPoint(x: center.x + ux * (ringRadius + 3), y: center.y + uy * (ringRadius + 3)))
+        line.addLine(to: m)
+        ctx.stroke(line, with: .color(color.opacity(0.9)), style: StrokeStyle(lineWidth: 2, lineCap: .round))
+        ctx.fill(Path(ellipseIn: CGRect(x: m.x - 3.5, y: m.y - 3.5, width: 7, height: 7)), with: .color(color))
     }
 }

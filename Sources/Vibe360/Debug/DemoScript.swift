@@ -158,7 +158,10 @@ enum DemoScript {
         editor.showCommandPalette = true
         await snap(editor, "10-palette", dir)
         editor.showCommandPalette = false
-        editor.markingMenu = CGPoint(x: editor.camera.viewSize.width / 2, y: editor.camera.viewSize.height / 2)
+        let mc = CGPoint(x: editor.camera.viewSize.width / 2, y: editor.camera.viewSize.height / 2)
+        editor.markingMenu = mc
+        await pause(0.4)
+        editor.markingMenuPointer = CGPoint(x: mc.x + 70, y: mc.y - 55)   // towards "Extrusion" (upper right)
         await snap(editor, "11-marking", dir)
         editor.markingMenu = nil
 
