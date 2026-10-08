@@ -34,10 +34,10 @@ struct CommandPanel: View {
     private func header(_ cmd: ActiveCommand) -> some View {
         HStack(spacing: 8) {
             Image(systemName: symbol(cmd.kind)).foregroundStyle(Color.accentColor)
-            Text(cmd.isNew ? cmd.kind.title : "\(cmd.kind.title) bearbeiten")
+            Text(cmd.isNew ? cmd.kind.title : String(localized: "\(cmd.kind.title) bearbeiten"))
                 .font(.system(size: 13, weight: .semibold))
             Spacer()
-            IconButton(symbol: "xmark", help: "Abbrechen (Esc)", size: 22) { editor.cancelCommand() }
+            IconButton(symbol: "xmark", help: String(localized: "Abbrechen (Esc)"), size: 22) { editor.cancelCommand() }
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 10)
@@ -78,28 +78,28 @@ struct CommandPanel: View {
         case let (.revolve, .revolve(r)?):
             revolveContent(r, cmd)
         case let (.fillet, .fillet(f)?):
-            selectionRow("Kanten", count: f.edges.count, symbol: "line.diagonal", active: true) {
+            selectionRow(String(localized: "Kanten"), count: f.edges.count, symbol: "line.diagonal", active: true) {
                 editor.updateCommandFeature { k in if case var .fillet(x) = k { x.edges = []; k = .fillet(x) } }
             }
-            ExpressionField(label: "Radius", text: f.radius, kind: .length, editor: editor) { v in
+            ExpressionField(label: String(localized: "Radius"), text: f.radius, kind: .length, editor: editor) { v in
                 editor.updateCommandFeature { k in if case var .fillet(x) = k { x.radius = v; k = .fillet(x) } }
             }
         case let (.chamfer, .chamfer(c)?):
-            selectionRow("Kanten", count: c.edges.count, symbol: "line.diagonal", active: true) {
+            selectionRow(String(localized: "Kanten"), count: c.edges.count, symbol: "line.diagonal", active: true) {
                 editor.updateCommandFeature { k in if case var .chamfer(x) = k { x.edges = []; k = .chamfer(x) } }
             }
-            ExpressionField(label: "Abstand", text: c.distance, kind: .length, editor: editor) { v in
+            ExpressionField(label: String(localized: "Abstand"), text: c.distance, kind: .length, editor: editor) { v in
                 editor.updateCommandFeature { k in if case var .chamfer(x) = k { x.distance = v; k = .chamfer(x) } }
             }
         case let (.shell, .shell(s)?):
-            selectionRow("Offene Flächen", count: s.faces.count, symbol: "square.dashed", active: true) {
+            selectionRow(String(localized: "Offene Flächen"), count: s.faces.count, symbol: "square.dashed", active: true) {
                 editor.updateCommandFeature { k in if case var .shell(x) = k { x.faces = []; k = .shell(x) } }
             }
             if s.faces.isEmpty {
-                Text(s.body == nil ? "Klicke Flächen an, die offen sein sollen." : "Ohne offene Fläche wird der Körper innen hohl.")
+                Text(s.body == nil ? String(localized: "Klicke Flächen an, die offen sein sollen.") : String(localized: "Ohne offene Fläche wird der Körper innen hohl."))
                     .font(.system(size: 11)).foregroundStyle(.secondary)
             }
-            ExpressionField(label: "Wandstärke", text: s.thickness, kind: .length, editor: editor) { v in
+            ExpressionField(label: String(localized: "Wandstärke"), text: s.thickness, kind: .length, editor: editor) { v in
                 editor.updateCommandFeature { k in if case var .shell(x) = k { x.thickness = v; k = .shell(x) } }
             }
         default:
@@ -124,10 +124,10 @@ struct CommandPanel: View {
 
     private func extrudeContent(_ e: ExtrudeFeature) -> some View {
         VStack(alignment: .leading, spacing: 12) {
-            selectionRow("Profile", count: e.profiles.count + e.faces.count, symbol: "square.on.square.dashed", active: true) {
+            selectionRow(String(localized: "Profile"), count: e.profiles.count + e.faces.count, symbol: "square.on.square.dashed", active: true) {
                 editor.updateCommandFeature { k in if case var .extrude(x) = k { x.profiles = []; x.faces = []; k = .extrude(x) } }
             }
-            LabeledRow("Richtung") {
+            LabeledRow(String(localized: "Richtung")) {
                 Picker("", selection: Binding(get: { e.extent }, set: { v in
                     editor.updateCommandFeature { k in if case var .extrude(x) = k { x.extent = v; k = .extrude(x) } }
                 })) {
@@ -135,11 +135,11 @@ struct CommandPanel: View {
                 }
                 .labelsHidden()
             }
-            ExpressionField(label: e.extent == .twoSides ? "Abstand 1" : "Abstand", text: e.distance, kind: .length, editor: editor) { v in
+            ExpressionField(label: e.extent == .twoSides ? String(localized: "Abstand 1") : String(localized: "Abstand"), text: e.distance, kind: .length, editor: editor) { v in
                 editor.updateCommandFeature { k in if case var .extrude(x) = k { x.distance = v; k = .extrude(x) } }
             }
             if e.extent == .twoSides {
-                ExpressionField(label: "Abstand 2", text: e.distance2, kind: .length, editor: editor) { v in
+                ExpressionField(label: String(localized: "Abstand 2"), text: e.distance2, kind: .length, editor: editor) { v in
                     editor.updateCommandFeature { k in if case var .extrude(x) = k { x.distance2 = v; k = .extrude(x) } }
                 }
             }
@@ -151,10 +151,10 @@ struct CommandPanel: View {
 
     private func revolveContent(_ r: RevolveFeature, _ cmd: ActiveCommand) -> some View {
         VStack(alignment: .leading, spacing: 12) {
-            selectionRow("Profile", count: r.profiles.count, symbol: "square.on.square.dashed", active: cmd.activeInput == 0) {
+            selectionRow(String(localized: "Profile"), count: r.profiles.count, symbol: "square.on.square.dashed", active: cmd.activeInput == 0) {
                 editor.updateCommandFeature { k in if case var .revolve(x) = k { x.profiles = []; k = .revolve(x) } }
             } activate: { editor.command?.activeInput = 0; editor.sceneVersion &+= 1 }
-            selectionRow("Achse", count: r.axis == nil ? 0 : 1, symbol: "line.diagonal", active: cmd.activeInput == 1,
+            selectionRow(String(localized: "Achse"), count: r.axis == nil ? 0 : 1, symbol: "line.diagonal", active: cmd.activeInput == 1,
                          detail: r.axis?.displayName) {
                 editor.updateCommandFeature { k in if case var .revolve(x) = k { x.axis = nil; k = .revolve(x) } }
             } activate: { editor.command?.activeInput = 1; editor.sceneVersion &+= 1 }
@@ -167,7 +167,7 @@ struct CommandPanel: View {
                     .controlSize(.small)
                 }
             }
-            ExpressionField(label: "Winkel", text: r.angle, kind: .angle, editor: editor) { v in
+            ExpressionField(label: String(localized: "Winkel"), text: r.angle, kind: .angle, editor: editor) { v in
                 editor.updateCommandFeature { k in if case var .revolve(x) = k { x.angle = v; k = .revolve(x) } }
             }
             operationPicker(r.operation) { op in
@@ -209,7 +209,7 @@ struct CommandPanel: View {
             } label: {
                 HStack(spacing: 6) {
                     Image(systemName: symbol).font(.system(size: 11))
-                    Text(count == 0 ? "Auswählen" : (detail ?? "\(count) ausgewählt"))
+                    Text(count == 0 ? String(localized: "Auswählen") : (detail ?? String(localized: "\(count) ausgewählt")))
                         .font(.system(size: 12, weight: .medium))
                     Spacer(minLength: 0)
                     if count > 0 {

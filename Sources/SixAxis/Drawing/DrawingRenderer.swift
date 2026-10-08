@@ -99,7 +99,7 @@ enum DrawingRenderer {
         var box = CGRect(x: 0, y: 0, width: first.sheet.width * k, height: first.sheet.height * k)
         let info: [CFString: Any] = [kCGPDFContextTitle: title, kCGPDFContextCreator: "6axis"]
         guard let ctx = CGContext(url as CFURL, mediaBox: &box, info as CFDictionary) else {
-            throw NSError(domain: "6axis", code: 1, userInfo: [NSLocalizedDescriptionKey: "PDF konnte nicht erstellt werden"])
+            throw NSError(domain: "6axis", code: 1, userInfo: [NSLocalizedDescriptionKey: String(localized: "PDF konnte nicht erstellt werden")])
         }
         for page in pages {
             var media = CGRect(x: 0, y: 0, width: page.sheet.width * k, height: page.sheet.height * k)

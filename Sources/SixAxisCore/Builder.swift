@@ -240,7 +240,7 @@ public final class ModelBuilder: @unchecked Sendable {
             case let .sketch(sk):
                 state.sketches[f.id] = try buildSketch(f.id, sk, state: state, evaluator: evaluator)
                 if let sb = state.sketches[f.id], !sb.solve.converged {
-                    state.errors[f.id] = "Skizze ist überbestimmt oder widersprüchlich"
+                    state.errors[f.id] = String(localized: "Skizze ist überbestimmt oder widersprüchlich")
                 }
             case let .extrude(e):
                 try applyExtrude(f, e, &state, &evaluator)

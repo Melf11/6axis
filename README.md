@@ -6,7 +6,7 @@
 
 6axis ist ein parametrisches 3D-CAD-Programm für macOS, mit einem klaren, modernen Arbeitsablauf: Skizze mit Abhängigkeiten → Extrusion/Drehung → Abrundung, Fase, Wandstärke – alles in einer Zeitleiste, die sich jederzeit nachträglich ändern lässt. Gebaut mit Swift, SwiftUI und Metal auf dem Open-Source-Geometriekernel OpenCASCADE.
 
-*English:* 6axis is a free, open-source, fully offline parametric CAD app for macOS, with a sketch → feature → timeline workflow, focused on mechanical design, woodworking and 3D printing. The UI is currently German; contributions (including localization) are welcome.
+*English:* 6axis is a free, open-source, fully offline parametric CAD app for macOS, with a sketch → feature → timeline workflow, focused on mechanical design, woodworking and 3D printing. The app is available in German and English (it follows the system language); contributions, including further translations, are welcome.
 
 ## Installation
 

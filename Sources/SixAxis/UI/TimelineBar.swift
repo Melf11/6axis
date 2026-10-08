@@ -10,10 +10,10 @@ struct TimelineBar: View {
     var body: some View {
         HStack(spacing: 8) {
             HStack(spacing: 0) {
-                IconButton(symbol: "backward.end.fill", help: "Zum Anfang", size: 24) { editor.moveMarker(to: 0) }
-                IconButton(symbol: "backward.frame.fill", help: "Schritt zurück", size: 24) { editor.moveMarker(to: editor.doc.activeCount - 1) }
-                IconButton(symbol: "forward.frame.fill", help: "Schritt vor", size: 24) { editor.moveMarker(to: editor.doc.activeCount + 1) }
-                IconButton(symbol: "forward.end.fill", help: "Zum Ende", size: 24) { editor.moveMarker(to: editor.doc.features.count) }
+                IconButton(symbol: "backward.end.fill", help: String(localized: "Zum Anfang"), size: 24) { editor.moveMarker(to: 0) }
+                IconButton(symbol: "backward.frame.fill", help: String(localized: "Schritt zurück"), size: 24) { editor.moveMarker(to: editor.doc.activeCount - 1) }
+                IconButton(symbol: "forward.frame.fill", help: String(localized: "Schritt vor"), size: 24) { editor.moveMarker(to: editor.doc.activeCount + 1) }
+                IconButton(symbol: "forward.end.fill", help: String(localized: "Zum Ende"), size: 24) { editor.moveMarker(to: editor.doc.features.count) }
             }
             .disabled(editor.command != nil || editor.sketchId != nil)
 
@@ -85,7 +85,7 @@ struct TimelineBar: View {
             }
         }
         .opacity(active ? (f.suppressed ? 0.35 : 1) : 0.3)
-        .help(error.map { "\(f.name) – Fehler: \($0)" } ?? f.name)
+        .help(error.map { String(localized: "\(f.name) – Fehler: \($0)") } ?? f.name)
         .contentShape(Rectangle())
         .onTapGesture(count: 2) { editor.editFeature(f.id) }
         .onTapGesture { editor.timelineSelection = selected ? nil : f.id }
@@ -93,7 +93,7 @@ struct TimelineBar: View {
             Text(f.name)
             Button("Bearbeiten") { editor.editFeature(f.id) }
             Button("Zeitleiste bis hierher") { editor.moveMarker(to: index + 1) }
-            Button(f.suppressed ? "Aktivieren" : "Unterdrücken") { editor.toggleSuppressed(f.id) }
+            Button(f.suppressed ? String(localized: "Aktivieren") : String(localized: "Unterdrücken")) { editor.toggleSuppressed(f.id) }
             Divider()
             Button("Löschen", role: .destructive) { editor.deleteFeature(f.id) }
         }

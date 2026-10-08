@@ -14,8 +14,8 @@ extension Editor {
     var toolInputSpecs: [ToolInputSpec] {
         guard sketchId != nil, !toolPoints.isEmpty else { return [] }
         switch sketchTool {
-        case .line: return [ToolInputSpec(label: "Länge", kind: .length), ToolInputSpec(label: "Winkel", kind: .angle)]
-        case .rectangle, .centerRectangle: return [ToolInputSpec(label: "Breite", kind: .length), ToolInputSpec(label: "Höhe", kind: .length)]
+        case .line: return [ToolInputSpec(label: String(localized: "Länge"), kind: .length), ToolInputSpec(label: String(localized: "Winkel"), kind: .angle)]
+        case .rectangle, .centerRectangle: return [ToolInputSpec(label: String(localized: "Breite"), kind: .length), ToolInputSpec(label: String(localized: "Höhe"), kind: .length)]
         case .circle: return [ToolInputSpec(label: "⌀", kind: .length)]
         default: return []
         }
@@ -119,7 +119,7 @@ extension Editor {
     func commitToolInputs() {
         guard let p0 = toolPoints.first?.position else { return }
         if (0..<toolInputSpecs.count).contains(where: toolInputIsInvalid) {
-            showToast("Ungültiger Wert")
+            showToast(String(localized: "Ungültiger Wert"))
             return
         }
         let cursorPos = cursor?.position ?? p0 + Vec2(1, 1)

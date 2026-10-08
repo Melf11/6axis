@@ -33,7 +33,7 @@ public final class DrawingGenerator: @unchecked Sendable {
         }
 
         public init(shapes: [Shape], settings: DrawingSettings, fallbackTitle: String, date: Date = Date()) {
-            self.init(parts: shapes.enumerated().map { Part(name: "Teil \($0.offset + 1)", shape: $0.element) },
+            self.init(parts: shapes.enumerated().map { Part(name: String(localized: "Teil \($0.offset + 1)"), shape: $0.element) },
                       settings: settings, fallbackTitle: fallbackTitle, date: date)
         }
 
@@ -366,7 +366,7 @@ public final class DrawingGenerator: @unchecked Sendable {
             page.arrows.append(DrawingArrow(tip: Vec2(px + 8, y), direction: Vec2(1, 0), group: id))
             page.texts.append(DrawingText(text: "A", position: Vec2(px + 10, y - 1.75), height: 5, anchor: .left, bold: true, group: id))
         }
-        var d = PlacedDimension(id: id, text: "Schnitt A–A", segments: [(Vec2(px, bottom), Vec2(px, top))],
+        var d = PlacedDimension(id: id, text: String(localized: "Schnitt A–A"), segments: [(Vec2(px, bottom), Vec2(px, top))],
                                 textCenter: Vec2(px + 11, top), normal: Vec2(1, 0), along: Vec2(0, 1), isCustom: false)
         d.value = x
         page.dimensions.append(d)
@@ -388,14 +388,14 @@ public final class DrawingGenerator: @unchecked Sendable {
             page.lines.append(DrawingLine(points: ring, style: .thin, group: d.markId))
             let lp = c + simd_normalize(Vec2(1, 1)) * (r + 4)
             page.texts.append(DrawingText(text: d.letter, position: lp, height: 5, anchor: .left, bold: true, group: d.markId))
-            page.dimensions.append(PlacedDimension(id: d.markId, text: "Einzelheit \(d.letter)",
+            page.dimensions.append(PlacedDimension(id: d.markId, text: String(localized: "Einzelheit \(d.letter)"),
                                                    segments: (0..<48).map { (ring[$0], ring[$0 + 1]) },
                                                    textCenter: lp + Vec2(2, 2), normal: Vec2(0, 1), along: Vec2(1, 0), isCustom: false))
             // Detail view, by default stacked from the top-right corner.
             let base = Vec2(nextRight - R, area.origin.y + area.size.y - R - 10)
             nextRight -= 2 * R + 14
             let dc = base + (settings.viewOffsets[d.viewId] ?? .zero)
-            let placed = PlacedView(id: d.viewId, title: "Einzelheit \(d.letter)", min: dc - Vec2(R, R), max: dc + Vec2(R, R),
+            let placed = PlacedView(id: d.viewId, title: String(localized: "Einzelheit \(d.letter)"), min: dc - Vec2(R, R), max: dc + Vec2(R, R),
                                     origin: dc, modelMin: d.center, scale: k, constraint: .free)
             page.views.append(placed)
             for line in v.projection.polylines where !line.smooth && (settings.showHidden || !line.hidden) {
@@ -473,9 +473,9 @@ public final class DrawingGenerator: @unchecked Sendable {
         let sideOrigin = Vec2(frontOrigin.x + set.front.size.x * s + L.gapH + (settings.viewOffsets[p + "left"]?.x ?? 0), frontOrigin.y)
         let topOrigin = Vec2(frontOrigin.x, frontOrigin.y - L.gapV - set.top.size.y * s + (settings.viewOffsets[p + "top"]?.y ?? 0))
 
-        let pf = Self.place(p + "front", "Vorderansicht", set.front, frontOrigin, .all, s)
-        let pl = Self.place(p + "left", "Seitenansicht von links", set.side, sideOrigin, .horizontal, s)
-        let pt = Self.place(p + "top", "Draufsicht", set.top, topOrigin, .vertical, s)
+        let pf = Self.place(p + "front", String(localized: "Vorderansicht"), set.front, frontOrigin, .all, s)
+        let pl = Self.place(p + "left", String(localized: "Seitenansicht von links"), set.side, sideOrigin, .horizontal, s)
+        let pt = Self.place(p + "top", String(localized: "Draufsicht"), set.top, topOrigin, .vertical, s)
         page.views += [pf, pl, pt]
 
         for (v, pv) in [(set.front, pf), (set.side, pl), (set.top, pt)] {
@@ -579,7 +579,7 @@ public final class DrawingGenerator: @unchecked Sendable {
 
         guard let set = makeViewSet(input.shapes, prefix: "", settings: settings, section: settings.sectionLeft) else {
             var page = DrawingPage(sheet: sheets[0], scale: DrawingScale.named("1:1")!)
-            page.texts.append(DrawingText(text: "Keine sichtbaren Körper", position: Vec2(page.sheet.width / 2, page.sheet.height / 2 + 10), height: 5))
+            page.texts.append(DrawingText(text: String(localized: "Keine sichtbaren Körper"), position: Vec2(page.sheet.width / 2, page.sheet.height / 2 + 10), height: 5))
             var pages = [page]
             addTitleBlocks(&pages, input)
             return pages
@@ -633,7 +633,7 @@ public final class DrawingGenerator: @unchecked Sendable {
                 let fit = min(free.x / max(iso.size.x, 1e-6), free.y / max(iso.size.y, 1e-6)) * 0.9
                 let k = min(fit, s)
                 let center = (regionMin + regionMax) / 2 + (settings.viewOffsets["iso"] ?? .zero)
-                let pi = Self.place("iso", "Isometrie", iso, center - iso.size * k / 2, .free, k)
+                let pi = Self.place("iso", String(localized: "Isometrie"), iso, center - iso.size * k / 2, .free, k)
                 page.views.append(pi)
                 for line in iso.projection.polylines where !line.hidden && !line.smooth {
                     page.lines.append(DrawingLine(points: line.points.map(pi.toPaper), style: .iso))
@@ -693,7 +693,7 @@ public final class DrawingGenerator: @unchecked Sendable {
             page.lines.append(DrawingLine(points: (0...12).map { anchor + 0.6 * Vec2(cos(Double($0) / 12 * 2 * .pi), sin(Double($0) / 12 * 2 * .pi)) },
                                           style: .visible, group: id))
             page.texts.append(DrawingText(text: "\(g.position)", position: c - Vec2(0, 1.75), height: 3.5, anchor: .center, group: id))
-            page.dimensions.append(PlacedDimension(id: id, text: "Pos. \(g.position)", segments: [(start, anchor)],
+            page.dimensions.append(PlacedDimension(id: id, text: String(localized: "Pos. \(g.position)"), segments: [(start, anchor)],
                                                    textCenter: c, normal: Vec2(0, 1), along: Vec2(1, 0), isCustom: false))
         }
     }
@@ -728,7 +728,7 @@ public final class DrawingGenerator: @unchecked Sendable {
             }
         }
         // Header next to the title block, positions numbered upwards.
-        row(0, ["Pos.", "Benennung", "Anzahl", "Länge", "Breite", "Dicke", "Material"], bold: true)
+        row(0, [String(localized: "Pos."), String(localized: "Benennung"), String(localized: "Anzahl"), String(localized: "Länge"), String(localized: "Breite"), String(localized: "Dicke"), String(localized: "Material")], bold: true)
         for (i, g) in groups.enumerated() {
             let mat = g.material.isEmpty ? material : g.material
             let grain = g.grain == .none ? "" : (g.grain == .length ? " ↔" : " ↕")
@@ -756,7 +756,7 @@ public final class DrawingGenerator: @unchecked Sendable {
         var pages: [DrawingPage] = []
         for (n, chunk) in stride(from: 0, to: sets.count, by: perSheet).map({ Array(sets[$0..<min($0 + perSheet, sets.count)]) }).enumerated() {
             var page = DrawingPage(sheet: sheet, scale: DrawingScale.named("1:1")!)
-            page.name = pages.isEmpty && sets.count <= perSheet ? "Einzelteile" : "Einzelteile \(n + 1)"
+            page.name = pages.isEmpty && sets.count <= perSheet ? String(localized: "Einzelteile") : String(localized: "Einzelteile \(n + 1)")
             page.isEmpty = false
             var scales: Set<String> = []
             var sources: [String: (ViewData, PlacedView)] = [:]
@@ -770,11 +770,11 @@ public final class DrawingGenerator: @unchecked Sendable {
                 let placed = emit(set, into: &page, region: (origin, size), s: sc.factor, settings: settings, sources: &sources)
                 if g.grain != .none, let front = placed.first { addGrainArrow(&page, front, along: g.grain) }
                 let mat = g.material.isEmpty ? settings.material : g.material
-                let heading = "Pos. \(g.position)   \(g.name)   \(g.count) Stück   \(g.length) × \(g.width) × \(g.thickness)"
+                let heading = String(localized: "Pos. \(g.position)   \(g.name)   \(g.count) Stück   \(g.length) × \(g.width) × \(g.thickness)")
                     + (mat.isEmpty ? "" : "   \(mat)") + "   M \(sc.label)"
                 page.texts.append(DrawingText(text: heading, position: origin + Vec2(2, size.y + 4), height: 3.5, anchor: .left, bold: true))
             }
-            page.scaleText = scales.count == 1 ? scales.first : "siehe Teile"
+            page.scaleText = scales.count == 1 ? scales.first : String(localized: "siehe Teile")
             addDetails(&page, settings.details.filter { sources[$0.view] != nil }, sources: sources, settings: settings)
             for c in settings.customDimensions where !settings.hiddenDimensions.contains(c.key) {
                 addCustomDimension(&page, c)
@@ -796,7 +796,7 @@ public final class DrawingGenerator: @unchecked Sendable {
         page.arrows.append(DrawingArrow(tip: a, direction: -u))
         page.arrows.append(DrawingArrow(tip: b, direction: u))
         let n = Vec2(-u.y, u.x)
-        page.texts.append(DrawingText(text: "Faser", position: c + n * 1.5, height: 2.5, angle: atan2(u.y, u.x), anchor: .center))
+        page.texts.append(DrawingText(text: String(localized: "Faser"), position: c + n * 1.5, height: 2.5, angle: atan2(u.y, u.x), anchor: .center))
     }
 
     private func addTitleBlocks(_ pages: inout [DrawingPage], _ input: Input) {
@@ -940,7 +940,7 @@ public final class DrawingGenerator: @unchecked Sendable {
             let viewCenter = map((v.minP + v.maxP) / 2)
             if simd_dot(u, tip - viewCenter) < 0 { u = -u }
             let shift = offsets[id].map { Vec2($0.along, $0.distance) } ?? .zero
-            let text = "Fase \(Self.mmText(Double(s10) / 10)) × 45°" + (segs.count > 1 ? " (\(segs.count)×)" : "")
+            let text = String(localized: "Fase \(Self.mmText(Double(s10) / 10)) × 45°") + (segs.count > 1 ? " (\(segs.count)×)" : "")
             let shelf = Double(text.count) * 2.0 + 2
             let knee = Self.leaderKnee(&page, tip: tip, u: u, shift: shift, width: shelf)!
             let right = knee.x >= tip.x - 1e-9
@@ -1220,20 +1220,20 @@ public final class DrawingGenerator: @unchecked Sendable {
             page.texts.append(DrawingText(text: value, position: p + Vec2(1.5, 1.8), height: size, anchor: .left, bold: bold))
         }
         let base = s.title.isEmpty ? input.fallbackTitle : s.title
-        let title = page.name == "Gesamtansicht" ? base : "\(base) – \(page.name)"
-        page.texts.append(DrawingText(text: "Benennung", position: Vec2(x0 + 1.5, y0 + th - 3.4), height: 1.8, anchor: .left))
+        let title = page.name == String(localized: "Gesamtansicht") ? base : "\(base) – \(page.name)"
+        page.texts.append(DrawingText(text: String(localized: "Benennung"), position: Vec2(x0 + 1.5, y0 + th - 3.4), height: 1.8, anchor: .left))
         page.texts.append(DrawingText(text: title, position: Vec2(x0 + 3, r2 + 4.5), height: 5, anchor: .left, bold: true))
-        field("Zeichnungsnummer", s.drawingNumber, at: Vec2(x0, r1))
-        field("Material", s.material, at: Vec2(c1, r1))
-        field("Datum", df.string(from: input.date), at: Vec2(c2, r1))
-        field("Erstellt von", s.author, at: Vec2(x0, y0))
-        field("Software", "6axis", at: Vec2(c1, y0))
-        field("Einheit", "mm", at: Vec2(c2, y0))
+        field(String(localized: "Zeichnungsnummer"), s.drawingNumber, at: Vec2(x0, r1))
+        field(String(localized: "Material"), s.material, at: Vec2(c1, r1))
+        field(String(localized: "Datum"), df.string(from: input.date), at: Vec2(c2, r1))
+        field(String(localized: "Erstellt von"), s.author, at: Vec2(x0, y0))
+        field(String(localized: "Software"), "6axis", at: Vec2(c1, y0))
+        field(String(localized: "Einheit"), "mm", at: Vec2(c2, y0))
         let scaleText = page.scaleText ?? page.scale.label
-        field("Maßstab", scaleText, at: Vec2(split, r2), rowHeight: th - 20, size: scaleText.count > 6 ? 3.5 : 5, bold: true)
-        field("Blatt", "\(number) / \(total)", at: Vec2(split, r1))
+        field(String(localized: "Maßstab"), scaleText, at: Vec2(split, r2), rowHeight: th - 20, size: scaleText.count > 6 ? 3.5 : 5, bold: true)
+        field(String(localized: "Blatt"), "\(number) / \(total)", at: Vec2(split, r1))
         page.texts.append(DrawingText(text: page.sheet.name, position: Vec2(fx1 - 2, r1 + 1.8), height: 3.5, anchor: .right))
-        page.texts.append(DrawingText(text: "Projektionsmethode 1", position: Vec2(split + 1.5, y0 + 6.8), height: 1.8, anchor: .left))
+        page.texts.append(DrawingText(text: String(localized: "Projektionsmethode 1"), position: Vec2(split + 1.5, y0 + 6.8), height: 1.8, anchor: .left))
         projectionSymbol(&page, at: Vec2(split + 24, y0 + 1.4))
     }
 

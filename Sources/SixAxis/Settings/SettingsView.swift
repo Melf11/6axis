@@ -24,8 +24,8 @@ struct NavigationSettings: View {
                 Toggle(isOn: $s.ignoreNaturalScrolling) {
                     Text("„Natürliches Scrollen“ im 3D-Fenster ignorieren")
                     Text(AppSettings.systemUsesNaturalScrolling
-                         ? "Dein Mac nutzt natürliches Scrollen. Aktivieren, damit Zoomen und Drehen der physischen Bewegung folgen – wie bei einer klassischen Maus."
-                         : "Dein Mac nutzt klassisches Scrollen; diese Option hat dann keine Wirkung.")
+                         ? String(localized: "Dein Mac nutzt natürliches Scrollen. Aktivieren, damit Zoomen und Drehen der physischen Bewegung folgen – wie bei einer klassischen Maus.")
+                         : String(localized: "Dein Mac nutzt klassisches Scrollen; diese Option hat dann keine Wirkung."))
                 }
             } header: {
                 Text("Scrollrichtung")
@@ -51,8 +51,8 @@ struct NavigationSettings: View {
             }
 
             Section("Geschwindigkeit") {
-                speedSlider("Drehen", value: $s.orbitSpeed)
-                speedSlider("Zoomen", value: $s.zoomSpeed)
+                speedSlider(String(localized: "Drehen"), value: $s.orbitSpeed)
+                speedSlider(String(localized: "Zoomen"), value: $s.zoomSpeed)
             }
 
             HStack {

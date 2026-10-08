@@ -41,3 +41,15 @@ Mit deinem Beitrag stimmst du zu, dass er unter der MIT-Lizenz veröffentlicht w
    Der Workflow **Release** baut die App, packt DMG/ZIP mit Prüfsummen und veröffentlicht das GitHub Release. Tags mit Bindestrich (`v0.9.1-beta.1`) werden als Vorabversion markiert.
 
 Die Produktseite (`website/`) wird bei jeder Änderung auf `main` automatisch über GitHub Pages veröffentlicht. Bilder neu erzeugen: `scripts/screenshots.sh`.
+
+## Texte und Übersetzungen
+
+Sichtbare Texte schreibst du auf Deutsch direkt in den Code – SwiftUI-Literale (`Text("Skizze")`) werden automatisch übersetzt, alle anderen als `String(localized: "…")`, Fehlermeldungen als `KernelError("…")`. Danach:
+
+```bash
+scripts/update-strings.sh          # neue Texte in Resources/Localizable.xcstrings übernehmen
+# Übersetzung in scripts/translations_en.py ergänzen (oder den Katalog in Xcode bearbeiten)
+python3 scripts/apply-translations.py
+```
+
+Das CI prüft mit `scripts/update-strings.sh --check`, dass jeder Text eine englische Übersetzung hat. Weitere Sprachen sind willkommen.

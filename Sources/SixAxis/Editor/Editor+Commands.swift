@@ -116,7 +116,7 @@ extension Editor {
         command = nil
         pushUndo(cmd.snapshot)
         rebuild()
-        if let err = state.errors[id] { showToast("\(f.name): \(err)") }
+        if let err = state.errors[id] { showToast(String(localized: "\(f.name): \(err)")) }
     }
 
     func cancelCommand() {

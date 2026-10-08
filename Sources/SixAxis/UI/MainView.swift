@@ -19,7 +19,7 @@ struct MainView: View {
                             BrowserPanel(editor: editor)
                                 .transition(.move(edge: .leading).combined(with: .opacity))
                         } else {
-                            IconButton(symbol: "sidebar.left", help: "Browser einblenden") { editor.browserVisible = true }
+                            IconButton(symbol: "sidebar.left", help: String(localized: "Browser einblenden")) { editor.browserVisible = true }
                                 .floatingPanel(radius: 8, padding: 2)
                         }
                     }
@@ -91,19 +91,19 @@ private struct TopBar: View {
                 LogoImage(size: 20)
                     .help("Über 6axis")
                     .onTapGesture { Branding.showAboutPanel() }
-                Text(editor.fileURL?.deletingPathExtension().lastPathComponent ?? "Unbenannt")
+                Text(editor.fileURL?.deletingPathExtension().lastPathComponent ?? String(localized: "Unbenannt"))
                     .font(.system(size: 13, weight: .semibold))
                 if editor.isDirty {
                     Circle().fill(.secondary).frame(width: 6, height: 6).help("Ungesicherte Änderungen")
                 }
                 Spacer()
                 HStack(spacing: 2) {
-                    IconButton(symbol: "arrow.uturn.backward", help: "Widerrufen (⌘Z)") { editor.undo() }
+                    IconButton(symbol: "arrow.uturn.backward", help: String(localized: "Widerrufen (⌘Z)")) { editor.undo() }
                         .disabled(!editor.canUndo && editor.command == nil)
-                    IconButton(symbol: "arrow.uturn.forward", help: "Wiederholen (⇧⌘Z)") { editor.redo() }
+                    IconButton(symbol: "arrow.uturn.forward", help: String(localized: "Wiederholen (⇧⌘Z)")) { editor.redo() }
                         .disabled(!editor.canRedo)
-                    IconButton(symbol: "square.and.arrow.down.on.square", help: "Sichern (⌘S)") { editor.save() }
-                    IconButton(symbol: "magnifyingglass", help: "Befehlssuche (S)") { editor.showCommandPalette = true }
+                    IconButton(symbol: "square.and.arrow.down.on.square", help: String(localized: "Sichern (⌘S)")) { editor.save() }
+                    IconButton(symbol: "magnifyingglass", help: String(localized: "Befehlssuche (S)")) { editor.showCommandPalette = true }
                     SettingsLink {
                         Image(systemName: "gearshape")
                             .font(.system(size: 13, weight: .medium))
@@ -133,8 +133,9 @@ private struct BottomBar: View {
                 if editor.sketchId != nil, let s = editor.lastSolve {
                     HStack(spacing: 6) {
                         Image(systemName: s.isFullyConstrained ? "lock.fill" : (s.converged ? "lock.open" : "exclamationmark.triangle.fill"))
-                        Text(s.isFullyConstrained ? "Vollständig bestimmt" :
-                                (s.converged ? "\(s.degreesOfFreedom) Freiheitsgrad\(s.degreesOfFreedom == 1 ? "" : "e")" : "Widersprüchlich"))
+                        Text(s.isFullyConstrained ? String(localized: "Vollständig bestimmt") :
+                                (!s.converged ? String(localized: "Widersprüchlich") :
+                                    (s.degreesOfFreedom == 1 ? String(localized: "1 Freiheitsgrad") : String(localized: "\(s.degreesOfFreedom) Freiheitsgrade"))))
                     }
                     .font(.system(size: 11, weight: .medium))
                     .foregroundStyle(s.isFullyConstrained ? Color.green : (s.converged ? Color.secondary : Color.red))
@@ -192,37 +193,37 @@ private struct BottomBar: View {
             .padding(.horizontal, 10)
             .padding(.vertical, 6)
             .floatingPanel(radius: 10)
-            .help(String(format: "Oberfläche: %.1f cm²", p.area / 100))
+            .help(String(format: String(localized: "Oberfläche: %.1f cm²"), p.area / 100))
         }
     }
 
     private var prompt: String {
         if let cmd = editor.command {
             switch cmd.kind {
-            case .sketchPlane: return "Ebene oder ebene Fläche für die Skizze wählen"
-            case .extrude: return "Profile oder Flächen wählen · Pfeil ziehen · ↩ bestätigt"
-            case .revolve: return cmd.activeInput == 1 ? "Drehachse wählen (Linie, Kante oder Achse)" : "Profile wählen"
-            case .fillet, .chamfer: return "Kanten wählen · ↩ bestätigt"
-            case .shell: return "Flächen wählen, die offen sein sollen"
+            case .sketchPlane: return String(localized: "Ebene oder ebene Fläche für die Skizze wählen")
+            case .extrude: return String(localized: "Profile oder Flächen wählen · Pfeil ziehen · ↩ bestätigt")
+            case .revolve: return cmd.activeInput == 1 ? String(localized: "Drehachse wählen (Linie, Kante oder Achse)") : String(localized: "Profile wählen")
+            case .fillet, .chamfer: return String(localized: "Kanten wählen · ↩ bestätigt")
+            case .shell: return String(localized: "Flächen wählen, die offen sein sollen")
             }
         }
         if editor.sketchId != nil {
             let n = editor.toolPoints.count
             switch editor.sketchTool {
-            case .select: return "Ziehen zum Verschieben · L Linie · R Rechteck · C Kreis · D Bemaßung"
-            case .line: return n == 0 ? "Startpunkt klicken · ⌘ = frei setzen" : "Nächsten Punkt klicken · Tab für Maße · Esc beendet"
-            case .rectangle: return n == 0 ? "Erste Ecke klicken · ⌘ = frei setzen" : "Gegenüberliegende Ecke klicken oder Maße eintippen"
-            case .centerRectangle: return n == 0 ? "Mittelpunkt klicken" : "Ecke klicken"
-            case .circle: return n == 0 ? "Mittelpunkt klicken · ⌘ = frei setzen" : "Radius klicken oder Durchmesser eintippen"
-            case .arc: return n == 0 ? "Startpunkt klicken" : (n == 1 ? "Endpunkt klicken" : "Punkt auf dem Bogen klicken")
+            case .select: return String(localized: "Ziehen zum Verschieben · L Linie · R Rechteck · C Kreis · D Bemaßung")
+            case .line: return n == 0 ? String(localized: "Startpunkt klicken · ⌘ = frei setzen") : String(localized: "Nächsten Punkt klicken · Tab für Maße · Esc beendet")
+            case .rectangle: return n == 0 ? String(localized: "Erste Ecke klicken · ⌘ = frei setzen") : String(localized: "Gegenüberliegende Ecke klicken oder Maße eintippen")
+            case .centerRectangle: return n == 0 ? String(localized: "Mittelpunkt klicken") : String(localized: "Ecke klicken")
+            case .circle: return n == 0 ? String(localized: "Mittelpunkt klicken · ⌘ = frei setzen") : String(localized: "Radius klicken oder Durchmesser eintippen")
+            case .arc: return n == 0 ? String(localized: "Startpunkt klicken") : (n == 1 ? String(localized: "Endpunkt klicken") : String(localized: "Punkt auf dem Bogen klicken"))
             case .dimension:
-                if editor.dimensionSecond != nil { return "Bemaßung platzieren" }
-                return editor.dimensionFirst == nil ? "Linie, Kreis oder Punkt wählen" : "Zweites Objekt wählen oder Bemaßung platzieren"
-            case let .constraint(ct): return "\(ct.name): Objekte wählen"
+                if editor.dimensionSecond != nil { return String(localized: "Bemaßung platzieren") }
+                return editor.dimensionFirst == nil ? String(localized: "Linie, Kreis oder Punkt wählen") : String(localized: "Zweites Objekt wählen oder Bemaßung platzieren")
+            case let .constraint(ct): return String(localized: "\(ct.name): Objekte wählen")
             }
         }
         return editor.state.bodyOrder.isEmpty
-            ? "Starte mit „Skizze“ (oder drücke L, R, C) · S öffnet die Befehlssuche"
-            : "Wähle Geometrie · Rechtsklick für Schnellmenü · S für Befehlssuche"
+            ? String(localized: "Starte mit „Skizze“ (oder drücke L, R, C) · S öffnet die Befehlssuche")
+            : String(localized: "Wähle Geometrie · Rechtsklick für Schnellmenü · S für Befehlssuche")
     }
 }

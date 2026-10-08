@@ -9,10 +9,10 @@ public struct DrawingSettings: Codable, Hashable, Sendable {
         case auto, a4, a3, a2
         public var title: String {
             switch self {
-            case .auto: return "Automatisch"
-            case .a4: return "A4 quer"
-            case .a3: return "A3 quer"
-            case .a2: return "A2 quer"
+            case .auto: return String(localized: "Automatisch")
+            case .a4: return String(localized: "A4 quer")
+            case .a3: return String(localized: "A3 quer")
+            case .a2: return String(localized: "A2 quer")
             }
         }
     }
@@ -267,7 +267,7 @@ public struct DrawingSnapPoint: Sendable {
 
 public struct DrawingPage: Sendable {
     /// Tab name in the editor, e.g. "Gesamtansicht" or "Einzelteile 1".
-    public var name = "Gesamtansicht"
+    public var name = String(localized: "Gesamtansicht")
     public var sheet: Sheet
     public var scale: DrawingScale
     /// Text for the title block's scale field (part sheets may mix scales).

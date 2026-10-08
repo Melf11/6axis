@@ -31,6 +31,9 @@ jobs:
       - name: Tests
         run: swift test
 
+      - name: Translations complete
+        run: scripts/update-strings.sh --check
+
       - name: App (self-contained)
         run: scripts/build-app.sh release
 

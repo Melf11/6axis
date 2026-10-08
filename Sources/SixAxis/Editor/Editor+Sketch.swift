@@ -26,7 +26,7 @@ extension Editor {
         }
         enterSketch(f.id, rollbackBefore: doc.rollback)
         sketchTool = tool ?? .select
-        if tool == nil { showToast("Skizze erstellt – wähle ein Werkzeug (L Linie, R Rechteck, C Kreis)") }
+        if tool == nil { showToast(String(localized: "Skizze erstellt – wähle ein Werkzeug (L Linie, R Rechteck, C Kreis)")) }
     }
 
     func editSketch(_ id: UUID) {
@@ -93,7 +93,7 @@ extension Editor {
         let cid = sk.addConstraint(kind, labelOffset: labelOffset)
         let r = SketchSolver(evaluator: evaluator).solve(&sk)
         guard r.converged else {
-            showToast("Abhängigkeit nicht möglich – die Skizze wäre überbestimmt")
+            showToast(String(localized: "Abhängigkeit nicht möglich – die Skizze wäre überbestimmt"))
             return nil
         }
         let before = doc
@@ -551,7 +551,7 @@ extension Editor {
         let kind = sk.constraints[i].kind
         do {
             let v = try evaluator.value(text, kind: kind.valueKind)
-            if v <= 0 && kind.valueKind == .length { showToast("Wert muss größer als 0 sein"); return false }
+            if v <= 0 && kind.valueKind == .length { showToast(String(localized: "Wert muss größer als 0 sein")); return false }
         } catch {
             showToast(error.localizedDescription)
             return false
@@ -559,7 +559,7 @@ extension Editor {
         sk.constraints[i].kind = kind.withValue(text)
         let r = SketchSolver(evaluator: evaluator).solve(&sk)
         guard r.converged else {
-            showToast("Dieser Wert lässt sich nicht erfüllen")
+            showToast(String(localized: "Dieser Wert lässt sich nicht erfüllen"))
             return false
         }
         let before = doc

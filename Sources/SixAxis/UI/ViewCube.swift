@@ -26,12 +26,12 @@ struct ViewCube: View {
 
     // Z-up world. "Vorne" faces -Y, i.e. the camera looks along +Y.
     private let faces: [Face] = [
-        Face(normal: SIMD3(0, 0, 1), up: SIMD3(0, 1, 0), label: "OBEN"),
-        Face(normal: SIMD3(0, 0, -1), up: SIMD3(0, -1, 0), label: "UNTEN"),
-        Face(normal: SIMD3(0, -1, 0), up: SIMD3(0, 0, 1), label: "VORNE"),
-        Face(normal: SIMD3(0, 1, 0), up: SIMD3(0, 0, 1), label: "HINTEN"),
-        Face(normal: SIMD3(1, 0, 0), up: SIMD3(0, 0, 1), label: "RECHTS"),
-        Face(normal: SIMD3(-1, 0, 0), up: SIMD3(0, 0, 1), label: "LINKS"),
+        Face(normal: SIMD3(0, 0, 1), up: SIMD3(0, 1, 0), label: String(localized: "OBEN")),
+        Face(normal: SIMD3(0, 0, -1), up: SIMD3(0, -1, 0), label: String(localized: "UNTEN")),
+        Face(normal: SIMD3(0, -1, 0), up: SIMD3(0, 0, 1), label: String(localized: "VORNE")),
+        Face(normal: SIMD3(0, 1, 0), up: SIMD3(0, 0, 1), label: String(localized: "HINTEN")),
+        Face(normal: SIMD3(1, 0, 0), up: SIMD3(0, 0, 1), label: String(localized: "RECHTS")),
+        Face(normal: SIMD3(-1, 0, 0), up: SIMD3(0, 0, 1), label: String(localized: "LINKS")),
     ]
 
     private let size: CGFloat = 104
@@ -63,9 +63,9 @@ struct ViewCube: View {
                 }
                 .help("Klick auf Fläche, Kante oder Ecke richtet die Ansicht aus · Ziehen dreht")
             HStack(spacing: 2) {
-                IconButton(symbol: "house", help: "Ausgangsansicht", size: 24) { editor.homeView() }
-                IconButton(symbol: "arrow.up.left.and.arrow.down.right", help: "Alles einpassen (⌘0)", size: 24) { editor.fitAll() }
-                IconButton(symbol: editor.camera.orthographic ? "cube" : "perspective", help: editor.camera.orthographic ? "Orthografisch (O)" : "Perspektive (O)",
+                IconButton(symbol: "house", help: String(localized: "Ausgangsansicht"), size: 24) { editor.homeView() }
+                IconButton(symbol: "arrow.up.left.and.arrow.down.right", help: String(localized: "Alles einpassen (⌘0)"), size: 24) { editor.fitAll() }
+                IconButton(symbol: editor.camera.orthographic ? "cube" : "perspective", help: editor.camera.orthographic ? String(localized: "Orthografisch (O)") : String(localized: "Perspektive (O)"),
                            active: editor.camera.orthographic, size: 24) { editor.toggleProjection() }
             }
             .padding(3)

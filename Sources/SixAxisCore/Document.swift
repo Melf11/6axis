@@ -123,10 +123,10 @@ public enum PlaneRef: Codable, Hashable, Sendable {
 
     public var displayName: String {
         switch self {
-        case .xy: return "XY-Ebene"
-        case .xz: return "XZ-Ebene"
-        case .yz: return "YZ-Ebene"
-        case .face: return "Fläche"
+        case .xy: return String(localized: "XY-Ebene")
+        case .xz: return String(localized: "XZ-Ebene")
+        case .yz: return String(localized: "YZ-Ebene")
+        case .face: return String(localized: "Fläche")
         }
     }
 }
@@ -138,11 +138,11 @@ public enum AxisRef: Codable, Hashable, Sendable {
 
     public var displayName: String {
         switch self {
-        case .x: return "X-Achse"
-        case .y: return "Y-Achse"
-        case .z: return "Z-Achse"
-        case .sketchLine: return "Skizzenlinie"
-        case .edge: return "Kante"
+        case .x: return String(localized: "X-Achse")
+        case .y: return String(localized: "Y-Achse")
+        case .z: return String(localized: "Z-Achse")
+        case .sketchLine: return String(localized: "Skizzenlinie")
+        case .edge: return String(localized: "Kante")
         }
     }
 }
@@ -154,10 +154,10 @@ public enum BodyOperation: String, Codable, CaseIterable, Hashable, Sendable {
 
     public var displayName: String {
         switch self {
-        case .join: return "Verbinden"
-        case .cut: return "Ausschneiden"
-        case .intersect: return "Schneiden"
-        case .newBody: return "Neuer Körper"
+        case .join: return String(localized: "Verbinden")
+        case .cut: return String(localized: "Ausschneiden")
+        case .intersect: return String(localized: "Schneiden")
+        case .newBody: return String(localized: "Neuer Körper")
         }
     }
 
@@ -176,9 +176,9 @@ public enum ExtrudeExtent: String, Codable, CaseIterable, Hashable, Sendable {
 
     public var displayName: String {
         switch self {
-        case .oneSide: return "Eine Seite"
-        case .symmetric: return "Symmetrisch"
-        case .twoSides: return "Zwei Seiten"
+        case .oneSide: return String(localized: "Eine Seite")
+        case .symmetric: return String(localized: "Symmetrisch")
+        case .twoSides: return String(localized: "Zwei Seiten")
         }
     }
 }
@@ -244,13 +244,13 @@ public enum FeatureKind: Codable, Hashable, Sendable {
 
     public var typeName: String {
         switch self {
-        case .sketch: return "Skizze"
-        case .extrude: return "Extrusion"
-        case .revolve: return "Drehung"
-        case .fillet: return "Abrundung"
-        case .chamfer: return "Fase"
-        case .shell: return "Wandstärke"
-        case .importStep: return "Import"
+        case .sketch: return String(localized: "Skizze")
+        case .extrude: return String(localized: "Extrusion")
+        case .revolve: return String(localized: "Drehung")
+        case .fillet: return String(localized: "Abrundung")
+        case .chamfer: return String(localized: "Fase")
+        case .shell: return String(localized: "Wandstärke")
+        case .importStep: return String(localized: "Import")
         }
     }
 
@@ -292,9 +292,9 @@ public enum GrainDirection: String, Codable, CaseIterable, Hashable, Sendable {
 
     public var title: String {
         switch self {
-        case .none: return "Ohne"
-        case .length: return "Längs"
-        case .width: return "Quer"
+        case .none: return String(localized: "Ohne")
+        case .length: return String(localized: "Längs")
+        case .width: return String(localized: "Quer")
         }
     }
 }
@@ -364,7 +364,7 @@ public struct CADDocument: Codable, Hashable, Sendable {
         return "\(base)\(n)"
     }
 
-    public func bodyName(_ id: UUID) -> String { bodies[id]?.name ?? "Körper" }
+    public func bodyName(_ id: UUID) -> String { bodies[id]?.name ?? String(localized: "Körper") }
     public func isBodyVisible(_ id: UUID) -> Bool { bodies[id]?.visible ?? true }
 
     public func encoded() throws -> Data {

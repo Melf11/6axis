@@ -130,23 +130,23 @@ public enum ConstraintKind: Codable, Hashable, Sendable {
 
     public var displayName: String {
         switch self {
-        case .coincident: return "Deckungsgleich"
-        case .horizontal, .horizontalPoints: return "Horizontal"
-        case .vertical, .verticalPoints: return "Vertikal"
-        case .parallel: return "Parallel"
-        case .perpendicular: return "Senkrecht"
-        case .equal: return "Gleich"
-        case .tangent: return "Tangential"
-        case .pointOnCurve: return "Punkt auf Kurve"
-        case .midpoint: return "Mittelpunkt"
-        case .concentric: return "Konzentrisch"
-        case .collinear: return "Kollinear"
-        case .symmetric: return "Symmetrisch"
-        case .distance, .horizontalDistance, .verticalDistance, .pointLineDistance: return "Abstand"
-        case .length: return "Länge"
-        case .radius: return "Radius"
-        case .diameter: return "Durchmesser"
-        case .angle: return "Winkel"
+        case .coincident: return String(localized: "Deckungsgleich")
+        case .horizontal, .horizontalPoints: return String(localized: "Horizontal")
+        case .vertical, .verticalPoints: return String(localized: "Vertikal")
+        case .parallel: return String(localized: "Parallel")
+        case .perpendicular: return String(localized: "Senkrecht")
+        case .equal: return String(localized: "Gleich")
+        case .tangent: return String(localized: "Tangential")
+        case .pointOnCurve: return String(localized: "Punkt auf Kurve")
+        case .midpoint: return String(localized: "Mittelpunkt")
+        case .concentric: return String(localized: "Konzentrisch")
+        case .collinear: return String(localized: "Kollinear")
+        case .symmetric: return String(localized: "Symmetrisch")
+        case .distance, .horizontalDistance, .verticalDistance, .pointLineDistance: return String(localized: "Abstand")
+        case .length: return String(localized: "Länge")
+        case .radius: return String(localized: "Radius")
+        case .diameter: return String(localized: "Durchmesser")
+        case .angle: return String(localized: "Winkel")
         }
     }
 }

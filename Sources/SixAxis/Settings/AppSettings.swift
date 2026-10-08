@@ -10,7 +10,7 @@ final class AppSettings {
     enum SwipeAction: String, CaseIterable, Identifiable {
         case orbit, pan
         var id: String { rawValue }
-        var title: String { self == .orbit ? "Drehen" : "Verschieben" }
+        var title: String { self == .orbit ? String(localized: "Drehen") : String(localized: "Verschieben") }
     }
 
     enum Appearance: String, CaseIterable, Identifiable {
@@ -18,9 +18,9 @@ final class AppSettings {
         var id: String { rawValue }
         var title: String {
             switch self {
-            case .system: return "Wie System"
-            case .light: return "Hell"
-            case .dark: return "Dunkel"
+            case .system: return String(localized: "Wie System")
+            case .light: return String(localized: "Hell")
+            case .dark: return String(localized: "Dunkel")
             }
         }
     }
@@ -28,7 +28,7 @@ final class AppSettings {
     enum Shading: String, CaseIterable, Identifiable {
         case studio, simple
         var id: String { rawValue }
-        var title: String { self == .studio ? "Studio" : "Einfach" }
+        var title: String { self == .studio ? String(localized: "Studio") : String(localized: "Einfach") }
     }
 
     enum STLQuality: String, CaseIterable, Identifiable {
@@ -36,9 +36,9 @@ final class AppSettings {
         var id: String { rawValue }
         var title: String {
             switch self {
-            case .coarse: return "Grob (kleine Dateien)"
-            case .normal: return "Normal"
-            case .fine: return "Fein (glatte Rundungen)"
+            case .coarse: return String(localized: "Grob (kleine Dateien)")
+            case .normal: return String(localized: "Normal")
+            case .fine: return String(localized: "Fein (glatte Rundungen)")
             }
         }
         /// Multiplier on the size-based chord tolerance.
@@ -61,9 +61,9 @@ final class AppSettings {
             case .abs: return "ABS"
             case .asa: return "ASA"
             case .tpu: return "TPU"
-            case .nylon: return "Nylon (PA)"
-            case .resin: return "Resin"
-            case .custom: return "Eigene Dichte"
+            case .nylon: return String(localized: "Nylon (PA)")
+            case .resin: return String(localized: "Resin")
+            case .custom: return String(localized: "Eigene Dichte")
             }
         }
         /// g/cm³

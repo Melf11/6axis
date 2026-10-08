@@ -81,7 +81,8 @@ Inhalt:
 
 - [x] **Parameter verschieben Geometrie zuverlässig:** Profile merken sich ihre Lage relativ zu den Skizzenpunkten, Kanten und Flächen von Abrundung/Fase/Wandstärke bleiben bei gleicher Topologie über ihren Index erhalten. Ändern von z. B. Korpusbreite oder -höhe baut fehlerfrei neu auf; ältere Dateien funktionieren weiter. Alle Beispiele sind vollständig parametrisch.
 - [x] **Neuberechnung im Hintergrund:** Neuaufbau auf einer eigenen Queue; ist er nach 80 ms fertig, wird er sofort übernommen (Vorschau beim Ziehen bleibt direkt), sonst bleibt die Oberfläche bedienbar und zeigt „Berechne Modell …“; veraltete Berechnungen werden übersprungen. Viele Werkzeugkörper (z. B. 400 Bohrungen) werden in einer Operation vereinigt statt nacheinander (13 s → 6 s im Debug-Build, ~2 s im Release-Build)
-- [ ] **Englisch:** alle Texte über String Catalog, Deutsch und Englisch, Sprache folgt dem System; Produktseite zweisprachig
+- [x] **Englisch:** alle ~530 Texte (Oberfläche, Meldungen, Fehlermeldungen aus Kern und OpenCASCADE-Brücke, technische Zeichnung, Beispiele) im String Catalog `Resources/Localizable.xcstrings`; die Sprache folgt dem System (pro App einstellbar unter Systemeinstellungen → Allgemein → Sprache & Region). `scripts/update-strings.sh` sammelt neue Texte über den Swift-Compiler, das CI bricht bei fehlenden Übersetzungen ab
+- [ ] Produktseite zweisprachig
 - [x] **Dateiformat-Versionierung:** Format 2 (1.0); ältere Dateien werden schrittweise migriert, Dateien aus neueren Versionen mit klarer Meldung abgelehnt, fehlende Felder sind erlaubt, verständliche Fehlermeldungen bei beschädigten Dateien. Test-Sammlung `Tests/SixAxisCoreTests/Fixtures` mit den Beispielen aus 0.9.0 – bei jedem Release kommen die Beispiele dazu
 - [ ] **Rückmeldungen der Tester** aus 0.9 einarbeiten (Bedienung von Zeichnungsfenster, Radialmenü, Navigation, DXF in CAM-/Lasersoftware)
 - [ ] **README** aktualisieren (Funktionsliste, Screenshots, Installation)

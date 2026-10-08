@@ -23,7 +23,7 @@ struct Ribbon: View {
                 .font(.system(size: 18))
                 .foregroundStyle(editor.sketchId != nil ? Color.orange : Color.accentColor)
                 .frame(height: 26)
-            Text(editor.sketchId != nil ? "SKIZZE" : "KONSTRUKTION")
+            Text(editor.sketchId != nil ? String(localized: "SKIZZE") : String(localized: "KONSTRUKTION"))
                 .font(.system(size: 9, weight: .bold))
                 .tracking(0.6)
                 .foregroundStyle(.secondary)
@@ -35,36 +35,36 @@ struct Ribbon: View {
 
     private var modelTools: some View {
         HStack(alignment: .top, spacing: 2) {
-            group("Erstellen") {
-                ToolButton(title: "Skizze", symbol: "pencil.and.outline", shortcut: "L/R/C",
+            group(String(localized: "Erstellen")) {
+                ToolButton(title: String(localized: "Skizze"), symbol: "pencil.and.outline", shortcut: "L/R/C",
                            active: editor.command?.kind == .sketchPlane) { editor.beginCommand(.sketchPlane) }
-                ToolButton(title: "Extrusion", symbol: "square.stack.3d.up.fill", shortcut: "E",
+                ToolButton(title: String(localized: "Extrusion"), symbol: "square.stack.3d.up.fill", shortcut: "E",
                            active: editor.command?.kind == .extrude) { editor.beginCommand(.extrude) }
-                ToolButton(title: "Drehung", symbol: "arrow.trianglehead.2.clockwise.rotate.90",
+                ToolButton(title: String(localized: "Drehung"), symbol: "arrow.trianglehead.2.clockwise.rotate.90",
                            active: editor.command?.kind == .revolve) { editor.beginCommand(.revolve) }
             }
             RibbonDivider()
-            group("Ändern") {
-                ToolButton(title: "Abrundung", symbol: "button.roundedtop.horizontal", shortcut: "F",
+            group(String(localized: "Ändern")) {
+                ToolButton(title: String(localized: "Abrundung"), symbol: "button.roundedtop.horizontal", shortcut: "F",
                            active: editor.command?.kind == .fillet, enabled: hasBodies) { editor.beginCommand(.fillet) }
-                ToolButton(title: "Fase", symbol: "triangle.bottomhalf.filled",
+                ToolButton(title: String(localized: "Fase"), symbol: "triangle.bottomhalf.filled",
                            active: editor.command?.kind == .chamfer, enabled: hasBodies) { editor.beginCommand(.chamfer) }
-                ToolButton(title: "Wand", symbol: "shippingbox",
+                ToolButton(title: String(localized: "Wand"), symbol: "shippingbox",
                            active: editor.command?.kind == .shell, enabled: hasBodies) { editor.beginCommand(.shell) }
             }
             RibbonDivider()
-            group("Verwalten") {
-                ToolButton(title: "Parameter", symbol: "function", shortcut: "⌥⌘P") { editor.showParameters = true }
-                ToolButton(title: "Import", symbol: "square.and.arrow.down", shortcut: "⌘I") { editor.importSTEP() }
+            group(String(localized: "Verwalten")) {
+                ToolButton(title: String(localized: "Parameter"), symbol: "function", shortcut: "⌥⌘P") { editor.showParameters = true }
+                ToolButton(title: String(localized: "Import"), symbol: "square.and.arrow.down", shortcut: "⌘I") { editor.importSTEP() }
             }
             RibbonDivider()
-            group("Dokumentation") {
-                ToolButton(title: "Zeichnung", symbol: "doc.richtext", shortcut: "⇧⌘D", enabled: hasBodies) { editor.openDrawingWindow() }
+            group(String(localized: "Dokumentation")) {
+                ToolButton(title: String(localized: "Zeichnung"), symbol: "doc.richtext", shortcut: "⇧⌘D", enabled: hasBodies) { editor.openDrawingWindow() }
             }
             RibbonDivider()
-            group("3D-Druck") {
+            group(String(localized: "3D-Druck")) {
                 ToolButton(title: "STL", symbol: "square.and.arrow.up", shortcut: "⌘E", enabled: hasBodies) { editor.exportSTL() }
-                ToolButton(title: "Slicer", symbol: "printer.fill", shortcut: "⇧⌘P", enabled: hasBodies) { editor.openInSlicer() }
+                ToolButton(title: String(localized: "Slicer"), symbol: "printer.fill", shortcut: "⇧⌘P", enabled: hasBodies) { editor.openInSlicer() }
             }
         }
     }
@@ -75,16 +75,16 @@ struct Ribbon: View {
 
     private var sketchTools: some View {
         HStack(alignment: .top, spacing: 2) {
-            group("Erstellen") {
-                tool(.line, "Linie", "line.diagonal", "L")
-                tool(.rectangle, "Rechteck", "rectangle", "R")
-                tool(.centerRectangle, "Mittig", "rectangle.center.inset.filled")
-                tool(.circle, "Kreis", "circle", "C")
-                tool(.arc, "Bogen", "point.topleft.down.to.point.bottomright.curvepath", "A")
+            group(String(localized: "Erstellen")) {
+                tool(.line, String(localized: "Linie"), "line.diagonal", "L")
+                tool(.rectangle, String(localized: "Rechteck"), "rectangle", "R")
+                tool(.centerRectangle, String(localized: "Mittig"), "rectangle.center.inset.filled")
+                tool(.circle, String(localized: "Kreis"), "circle", "C")
+                tool(.arc, String(localized: "Bogen"), "point.topleft.down.to.point.bottomright.curvepath", "A")
             }
             RibbonDivider()
-            group("Bemaßung") {
-                tool(.dimension, "Bemaßung", "ruler", "D")
+            group(String(localized: "Bemaßung")) {
+                tool(.dimension, String(localized: "Bemaßung"), "ruler", "D")
             }
             RibbonDivider()
             VStack(spacing: 4) {
@@ -95,19 +95,22 @@ struct Ribbon: View {
                         }
                     }
                 }
-                GroupLabel(text: "Abhängigkeiten")
+                GroupLabel(text: String(localized: "Abhängigkeiten"))
             }
             RibbonDivider()
-            group("Ändern") {
-                ToolButton(title: "Hilfslinie", symbol: "line.diagonal.arrow", shortcut: "X") { editor.toggleConstruction() }
-                ToolButton(title: "Löschen", symbol: "trash", shortcut: "⌫") { editor.deleteSketchSelection() }
+            group(String(localized: "Ändern")) {
+                ToolButton(title: String(localized: "Hilfslinie"), symbol: "line.diagonal.arrow", shortcut: "X") { editor.toggleConstruction() }
+                ToolButton(title: String(localized: "Löschen"), symbol: "trash", shortcut: "⌫") { editor.deleteSketchSelection() }
             }
             RibbonDivider()
             VStack(spacing: 4) {
                 Button {
                     editor.finishSketch()
                 } label: {
-                    Label("Skizze fertig", systemImage: "checkmark")
+                    HStack(spacing: 5) {
+                        Image(systemName: "checkmark")
+                        Text("Skizze fertig").fixedSize()
+                    }
                         .font(.system(size: 12, weight: .semibold))
                         .padding(.horizontal, 12)
                         .frame(height: 28)
@@ -117,7 +120,7 @@ struct Ribbon: View {
                 .buttonStyle(.plain)
                 .keyboardShortcut(.return, modifiers: .command)
                 .help("Skizze fertigstellen (⌘↩)")
-                GroupLabel(text: "Beenden")
+                GroupLabel(text: String(localized: "Fertig"))
             }
             .padding(.leading, 4)
         }

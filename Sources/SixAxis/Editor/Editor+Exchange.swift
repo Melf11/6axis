@@ -9,14 +9,14 @@ extension Editor {
         let selected = Set(selection.compactMap(\.bodyId))
         let bodies = state.orderedBodies.filter { selected.isEmpty ? doc.isBodyVisible($0.id) : selected.contains($0.id) }
         guard !bodies.isEmpty else {
-            showToast("Es gibt keinen sichtbaren Körper zum Exportieren")
+            showToast(String(localized: "Es gibt keinen sichtbaren Körper zum Exportieren"))
             return nil
         }
         return bodies.count == 1 ? bodies[0].shape : Shape.compound(bodies.map { $0.shape })
     }
 
     private var exportBaseName: String {
-        fileURL?.deletingPathExtension().lastPathComponent ?? "Design"
+        fileURL?.deletingPathExtension().lastPathComponent ?? String(localized: "Design")
     }
 
     func exportSTL() {
@@ -27,7 +27,7 @@ extension Editor {
         guard panel.runModal() == .OK, let url = panel.url else { return }
         do {
             try shape.writeSTL(to: url, linearDeflection: stlDeflection(shape))
-            showToast("STL exportiert: \(url.lastPathComponent)")
+            showToast(String(localized: "STL exportiert: \(url.lastPathComponent)"))
         } catch {
             showToast(error.localizedDescription)
         }
@@ -41,7 +41,7 @@ extension Editor {
         guard panel.runModal() == .OK, let url = panel.url else { return }
         do {
             try shape.writeSTEP(to: url)
-            showToast("STEP exportiert: \(url.lastPathComponent)")
+            showToast(String(localized: "STEP exportiert: \(url.lastPathComponent)"))
         } catch {
             showToast(error.localizedDescription)
         }
@@ -74,11 +74,11 @@ extension Editor {
         let order = preferred.isEmpty ? known : [preferred] + known
         if let app = order.lazy.compactMap({ ws.urlForApplication(withBundleIdentifier: $0) }).first {
             ws.open([url], withApplicationAt: app, configuration: config)
-            showToast("An Slicer übergeben")
+            showToast(String(localized: "An Slicer übergeben"))
         } else if ws.urlForApplication(toOpen: url) != nil {
             ws.open(url)
         } else {
-            showToast("Kein Slicer gefunden – exportiere stattdessen eine STL-Datei")
+            showToast(String(localized: "Kein Slicer gefunden – exportiere stattdessen eine STL-Datei"))
             ws.activateFileViewerSelecting([url])
         }
     }
@@ -100,7 +100,7 @@ extension Editor {
             }
             fitAll()
         } catch {
-            showToast("Import fehlgeschlagen: \(error.localizedDescription)")
+            showToast(String(localized: "Import fehlgeschlagen: \(error.localizedDescription)"))
         }
     }
 }

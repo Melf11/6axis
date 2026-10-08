@@ -1,0 +1,5322 @@
+{
+  "sourceLanguage": "de",
+  "strings": {
+    "": {
+      "shouldTranslate": false
+    },
+    "  · frei": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "  · free"
+          }
+        }
+      }
+    },
+    " – Einzelteile 1zu1": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": " – parts 1to1"
+          }
+        }
+      }
+    },
+    " — bearbeitet": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": " — edited"
+          }
+        }
+      }
+    },
+    "%@ (%@)": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$@ (%2$@)"
+          }
+        }
+      },
+      "shouldTranslate": false
+    },
+    "%@ bearbeiten": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Edit %@"
+          }
+        }
+      }
+    },
+    "%@ erwartet ein Argument": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ expects one argument"
+          }
+        }
+      }
+    },
+    "%@ – Doppelklick zum Bearbeiten": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ – double-click to edit"
+          }
+        }
+      }
+    },
+    "%@ – Fehler: %@": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$@ – Fehler: %2$@"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ – error: %@"
+          }
+        }
+      }
+    },
+    "%@: %@": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$@: %2$@"
+          }
+        }
+      },
+      "shouldTranslate": false
+    },
+    "%@: Objekte wählen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@: select objects"
+          }
+        }
+      }
+    },
+    "%lld": {
+      "shouldTranslate": false
+    },
+    "%lld %%": {
+      "shouldTranslate": false
+    },
+    "%lld Freiheitsgrade": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld degrees of freedom"
+          }
+        }
+      }
+    },
+    "%lld Körper": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld bodies"
+          }
+        }
+      }
+    },
+    "%lld ausgewählt": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld selected"
+          }
+        }
+      }
+    },
+    "1 Freiheitsgrad": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 degree of freedom"
+          }
+        }
+      }
+    },
+    "3D-Druck": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "3D printing"
+          }
+        }
+      }
+    },
+    "6axis": {
+      "shouldTranslate": false
+    },
+    "6axis-Webseite": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "6axis website"
+          }
+        }
+      }
+    },
+    "A2 quer": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A2 landscape"
+          }
+        }
+      }
+    },
+    "A3 quer": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A3 landscape"
+          }
+        }
+      }
+    },
+    "A4 quer": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A4 landscape"
+          }
+        }
+      }
+    },
+    "Abbrechen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cancel"
+          }
+        }
+      }
+    },
+    "Abbrechen (Esc)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cancel (Esc)"
+          }
+        }
+      }
+    },
+    "Abhängigkeit nicht möglich – die Skizze wäre überbestimmt": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Constraint not possible – the sketch would be over-constrained"
+          }
+        }
+      }
+    },
+    "Abhängigkeit: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Constraint: %@"
+          }
+        }
+      }
+    },
+    "Abhängigkeiten": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Constraints"
+          }
+        }
+      }
+    },
+    "Abrundung": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fillet"
+          }
+        }
+      }
+    },
+    "Abrundung fehlgeschlagen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fillet failed"
+          }
+        }
+      }
+    },
+    "Abrundung fehlgeschlagen (Radius zu groß?)": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fillet failed (radius too large?)"
+          }
+        }
+      }
+    },
+    "Abstand": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Distance"
+          }
+        }
+      }
+    },
+    "Abstand 1": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Distance 1"
+          }
+        }
+      }
+    },
+    "Abstand 2": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Distance 2"
+          }
+        }
+      }
+    },
+    "Abstand muss größer als 0 sein": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Distance must be greater than 0"
+          }
+        }
+      }
+    },
+    "Achse": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Axis"
+          }
+        }
+      }
+    },
+    "Ahorn massiv": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Solid maple"
+          }
+        }
+      }
+    },
+    "Aktivieren": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unsuppress"
+          }
+        }
+      }
+    },
+    "Aktualisiere …": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Updating …"
+          }
+        }
+      }
+    },
+    "Alle Anpassungen zurücksetzen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reset all adjustments"
+          }
+        }
+      }
+    },
+    "Alles einpassen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zoom to fit"
+          }
+        }
+      }
+    },
+    "Alles einpassen (⌘0)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zoom to fit (⌘0)"
+          }
+        }
+      }
+    },
+    "Als PDF oder DXF exportieren": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Export as PDF or DXF"
+          }
+        }
+      }
+    },
+    "Als STEP exportieren": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Export as STEP"
+          }
+        }
+      }
+    },
+    "Als STEP exportieren …": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Export as STEP …"
+          }
+        }
+      }
+    },
+    "Als STL exportieren": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Export as STL"
+          }
+        }
+      }
+    },
+    "Als STL exportieren …": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Export as STL …"
+          }
+        }
+      }
+    },
+    "An Slicer übergeben": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sent to slicer"
+          }
+        }
+      }
+    },
+    "Ansicht von oben": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "View from top"
+          }
+        }
+      }
+    },
+    "Ansicht von rechts": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "View from right"
+          }
+        }
+      }
+    },
+    "Ansicht von vorne": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "View from front"
+          }
+        }
+      }
+    },
+    "Ansichten zurücksetzen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reset views"
+          }
+        }
+      }
+    },
+    "Ansichtsfenster": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Viewport"
+          }
+        }
+      }
+    },
+    "Anzahl": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Qty"
+          }
+        }
+      }
+    },
+    "Aufbewahrungsbox (3D-Druck)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Storage box (3D printing)"
+          }
+        }
+      }
+    },
+    "Ausblenden": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hide"
+          }
+        }
+      }
+    },
+    "Ausdruck": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Expression"
+          }
+        }
+      }
+    },
+    "Ausdruck unvollständig": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Incomplete expression"
+          }
+        }
+      }
+    },
+    "Ausgangsansicht": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Home view"
+          }
+        }
+      }
+    },
+    "Ausgeblendete Maße einblenden (%lld)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show hidden dimensions (%lld)"
+          }
+        }
+      }
+    },
+    "Ausschneiden": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cut"
+          }
+        }
+      }
+    },
+    "Auswahl leeren": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clear selection"
+          }
+        }
+      }
+    },
+    "Auswählen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Select"
+          }
+        }
+      }
+    },
+    "Auswählen (V) · Maß hinzufügen (D) · Einzelheit (E)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Select (V) · Add dimension (D) · Detail (E)"
+          }
+        }
+      }
+    },
+    "Automatisch": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Automatic"
+          }
+        }
+      }
+    },
+    "Automatische Bemaßung anzeigen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show automatic dimensions"
+          }
+        }
+      }
+    },
+    "Außenmaß": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Overall size"
+          }
+        }
+      }
+    },
+    "BROWSER": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "BROWSER"
+          }
+        }
+      }
+    },
+    "Bearbeiten": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Edit"
+          }
+        }
+      }
+    },
+    "Beenden": {
+      "extractionState": "stale",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quit"
+          }
+        }
+      }
+    },
+    "Befehl suchen …": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Search commands …"
+          }
+        }
+      }
+    },
+    "Befehlssuche (S)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Command search (S)"
+          }
+        }
+      }
+    },
+    "Befehlssuche …": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Command search …"
+          }
+        }
+      }
+    },
+    "Beispiel „%@“ geöffnet – Parameter unter Ändern → Parameter": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Opened example “%@” – parameters under Modify → Parameters"
+          }
+        }
+      }
+    },
+    "Beispiele": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Examples"
+          }
+        }
+      }
+    },
+    "Bemaßung": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dimension"
+          }
+        }
+      }
+    },
+    "Bemaßung platzieren": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Place dimension"
+          }
+        }
+      }
+    },
+    "Benennung": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Description"
+          }
+        }
+      }
+    },
+    "Berechne Modell …": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Computing model …"
+          }
+        }
+      }
+    },
+    "Birke Multiplex": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Birch plywood"
+          }
+        }
+      }
+    },
+    "Blatt": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sheet"
+          }
+        }
+      }
+    },
+    "Blatt %lld": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sheet %lld"
+          }
+        }
+      }
+    },
+    "Blatt einpassen (Doppelklick)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fit sheet (double-click)"
+          }
+        }
+      }
+    },
+    "Blattgröße": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sheet size"
+          }
+        }
+      }
+    },
+    "Blätter": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sheets"
+          }
+        }
+      }
+    },
+    "Boden": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bottom"
+          }
+        }
+      }
+    },
+    "Bodenschatten": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ground shadow"
+          }
+        }
+      }
+    },
+    "Bogen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Arc"
+          }
+        }
+      }
+    },
+    "Bogen (3 Punkte)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Arc (3 points)"
+          }
+        }
+      }
+    },
+    "Boolesche Operation": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Boolean operation"
+          }
+        }
+      }
+    },
+    "Boolesche Operation fehlgeschlagen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Boolean operation failed"
+          }
+        }
+      }
+    },
+    "Box": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Box"
+          }
+        }
+      }
+    },
+    "Breite": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Width"
+          }
+        }
+      }
+    },
+    "Brett": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Board"
+          }
+        }
+      }
+    },
+    "Brettstärke": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Board thickness"
+          }
+        }
+      }
+    },
+    "Browser": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Browser"
+          }
+        }
+      }
+    },
+    "Browser ausblenden": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hide browser"
+          }
+        }
+      }
+    },
+    "Browser einblenden": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show browser"
+          }
+        }
+      }
+    },
+    "Buche Multiplex": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Beech plywood"
+          }
+        }
+      }
+    },
+    "Buche massiv": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Solid beech"
+          }
+        }
+      }
+    },
+    "DXF exportiert": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DXF exported"
+          }
+        }
+      }
+    },
+    "DXF – Einzelteile 1:1 für CNC/Laser …": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DXF – parts 1:1 for CNC/laser …"
+          }
+        }
+      }
+    },
+    "DXF – aktuelles Blatt …": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DXF – current sheet …"
+          }
+        }
+      }
+    },
+    "Darstellung": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Display"
+          }
+        }
+      }
+    },
+    "Das aktuelle Design hat ungesicherte Änderungen.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The current design has unsaved changes."
+          }
+        }
+      }
+    },
+    "Datei beschädigt bei „%@“": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "File damaged at “%@”"
+          }
+        }
+      }
+    },
+    "Datei konnte nicht geöffnet werden: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Could not open file: %@"
+          }
+        }
+      }
+    },
+    "Datei unvollständig: „%@“ fehlt (%@)": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Datei unvollständig: „%1$@“ fehlt (%2$@)"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "File incomplete: “%@” is missing (%@)"
+          }
+        }
+      }
+    },
+    "Datum": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Date"
+          }
+        }
+      }
+    },
+    "Deckel": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Top"
+          }
+        }
+      }
+    },
+    "Deckungsgleich": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Coincident"
+          }
+        }
+      }
+    },
+    "Dein Mac nutzt klassisches Scrollen; diese Option hat dann keine Wirkung.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your Mac uses classic scrolling; this option has no effect then."
+          }
+        }
+      }
+    },
+    "Dein Mac nutzt natürliches Scrollen. Aktivieren, damit Zoomen und Drehen der physischen Bewegung folgen – wie bei einer klassischen Maus.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your Mac uses natural scrolling. Turn this on so zooming and orbiting follow the physical movement – like a classic mouse."
+          }
+        }
+      }
+    },
+    "Design": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Design"
+          }
+        }
+      }
+    },
+    "Dichte": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Density"
+          }
+        }
+      }
+    },
+    "Dicke": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Thickness"
+          }
+        }
+      }
+    },
+    "Die Datei wurde mit einer neueren 6axis-Version gesichert (Dateiformat %lld). Bitte 6axis aktualisieren.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This file was saved with a newer version of 6axis (file format %lld). Please update 6axis."
+          }
+        }
+      }
+    },
+    "Dieser Wert lässt sich nicht erfüllen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This value cannot be satisfied"
+          }
+        }
+      }
+    },
+    "Division durch null": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Division by zero"
+          }
+        }
+      }
+    },
+    "Dokumentation": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Documentation"
+          }
+        }
+      }
+    },
+    "Doppelklick zum Bearbeiten": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Double-click to edit"
+          }
+        }
+      }
+    },
+    "Draufsicht": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Top view"
+          }
+        }
+      }
+    },
+    "Drehachse muss eine gerade Kante sein": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The axis must be a straight edge"
+          }
+        }
+      }
+    },
+    "Drehachse nicht gefunden": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Axis not found"
+          }
+        }
+      }
+    },
+    "Drehachse wählen (Linie, Kante oder Achse)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Select an axis (line, edge or axis)"
+          }
+        }
+      }
+    },
+    "Drehen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Orbit"
+          }
+        }
+      }
+    },
+    "Drehrichtung umkehren": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reverse orbit direction"
+          }
+        }
+      }
+    },
+    "Drehung": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Revolve"
+          }
+        }
+      }
+    },
+    "Drehung fehlgeschlagen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Revolve failed"
+          }
+        }
+      }
+    },
+    "Drehung fehlgeschlagen (schneidet das Profil die Achse?)": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Revolve failed (does the profile cross the axis?)"
+          }
+        }
+      }
+    },
+    "Drucken": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Print"
+          }
+        }
+      }
+    },
+    "Drucken (⌘P)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Print (⌘P)"
+          }
+        }
+      }
+    },
+    "Dunkel": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dark"
+          }
+        }
+      }
+    },
+    "Durchmesser": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Diameter"
+          }
+        }
+      }
+    },
+    "Dübellöcher Ø8": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dowel holes Ø8"
+          }
+        }
+      }
+    },
+    "Ebene oder ebene Fläche für die Skizze wählen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Select a plane or planar face for the sketch"
+          }
+        }
+      }
+    },
+    "Ecke klicken": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Click a corner"
+          }
+        }
+      }
+    },
+    "Eckradius außen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Outer corner radius"
+          }
+        }
+      }
+    },
+    "Eiche 19 mm": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Oak 19 mm"
+          }
+        }
+      }
+    },
+    "Eiche 25 mm": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Oak 25 mm"
+          }
+        }
+      }
+    },
+    "Eiche massiv": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Solid oak"
+          }
+        }
+      }
+    },
+    "Eigene Dichte": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Custom density"
+          }
+        }
+      }
+    },
+    "Eigene Maße löschen (%lld)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete custom dimensions (%lld)"
+          }
+        }
+      }
+    },
+    "Eigenes Maß %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Custom dimension %@"
+          }
+        }
+      }
+    },
+    "Einblenden": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show"
+          }
+        }
+      }
+    },
+    "Eine Seite": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "One side"
+          }
+        }
+      }
+    },
+    "Einfach": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Simple"
+          }
+        }
+      }
+    },
+    "Einheit": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unit"
+          }
+        }
+      }
+    },
+    "Einstellungen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Settings"
+          }
+        }
+      }
+    },
+    "Einstellungen (⌘,)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Settings (⌘,)"
+          }
+        }
+      }
+    },
+    "Einzelheit": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Detail"
+          }
+        }
+      }
+    },
+    "Einzelheit %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Detail %@"
+          }
+        }
+      }
+    },
+    "Einzelheit: Mittelpunkt in einer Ansicht klicken": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Detail: click the centre in a view"
+          }
+        }
+      }
+    },
+    "Einzelheiten löschen (%lld)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete details (%lld)"
+          }
+        }
+      }
+    },
+    "Einzelteile": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Parts"
+          }
+        }
+      }
+    },
+    "Einzelteile %lld": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Parts %lld"
+          }
+        }
+      }
+    },
+    "Einzelteile als DXF (1:1, CNC/Laser) …": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Parts as DXF (1:1, CNC/laser) …"
+          }
+        }
+      }
+    },
+    "Einzelteile als DXF exportiert": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Parts exported as DXF"
+          }
+        }
+      }
+    },
+    "Einzelteilzeichnungen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Part drawings"
+          }
+        }
+      }
+    },
+    "Endpunkt klicken": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Click the end point"
+          }
+        }
+      }
+    },
+    "Ergebnis ist keine gültige Zahl": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Result is not a valid number"
+          }
+        }
+      }
+    },
+    "Erscheinungsbild": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Appearance"
+          }
+        }
+      }
+    },
+    "Erste Ecke klicken · ⌘ = frei setzen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Click the first corner · ⌘ = place freely"
+          }
+        }
+      }
+    },
+    "Erstellen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Create"
+          }
+        }
+      }
+    },
+    "Erstellt von": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Drawn by"
+          }
+        }
+      }
+    },
+    "Ersten Punkt wählen (Ecke oder Bohrungsmitte)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Select the first point (corner or hole centre)"
+          }
+        }
+      }
+    },
+    "Es gibt keinen sichtbaren Körper zum Exportieren": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "There is no visible body to export"
+          }
+        }
+      }
+    },
+    "Export": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Export"
+          }
+        }
+      }
+    },
+    "Exportieren": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Export"
+          }
+        }
+      }
+    },
+    "Extrusion": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Extrude"
+          }
+        }
+      }
+    },
+    "Extrusion fehlgeschlagen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Extrude failed"
+          }
+        }
+      }
+    },
+    "Extrusion: Abstand ist null": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Extrude: distance is zero"
+          }
+        }
+      }
+    },
+    "Fachboden": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Shelf"
+          }
+        }
+      }
+    },
+    "Fachboden hinten zurückgesetzt": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Shelf set back at the rear"
+          }
+        }
+      }
+    },
+    "Fase": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chamfer"
+          }
+        }
+      }
+    },
+    "Fase %@ × 45°": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chamfer %@ × 45°"
+          }
+        }
+      }
+    },
+    "Fase fehlgeschlagen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chamfer failed"
+          }
+        }
+      }
+    },
+    "Fase fehlgeschlagen (Abstand zu groß?)": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chamfer failed (distance too large?)"
+          }
+        }
+      }
+    },
+    "Faser": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Grain"
+          }
+        }
+      }
+    },
+    "Faserrichtung": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Grain direction"
+          }
+        }
+      }
+    },
+    "Fehler": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Error"
+          }
+        }
+      }
+    },
+    "Fehler melden …": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Report a bug …"
+          }
+        }
+      }
+    },
+    "Fein (glatte Rundungen)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fine (smooth curves)"
+          }
+        }
+      }
+    },
+    "Fertig": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Finish"
+          }
+        }
+      }
+    },
+    "Fichte massiv": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Solid spruce"
+          }
+        }
+      }
+    },
+    "Fixieren": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fix"
+          }
+        }
+      }
+    },
+    "Fixiert": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fixed"
+          }
+        }
+      }
+    },
+    "Fläche": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Face"
+          }
+        }
+      }
+    },
+    "Fläche existiert nicht": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Face does not exist"
+          }
+        }
+      }
+    },
+    "Fläche nicht gefunden": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Face not found"
+          }
+        }
+      }
+    },
+    "Fläche nicht mehr gefunden": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Face no longer found"
+          }
+        }
+      }
+    },
+    "Flächen wählen, die offen sein sollen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Select the faces to remove"
+          }
+        }
+      }
+    },
+    "Freies, natives CAD für Konstruktion und 3D-Druck – vollständig offline.\n\n": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Free, native CAD for design and 3D printing – fully offline.\n\n"
+          }
+        }
+      }
+    },
+    "Gegenüberliegende Ecke klicken oder Maße eintippen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Click the opposite corner or type the sizes"
+          }
+        }
+      }
+    },
+    "Gesamtansicht": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Assembly"
+          }
+        }
+      }
+    },
+    "Gesamtansicht als DXF exportieren …": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Export assembly as DXF …"
+          }
+        }
+      }
+    },
+    "Geschwindigkeit": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Speed"
+          }
+        }
+      }
+    },
+    "Gewichtsschätzung": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Weight estimate"
+          }
+        }
+      }
+    },
+    "Gleich": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Equal"
+          }
+        }
+      }
+    },
+    "Grob (kleine Dateien)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Coarse (small files)"
+          }
+        }
+      }
+    },
+    "HINTEN": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "BACK"
+          }
+        }
+      }
+    },
+    "HPL": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "HPL"
+          }
+        }
+      }
+    },
+    "Hell": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Light"
+          }
+        }
+      }
+    },
+    "Hilfslinie": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Construction line"
+          }
+        }
+      }
+    },
+    "Horizontal": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Horizontal"
+          }
+        }
+      }
+    },
+    "Höhe": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Height"
+          }
+        }
+      }
+    },
+    "Idee vorschlagen …": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Suggest an idea …"
+          }
+        }
+      }
+    },
+    "Im Slicer öffnen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open in slicer"
+          }
+        }
+      }
+    },
+    "Import": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Import"
+          }
+        }
+      }
+    },
+    "Import fehlgeschlagen: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Import failed: %@"
+          }
+        }
+      }
+    },
+    "Importierte Körper haben keine Parameter": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Imported bodies have no parameters"
+          }
+        }
+      }
+    },
+    "Isometrie": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Isometric"
+          }
+        }
+      }
+    },
+    "Isometrische Ansicht anzeigen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show isometric view"
+          }
+        }
+      }
+    },
+    "KONSTRUKTION": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DESIGN"
+          }
+        }
+      }
+    },
+    "Kante": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Edge"
+          }
+        }
+      }
+    },
+    "Kanten": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Edges"
+          }
+        }
+      }
+    },
+    "Kanten anzeigen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show edges"
+          }
+        }
+      }
+    },
+    "Kanten nicht mehr gefunden": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Edges no longer found"
+          }
+        }
+      }
+    },
+    "Kanten wählen · ↩ bestätigt": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Select edges · ↩ confirms"
+          }
+        }
+      }
+    },
+    "Kantenstärke": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Edge width"
+          }
+        }
+      }
+    },
+    "Kein Körper zum Ausschneiden getroffen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No body hit to cut"
+          }
+        }
+      }
+    },
+    "Kein Körper zum Schneiden getroffen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No body hit to intersect"
+          }
+        }
+      }
+    },
+    "Kein Profil": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No profile"
+          }
+        }
+      }
+    },
+    "Kein Profil ausgewählt": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No profile selected"
+          }
+        }
+      }
+    },
+    "Kein Slicer gefunden – exportiere stattdessen eine STL-Datei": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No slicer found – export an STL file instead"
+          }
+        }
+      }
+    },
+    "Kein bekannter Slicer gefunden. STL-Dateien werden mit der Standard-App geöffnet.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No known slicer found. STL files open with the default app."
+          }
+        }
+      }
+    },
+    "Keine 6axis-Datei": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not a 6axis file"
+          }
+        }
+      }
+    },
+    "Keine Drehachse gewählt": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No axis selected"
+          }
+        }
+      }
+    },
+    "Keine Fläche oder kein Körper ausgewählt": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No face or body selected"
+          }
+        }
+      }
+    },
+    "Keine Geometrie": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No geometry"
+          }
+        }
+      }
+    },
+    "Keine Geometrie erzeugt": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No geometry created"
+          }
+        }
+      }
+    },
+    "Keine Kanten ausgewählt": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No edges selected"
+          }
+        }
+      }
+    },
+    "Keine sichtbaren Körper": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No visible bodies"
+          }
+        }
+      }
+    },
+    "Kiefer massiv": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Solid pine"
+          }
+        }
+      }
+    },
+    "Klick auf Fläche, Kante oder Ecke richtet die Ansicht aus · Ziehen dreht": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Click a face, edge or corner to orient the view · drag to orbit"
+          }
+        }
+      }
+    },
+    "Klicke Flächen an, die offen sein sollen.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Click the faces that should be open."
+          }
+        }
+      }
+    },
+    "Kollinear": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Collinear"
+          }
+        }
+      }
+    },
+    "Kommentar": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Comment"
+          }
+        }
+      }
+    },
+    "Konstruktion": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Design"
+          }
+        }
+      }
+    },
+    "Konzentrisch": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Concentric"
+          }
+        }
+      }
+    },
+    "Korpus": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cabinet"
+          }
+        }
+      }
+    },
+    "Korpus mit Fachboden (Holz)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cabinet with shelf (wood)"
+          }
+        }
+      }
+    },
+    "Kreis": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Circle"
+          }
+        }
+      }
+    },
+    "Körper": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bodies"
+          }
+        }
+      }
+    },
+    "Körper existiert nicht": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Body does not exist"
+          }
+        }
+      }
+    },
+    "Körper nicht gefunden": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Body not found"
+          }
+        }
+      }
+    },
+    "Körper nicht mehr vorhanden": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Body no longer exists"
+          }
+        }
+      }
+    },
+    "Körper%lld": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Body%lld"
+          }
+        }
+      }
+    },
+    "LINKS": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "LEFT"
+          }
+        }
+      }
+    },
+    "Linie": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Line"
+          }
+        }
+      }
+    },
+    "Linie, Kreis oder Punkt wählen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Select a line, circle or point"
+          }
+        }
+      }
+    },
+    "Länge": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Length"
+          }
+        }
+      }
+    },
+    "Längs": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Along"
+          }
+        }
+      }
+    },
+    "Längs = entlang der größten Abmessung. Wird als Pfeil in der Einzelteilzeichnung und in der Stückliste gezeigt.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Along = along the largest dimension. Shown as an arrow on the part drawing and in the parts list."
+          }
+        }
+      }
+    },
+    "Lärche massiv": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Solid larch"
+          }
+        }
+      }
+    },
+    "Löschen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete"
+          }
+        }
+      }
+    },
+    "MDF": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "MDF"
+          }
+        }
+      }
+    },
+    "MDF lackiert": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "MDF, lacquered"
+          }
+        }
+      }
+    },
+    "Manuelle Anpassungen zurücksetzen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reset manual adjustments"
+          }
+        }
+      }
+    },
+    "Material": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Material"
+          }
+        }
+      }
+    },
+    "Material & Faserrichtung …": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Material & grain …"
+          }
+        }
+      }
+    },
+    "Maus": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mouse"
+          }
+        }
+      }
+    },
+    "Maß %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dimension %@"
+          }
+        }
+      }
+    },
+    "Maß hinzufügen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add dimension"
+          }
+        }
+      }
+    },
+    "Maß oder Ansicht ziehen · ⌫ blendet aus · D neues Maß · E Einzelheit": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Drag a dimension or view · ⌫ hides · D new dimension · E detail"
+          }
+        }
+      }
+    },
+    "Maßlinie platzieren · Esc bricht ab": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Place the dimension line · Esc cancels"
+          }
+        }
+      }
+    },
+    "Maßpositionen zurücksetzen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reset dimension positions"
+          }
+        }
+      }
+    },
+    "Maßstab": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scale"
+          }
+        }
+      }
+    },
+    "Maßstab (ISO 5455)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scale (ISO 5455)"
+          }
+        }
+      }
+    },
+    "Maßstab automatisch": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Automatic scale"
+          }
+        }
+      }
+    },
+    "Mit gedrückter ⌘-Taste setzt du Punkte jederzeit frei. Vorhandene Punkte und Linien haben immer Vorrang.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hold ⌘ to place points freely at any time. Existing points and lines always take priority."
+          }
+        }
+      }
+    },
+    "Mit ⇧ wird jeweils die andere Aktion ausgeführt. In Skizzen ist es umgekehrt, damit die Draufsicht erhalten bleibt.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "With ⇧ the other action is performed. In sketches it is the other way round so the top view is kept."
+          }
+        }
+      }
+    },
+    "Mittelpunkt": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Midpoint"
+          }
+        }
+      }
+    },
+    "Mittelpunkt klicken": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Click the centre"
+          }
+        }
+      }
+    },
+    "Mittelpunkt klicken · ⌘ = frei setzen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Click the centre · ⌘ = place freely"
+          }
+        }
+      }
+    },
+    "Mittelpunkt-Rechteck": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Center rectangle"
+          }
+        }
+      }
+    },
+    "Mittig": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Center"
+          }
+        }
+      }
+    },
+    "Mittlere Taste ziehen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Middle button drag"
+          }
+        }
+      }
+    },
+    "Name": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Name"
+          }
+        }
+      }
+    },
+    "Namen kannst du in jedem Wertfeld verwenden, z. B. „breite / 2“ oder „wand + 0,2 mm“.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You can use names in any value field, e.g. “width / 2” or “wall + 0.2 mm”."
+          }
+        }
+      }
+    },
+    "Navigation": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Navigation"
+          }
+        }
+      }
+    },
+    "Neue Designs orthografisch anzeigen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show new designs orthographic"
+          }
+        }
+      }
+    },
+    "Neuer Körper": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "New body"
+          }
+        }
+      }
+    },
+    "Neues Design": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "New design"
+          }
+        }
+      }
+    },
+    "Nicht sichern": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Don’t save"
+          }
+        }
+      }
+    },
+    "Nichts zu exportieren": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nothing to export"
+          }
+        }
+      }
+    },
+    "Nichts zu projizieren": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nothing to project"
+          }
+        }
+      }
+    },
+    "Noch keine Parameter. Lege z. B. „wand = 2 mm“ an.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No parameters yet. Add one, e.g. “wall = 2 mm”."
+          }
+        }
+      }
+    },
+    "Normal": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Normal"
+          }
+        }
+      }
+    },
+    "Nur ebene Flächen können extrudiert werden": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Only planar faces can be extruded"
+          }
+        }
+      }
+    },
+    "Nussbaum massiv": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Solid walnut"
+          }
+        }
+      }
+    },
+    "Nylon (PA)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nylon (PA)"
+          }
+        }
+      }
+    },
+    "Nächsten Punkt klicken · Tab für Maße · Esc beendet": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Click the next point · Tab for sizes · Esc finishes"
+          }
+        }
+      }
+    },
+    "OBEN": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "TOP"
+          }
+        }
+      }
+    },
+    "OK": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "OK"
+          }
+        }
+      }
+    },
+    "OSB": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "OSB"
+          }
+        }
+      }
+    },
+    "Oberfläche: %.1f cm²": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Surface: %.1f cm²"
+          }
+        }
+      }
+    },
+    "Offene Flächen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open faces"
+          }
+        }
+      }
+    },
+    "Ohne": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "None"
+          }
+        }
+      }
+    },
+    "Ohne offene Fläche wird der Körper innen hohl.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Without an open face the body is hollowed inside."
+          }
+        }
+      }
+    },
+    "Open Source unter der MIT-Lizenz. Geometriekernel: Open CASCADE Technology (LGPL 2.1).\nLizenzen der enthaltenen Bibliotheken: 6axis.app/Contents/Resources/Licenses\ngithub.com/Melf11/6axis": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open source under the MIT licence. Geometry kernel: Open CASCADE Technology (LGPL 2.1).\nLicences of the bundled libraries: 6axis.app/Contents/Resources/Licenses\ngithub.com/Melf11/6axis"
+          }
+        }
+      }
+    },
+    "OpenCASCADE-Fehler": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "OpenCASCADE error"
+          }
+        }
+      }
+    },
+    "Orthografisch": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Orthographic"
+          }
+        }
+      }
+    },
+    "Orthografisch (O)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Orthographic (O)"
+          }
+        }
+      }
+    },
+    "Orthografisch / Perspektive": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Orthographic / perspective"
+          }
+        }
+      }
+    },
+    "PDF (alle Blätter, maßstabsgetreu) …": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "PDF (all sheets, true to scale) …"
+          }
+        }
+      }
+    },
+    "PDF exportiert: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "PDF exported: %@"
+          }
+        }
+      }
+    },
+    "PDF konnte nicht erstellt werden": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Could not create PDF"
+          }
+        }
+      }
+    },
+    "PDF mit %lld Blättern exportiert": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "PDF with %lld sheets exported"
+          }
+        }
+      }
+    },
+    "PLA": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "PLA"
+          }
+        }
+      }
+    },
+    "Parallel": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Parallel"
+          }
+        }
+      }
+    },
+    "Parameter": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Parameters"
+          }
+        }
+      }
+    },
+    "Parameter ändern": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Change parameters"
+          }
+        }
+      }
+    },
+    "Parameter …": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Parameters …"
+          }
+        }
+      }
+    },
+    "Perspektive (O)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Perspective (O)"
+          }
+        }
+      }
+    },
+    "Pinch": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pinch"
+          }
+        }
+      }
+    },
+    "Plattenstärke": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Panel thickness"
+          }
+        }
+      }
+    },
+    "Pos.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Item"
+          }
+        }
+      }
+    },
+    "Pos. %lld": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Item %lld"
+          }
+        }
+      }
+    },
+    "Pos. %lld   %@   %lld Stück   %lld × %lld × %lld": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Pos. %1$lld   %2$@   %3$lld Stück   %4$lld × %5$lld × %6$lld"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Item %lld   %@   %lld pcs   %lld × %lld × %lld"
+          }
+        }
+      }
+    },
+    "Position zurücksetzen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reset position"
+          }
+        }
+      }
+    },
+    "Positionsnummern": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Item numbers"
+          }
+        }
+      }
+    },
+    "Positionsnummern, Stückliste, Einzelteile und Schnitt": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Item numbers, parts list, part drawings and section"
+          }
+        }
+      }
+    },
+    "Profil nicht mehr gefunden": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Profile no longer found"
+          }
+        }
+      }
+    },
+    "Profile": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Profiles"
+          }
+        }
+      }
+    },
+    "Profile konnten nicht vereint werden": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Profiles could not be merged"
+          }
+        }
+      }
+    },
+    "Profile oder Flächen wählen · Pfeil ziehen · ↩ bestätigt": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Select profiles or faces · drag the arrow · ↩ confirms"
+          }
+        }
+      }
+    },
+    "Profile vereinen": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Merge profiles"
+          }
+        }
+      }
+    },
+    "Profile vereinen fehlgeschlagen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Merging profiles failed"
+          }
+        }
+      }
+    },
+    "Profile wählen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Select profiles"
+          }
+        }
+      }
+    },
+    "Profilerkennung": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Profile detection"
+          }
+        }
+      }
+    },
+    "Profilerkennung fehlgeschlagen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Profile detection failed"
+          }
+        }
+      }
+    },
+    "Projektion fehlgeschlagen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Projection failed"
+          }
+        }
+      }
+    },
+    "Projektionsmethode 1": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "First angle projection"
+          }
+        }
+      }
+    },
+    "Punkt auf Kurve": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Point on curve"
+          }
+        }
+      }
+    },
+    "Punkt auf dem Bogen klicken": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Click a point on the arc"
+          }
+        }
+      }
+    },
+    "Punkte am Raster ausrichten": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Snap points to grid"
+          }
+        }
+      }
+    },
+    "Quader": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Box"
+          }
+        }
+      }
+    },
+    "Quader fehlgeschlagen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Box failed"
+          }
+        }
+      }
+    },
+    "Quellcode auf GitHub": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Source code on GitHub"
+          }
+        }
+      }
+    },
+    "Quer": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Across"
+          }
+        }
+      }
+    },
+    "RECHTS": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "RIGHT"
+          }
+        }
+      }
+    },
+    "Radius": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Radius"
+          }
+        }
+      }
+    },
+    "Radius klicken oder Durchmesser eintippen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Click the radius or type the diameter"
+          }
+        }
+      }
+    },
+    "Radius klicken · Esc bricht ab": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Click the radius · Esc cancels"
+          }
+        }
+      }
+    },
+    "Radius muss größer als 0 sein": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Radius must be greater than 0"
+          }
+        }
+      }
+    },
+    "Raster anzeigen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show grid"
+          }
+        }
+      }
+    },
+    "Rechte Taste ziehen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Right button drag"
+          }
+        }
+      }
+    },
+    "Rechteck": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rectangle"
+          }
+        }
+      }
+    },
+    "Resin": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Resin"
+          }
+        }
+      }
+    },
+    "Richtung": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Direction"
+          }
+        }
+      }
+    },
+    "Rückwand": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Back panel"
+          }
+        }
+      }
+    },
+    "SKIZZE": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SKETCH"
+          }
+        }
+      }
+    },
+    "STEP exportiert: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "STEP exported: %@"
+          }
+        }
+      }
+    },
+    "STEP importieren": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Import STEP"
+          }
+        }
+      }
+    },
+    "STEP importieren …": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Import STEP …"
+          }
+        }
+      }
+    },
+    "STEP konnte nicht geschrieben werden": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Could not write STEP"
+          }
+        }
+      }
+    },
+    "STEP …": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "STEP …"
+          }
+        }
+      }
+    },
+    "STEP-Datei konnte nicht gelesen werden": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Could not read STEP file"
+          }
+        }
+      }
+    },
+    "STEP-Export fehlgeschlagen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "STEP export failed"
+          }
+        }
+      }
+    },
+    "STEP-Import": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "STEP import"
+          }
+        }
+      }
+    },
+    "STEP-Import fehlgeschlagen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "STEP import failed"
+          }
+        }
+      }
+    },
+    "STL (3D-Druck) …": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "STL (3D printing) …"
+          }
+        }
+      }
+    },
+    "STL exportiert: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "STL exported: %@"
+          }
+        }
+      }
+    },
+    "STL konnte nicht geschrieben werden": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Could not write STL"
+          }
+        }
+      }
+    },
+    "STL-Export fehlgeschlagen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "STL export failed"
+          }
+        }
+      }
+    },
+    "STL-Qualität": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "STL quality"
+          }
+        }
+      }
+    },
+    "Schattierung": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Shading"
+          }
+        }
+      }
+    },
+    "Schneidebrett": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cutting board"
+          }
+        }
+      }
+    },
+    "Schneidebrett (Holz)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cutting board (wood)"
+          }
+        }
+      }
+    },
+    "Schneiden": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Intersect"
+          }
+        }
+      }
+    },
+    "Schnitt A–A": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Section A–A"
+          }
+        }
+      }
+    },
+    "Schnitt aus": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remove section"
+          }
+        }
+      }
+    },
+    "Schnittebene": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Section plane"
+          }
+        }
+      }
+    },
+    "Schnittebene fehlgeschlagen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Section plane failed"
+          }
+        }
+      }
+    },
+    "Schriftfeld": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Title block"
+          }
+        }
+      }
+    },
+    "Schriftfeld ausfüllen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fill in title block"
+          }
+        }
+      }
+    },
+    "Schritt vor": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Step forward"
+          }
+        }
+      }
+    },
+    "Schritt zurück": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Step back"
+          }
+        }
+      }
+    },
+    "Scrollrichtung": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scroll direction"
+          }
+        }
+      }
+    },
+    "Seite links": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Left side"
+          }
+        }
+      }
+    },
+    "Seite rechts": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Right side"
+          }
+        }
+      }
+    },
+    "Seitenansicht als Schnitt A–A": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Side view as section A–A"
+          }
+        }
+      }
+    },
+    "Seitenansicht von links": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Side view from left"
+          }
+        }
+      }
+    },
+    "Senkrecht": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Perpendicular"
+          }
+        }
+      }
+    },
+    "Sichern": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Save"
+          }
+        }
+      }
+    },
+    "Sichern (⌘S)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Save (⌘S)"
+          }
+        }
+      }
+    },
+    "Sichern fehlgeschlagen: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Saving failed: %@"
+          }
+        }
+      }
+    },
+    "Sichern unter …": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Save as …"
+          }
+        }
+      }
+    },
+    "Skizze": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sketch"
+          }
+        }
+      }
+    },
+    "Skizze %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sketch %@"
+          }
+        }
+      }
+    },
+    "Skizze Dübellöcher": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sketch dowel holes"
+          }
+        }
+      }
+    },
+    "Skizze bearbeiten": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Edit sketch"
+          }
+        }
+      }
+    },
+    "Skizze erstellen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Create sketch"
+          }
+        }
+      }
+    },
+    "Skizze erstellt – wähle ein Werkzeug (L Linie, R Rechteck, C Kreis)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sketch created – choose a tool (L line, R rectangle, C circle)"
+          }
+        }
+      }
+    },
+    "Skizze fertig": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Finish sketch"
+          }
+        }
+      }
+    },
+    "Skizze fertigstellen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Finish sketch"
+          }
+        }
+      }
+    },
+    "Skizze fertigstellen (⌘↩)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Finish sketch (⌘↩)"
+          }
+        }
+      }
+    },
+    "Skizze für Profil fehlt": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sketch for profile missing"
+          }
+        }
+      }
+    },
+    "Skizze ist überbestimmt oder widersprüchlich": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sketch is over-constrained or contradictory"
+          }
+        }
+      }
+    },
+    "Skizzen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sketches"
+          }
+        }
+      }
+    },
+    "Skizzenebene ist nicht eben": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sketch plane is not planar"
+          }
+        }
+      }
+    },
+    "Skizzenebene nicht gefunden": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sketch plane not found"
+          }
+        }
+      }
+    },
+    "Skizzenlinie": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sketch line"
+          }
+        }
+      }
+    },
+    "Slicer": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Slicer"
+          }
+        }
+      }
+    },
+    "Software": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Software"
+          }
+        }
+      }
+    },
+    "Spanplatte": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chipboard"
+          }
+        }
+      }
+    },
+    "Spanplatte melaminbeschichtet": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Melamine-faced chipboard"
+          }
+        }
+      }
+    },
+    "Sperrholz": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Plywood"
+          }
+        }
+      }
+    },
+    "Standardwerte": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Defaults"
+          }
+        }
+      }
+    },
+    "Starte mit einer Skizze – oder drücke S, um jeden Befehl zu finden.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Start with a sketch – or press S to find any command."
+          }
+        }
+      }
+    },
+    "Starte mit „Skizze“ (oder drücke L, R, C) · S öffnet die Befehlssuche": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Start with “Sketch” (or press L, R, C) · S opens command search"
+          }
+        }
+      }
+    },
+    "Startpunkt klicken": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Click the start point"
+          }
+        }
+      }
+    },
+    "Startpunkt klicken · ⌘ = frei setzen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Click the start point · ⌘ = place freely"
+          }
+        }
+      }
+    },
+    "Studio": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Studio"
+          }
+        }
+      }
+    },
+    "Stärke Rückwand": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Back panel thickness"
+          }
+        }
+      }
+    },
+    "Stückliste / Zuschnittliste": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Parts list / cutting list"
+          }
+        }
+      }
+    },
+    "Symmetrisch": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Symmetric"
+          }
+        }
+      }
+    },
+    "Synchron": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Synchronized"
+          }
+        }
+      }
+    },
+    "Tangential": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tangent"
+          }
+        }
+      }
+    },
+    "Technische Zeichnung": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Technical drawing"
+          }
+        }
+      }
+    },
+    "Technische Zeichnung öffnen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open technical drawing"
+          }
+        }
+      }
+    },
+    "Teil %lld": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Part %lld"
+          }
+        }
+      }
+    },
+    "Tischlerplatte": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Blockboard"
+          }
+        }
+      }
+    },
+    "Trackpad": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Trackpad"
+          }
+        }
+      }
+    },
+    "Transformieren": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Transform"
+          }
+        }
+      }
+    },
+    "Transformieren fehlgeschlagen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Transform failed"
+          }
+        }
+      }
+    },
+    "UNTEN": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "BOTTOM"
+          }
+        }
+      }
+    },
+    "Umbenennen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rename"
+          }
+        }
+      }
+    },
+    "Umrisse fehlgeschlagen": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Outlines failed"
+          }
+        }
+      }
+    },
+    "Unbekannte Funktion „%@“": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unknown function “%@”"
+          }
+        }
+      }
+    },
+    "Unbekannter Parameter „%@“": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unknown parameter “%@”"
+          }
+        }
+      }
+    },
+    "Unbenannt": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Untitled"
+          }
+        }
+      }
+    },
+    "Unerwartetes Zeichen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unexpected character"
+          }
+        }
+      }
+    },
+    "Unerwartetes Zeichen in „%@“": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unexpected character in “%@”"
+          }
+        }
+      }
+    },
+    "Unerwartetes Zeichen „%@“": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unexpected character “%@”"
+          }
+        }
+      }
+    },
+    "Ungesicherte Änderungen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unsaved changes"
+          }
+        }
+      }
+    },
+    "Ungültige Zahl „%@“": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Invalid number “%@”"
+          }
+        }
+      }
+    },
+    "Ungültiger Ausdruck": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Invalid expression"
+          }
+        }
+      }
+    },
+    "Ungültiger Name": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Invalid name"
+          }
+        }
+      }
+    },
+    "Ungültiger Wert": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Invalid value"
+          }
+        }
+      }
+    },
+    "Unterdrücken": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Suppress"
+          }
+        }
+      }
+    },
+    "Unterkante Fachboden": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Shelf bottom edge"
+          }
+        }
+      }
+    },
+    "Ursprung": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Origin"
+          }
+        }
+      }
+    },
+    "Ursprungsebenen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Origin planes"
+          }
+        }
+      }
+    },
+    "VORNE": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "FRONT"
+          }
+        }
+      }
+    },
+    "Verbinden": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Join"
+          }
+        }
+      }
+    },
+    "Verdeckte Kanten": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hidden edges"
+          }
+        }
+      }
+    },
+    "Verdeckte Kanten anzeigen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show hidden edges"
+          }
+        }
+      }
+    },
+    "Vereinfachen": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Simplify"
+          }
+        }
+      }
+    },
+    "Vereinigen": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Union"
+          }
+        }
+      }
+    },
+    "Vereinigen fehlgeschlagen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Union failed"
+          }
+        }
+      }
+    },
+    "Vergrößern": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zoom in"
+          }
+        }
+      }
+    },
+    "Verkleinern": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zoom out"
+          }
+        }
+      }
+    },
+    "Vernetzung fehlgeschlagen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Meshing failed"
+          }
+        }
+      }
+    },
+    "Verschieben": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pan"
+          }
+        }
+      }
+    },
+    "Verschieben (⇧ = Drehen)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pan (⇧ = orbit)"
+          }
+        }
+      }
+    },
+    "Verschieben fehlgeschlagen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Move failed"
+          }
+        }
+      }
+    },
+    "Verschieberichtung umkehren": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reverse pan direction"
+          }
+        }
+      }
+    },
+    "Vertikal": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vertical"
+          }
+        }
+      }
+    },
+    "Verwalten": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Manage"
+          }
+        }
+      }
+    },
+    "Vollständig bestimmt": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fully constrained"
+          }
+        }
+      }
+    },
+    "Vorderansicht": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Front view"
+          }
+        }
+      }
+    },
+    "Vorgang": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Operation"
+          }
+        }
+      }
+    },
+    "Wand": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Shell"
+          }
+        }
+      }
+    },
+    "Wandstärke": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Shell"
+          }
+        }
+      }
+    },
+    "Wandstärke fehlgeschlagen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Shell failed"
+          }
+        }
+      }
+    },
+    "Wandstärke fehlgeschlagen (zu dick?)": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Shell failed (too thick?)"
+          }
+        }
+      }
+    },
+    "Wandstärke muss größer als 0 sein": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wall thickness must be greater than 0"
+          }
+        }
+      }
+    },
+    "Wandstärke, Vielfaches der Düse (0,4)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wall thickness, multiple of the nozzle (0.4)"
+          }
+        }
+      }
+    },
+    "Werkstoff auswählen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choose material"
+          }
+        }
+      }
+    },
+    "Werkzeug": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tool"
+          }
+        }
+      }
+    },
+    "Wert": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Value"
+          }
+        }
+      }
+    },
+    "Wert muss größer als 0 sein": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Value must be greater than 0"
+          }
+        }
+      }
+    },
+    "Widerrufen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Undo"
+          }
+        }
+      }
+    },
+    "Widerrufen (⌘Z)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Undo (⌘Z)"
+          }
+        }
+      }
+    },
+    "Widersprüchlich": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Contradictory"
+          }
+        }
+      }
+    },
+    "Wie System": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Match system"
+          }
+        }
+      }
+    },
+    "Wiederholen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Redo"
+          }
+        }
+      }
+    },
+    "Wiederholen (⇧⌘Z)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Redo (⇧⌘Z)"
+          }
+        }
+      }
+    },
+    "Willkommen bei 6axis": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Welcome to 6axis"
+          }
+        }
+      }
+    },
+    "Winkel": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Angle"
+          }
+        }
+      }
+    },
+    "Wird unten rechts für das Volumen der Auswahl angezeigt (bei 100 % Füllung).": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Shown at the bottom right for the volume of the selection (at 100 % infill)."
+          }
+        }
+      }
+    },
+    "Wähle Geometrie · Rechtsklick für Schnellmenü · S für Befehlssuche": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Select geometry · right-click for quick menu · S for command search"
+          }
+        }
+      }
+    },
+    "Wähle eine Ursprungsebene oder eine ebene Fläche im Ansichtsfenster.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choose an origin plane or a planar face in the viewport."
+          }
+        }
+      }
+    },
+    "X %@  Y %@": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "new",
+            "value": "X %1$@  Y %2$@"
+          }
+        }
+      },
+      "shouldTranslate": false
+    },
+    "X-Achse": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "X axis"
+          }
+        }
+      }
+    },
+    "XY-Ebene": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "XY plane"
+          }
+        }
+      }
+    },
+    "XZ-Ebene": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "XZ plane"
+          }
+        }
+      }
+    },
+    "Y-Achse": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Y axis"
+          }
+        }
+      }
+    },
+    "YZ-Ebene": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "YZ plane"
+          }
+        }
+      }
+    },
+    "Z-Achse": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Z axis"
+          }
+        }
+      }
+    },
+    "Zeichnung": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Drawing"
+          }
+        }
+      }
+    },
+    "Zeichnung als PDF exportieren …": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Export drawing as PDF …"
+          }
+        }
+      }
+    },
+    "Zeichnung drucken …": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Print drawing …"
+          }
+        }
+      }
+    },
+    "Zeichnung wird erstellt …": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Creating drawing …"
+          }
+        }
+      }
+    },
+    "Zeichnung – ": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Drawing – "
+          }
+        }
+      }
+    },
+    "Zeichnungsnummer": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Drawing no."
+          }
+        }
+      }
+    },
+    "Zeitleiste bis hierher": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Roll timeline back to here"
+          }
+        }
+      }
+    },
+    "Zeitleiste – hier erscheinen deine Konstruktionsschritte": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Timeline – your design steps appear here"
+          }
+        }
+      }
+    },
+    "Zeitleistenmarkierung": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Timeline marker"
+          }
+        }
+      }
+    },
+    "Ziehen zum Verschieben · L Linie · R Rechteck · C Kreis · D Bemaßung": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Drag to move · L line · R rectangle · C circle · D dimension"
+          }
+        }
+      }
+    },
+    "Ziehen, um den Abstand zu ändern": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Drag to change the distance"
+          }
+        }
+      }
+    },
+    "Zirkulärer Bezug bei „%@“": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Circular reference at “%@”"
+          }
+        }
+      }
+    },
+    "Zoomen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zoom"
+          }
+        }
+      }
+    },
+    "Zoomrichtung des Mausrads umkehren": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reverse mouse wheel zoom"
+          }
+        }
+      }
+    },
+    "Zum Anfang": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Go to start"
+          }
+        }
+      }
+    },
+    "Zum Ende": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Go to end"
+          }
+        }
+      }
+    },
+    "Zum Mauszeiger zoomen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zoom to cursor"
+          }
+        }
+      }
+    },
+    "Zurücksetzen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reset"
+          }
+        }
+      }
+    },
+    "Zwei Seiten": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Two sides"
+          }
+        }
+      }
+    },
+    "Zwei-Finger-Wischen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Two-finger swipe"
+          }
+        }
+      }
+    },
+    "Zweiten Punkt wählen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Select the second point"
+          }
+        }
+      }
+    },
+    "Zweites Objekt wählen oder Bemaßung platzieren": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Select a second object or place the dimension"
+          }
+        }
+      }
+    },
+    "g/cm³": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "g/cm³"
+          }
+        }
+      }
+    },
+    "name": {
+      "shouldTranslate": false
+    },
+    "ohne Rückwand": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "without back panel"
+          }
+        }
+      }
+    },
+    "siehe Teile": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "see parts"
+          }
+        }
+      }
+    },
+    "unbekannter Fehler": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "unknown error"
+          }
+        }
+      }
+    },
+    "z. B. Eiche massiv": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "e.g. Solid oak"
+          }
+        }
+      }
+    },
+    "· %@ quer · %@": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "new",
+            "value": "· %1$@ quer · %2$@"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "· %@ landscape · %@"
+          }
+        }
+      }
+    },
+    "Ändern": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Modify"
+          }
+        }
+      }
+    },
+    "Änderungen sichern?": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Save changes?"
+          }
+        }
+      }
+    },
+    "Öffnen …": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open …"
+          }
+        }
+      }
+    },
+    "Über 6axis": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "About 6axis"
+          }
+        }
+      }
+    },
+    "Übernehmen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apply"
+          }
+        }
+      }
+    },
+    "„)“ fehlt": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "“)” missing"
+          }
+        }
+      }
+    },
+    "„Im Slicer öffnen“ mit": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "“Open in slicer” with"
+          }
+        }
+      }
+    },
+    "„Natürliches Scrollen“ im 3D-Fenster ignorieren": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ignore “natural scrolling” in the 3D view"
+          }
+        }
+      }
+    },
+    "⌫": {
+      "shouldTranslate": false
+    }
+  },
+  "version": "1.0"
+}

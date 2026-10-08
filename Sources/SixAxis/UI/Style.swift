@@ -57,7 +57,7 @@ struct ToolButton: View {
         .disabled(!enabled)
         .opacity(enabled ? 1 : 0.4)
         .onHover { hovering = $0 }
-        .help(shortcut.map { "\(title) (\($0))" } ?? title)
+        .help(shortcut.map { String(localized: "\(title) (\($0))") } ?? title)
     }
 }
 

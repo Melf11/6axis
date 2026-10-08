@@ -65,7 +65,7 @@ struct DrawingWindow: View {
             .padding(.top, 10)
         }
         .toolbar { toolbar }
-        .navigationTitle("Zeichnung – " + (editor.fileURL?.deletingPathExtension().lastPathComponent ?? "Unbenannt"))
+        .navigationTitle(String(localized: "Zeichnung – ") + (editor.fileURL?.deletingPathExtension().lastPathComponent ?? String(localized: "Unbenannt")))
         .focusable()
         .focusEffectDisabled()
         .focused($focused)
@@ -441,13 +441,13 @@ struct DrawingWindow: View {
         if let id = selected, let d = currentPage?.dimensions.first(where: { $0.id == id }) {
             HStack(spacing: 10) {
                 Image(systemName: d.isCustom ? "ruler.fill" : "ruler").foregroundStyle(Color.accentColor)
-                Text(d.isCustom ? "Eigenes Maß \(d.text)" : (d.id.hasPrefix("detail.") || d.id.hasPrefix("section.") || d.id.hasPrefix("balloon.") ? d.text : "Maß \(d.text)"))
+                Text(d.isCustom ? String(localized: "Eigenes Maß \(d.text)") : (d.id.hasPrefix("detail.") || d.id.hasPrefix("section.") || d.id.hasPrefix("balloon.") ? d.text : String(localized: "Maß \(d.text)")))
                     .font(.system(size: 12, weight: .medium))
                 Divider().frame(height: 16)
                 if !d.isCustom, editor.drawingSettings.dimensionOffsets[id] != nil {
                     Button("Position zurücksetzen", action: resetSelected)
                 }
-                Button(d.isCustom || d.id.hasPrefix("detail.") ? "Löschen" : (d.id == "section.A" ? "Schnitt aus" : "Ausblenden"),
+                Button(d.isCustom || d.id.hasPrefix("detail.") ? String(localized: "Löschen") : (d.id == "section.A" ? String(localized: "Schnitt aus") : String(localized: "Ausblenden")),
                        role: .destructive, action: deleteSelection)
                     .help("⌫")
             }
@@ -461,10 +461,10 @@ struct DrawingWindow: View {
 
     private var zoomControls: some View {
         HStack(spacing: 2) {
-            IconButton(symbol: "minus.magnifyingglass", help: "Verkleinern") { zoom = max(0.3, zoom / 1.25); zoomStart = zoom }
-            Text("\(Int((zoom * 100).rounded())) %").font(.system(size: 11, design: .rounded)).monospacedDigit().frame(width: 46)
-            IconButton(symbol: "plus.magnifyingglass", help: "Vergrößern") { zoom = min(12, zoom * 1.25); zoomStart = zoom }
-            IconButton(symbol: "arrow.up.left.and.arrow.down.right", help: "Blatt einpassen (Doppelklick)") { resetView() }
+            IconButton(symbol: "minus.magnifyingglass", help: String(localized: "Verkleinern")) { zoom = max(0.3, zoom / 1.25); zoomStart = zoom }
+            Text(String(localized: "\(Int((zoom * 100).rounded())) %")).font(.system(size: 11, design: .rounded)).monospacedDigit().frame(width: 46)
+            IconButton(symbol: "plus.magnifyingglass", help: String(localized: "Vergrößern")) { zoom = min(12, zoom * 1.25); zoomStart = zoom }
+            IconButton(symbol: "arrow.up.left.and.arrow.down.right", help: String(localized: "Blatt einpassen (Doppelklick)")) { resetView() }
         }
         .padding(4)
         .floatingPanel(radius: 9)
@@ -473,15 +473,15 @@ struct DrawingWindow: View {
     private var hint: String {
         switch tool {
         case .select:
-            return "Maß oder Ansicht ziehen · ⌫ blendet aus · D neues Maß · E Einzelheit"
+            return String(localized: "Maß oder Ansicht ziehen · ⌫ blendet aus · D neues Maß · E Einzelheit")
         case .addDimension:
             switch picks.count {
-            case 0: return "Ersten Punkt wählen (Ecke oder Bohrungsmitte)"
-            case 1: return "Zweiten Punkt wählen"
-            default: return "Maßlinie platzieren · Esc bricht ab"
+            case 0: return String(localized: "Ersten Punkt wählen (Ecke oder Bohrungsmitte)")
+            case 1: return String(localized: "Zweiten Punkt wählen")
+            default: return String(localized: "Maßlinie platzieren · Esc bricht ab")
             }
         case .addDetail:
-            return detailCenter == nil ? "Einzelheit: Mittelpunkt in einer Ansicht klicken" : "Radius klicken · Esc bricht ab"
+            return detailCenter == nil ? String(localized: "Einzelheit: Mittelpunkt in einer Ansicht klicken") : String(localized: "Radius klicken · Esc bricht ab")
         }
     }
 
@@ -617,7 +617,7 @@ private struct TitleBlockEditor: View {
 
     var body: some View {
         Form {
-            TextField("Benennung", text: $title, prompt: Text(editor.fileURL?.deletingPathExtension().lastPathComponent ?? "Unbenannt"))
+            TextField(String(localized: "Benennung"), text: $title, prompt: Text(editor.fileURL?.deletingPathExtension().lastPathComponent ?? String(localized: "Unbenannt")))
             TextField("Zeichnungsnummer", text: $number)
             TextField("Material", text: $material, prompt: Text("z. B. Eiche massiv"))
             TextField("Erstellt von", text: $author)

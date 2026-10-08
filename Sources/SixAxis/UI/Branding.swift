@@ -40,10 +40,10 @@ enum Branding {
 
     static func showAboutPanel() {
         let credits = NSMutableAttributedString(
-            string: "Freies, natives CAD für Konstruktion und 3D-Druck – vollständig offline.\n\n",
+            string: String(localized: "Freies, natives CAD für Konstruktion und 3D-Druck – vollständig offline.\n\n"),
             attributes: [.font: NSFont.systemFont(ofSize: 11), .foregroundColor: NSColor.labelColor])
         credits.append(NSAttributedString(
-            string: "Open Source unter der MIT-Lizenz. Geometriekernel: Open CASCADE Technology (LGPL 2.1).\nLizenzen der enthaltenen Bibliotheken: 6axis.app/Contents/Resources/Licenses\ngithub.com/Melf11/6axis",
+            string: String(localized: "Open Source unter der MIT-Lizenz. Geometriekernel: Open CASCADE Technology (LGPL 2.1).\nLizenzen der enthaltenen Bibliotheken: 6axis.app/Contents/Resources/Licenses\ngithub.com/Melf11/6axis"),
             attributes: [.font: NSFont.systemFont(ofSize: 10), .foregroundColor: NSColor.secondaryLabelColor]))
         NSApp.orderFrontStandardAboutPanel(options: [
             .applicationName: "6axis",

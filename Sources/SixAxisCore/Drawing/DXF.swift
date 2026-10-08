@@ -133,7 +133,7 @@ extension DrawingGenerator {
                 w.polyline(line.points.map { $0 + shift }, layer: layer)
             }
             for c in circles { w.circle(c.center + shift, c.radius, layer: layer) }
-            let label = "Pos. \(g.position) \(g.name) \(g.count)x \(g.length)x\(g.width)x\(g.thickness)"
+            let label = String(localized: "Pos.") + " \(g.position) \(g.name) \(g.count)x \(g.length)x\(g.width)x\(g.thickness)"
             w.text(label, at: Vec2(x, b.max.y - b.min.y + 8), height: 5, layer: "BESCHRIFTUNG")
             x += (b.max.x - b.min.x) + 40
         }
