@@ -230,11 +230,11 @@ struct SceneBuilder {
     private mutating func addGrid() {
         let cam = editor.camera
         let plane = editor.activePlane ?? .xy
-        let step = Double(pow(10, floor(log10(max(cam.distance, 0.01) / 12))))
-        let major = step * 10
+        let (step, major) = editor.gridSpacing
         let center = plane.project(Vec3(Double(cam.target.x), Double(cam.target.y), Double(cam.target.z)))
         let c = Vec2((center.x / major).rounded() * major, (center.y / major).rounded() * major)
-        let n = 60
+        editor.gridCenter = center
+        let n = 80
         let half = Double(n) * step
         var minor: [LineInstance] = [], majorLines: [LineInstance] = []
         let minorColor = packColor(style.gridMinor), majorColor = packColor(style.gridMajor)

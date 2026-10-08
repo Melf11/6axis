@@ -187,10 +187,10 @@ private struct BottomBar: View {
             let n = editor.toolPoints.count
             switch editor.sketchTool {
             case .select: return "Ziehen zum Verschieben · L Linie · R Rechteck · C Kreis · D Bemaßung"
-            case .line: return n == 0 ? "Startpunkt klicken" : "Nächsten Punkt klicken · Esc beendet"
-            case .rectangle: return n == 0 ? "Erste Ecke klicken" : "Gegenüberliegende Ecke klicken"
+            case .line: return n == 0 ? "Startpunkt klicken · ⌘ = frei setzen" : "Nächsten Punkt klicken · Tab für Maße · Esc beendet"
+            case .rectangle: return n == 0 ? "Erste Ecke klicken · ⌘ = frei setzen" : "Gegenüberliegende Ecke klicken oder Maße eintippen"
             case .centerRectangle: return n == 0 ? "Mittelpunkt klicken" : "Ecke klicken"
-            case .circle: return n == 0 ? "Mittelpunkt klicken" : "Radius klicken"
+            case .circle: return n == 0 ? "Mittelpunkt klicken · ⌘ = frei setzen" : "Radius klicken oder Durchmesser eintippen"
             case .arc: return n == 0 ? "Startpunkt klicken" : (n == 1 ? "Endpunkt klicken" : "Punkt auf dem Bogen klicken")
             case .dimension:
                 if editor.dimensionSecond != nil { return "Bemaßung platzieren" }

@@ -117,15 +117,19 @@ extension Editor {
     func pan(dx: CGFloat, dy: CGFloat) {
         cameraAnimation = nil
         camera.pan(dx: Float(dx), dy: Float(dy))
+        let plane = activePlane ?? .xy
+        let t = camera.target
+        if simd_distance(plane.project(Vec3(Double(t.x), Double(t.y), Double(t.z))), gridCenter) > gridSpacing.minor * 30 {
+            sceneVersion &+= 1   // recenter the finite grid
+        }
         requestRedraw()
     }
 
     func zoom(factor: CGFloat, at pt: CGPoint?) {
         cameraAnimation = nil
-        let decade = { floor(log10(max(self.camera.distance, 0.01) / 12)) }
-        let before = decade()
+        let before = gridSpacing.minor
         camera.zoom(factor: Float(factor), at: AppSettings.shared.zoomToCursor ? pt : nil)
-        if decade() != before { sceneVersion &+= 1 }   // grid density follows zoom
+        if gridSpacing.minor != before { sceneVersion &+= 1 }   // grid density follows zoom
         requestRedraw()
     }
 

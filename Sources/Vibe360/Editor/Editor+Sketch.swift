@@ -115,6 +115,32 @@ extension Editor {
 
     // MARK: - Cursor & snapping
 
+    /// Minor/major grid spacing for the current zoom in 1-2-5 steps. Shared by rendering and snapping,
+    /// so points always land on visible grid lines.
+    var gridSpacing: (minor: Double, major: Double) {
+        let target = Double(camera.distance) / 28
+        let base = pow(10, floor(log10(max(target, 1e-4))))
+        let m = target / base
+        let mantissa: Double = m < 2 ? 1 : (m < 5 ? 2 : 5)
+        let minor = mantissa * base
+        return (minor, mantissa == 2 ? minor * 5 : minor * 10)
+    }
+
+    /// Grid snapping is on by default; holding ⌘ places points freely.
+    var gridSnapActive: Bool {
+        AppSettings.shared.snapToGrid && !NSEvent.modifierFlags.contains(.command)
+    }
+
+    func snapToGrid(_ p: Vec2) -> Vec2 {
+        let s = gridSpacing.minor
+        return Vec2((p.x / s).rounded() * s, (p.y / s).rounded() * s)
+    }
+
+    func snapLength(_ v: Double) -> Double {
+        let s = gridSpacing.minor
+        return max(s, (v / s).rounded() * s)
+    }
+
     func sketchPosition(at pt: CGPoint) -> Vec2? {
         guard let plane = activePlane else { return nil }
         let r = camera.rayD(at: pt)
@@ -133,7 +159,12 @@ extension Editor {
         default:
             break
         }
-        var pos = raw
+        let grid = gridSnapActive
+        var pos = grid ? snapToGrid(raw) : raw
+        if grid, sketchTool == .circle, let c = toolPoints.first?.position, simd_distance(raw, c) > 1e-9 {
+            // Circles snap their radius to the grid step instead of the rim point.
+            pos = c + simd_normalize(raw - c) * snapLength(simd_distance(raw, c))
+        }
         if let start = toolPoints.last?.position, [.line, .rectangle, .centerRectangle].contains(sketchTool) || sketchTool == .arc {
             let d = raw - start
             let tol = 4.0 * Double(camera.worldPerPoint)
@@ -145,7 +176,7 @@ extension Editor {
                 }
             }
         }
-        return SnapTarget(position: pos)
+        return SnapTarget(position: pos, onGrid: grid)
     }
 
     func closestPoint(on curve: SketchCurve, _ sk: Sketch, to p: Vec2) -> Vec2 {
@@ -650,18 +681,24 @@ extension Editor {
     func sketchDrag(to pt: CGPoint) {
         guard var ds = dragState, let original = ds.original, let start = ds.startSketchPos,
               let cur = sketchPosition(at: pt), let id = sketchId else { return }
-        let delta = cur - start
+        var delta = cur - start
+        let grid = gridSnapActive
+        if grid {
+            let s = gridSpacing.minor
+            delta = Vec2((delta.x / s).rounded() * s, (delta.y / s).rounded() * s)
+        }
         var sk = original
         var targets: [Int: Vec2] = [:]
         var radii: [Int: Double] = [:]
         switch ds.pick {
         case let .sketchPoint(_, p):
-            if let pos = original.point(p) { targets[p] = pos + delta }
+            if let pos = original.point(p) { targets[p] = grid ? snapToGrid(pos + (cur - start)) : pos + delta }
         case let .sketchCurve(_, c):
             guard let curve = original.curve(c) else { return }
             switch curve.geometry {
             case let .circle(center, _):
-                radii[c] = simd_distance(original.point(center) ?? .zero, cur)
+                let r = simd_distance(original.point(center) ?? .zero, cur)
+                radii[c] = grid ? snapLength(r) : r
             default:
                 for p in curve.geometry.pointIds { if let pos = original.point(p) { targets[p] = pos + delta } }
             }

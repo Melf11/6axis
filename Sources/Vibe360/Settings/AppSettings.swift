@@ -92,6 +92,8 @@ final class AppSettings {
     var appearance: Appearance { didSet { save(); applyAppearance() } }
     var showGrid: Bool { didSet { save() } }
     var defaultOrthographic: Bool { didSet { save() } }
+    /// Snap sketch points to the grid (⌘ = free).
+    var snapToGrid: Bool { didSet { save() } }
 
     // MARK: 3D printing
 
@@ -123,6 +125,7 @@ final class AppSettings {
         appearance = Appearance(rawValue: string("display.appearance", "system")) ?? .system
         showGrid = bool("display.grid", true)
         defaultOrthographic = bool("display.ortho", false)
+        snapToGrid = bool("sketch.snapToGrid", true)
         stlQuality = STLQuality(rawValue: string("print.stlQuality", "normal")) ?? .normal
         material = Material(rawValue: string("print.material", "pla")) ?? .pla
         customDensity = double("print.customDensity", 1.2)
@@ -145,6 +148,7 @@ final class AppSettings {
         d.set(appearance.rawValue, forKey: "display.appearance")
         d.set(showGrid, forKey: "display.grid")
         d.set(defaultOrthographic, forKey: "display.ortho")
+        d.set(snapToGrid, forKey: "sketch.snapToGrid")
         d.set(stlQuality.rawValue, forKey: "print.stlQuality")
         d.set(material.rawValue, forKey: "print.material")
         d.set(customDensity, forKey: "print.customDensity")

@@ -92,6 +92,9 @@ enum DemoScript {
         editor.camera.distance = 160
         editor.camera.target = SIMD3(30, 20, 0)
         editor.setSketchTool(.rectangle)
+        editor.updateHover(at: editor.camera.project(editor.activePlane!.point(Vec2(12.3, 7.7)))!)
+        print("DEMO: snapped cursor \(editor.cursor.map { "\($0.position)" } ?? "nil") grid \(editor.gridSpacing.minor)")
+        await snap(editor, "03a-cursor-grid", dir)
         clickSketch(editor, Vec2(0, 0))
         editor.updateHover(at: editor.camera.project(editor.activePlane!.point(Vec2(58, 38)))!)
         await pause(0.5)

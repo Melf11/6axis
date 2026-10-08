@@ -128,6 +128,7 @@ struct SnapTarget: Equatable {
     var position: Vec2
     var point: Int?
     var curve: Int?
+    var onGrid = false
 }
 
 enum Inference: Equatable { case horizontal, vertical }
@@ -194,6 +195,8 @@ final class Editor {
     @ObservationIgnored var pickIds: [Pick: UInt32] = [:]
     @ObservationIgnored var dragState: DragState?
     @ObservationIgnored var lastMouse: CGPoint = .zero
+    /// Sketch-plane point the rendered grid is centered on (to recenter after long pans).
+    @ObservationIgnored var gridCenter: Vec2 = .zero
 
     struct DragState {
         var start: CGPoint

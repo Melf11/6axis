@@ -92,6 +92,14 @@ struct DisplaySettings: View {
                 Toggle("Raster anzeigen", isOn: $s.showGrid)
                 Toggle("Neue Designs orthografisch anzeigen", isOn: $s.defaultOrthographic)
             }
+            Section {
+                Toggle("Punkte am Raster ausrichten", isOn: $s.snapToGrid)
+            } header: {
+                Text("Skizze")
+            } footer: {
+                Text("Mit gedrückter ⌘-Taste setzt du Punkte jederzeit frei. Vorhandene Punkte und Linien haben immer Vorrang.")
+                    .font(.caption).foregroundStyle(.secondary)
+            }
         }
         .formStyle(.grouped)
     }

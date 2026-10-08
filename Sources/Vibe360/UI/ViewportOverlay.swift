@@ -62,6 +62,7 @@ struct ViewportOverlay: View {
                 ctx.stroke(Path(CGRect(x: snapPt.x - 4, y: snapPt.y - 4, width: 8, height: 8)), with: .color(accent), lineWidth: 1.5)
             }
         }
+        drawCursorMarker(ctx, cur)
         guard let p0 = editor.toolPoints.first?.position else { return }
         let e = editor.effectiveToolEnd(c)
         switch editor.sketchTool {
@@ -103,6 +104,32 @@ struct ViewportOverlay: View {
         default:
             break
         }
+    }
+
+    private var isDrawingTool: Bool {
+        switch editor.sketchTool {
+        case .line, .rectangle, .centerRectangle, .circle, .arc: return true
+        default: return false
+        }
+    }
+
+    /// Shows where the next point will be placed; before the first click also its coordinates.
+    private func drawCursorMarker(_ ctx: GraphicsContext, _ cur: SnapTarget) {
+        guard isDrawingTool else { return }
+        let pos = editor.toolPoints.isEmpty ? cur.position : editor.effectiveToolEnd(cur.position)
+        guard let s = screen(pos) else { return }
+        let dot = Path(ellipseIn: CGRect(x: s.x - 4.5, y: s.y - 4.5, width: 9, height: 9))
+        ctx.fill(dot, with: .color(accent))
+        ctx.stroke(dot, with: .color(.white), lineWidth: 1.5)
+        guard editor.toolPoints.isEmpty else { return }
+        var text = "X \(editor.plainNumber(pos.x))  Y \(editor.plainNumber(pos.y))"
+        if cur.point == nil && cur.curve == nil && !cur.onGrid && AppSettings.shared.snapToGrid { text += "  · frei" }
+        let t = ctx.resolve(Text(text).font(.system(size: 10.5, weight: .medium, design: .rounded)).foregroundStyle(Color.primary.opacity(0.8)))
+        let size = t.measure(in: CGSize(width: 300, height: 40))
+        let rect = CGRect(x: s.x + 12, y: s.y + 10, width: size.width + 12, height: size.height + 5)
+        ctx.fill(Path(roundedRect: rect, cornerRadius: 5), with: .color(Color(nsColor: .windowBackgroundColor).opacity(0.92)))
+        ctx.stroke(Path(roundedRect: rect, cornerRadius: 5), with: .color(.primary.opacity(0.15)), lineWidth: 0.5)
+        ctx.draw(t, at: CGPoint(x: rect.midX, y: rect.midY))
     }
 
     private func label(_ ctx: GraphicsContext, _ text: String, near p: Vec2) {

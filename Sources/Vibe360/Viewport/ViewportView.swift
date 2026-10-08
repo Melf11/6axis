@@ -255,6 +255,11 @@ final class ViewportNSView: MTKView {
 
     // MARK: Keyboard
 
+    override func flagsChanged(with event: NSEvent) {
+        super.flagsChanged(with: event)
+        if editor.sketchId != nil { editor.updateHover(at: editor.lastMouse) }
+    }
+
     override func keyDown(with event: NSEvent) {
         if !editor.handleKey(event.charactersIgnoringModifiers ?? "", keyCode: event.keyCode, modifiers: event.modifierFlags) {
             super.keyDown(with: event)
