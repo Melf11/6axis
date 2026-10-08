@@ -8,9 +8,9 @@
 
 *English:* 6axis is a free, open-source, fully offline parametric CAD app for macOS, inspired by Fusion 360's workflow and focused on mechanical design and 3D printing. The UI is currently German; contributions (including localization) are welcome.
 
-## Funktionen (Stand 0.1)
+## Funktionen
 
-- **Skizzen** auf Ursprungsebenen oder ebenen Körperflächen: Linie, Rechteck, Mittelpunkt-Rechteck, Kreis, 3-Punkt-Bogen
+- **Skizzen** auf Ursprungsebenen oder ebenen Körperflächen: Linie, Rechteck, Mittelpunkt-Rechteck, Kreis, 3-Punkt-Bogen – mit Rasterfang (⌘ = frei) und Maßeingabe direkt beim Zeichnen (Tab wechselt zwischen Länge, Breite, Winkel …)
 - **Abhängigkeiten**: horizontal, vertikal, deckungsgleich, tangential, gleich, parallel, senkrecht, konzentrisch, Mittelpunkt, kollinear, symmetrisch, fixieren – mit automatischer H/V-Erkennung beim Zeichnen
 - **Bemaßungen** (Länge, Abstand horizontal/vertikal, Punkt–Linie, Radius, Durchmesser, Winkel) mit Ausdrücken und **Benutzerparametern** (`breite / 2 + wand`)
 - Anzeige der **Freiheitsgrade**; vollständig bestimmte Geometrie wird schwarz dargestellt
@@ -19,11 +19,12 @@
 - **Drehung** um Achsen, Skizzenlinien oder Kanten
 - **Abrundung, Fase, Wandstärke**
 - **Parametrische Zeitleiste**: bearbeiten, unterdrücken, löschen, zurückrollen; Referenzen überleben Änderungen
-- **Technische Zeichnung** (⇧⌘D): normgerechte 3-Tafel-Projektion (Methode 1) mit Isometrie, automatischer Bezugsbemaßung in ganzen Millimetern, Bohrungen mit Ø und Mittellinien, Schriftfeld, automatischem Blatt/Maßstab, Positionsnummern, Stück-/Zuschnittliste, Einzelteilblättern, Schnitt A–A und Einzelheiten – live synchron mit dem Modell, als PDF, DXF (auch Einzelteile 1:1 für CNC/Laser) oder direkt drucken ([Plan](docs/technical-drawing.md))
+- **Technische Zeichnung** (⇧⌘D): normgerechte 3-Tafel-Projektion (Methode 1) mit Isometrie, automatischer Bezugsbemaßung in ganzen Millimetern, Bohrungen mit Ø und Mittellinien, Radien, Fasen und Winkeln, Schriftfeld, automatischem Blatt/Maßstab, Positionsnummern, Stück-/Zuschnittliste, Einzelteilblättern, Schnitt A–A und Einzelheiten – live synchron mit dem Modell, als PDF, DXF (auch Einzelteile 1:1 für CNC/Laser) oder direkt drucken ([Plan](docs/technical-drawing.md))
 - **Export**: STL (3D-Druck), STEP; **Import**: STEP; **„Im Slicer öffnen“** (PrusaSlicer, Bambu Studio, OrcaSlicer, Cura …)
-- Volumen und geschätztes PLA-Gewicht der Auswahl
+- **Material und Faserrichtung** je Körper; Volumen und geschätztes Gewicht (PLA, PETG, Holz …)
 - Fusion-artige Bedienung: Ribbon, Browser, ViewCube, Radialmenü per Rechtsklick, Befehlssuche mit **S**, Tastenkürzel (L, R, C, A, D, E, F, X …)
 - Automatisches Sichern: Das letzte Design (auch ungesichert) und die Ansicht werden beim nächsten Start wiederhergestellt
+- **Einstellungen**: Scrollrichtung (natürliches Scrollen), Navigation, Kantenstärke, Studio-Schattierung mit Bodenschatten, Raster, STL-Qualität, Slicer
 - Unbegrenztes Rückgängig/Wiederholen, Dark Mode, Retina, 120 Hz
 
 ## Bedienung
@@ -85,11 +86,12 @@ Tests/          Unit-Tests für SixAxisCore.
 
 ## Roadmap
 
-- Skizze: Trimmen, Versatz, Spiegeln, Muster, Skizzen-Abrundung, Splines, Text, Projizieren von Kanten
-- Konstruktionsebenen und -achsen, Bohrung, Gewinde, Muster (rechteckig/kreisförmig), Spiegeln, Verschieben/Kopieren
-- 3MF-Export mit Einheiten, Messwerkzeug, Schnittansicht
-- Mehrere Komponenten und Baugruppen mit Gelenken, technische Zeichnungen
-- Englische Lokalisierung, signiertes Release mit gebündelten OCCT-Bibliotheken
+Der ausführliche Plan steht in [docs/roadmap.md](docs/roadmap.md). Kurz:
+
+- **0.9** – Test-Release: App läuft ohne Homebrew, Releases per GitHub Actions, Produktseite
+- **1.0** – Neuberechnung im Hintergrund, Englisch, Dateiformat-Versionierung
+- **1.1–1.4** – Skizze vervollständigen, Modellieren, Prüfen & Ausgabe, Baugruppen
+- **Feature-Sammlung** – Holz-Werkzeuge (System 32, Nut/Falz, Dübel, Zinken …), Plattenzuschnittplan
 
 ## Mitmachen
 
