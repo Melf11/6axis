@@ -19,16 +19,23 @@ extension Editor {
         var orthographic: Bool
     }
 
+    /// Automated runs (any SIXAXIS_* variable: demos, session test, CI) use a separate folder so they
+    /// never overwrite the user's autosave and session.
+    static var isAutomatedRun: Bool { ProcessInfo.processInfo.environment.keys.contains { $0.hasPrefix("SIXAXIS_") } }
+
     static var supportDirectory: URL {
         let base = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
-        return base.appendingPathComponent("6axis", isDirectory: true)
+        return base.appendingPathComponent(isAutomatedRun ? "6axis-test" : "6axis", isDirectory: true)
     }
 
     private static var autosaveURL: URL { supportDirectory.appendingPathComponent("Autosave.6axis") }
     private static var sessionURL: URL { supportDirectory.appendingPathComponent("Session.json") }
 
     /// Demo/CI runs must never touch the user's session.
-    static var sessionEnabled: Bool { ProcessInfo.processInfo.environment["SIXAXIS_DEMO"] == nil }
+    static var sessionEnabled: Bool {
+        let env = ProcessInfo.processInfo.environment
+        return env["SIXAXIS_DEMO"] == nil && env["SIXAXIS_EXAMPLES_DEMO"] == nil
+    }
 
     /// Debounced: saves one second after the last change.
     func scheduleAutosave() {

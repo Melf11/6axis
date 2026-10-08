@@ -166,6 +166,16 @@ public struct ModelState: @unchecked Sendable {
 
     public var orderedBodies: [BuiltBody] { bodyOrder.compactMap { bodies[$0] } }
 
+    /// Computes tessellation and topology info of every body up front (call off the main thread),
+    /// so the UI never triggers OpenCASCADE work or races on the lazy caches.
+    public func prepareForDisplay() {
+        for body in bodies.values {
+            _ = body.mesh
+            _ = body.faceInfos
+            _ = body.edgeInfos
+        }
+    }
+
     mutating func setBody(_ b: BuiltBody) {
         if bodies[b.id] == nil { bodyOrder.append(b.id) }
         bodies[b.id] = b
@@ -348,8 +358,7 @@ public final class ModelBuilder: @unchecked Sendable {
 
     func combine(_ tools: [Shape], op: BodyOperation, targets: [UUID], feature: UUID, _ state: inout ModelState) throws {
         guard !tools.isEmpty else { throw KernelError("Keine Geometrie erzeugt") }
-        var tool = tools[0]
-        for t in tools.dropFirst() { tool = try tool.boolean(.fuse, t) }
+        let tool = tools.count == 1 ? tools[0] : try Shape.fuseAll(tools)
 
         func overlapping() -> [UUID] {
             guard let tb = tool.boundingBox else { return [] }

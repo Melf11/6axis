@@ -106,6 +106,14 @@ public final class Shape: @unchecked Sendable {
 
     public enum BooleanOp: Int32 { case fuse = 0, cut = 1, common = 2 }
 
+    /// Union of many shapes in one operation.
+    public static func fuseAll(_ shapes: [Shape]) throws -> Shape {
+        let handles: [OpaquePointer?] = shapes.map { $0.handle }
+        return try handles.withUnsafeBufferPointer { buf in
+            try Shape.wrap(ob_fuse_all(buf.baseAddress, Int32(buf.count)), "Vereinigen fehlgeschlagen")
+        }
+    }
+
     public func boolean(_ op: BooleanOp, _ other: Shape) throws -> Shape {
         try Shape.wrap(ob_boolean(handle, other.handle, op.rawValue), "Boolesche Operation fehlgeschlagen")
     }

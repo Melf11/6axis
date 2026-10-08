@@ -142,6 +142,17 @@ private struct BottomBar: View {
                     .frame(height: 24)
                     .floatingPanel(radius: 12)
                 }
+                if editor.isRebuilding {
+                    HStack(spacing: 6) {
+                        ProgressView().controlSize(.mini)
+                        Text("Berechne Modell …")
+                    }
+                    .font(.system(size: 11, weight: .medium))
+                    .padding(.horizontal, 10)
+                    .frame(height: 24)
+                    .floatingPanel(radius: 12)
+                    .transition(.opacity)
+                }
                 Text(prompt)
                     .font(.system(size: 11))
                     .lineLimit(1)

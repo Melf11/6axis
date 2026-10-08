@@ -80,7 +80,7 @@ Inhalt:
 ## 1.0 – Stabil
 
 - [x] **Parameter verschieben Geometrie zuverlässig:** Profile merken sich ihre Lage relativ zu den Skizzenpunkten, Kanten und Flächen von Abrundung/Fase/Wandstärke bleiben bei gleicher Topologie über ihren Index erhalten. Ändern von z. B. Korpusbreite oder -höhe baut fehlerfrei neu auf; ältere Dateien funktionieren weiter. Alle Beispiele sind vollständig parametrisch.
-- [ ] **Neuberechnung im Hintergrund:** Modell-Neuaufbau nicht mehr auf dem Hauptthread, Oberfläche bleibt bei großen Modellen flüssig; Fortschrittsanzeige bei langen Booleschen Operationen
+- [x] **Neuberechnung im Hintergrund:** Neuaufbau auf einer eigenen Queue; ist er nach 80 ms fertig, wird er sofort übernommen (Vorschau beim Ziehen bleibt direkt), sonst bleibt die Oberfläche bedienbar und zeigt „Berechne Modell …“; veraltete Berechnungen werden übersprungen. Viele Werkzeugkörper (z. B. 400 Bohrungen) werden in einer Operation vereinigt statt nacheinander (13 s → 6 s im Debug-Build, ~2 s im Release-Build)
 - [ ] **Englisch:** alle Texte über String Catalog, Deutsch und Englisch, Sprache folgt dem System; Produktseite zweisprachig
 - [ ] **Dateiformat-Versionierung:** `formatVersion` auswerten, Migrationen für ältere Dateien, Test-Sammlung alter Beispieldateien
 - [ ] **Rückmeldungen der Tester** aus 0.9 einarbeiten (Bedienung von Zeichnungsfenster, Radialmenü, Navigation, DXF in CAM-/Lasersoftware)

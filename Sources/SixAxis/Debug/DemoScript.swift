@@ -35,6 +35,45 @@ enum DemoScript {
             }
             return
         }
+        // Slow rebuild stays responsive: SIXAXIS_REBUILD_TEST=dir (plate with many holes)
+        if let out = env["SIXAXIS_REBUILD_TEST"] {
+            Task { @MainActor in
+                let dir = URL(fileURLWithPath: out)
+                try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+                await pause(1.0)
+                var sk = Sketch(plane: .xy)
+                let c = [sk.addPoint(Vec2(0, 0)), sk.addPoint(Vec2(420, 0)), sk.addPoint(Vec2(420, 420)), sk.addPoint(Vec2(0, 420))]
+                for i in 0..<4 { sk.addLine(c[i], c[(i + 1) % 4]) }
+                let plate = Feature(name: "Platte", kind: .sketch(sk))
+                var ex = ExtrudeFeature()
+                ex.profiles = [ProfileRef(sketch: plate.id, sample: Vec2(1, 1))]
+                ex.distance = "10 mm"
+                var holes = Sketch(plane: .xy)
+                var profiles: [ProfileRef] = []
+                let hs = UUID()
+                for i in 0..<20 { for j in 0..<20 {
+                    let p = Vec2(15 + Double(i) * 20, 15 + Double(j) * 20)
+                    holes.addCircle(center: holes.addPoint(p), radius: 4)
+                    profiles.append(ProfileRef(sketch: hs, sample: p))
+                } }
+                var cut = ExtrudeFeature()
+                cut.profiles = profiles
+                cut.distance = "30 mm"
+                cut.operation = .cut
+                let start = Date()
+                editor.commit { $0.features = [plate, Feature(name: "Platte", kind: .extrude(ex)),
+                                               Feature(id: hs, name: "Löcher", kind: .sketch(holes)), Feature(name: "Löcher", kind: .extrude(cut))] }
+                let returned = Date().timeIntervalSince(start)
+                print("REBUILD commit returned after \(Int(returned * 1000)) ms, rebuilding=\(editor.isRebuilding)")
+                await snap(editor, "rebuilding", dir)
+                while editor.isRebuilding { await pause(0.05) }
+                print("REBUILD done after \(Int(Date().timeIntervalSince(start) * 1000)) ms, bodies=\(editor.state.bodyOrder.count) errors=\(editor.state.errors.count) faces=\(editor.state.orderedBodies.first?.faceInfos.count ?? 0)")
+                editor.homeView()
+                await snap(editor, "done", dir)
+                exit(0)
+            }
+            return
+        }
         // One screenshot per shipped example: SIXAXIS_EXAMPLES_DEMO=dir
         if let out = env["SIXAXIS_EXAMPLES_DEMO"] {
             Task { @MainActor in

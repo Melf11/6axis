@@ -141,6 +141,12 @@ final class Editor {
     var isDirty = false
     private(set) var state = ModelState()
     @ObservationIgnored let builder = ModelBuilder()
+    /// True while a slow rebuild runs in the background (the UI shows "Berechne …").
+    private(set) var isRebuilding = false
+    @ObservationIgnored private let rebuildQueue = DispatchQueue(label: "app.6axis.rebuild", qos: .userInitiated)
+    @ObservationIgnored private var rebuildGeneration = 0
+    @ObservationIgnored private var appliedGeneration = 0
+    @ObservationIgnored private let latestRequested = LatestGeneration()
     @ObservationIgnored private var undoStack: [CADDocument] = []
     @ObservationIgnored private var redoStack: [CADDocument] = []
     var canUndo = false
@@ -226,8 +232,42 @@ final class Editor {
 
     var evaluator: Evaluator { Evaluator(parameters: doc.parameters) }
 
+    /// Rebuilds the model on a background queue. Results that arrive within a short budget are applied
+    /// immediately (small models behave synchronously, e.g. live previews while dragging); slower
+    /// rebuilds keep the UI responsive and are applied when done. Superseded rebuilds are skipped.
     func rebuild() {
-        state = builder.build(doc)
+        rebuildGeneration &+= 1
+        let generation = rebuildGeneration
+        let snapshot = doc
+        let builder = self.builder
+        let latest = latestRequested
+        latest.set(generation)
+        let result = RebuildResult()
+        rebuildQueue.async {
+            if latest.get() == generation {
+                let state = builder.build(snapshot)
+                state.prepareForDisplay()
+                result.state = state
+            }
+            result.done.signal()
+            DispatchQueue.main.async { [weak self] in
+                guard let self, let state = result.state else { return }
+                self.apply(state, generation: generation)
+            }
+        }
+        if result.done.wait(timeout: .now() + .milliseconds(80)) == .success, let state = result.state {
+            apply(state, generation: generation)
+        } else {
+            isRebuilding = true
+        }
+    }
+
+    private func apply(_ newState: ModelState, generation: Int) {
+        // Only the newest request counts; each generation is applied once.
+        guard generation == rebuildGeneration, generation != appliedGeneration else { return }
+        appliedGeneration = generation
+        isRebuilding = false
+        state = newState
         assignBodyNames()
         sceneVersion &+= 1
         modelRevision &+= 1
@@ -563,4 +603,18 @@ import UniformTypeIdentifiers
 
 extension UTType {
     static let sixAxisDocument = UTType(filenameExtension: "6axis", conformingTo: .json) ?? .json
+}
+
+/// Hand-over box between the rebuild queue and the main thread (the semaphore orders the accesses).
+private final class RebuildResult: @unchecked Sendable {
+    var state: ModelState?
+    let done = DispatchSemaphore(value: 0)
+}
+
+/// Newest requested rebuild, read by the queue to skip superseded work.
+private final class LatestGeneration: @unchecked Sendable {
+    private var value = 0
+    private let lock = NSLock()
+    func set(_ v: Int) { lock.lock(); value = v; lock.unlock() }
+    func get() -> Int { lock.lock(); defer { lock.unlock() }; return value }
 }
