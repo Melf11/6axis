@@ -5,18 +5,35 @@ import simd
 /// baseline dimensioning from the reference ("Anschlag") edges, in whole millimetres.
 /// Pure model code: no UI, safe to run on a background queue.
 public final class DrawingGenerator: @unchecked Sendable {
+    /// A body to draw, with its name for the parts list.
+    public struct Part: Sendable {
+        public var name: String
+        public var shape: Shape
+        public init(name: String, shape: Shape) {
+            self.name = name
+            self.shape = shape
+        }
+    }
+
     public struct Input: Sendable {
-        public var shapes: [Shape]
+        public var parts: [Part]
         public var settings: DrawingSettings
         public var fallbackTitle: String
         public var date: Date
 
-        public init(shapes: [Shape], settings: DrawingSettings, fallbackTitle: String, date: Date = Date()) {
-            self.shapes = shapes
+        public init(parts: [Part], settings: DrawingSettings, fallbackTitle: String, date: Date = Date()) {
+            self.parts = parts
             self.settings = settings
             self.fallbackTitle = fallbackTitle
             self.date = date
         }
+
+        public init(shapes: [Shape], settings: DrawingSettings, fallbackTitle: String, date: Date = Date()) {
+            self.init(parts: shapes.enumerated().map { Part(name: "Teil \($0.offset + 1)", shape: $0.element) },
+                      settings: settings, fallbackTitle: fallbackTitle, date: date)
+        }
+
+        public var shapes: [Shape] { parts.map(\.shape) }
     }
 
     enum View: String, CaseIterable {
@@ -120,23 +137,48 @@ public final class DrawingGenerator: @unchecked Sendable {
         return merged.filter { abs($0.position - base) >= 0.5 }
     }
 
-    // MARK: - Generate
+    // MARK: - View sets
 
-    public func generate(_ input: Input) -> DrawingPage {
-        let settings = input.settings
-        let shapes = input.shapes
-        let front = shapes.isEmpty ? nil : projection(shapes, .front).flatMap(Self.analyze)
-        let top = shapes.isEmpty ? nil : projection(shapes, .top).flatMap(Self.analyze)
-        let side = shapes.isEmpty ? nil : projection(shapes, .left).flatMap(Self.analyze)
+    /// The three orthographic views of a set of shapes plus their (visible) dimension lists.
+    struct ViewSet {
+        var prefix: String
+        var front: ViewData
+        var top: ViewData
+        var side: ViewData
+        var frontX: [(Feature, String)] = []
+        var frontZ: [(Feature, String)] = []
+        var sideY: [(Feature, String)] = []
+        var sideZ: [(Feature, String)] = []
+        var topX: [(Feature, String)] = []
+        var topY: [(Feature, String)] = []
+        var rows = (frontBelow: 0, frontLeft: 0, sideRight: 0, topBelow: 0, topLeft: 0)
 
-        guard let front, let top, let side else {
-            var page = DrawingPage(sheet: sheetFor(settings.sheet) ?? .a4, scale: DrawingScale.named("1:1")!)
-            addFrameAndTitle(&page, input)
-            page.texts.append(DrawingText(text: "Keine sichtbaren Körper", position: Vec2(page.sheet.width / 2, page.sheet.height / 2 + 10), height: 5))
-            return page
+        static func band(_ n: Int) -> Double { n == 0 ? 6 : 10 + 7 * Double(n - 1) + 6 }
+
+        /// Paper space needed at scale s.
+        func layoutSize(_ s: Double) -> (w: Double, h: Double, gapV: Double, gapH: Double, left: Double) {
+            let left = max(Self.band(rows.frontLeft), Self.band(rows.topLeft))
+            let gapV = Self.band(rows.frontBelow) + 8
+            let gapH = 22.0
+            let w = left + front.size.x * s + gapH + side.size.x * s + Self.band(rows.sideRight)
+            let h = front.size.y * s + gapV + top.size.y * s + Self.band(rows.topBelow) + 4
+            return (w, h, gapV, gapH, left)
         }
 
-        // Dimension sets in model units (computed once, independent of scale).
+        func fits(_ s: Double, _ size: Vec2) -> Bool {
+            let l = layoutSize(s)
+            return l.w <= size.x && l.h <= size.y
+        }
+
+        func bestScale(_ size: Vec2) -> DrawingScale? { DrawingScale.all.first { fits($0.factor, size) } }
+    }
+
+    func makeViewSet(_ shapes: [Shape], prefix: String, settings: DrawingSettings) -> ViewSet? {
+        guard !shapes.isEmpty,
+              let front = projection(shapes, .front).flatMap(Self.analyze),
+              let top = projection(shapes, .top).flatMap(Self.analyze),
+              let side = projection(shapes, .left).flatMap(Self.analyze) else { return nil }
+        var set = ViewSet(prefix: prefix, front: front, top: top, side: side)
         func holeX(_ v: ViewData) -> [Feature] { v.holes.map { Feature(position: $0.center.x, low: $0.center.y - $0.radius, high: $0.center.y + $0.radius, isHole: true) } }
         func holeY(_ v: ViewData) -> [Feature] { v.holes.map { Feature(position: $0.center.y, low: $0.center.x - $0.radius, high: $0.center.x + $0.radius, isHole: true) } }
         let frontXAll = Self.baseline(front.xs + holeX(front), from: front.minP.x)
@@ -150,129 +192,333 @@ public final class DrawingGenerator: @unchecked Sendable {
         let topXAll = Self.baseline(holeX(top), from: top.minP.x).filter { !frontXValues.contains(Int(($0.position - top.minP.x).rounded())) }
         let topYAll = Self.baseline(holeY(top), from: top.minP.y)
 
-        // Stable ids ("front.x.481") let manual edits survive model changes; hidden ones close up their row.
-        let dims = settings.showDimensions
+        // Stable ids ("front.x.481", "p2.front.x.300") let manual edits survive model changes;
+        // hidden ones close up their row.
         func visible(_ f: [Feature], _ view: String, _ axis: String, _ base: Double) -> [(Feature, String)] {
-            guard dims else { return [] }
-            return f.map { ($0, Self.dimensionId(view, axis, $0.position - base)) }.filter { !settings.hiddenDimensions.contains($0.1) }
+            guard settings.showDimensions else { return [] }
+            return f.map { ($0, Self.dimensionId(prefix + view, axis, $0.position - base)) }
+                .filter { !settings.hiddenDimensions.contains($0.1) }
         }
-        let frontX = visible(frontXAll, "front", "x", front.minP.x)
-        let frontZ = visible(frontZAll, "front", "y", front.minP.y)
-        let sideY = visible(sideYAll, "left", "x", side.minP.x)
-        let sideZ = visible(sideZAll, "left", "y", side.minP.y)
-        let topX = visible(topXAll, "top", "x", top.minP.x)
-        let topY = visible(topYAll, "top", "y", top.minP.y)
+        set.frontX = visible(frontXAll, "front", "x", front.minP.x)
+        set.frontZ = visible(frontZAll, "front", "y", front.minP.y)
+        set.sideY = visible(sideYAll, "left", "x", side.minP.x)
+        set.sideZ = visible(sideZAll, "left", "y", side.minP.y)
+        set.topX = visible(topXAll, "top", "x", top.minP.x)
+        set.topY = visible(topYAll, "top", "y", top.minP.y)
         func depth(_ f: [(Feature, String)]) -> Int { f.isEmpty ? 0 : (Self.assignRows(f, settings.dimensionOffsets).max() ?? 0) + 1 }
-        let rows = (frontBelow: max(depth(frontX), depth(sideY)), frontLeft: depth(frontZ),
-                    sideRight: depth(sideZ), topBelow: depth(topX), topLeft: depth(topY))
+        set.rows = (max(depth(set.frontX), depth(set.sideY)), depth(set.frontZ), depth(set.sideZ), depth(set.topX), depth(set.topY))
+        return set
+    }
 
-        func band(_ n: Int) -> Double { n == 0 ? 6 : 10 + 7 * Double(n - 1) + 6 }
+    /// Draws a view set centred in `region` at scale `s` and returns the placed views (front, left, top).
+    @discardableResult
+    func emit(_ set: ViewSet, into page: inout DrawingPage, region: (origin: Vec2, size: Vec2), s: Double,
+              settings: DrawingSettings) -> [PlacedView] {
+        let L = set.layoutSize(s)
+        let p = set.prefix
+        // Manual offsets keep the projection alignment: the front view moves everything,
+        // the top view only vertically, the side view only horizontally.
+        let all = settings.viewOffsets[p + "front"] ?? .zero
+        let originX = region.origin.x + (region.size.x - L.w) / 2 + L.left
+        let frontTop = region.origin.y + region.size.y - (region.size.y - L.h) / 2 - 2
+        let frontOrigin = Vec2(originX, frontTop - set.front.size.y * s) + all
+        let sideOrigin = Vec2(frontOrigin.x + set.front.size.x * s + L.gapH + (settings.viewOffsets[p + "left"]?.x ?? 0), frontOrigin.y)
+        let topOrigin = Vec2(frontOrigin.x, frontOrigin.y - L.gapV - set.top.size.y * s + (settings.viewOffsets[p + "top"]?.y ?? 0))
 
-        // Paper space needed at scale s.
-        func layoutSize(_ s: Double) -> (w: Double, h: Double, gapV: Double, gapH: Double, left: Double) {
-            let left = max(band(rows.frontLeft), band(rows.topLeft))
-            let gapV = band(rows.frontBelow) + 8
-            let gapH = 22.0
-            let w = left + front.size.x * s + gapH + side.size.x * s + band(rows.sideRight)
-            let h = front.size.y * s + gapV + top.size.y * s + band(rows.topBelow) + 4
-            return (w, h, gapV, gapH, left)
+        let pf = Self.place(p + "front", "Vorderansicht", set.front, frontOrigin, .all, s)
+        let pl = Self.place(p + "left", "Seitenansicht von links", set.side, sideOrigin, .horizontal, s)
+        let pt = Self.place(p + "top", "Draufsicht", set.top, topOrigin, .vertical, s)
+        page.views += [pf, pl, pt]
+
+        for (v, pv) in [(set.front, pf), (set.side, pl), (set.top, pt)] {
+            addView(&page, v, pv.toPaper, showHidden: settings.showHidden)
+            addCenterLines(&page, v, map: pv.toPaper, s: s)
+            addSnapPoints(&page, v, pv)
+        }
+        let o = settings.dimensionOffsets
+        horizontalBaseline(&page, set.frontX, base: set.front.minP.x, map: pf.toPaper, view: set.front, offsets: o)
+        verticalBaseline(&page, set.frontZ, base: set.front.minP.y, map: pf.toPaper, view: set.front, leftSide: true, offsets: o)
+        horizontalBaseline(&page, set.sideY, base: set.side.minP.x, map: pl.toPaper, view: set.side, offsets: o)
+        verticalBaseline(&page, set.sideZ, base: set.side.minP.y, map: pl.toPaper, view: set.side, leftSide: false, offsets: o)
+        horizontalBaseline(&page, set.topX, base: set.top.minP.x, map: pt.toPaper, view: set.top, offsets: o)
+        verticalBaseline(&page, set.topY, base: set.top.minP.y, map: pt.toPaper, view: set.top, leftSide: true, offsets: o)
+        if settings.showDimensions {
+            for (v, pv) in [(set.front, pf), (set.side, pl), (set.top, pt)] {
+                addHoleLabels(&page, v, viewId: pv.id, map: pv.toPaper, s: s, hidden: settings.hiddenDimensions, offsets: o)
+            }
+        }
+        return [pf, pl, pt]
+    }
+
+    static func place(_ id: String, _ title: String, _ v: ViewData, _ origin: Vec2, _ c: PlacedView.Constraint, _ k: Double) -> PlacedView {
+        PlacedView(id: id, title: title, min: origin, max: origin + v.size * k, origin: origin, modelMin: v.minP, scale: k, constraint: c)
+    }
+
+    // MARK: - Parts
+
+    /// Identical bodies (same size, volume and topology) share one position number.
+    public struct PartGroup: Sendable {
+        public var position: Int
+        public var name: String
+        public var count: Int
+        /// Cut sizes: length ≥ width ≥ thickness (bounding box, whole mm).
+        public var length: Int
+        public var width: Int
+        public var thickness: Int
+        var shape: Shape
+    }
+
+    public func groupParts(_ parts: [Part]) -> [PartGroup] {
+        var groups: [(key: String, group: PartGroup)] = []
+        for part in parts {
+            guard let bb = part.shape.boundingBox else { continue }
+            let e = (bb.max - bb.min)
+            let sorted = [e.x, e.y, e.z].sorted(by: >)
+            let key = sorted.map { String(format: "%.1f", $0) }.joined(separator: "x")
+                + "|\(Int(part.shape.volume.rounded()))|\(part.shape.faceCount)"
+            if let i = groups.firstIndex(where: { $0.key == key }) {
+                groups[i].group.count += 1
+            } else {
+                groups.append((key, PartGroup(position: groups.count + 1, name: part.name, count: 1,
+                                              length: Int(sorted[0].rounded()), width: Int(sorted[1].rounded()),
+                                              thickness: Int(sorted[2].rounded()), shape: part.shape)))
+            }
+        }
+        return groups.map(\.group)
+    }
+
+    /// Orients a part for its own drawing: length → X, width → Z (up), thickness → Y (depth),
+    /// so the front view shows the main face with its drilling pattern.
+    static func normalized(_ shape: Shape) -> Shape {
+        guard let bb = shape.boundingBox else { return shape }
+        let e = bb.max - bb.min
+        let order = [0, 1, 2].sorted { e[$0] > e[$1] }
+        func axis(_ i: Int) -> Vec3 { i == 0 ? Vec3(1, 0, 0) : (i == 1 ? Vec3(0, 1, 0) : Vec3(0, 0, 1)) }
+        let newX = axis(order[0]), newZ = axis(order[1])
+        var newY = axis(order[2])
+        // Proper rotation only (no mirroring): y = z × x.
+        if simd_dot(simd_cross(newZ, newX), newY) < 0 { newY = -newY }
+        let r = simd_double3x3(rows: [newX, newY, newZ])
+        guard let rotated = try? shape.transformed(rotation: r, translation: .zero),
+              let rb = rotated.boundingBox,
+              let moved = try? rotated.translated(-rb.min) else { return shape }
+        return moved
+    }
+
+    // MARK: - Generate
+
+    /// First sheet only (assembly). Kept for callers that need a single page.
+    public func generate(_ input: Input) -> DrawingPage { generatePages(input)[0] }
+
+    /// All sheets: the assembly ("Gesamtansicht") and, for several bodies, part sheets ("Einzelteile").
+    public func generatePages(_ input: Input) -> [DrawingPage] {
+        let settings = input.settings
+        let groups = groupParts(input.parts)
+        let multi = input.parts.count > 1
+        let sheets: [Sheet] = settings.sheet == .auto ? [.a4, .a3, .a2] : [sheetFor(settings.sheet)!]
+
+        guard let set = makeViewSet(input.shapes, prefix: "", settings: settings) else {
+            var page = DrawingPage(sheet: sheets[0], scale: DrawingScale.named("1:1")!)
+            page.texts.append(DrawingText(text: "Keine sichtbaren Körper", position: Vec2(page.sheet.width / 2, page.sheet.height / 2 + 10), height: 5))
+            var pages = [page]
+            addTitleBlocks(&pages, input)
+            return pages
+        }
+
+        // Space for the parts list (above the title block) and the balloon row (above the front view).
+        let listHeight = multi && settings.showPartsList ? Self.listRowHeight * Double(groups.count + 1) + 2 : 0
+        let balloonBand = multi && settings.showBalloons ? 18.0 : 0
+        func region(_ sheet: Sheet) -> (origin: Vec2, size: Vec2) {
+            var a = Self.drawingArea(sheet)
+            a.origin.y += listHeight
+            a.size.y -= listHeight + balloonBand
+            return a
         }
 
         // Sheet and scale.
-        let sheets: [Sheet] = settings.sheet == .auto ? [.a4, .a3, .a2] : [sheetFor(settings.sheet)!]
-        func bestScale(_ sheet: Sheet) -> DrawingScale? {
-            let area = Self.drawingArea(sheet)
-            return DrawingScale.all.first { sc in
-                let l = layoutSize(sc.factor)
-                return l.w <= area.size.x && l.h <= area.size.y
-            }
-        }
         var sheet = sheets[0]
         var scale = DrawingScale.all.last!
         if let fixed = settings.scale.flatMap(DrawingScale.named) {
             scale = fixed
-            sheet = sheets.first { s in
-                let a = Self.drawingArea(s), l = layoutSize(fixed.factor)
-                return l.w <= a.size.x && l.h <= a.size.y
-            } ?? sheets.last!
+            sheet = sheets.first { set.fits(fixed.factor, region($0).size) } ?? sheets.last!
         } else {
             var chosen: (Sheet, DrawingScale)?
             for s in sheets {
-                guard let sc = bestScale(s) else { continue }
+                guard let sc = set.bestScale(region(s).size) else { continue }
                 if chosen == nil { chosen = (s, sc) }
                 // Go to a larger sheet only if the smaller one forces a very small scale.
                 if let c = chosen, c.1.factor < 0.1, sc.factor > c.1.factor { chosen = (s, sc) }
             }
-            if let chosen { (sheet, scale) = chosen } else { sheet = sheets.last!; scale = DrawingScale.all.last! }
+            if let chosen { (sheet, scale) = chosen } else { sheet = sheets.last! }
         }
 
         var page = DrawingPage(sheet: sheet, scale: scale)
         page.isEmpty = false
-        addFrameAndTitle(&page, input)
-
-        // Placement: front top-left, left-side view to the right, top view below (method 1).
-        // Manual offsets keep the projection alignment: the front view moves everything,
-        // the top view only vertically, the side view only horizontally.
         let s = scale.factor
-        let L = layoutSize(s)
-        let area = Self.drawingArea(sheet)
-        let all = settings.viewOffsets["front"] ?? .zero
-        let originX = area.origin.x + (area.size.x - L.w) / 2 + L.left
-        let frontTop = area.origin.y + area.size.y - (area.size.y - L.h) / 2 - 2
-        let frontOrigin = Vec2(originX, frontTop - front.size.y * s) + all
-        let sideOrigin = Vec2(frontOrigin.x + front.size.x * s + L.gapH + (settings.viewOffsets["left"]?.x ?? 0), frontOrigin.y)
-        let topOrigin = Vec2(frontOrigin.x, frontOrigin.y - L.gapV - top.size.y * s + (settings.viewOffsets["top"]?.y ?? 0))
-
-        func place(_ id: String, _ title: String, _ v: ViewData, _ origin: Vec2, _ c: PlacedView.Constraint, _ k: Double) -> PlacedView {
-            PlacedView(id: id, title: title, min: origin, max: origin + v.size * k, origin: origin, modelMin: v.minP, scale: k, constraint: c)
-        }
-        let pf = place("front", "Vorderansicht", front, frontOrigin, .all, s)
-        let pl = place("left", "Seitenansicht von links", side, sideOrigin, .horizontal, s)
-        let pt = place("top", "Draufsicht", top, topOrigin, .vertical, s)
-        page.views = [pf, pl, pt]
-
-        addView(&page, front, pf.toPaper, showHidden: settings.showHidden)
-        addView(&page, side, pl.toPaper, showHidden: settings.showHidden)
-        addView(&page, top, pt.toPaper, showHidden: settings.showHidden)
-        for (v, pv) in [(front, pf), (side, pl), (top, pt)] {
-            addCenterLines(&page, v, map: pv.toPaper, s: s)
-            addSnapPoints(&page, v, pv)
-        }
-
-        let o = settings.dimensionOffsets
-        if dims {
-            // Front: X from the left edge (below), Z from the bottom edge (left).
-            horizontalBaseline(&page, frontX, base: front.minP.x, map: pf.toPaper, view: front, offsets: o)
-            verticalBaseline(&page, frontZ, base: front.minP.y, map: pf.toPaper, view: front, leftSide: true, offsets: o)
-            horizontalBaseline(&page, sideY, base: side.minP.x, map: pl.toPaper, view: side, offsets: o)
-            verticalBaseline(&page, sideZ, base: side.minP.y, map: pl.toPaper, view: side, leftSide: false, offsets: o)
-            horizontalBaseline(&page, topX, base: top.minP.x, map: pt.toPaper, view: top, offsets: o)
-            verticalBaseline(&page, topY, base: top.minP.y, map: pt.toPaper, view: top, leftSide: true, offsets: o)
-            for (v, pv) in [(front, pf), (side, pl), (top, pt)] {
-                addHoleLabels(&page, v, viewId: pv.id, map: pv.toPaper, s: s, hidden: settings.hiddenDimensions, offsets: o)
-            }
-        }
+        let r = region(sheet)
+        let placed = emit(set, into: &page, region: r, s: s, settings: settings)
         for c in settings.customDimensions where !settings.hiddenDimensions.contains(c.key) {
             addCustomDimension(&page, c)
         }
 
-        // Pictorial view in the free quadrant (right of the top view, above the title block); freely movable.
-        if settings.showIso, let iso = projection(shapes, .iso).flatMap(Self.analyze) {
-            let regionMin = Vec2(sideOrigin.x, area.origin.y + 2)
-            let regionMax = Vec2(area.origin.x + area.size.x - 4, sideOrigin.y - band(rows.frontBelow) - 2)
-            let region = regionMax - regionMin
-            if region.x > 35 && region.y > 30 {
-                let fit = min(region.x / max(iso.size.x, 1e-6), region.y / max(iso.size.y, 1e-6)) * 0.9
+        // Pictorial view in the free quadrant (right of the top view, above the parts list); freely movable.
+        let sideView = placed[1]
+        if settings.showIso, let iso = projection(input.shapes, .iso).flatMap(Self.analyze) {
+            let area = Self.drawingArea(sheet)
+            let regionMin = Vec2(sideView.min.x, r.origin.y + 2)
+            let regionMax = Vec2(area.origin.x + area.size.x - 4, sideView.min.y - ViewSet.band(set.rows.frontBelow) - 2)
+            let free = regionMax - regionMin
+            if free.x > 35 && free.y > 30 {
+                let fit = min(free.x / max(iso.size.x, 1e-6), free.y / max(iso.size.y, 1e-6)) * 0.9
                 let k = min(fit, s)
                 let center = (regionMin + regionMax) / 2 + (settings.viewOffsets["iso"] ?? .zero)
-                let pi = place("iso", "Isometrie", iso, center - iso.size * k / 2, .free, k)
+                let pi = Self.place("iso", "Isometrie", iso, center - iso.size * k / 2, .free, k)
                 page.views.append(pi)
                 for line in iso.projection.polylines where !line.hidden && !line.smooth {
                     page.lines.append(DrawingLine(points: line.points.map(pi.toPaper), style: .iso))
                 }
             }
         }
-        return page
+
+        if multi && settings.showBalloons {
+            addBalloons(&page, groups: groups, parts: input.parts, front: placed[0], top: r.origin.y + r.size.y + balloonBand - 4,
+                        offsets: settings.dimensionOffsets, hidden: settings.hiddenDimensions)
+        }
+        if multi && settings.showPartsList {
+            addPartsList(&page, groups, material: settings.material)
+        }
+
+        var pages = [page]
+        if multi && settings.showPartSheets {
+            pages += partSheets(groups, sheet: sheet, settings: settings)
+        }
+        addTitleBlocks(&pages, input)
+        return pages
+    }
+
+    // MARK: - Balloons (ISO 6433)
+
+    private func addBalloons(_ page: inout DrawingPage, groups: [PartGroup], parts: [Part], front: PlacedView, top: Double,
+                             offsets: [String: DimensionOffset], hidden: Set<String>) {
+        // Anchor: centre of the first body of each group, seen in the front view (x = X, y = Z).
+        var anchors: [(PartGroup, Vec2)] = []
+        for g in groups {
+            guard let part = parts.first(where: { $0.shape === g.shape }) ?? parts.first(where: { $0.name == g.name }),
+                  let bb = part.shape.boundingBox else { continue }
+            // Spread anchors along the part's width (golden-ratio steps), so parts sharing a centre
+            // (e.g. bottom and shelf) get separate leaders that don't run through each other's dots.
+            let f = 0.25 + 0.5 * (Double(g.position) * 0.618).truncatingRemainder(dividingBy: 1)
+            let x = bb.min.x + (bb.max.x - bb.min.x) * f
+            anchors.append((g, front.toPaper(Vec2(x, (bb.min.z + bb.max.z) / 2))))
+        }
+        anchors.sort { $0.1.x < $1.1.x }
+        let radius = 4.5, spacing = 12.0
+        var lastX = -Double.infinity
+        for (g, anchor) in anchors {
+            let id = "balloon.\(g.position)"
+            guard !hidden.contains(id) else { continue }
+            var x = max(anchor.x, lastX + spacing)
+            lastX = x
+            let shift = offsets[id].map { Vec2($0.along, $0.distance) } ?? .zero
+            x += shift.x
+            let c = Vec2(x, top - radius + shift.y)
+            let dir = simd_normalize(anchor - c)
+            let start = c + dir * radius
+            page.lines.append(DrawingLine(points: [start, anchor], style: .thin, group: id))
+            page.lines.append(DrawingLine(points: (0...40).map { c + radius * Vec2(cos(Double($0) / 40 * 2 * .pi), sin(Double($0) / 40 * 2 * .pi)) },
+                                          style: .thin, group: id))
+            // Leader ends with a dot inside the part.
+            page.lines.append(DrawingLine(points: (0...12).map { anchor + 0.6 * Vec2(cos(Double($0) / 12 * 2 * .pi), sin(Double($0) / 12 * 2 * .pi)) },
+                                          style: .visible, group: id))
+            page.texts.append(DrawingText(text: "\(g.position)", position: c - Vec2(0, 1.75), height: 3.5, anchor: .center, group: id))
+            page.dimensions.append(PlacedDimension(id: id, text: "Pos. \(g.position)", segments: [(start, anchor)],
+                                                   textCenter: c, normal: Vec2(0, 1), along: Vec2(1, 0), isCustom: false))
+        }
+    }
+
+    // MARK: - Parts list / cut list (ISO 7573, above the title block)
+
+    static let listRowHeight = 6.0
+
+    private func addPartsList(_ page: inout DrawingPage, _ groups: [PartGroup], material: String) {
+        let x1 = page.sheet.width - 10, x0 = x1 - Self.titleWidth
+        let y0 = 10 + Self.titleHeight
+        let rh = Self.listRowHeight
+        // Columns: Pos | Benennung | Anzahl | Länge | Breite | Dicke | Material
+        let widths: [Double] = [12, 58, 16, 22, 22, 20, 30]
+        var xs = [x0]
+        for w in widths { xs.append(xs.last! + w) }
+        let rows = groups.count + 1
+        let top = y0 + rh * Double(rows)
+        page.lines.append(DrawingLine(points: [Vec2(x0, y0), Vec2(x0, top), Vec2(x1, top), Vec2(x1, y0)], style: .frame))
+        for i in 1..<rows {
+            page.lines.append(DrawingLine(points: [Vec2(x0, y0 + rh * Double(i)), Vec2(x1, y0 + rh * Double(i))], style: i == 1 ? .visible : .thin))
+        }
+        for x in xs.dropFirst().dropLast() {
+            page.lines.append(DrawingLine(points: [Vec2(x, y0), Vec2(x, top)], style: .thin))
+        }
+        func row(_ i: Int, _ cells: [String], bold: Bool = false) {
+            let y = y0 + rh * Double(i) + 1.9
+            for (c, text) in cells.enumerated() {
+                let numeric = c == 0 || (c >= 2 && c <= 5)
+                let pos = numeric ? Vec2(xs[c + 1] - 1.5, y) : Vec2(xs[c] + 1.5, y)
+                page.texts.append(DrawingText(text: text, position: pos, height: bold ? 2.2 : 2.5, anchor: numeric ? .right : .left, bold: bold))
+            }
+        }
+        // Header next to the title block, positions numbered upwards.
+        row(0, ["Pos.", "Benennung", "Anzahl", "Länge", "Breite", "Dicke", "Material"], bold: true)
+        for (i, g) in groups.enumerated() {
+            row(i + 1, ["\(g.position)", g.name, "\(g.count)", "\(g.length)", "\(g.width)", "\(g.thickness)", material])
+        }
+    }
+
+    // MARK: - Part sheets
+
+    private func partSheets(_ groups: [PartGroup], sheet: Sheet, settings: DrawingSettings) -> [DrawingPage] {
+        let sets: [(PartGroup, ViewSet)] = groups.compactMap { g in
+            makeViewSet([Self.normalized(g.shape)], prefix: "p\(g.position).", settings: settings).map { (g, $0) }
+        }
+        guard !sets.isEmpty else { return [] }
+        let area = Self.drawingArea(sheet)
+        // Cells per sheet: as many as possible while every part still fits at 1:20 or larger.
+        let layouts: [(cols: Int, rows: Int)] = [(2, 2), (2, 1), (1, 1)]
+        func cellSize(_ l: (cols: Int, rows: Int)) -> Vec2 {
+            Vec2(area.size.x / Double(l.cols), area.size.y / Double(l.rows) - 10)   // 10 mm for the part title
+        }
+        let layout = layouts.first { l in sets.allSatisfy { ($0.1.bestScale(cellSize(l))?.factor ?? 0) >= 0.05 } } ?? (1, 1)
+        let perSheet = layout.cols * layout.rows
+        let size = cellSize(layout)
+
+        var pages: [DrawingPage] = []
+        for (n, chunk) in stride(from: 0, to: sets.count, by: perSheet).map({ Array(sets[$0..<min($0 + perSheet, sets.count)]) }).enumerated() {
+            var page = DrawingPage(sheet: sheet, scale: DrawingScale.named("1:1")!)
+            page.name = pages.isEmpty && sets.count <= perSheet ? "Einzelteile" : "Einzelteile \(n + 1)"
+            page.isEmpty = false
+            var scales: Set<String> = []
+            for (i, (g, set)) in chunk.enumerated() {
+                let col = i % layout.cols, row = i / layout.cols
+                let origin = Vec2(area.origin.x + Double(col) * area.size.x / Double(layout.cols),
+                                  area.origin.y + area.size.y - Double(row + 1) * area.size.y / Double(layout.rows))
+                let sc = set.bestScale(size) ?? DrawingScale.all.last!
+                scales.insert(sc.label)
+                page.scale = sc
+                emit(set, into: &page, region: (origin, size), s: sc.factor, settings: settings)
+                let heading = "Pos. \(g.position)   \(g.name)   \(g.count) Stück   \(g.length) × \(g.width) × \(g.thickness)   M \(sc.label)"
+                page.texts.append(DrawingText(text: heading, position: origin + Vec2(2, size.y + 4), height: 3.5, anchor: .left, bold: true))
+            }
+            page.scaleText = scales.count == 1 ? scales.first : "siehe Teile"
+            for c in settings.customDimensions where !settings.hiddenDimensions.contains(c.key) {
+                addCustomDimension(&page, c)
+            }
+            pages.append(page)
+        }
+        return pages
+    }
+
+    private func addTitleBlocks(_ pages: inout [DrawingPage], _ input: Input) {
+        for i in pages.indices {
+            addFrameAndTitle(&pages[i], input, sheet: i + 1, of: pages.count)
+        }
     }
 
     /// Returns a copy of `page` with one more user dimension (live preview while placing).
@@ -498,7 +744,7 @@ public final class DrawingGenerator: @unchecked Sendable {
         }
     }
 
-    private func addFrameAndTitle(_ page: inout DrawingPage, _ input: Input) {
+    private func addFrameAndTitle(_ page: inout DrawingPage, _ input: Input, sheet number: Int, of total: Int) {
         let w = page.sheet.width, h = page.sheet.height
         let fx0 = 20.0, fy0 = 10.0, fx1 = w - 10, fy1 = h - 10
         page.lines.append(DrawingLine(points: [Vec2(fx0, fy0), Vec2(fx1, fy0), Vec2(fx1, fy1), Vec2(fx0, fy1), Vec2(fx0, fy0)], style: .frame))
@@ -531,7 +777,8 @@ public final class DrawingGenerator: @unchecked Sendable {
             page.texts.append(DrawingText(text: label, position: p + Vec2(1.5, rowHeight - 3.2), height: 1.8, anchor: .left))
             page.texts.append(DrawingText(text: value, position: p + Vec2(1.5, 1.8), height: size, anchor: .left, bold: bold))
         }
-        let title = s.title.isEmpty ? input.fallbackTitle : s.title
+        let base = s.title.isEmpty ? input.fallbackTitle : s.title
+        let title = page.name == "Gesamtansicht" ? base : "\(base) – \(page.name)"
         page.texts.append(DrawingText(text: "Benennung", position: Vec2(x0 + 1.5, y0 + th - 3.4), height: 1.8, anchor: .left))
         page.texts.append(DrawingText(text: title, position: Vec2(x0 + 3, r2 + 4.5), height: 5, anchor: .left, bold: true))
         field("Zeichnungsnummer", s.drawingNumber, at: Vec2(x0, r1))
@@ -540,8 +787,9 @@ public final class DrawingGenerator: @unchecked Sendable {
         field("Erstellt von", s.author, at: Vec2(x0, y0))
         field("Software", "6axis", at: Vec2(c1, y0))
         field("Einheit", "mm", at: Vec2(c2, y0))
-        field("Maßstab", page.scale.label, at: Vec2(split, r2), rowHeight: th - 20, size: 5, bold: true)
-        field("Blatt", "1 / 1", at: Vec2(split, r1))
+        let scaleText = page.scaleText ?? page.scale.label
+        field("Maßstab", scaleText, at: Vec2(split, r2), rowHeight: th - 20, size: scaleText.count > 6 ? 3.5 : 5, bold: true)
+        field("Blatt", "\(number) / \(total)", at: Vec2(split, r1))
         page.texts.append(DrawingText(text: page.sheet.name, position: Vec2(fx1 - 2, r1 + 1.8), height: 3.5, anchor: .right))
         page.texts.append(DrawingText(text: "Projektionsmethode 1", position: Vec2(split + 1.5, y0 + 6.8), height: 1.8, anchor: .left))
         projectionSymbol(&page, at: Vec2(split + 24, y0 + 1.4))

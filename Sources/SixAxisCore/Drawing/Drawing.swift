@@ -23,6 +23,10 @@ public struct DrawingSettings: Codable, Hashable, Sendable {
     public var showHidden = true
     public var showDimensions = true
     public var showIso = true
+    /// Stage 4: several bodies → balloons, parts/cut list and part sheets.
+    public var showBalloons = true
+    public var showPartsList = true
+    public var showPartSheets = true
     public var title = ""
     public var drawingNumber = ""
     public var author = ""
@@ -37,7 +41,8 @@ public struct DrawingSettings: Codable, Hashable, Sendable {
     public init() {}
 
     enum CodingKeys: String, CodingKey {
-        case sheet, scale, showHidden, showDimensions, showIso, title, drawingNumber, author, material
+        case sheet, scale, showHidden, showDimensions, showIso, showBalloons, showPartsList, showPartSheets
+        case title, drawingNumber, author, material
         case hiddenDimensions, dimensionOffsets, viewOffsets, customDimensions
     }
 
@@ -50,6 +55,9 @@ public struct DrawingSettings: Codable, Hashable, Sendable {
         showHidden = try c.decodeIfPresent(Bool.self, forKey: .showHidden) ?? d.showHidden
         showDimensions = try c.decodeIfPresent(Bool.self, forKey: .showDimensions) ?? d.showDimensions
         showIso = try c.decodeIfPresent(Bool.self, forKey: .showIso) ?? d.showIso
+        showBalloons = try c.decodeIfPresent(Bool.self, forKey: .showBalloons) ?? d.showBalloons
+        showPartsList = try c.decodeIfPresent(Bool.self, forKey: .showPartsList) ?? d.showPartsList
+        showPartSheets = try c.decodeIfPresent(Bool.self, forKey: .showPartSheets) ?? d.showPartSheets
         title = try c.decodeIfPresent(String.self, forKey: .title) ?? ""
         drawingNumber = try c.decodeIfPresent(String.self, forKey: .drawingNumber) ?? ""
         author = try c.decodeIfPresent(String.self, forKey: .author) ?? ""
@@ -221,8 +229,12 @@ public struct DrawingSnapPoint: Sendable {
 }
 
 public struct DrawingPage: Sendable {
+    /// Tab name in the editor, e.g. "Gesamtansicht" or "Einzelteile 1".
+    public var name = "Gesamtansicht"
     public var sheet: Sheet
     public var scale: DrawingScale
+    /// Text for the title block's scale field (part sheets may mix scales).
+    public var scaleText: String?
     public var lines: [DrawingLine] = []
     public var texts: [DrawingText] = []
     public var arrows: [DrawingArrow] = []

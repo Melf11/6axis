@@ -32,14 +32,21 @@ struct DrawingWindow: View {
     @State private var drag: Drag?
     @State private var dragSnapshot: CADDocument?
     @State private var showTitleBlock = false
+    @State private var pageIndex = 0
     @FocusState private var focused: Bool
 
     private var controller: DrawingController { editor.drawing }
 
+    /// The sheet shown in the editor (clamped when the number of sheets changes).
+    private var currentPage: DrawingPage? {
+        let pages = controller.pages
+        return pages.isEmpty ? nil : pages[min(pageIndex, pages.count - 1)]
+    }
+
     var body: some View {
         ZStack {
             Color(nsColor: .underPageBackgroundColor).ignoresSafeArea()
-            if let page = controller.page {
+            if let page = currentPage {
                 sheetCanvas(page)
             } else {
                 ProgressView("Zeichnung wird erstellt …")
@@ -47,7 +54,13 @@ struct DrawingWindow: View {
         }
         .overlay(alignment: .bottomLeading) { status.padding(12) }
         .overlay(alignment: .bottomTrailing) { zoomControls.padding(12) }
-        .overlay(alignment: .top) { selectionBar.padding(.top, 10) }
+        .overlay(alignment: .top) {
+            VStack(spacing: 8) {
+                sheetTabs
+                selectionBar
+            }
+            .padding(.top, 10)
+        }
         .toolbar { toolbar }
         .navigationTitle("Zeichnung – " + (editor.fileURL?.deletingPathExtension().lastPathComponent ?? "Unbenannt"))
         .focusable()
@@ -175,7 +188,7 @@ struct DrawingWindow: View {
     /// While placing a user dimension, show it live.
     private func previewPage(_ page: DrawingPage) -> DrawingPage? {
         guard tool == .addDimension, picks.count == 2, let m = mouse else { return nil }
-        return controller.preview(customDimension(picks[0], picks[1], placement: m))
+        return controller.preview(customDimension(picks[0], picks[1], placement: m), page: min(pageIndex, max(controller.pages.count - 1, 0)))
     }
 
     private func drawOverlays(_ ctx: GraphicsContext, _ page: DrawingPage, _ t: Transform) {
@@ -266,7 +279,7 @@ struct DrawingWindow: View {
         case let .pan(s):
             pan = CGSize(width: s.width + v.translation.width, height: s.height + v.translation.height)
         case let .dimension(id, _, offset, normal, along):
-            let isLeader = id.contains(".hole.")
+            let isLeader = id.contains(".hole.") || id.hasPrefix("balloon.")
             editor.setDrawingSettingsLive { s in
                 var o = offset
                 if isLeader {
@@ -342,9 +355,42 @@ struct DrawingWindow: View {
 
     // MARK: - Chrome
 
+    /// Sheet tabs ("Gesamtansicht", "Einzelteile 1", …), shown when there is more than one sheet.
+    @ViewBuilder
+    private var sheetTabs: some View {
+        let pages = controller.pages
+        if pages.count > 1 {
+            HStack(spacing: 2) {
+                ForEach(Array(pages.enumerated()), id: \.offset) { i, p in
+                    let active = i == min(pageIndex, pages.count - 1)
+                    Button {
+                        pageIndex = i
+                        selected = nil
+                        picks.removeAll()
+                    } label: {
+                        HStack(spacing: 5) {
+                            Image(systemName: i == 0 ? "square.3.layers.3d" : "square.grid.2x2")
+                            Text(p.name)
+                        }
+                        .font(.system(size: 12, weight: active ? .semibold : .regular))
+                        .padding(.horizontal, 12)
+                        .frame(height: 26)
+                        .background(Capsule().fill(active ? Color.accentColor : .clear))
+                        .foregroundStyle(active ? Color.white : .primary)
+                        .contentShape(Capsule())
+                    }
+                    .buttonStyle(.plain)
+                    .help("Blatt \(i + 1)")
+                }
+            }
+            .padding(3)
+            .floatingPanel(radius: 16)
+        }
+    }
+
     @ViewBuilder
     private var selectionBar: some View {
-        if let id = selected, let d = controller.page?.dimensions.first(where: { $0.id == id }) {
+        if let id = selected, let d = currentPage?.dimensions.first(where: { $0.id == id }) {
             HStack(spacing: 10) {
                 Image(systemName: d.isCustom ? "ruler.fill" : "ruler").foregroundStyle(Color.accentColor)
                 Text(d.isCustom ? "Eigenes Maß \(d.text)" : "Maß \(d.text)").font(.system(size: 12, weight: .medium))
@@ -396,8 +442,8 @@ struct DrawingWindow: View {
                 Image(systemName: "checkmark.circle.fill").foregroundStyle(.green)
                 Text("Synchron")
             }
-            if let page = controller.page, !page.isEmpty {
-                Text("· \(page.sheet.name) quer · \(page.scale.label)").foregroundStyle(.secondary)
+            if let page = currentPage, !page.isEmpty {
+                Text("· \(page.sheet.name) quer · \(page.scaleText ?? page.scale.label)").foregroundStyle(.secondary)
             }
             Text("· " + hint).foregroundStyle(.secondary)
         }
@@ -437,6 +483,7 @@ struct DrawingWindow: View {
                 .help("Verdeckte Kanten anzeigen")
             Toggle(isOn: settingBinding(\.showIso)) { Label("Isometrie", systemImage: "cube") }
                 .help("Isometrische Ansicht anzeigen")
+            sheetsMenu
             resetMenu
             Button { showTitleBlock = true } label: { Label("Schriftfeld", systemImage: "list.bullet.rectangle") }
                 .help("Schriftfeld ausfüllen")
@@ -447,6 +494,18 @@ struct DrawingWindow: View {
             Button { editor.exportDrawingPDF() } label: { Label("PDF", systemImage: "arrow.down.doc") }
                 .help("Als PDF exportieren (maßstabsgetreu)")
         }
+    }
+
+    /// Content for several bodies: balloons, parts list, part sheets.
+    private var sheetsMenu: some View {
+        Menu {
+            Toggle("Positionsnummern", isOn: settingBinding(\.showBalloons))
+            Toggle("Stückliste / Zuschnittliste", isOn: settingBinding(\.showPartsList))
+            Toggle("Einzelteilzeichnungen", isOn: settingBinding(\.showPartSheets))
+        } label: {
+            Label("Blätter", systemImage: "doc.on.doc")
+        }
+        .help("Positionsnummern, Stückliste und Einzelteilzeichnungen (bei mehreren Körpern)")
     }
 
     private var resetMenu: some View {

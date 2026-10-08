@@ -38,11 +38,14 @@ enum DemoScript {
         if let out = env["SIXAXIS_DRAWING_DEMO"] {
             Task { @MainActor in
                 buildCabinet(editor)
-                let page = editor.drawing.generateNow(editor)
+                let pages = editor.drawing.generateAllNow(editor)
+                let page = pages[0]
                 let dir = URL(fileURLWithPath: out)
                 try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
                 renderPNG(page, to: dir.appendingPathComponent("drawing.png"), pixelsPerMM: 5)
-                try? DrawingRenderer.writePDF(page, to: dir.appendingPathComponent("drawing.pdf"), title: "Korpus")
+                for (i, p) in pages.enumerated() { renderPNG(p, to: dir.appendingPathComponent("sheet-\(i + 1).png"), pixelsPerMM: 5) }
+                try? DrawingRenderer.writePDF(pages, to: dir.appendingPathComponent("drawing.pdf"), title: "Korpus")
+                FileHandle.standardError.write(Data("SHEETS \(pages.map { "\($0.name) \($0.sheet.name) \($0.scaleText ?? $0.scale.label)" })\n".utf8))
                 let dims = page.texts.map(\.text).filter { Int($0) != nil || $0.hasPrefix("Ø") || $0.contains("× Ø") }
                 FileHandle.standardError.write(Data("DRAWING \(page.sheet.name) \(page.scale.label) dims=\(dims)\n".utf8))
                 // Stage 3 edits: hide, move, add a user dimension, move the iso view.
@@ -120,8 +123,8 @@ enum DemoScript {
             ex.operation = .newBody
             features += [s, Feature(name: name, kind: .extrude(ex))]
         }
-        board("Seite links", x: 0...19, z: 0...600)
-        board("Seite rechts", x: 481...500, z: 0...600)
+        board("Seite", x: 0...19, z: 0...600)
+        board("Seite", x: 481...500, z: 0...600)
         board("Boden", x: 19...481, z: 0...19)
         board("Deckel", x: 19...481, z: 581...600)
         board("Fachboden", x: 19...481, z: 290...309, depth: 280)
@@ -135,6 +138,9 @@ enum DemoScript {
         cut.distance = "700"
         cut.operation = .cut
         features += [hs, Feature(name: "Dübellöcher", kind: .extrude(cut))]
+        editor.commit { d in
+            for f in features { if case .extrude(let e) = f.kind, e.operation == .newBody { d.bodies[f.id] = BodyMeta(name: f.name) } }
+        }
         editor.commit { $0.features = features; $0.drawing = { var d = DrawingSettings(); d.title = "Korpus"; d.material = "Eiche 19 mm"; d.author = "Tischlerei"; return d }() }
         if !editor.state.errors.isEmpty { FileHandle.standardError.write(Data("ERRORS \(editor.state.errors)\n".utf8)) }
     }

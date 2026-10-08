@@ -85,6 +85,8 @@ OBShape *ob_fuse_faces(const OBShape *const *faces, int32_t count);
 
 OBShape *ob_prism(const OBShape *profile, const double dir[3]);
 OBShape *ob_translate(const OBShape *s, const double v[3]);
+/// Rigid transform: m is a 3x4 row-major matrix (rotation | translation).
+OBShape *ob_transform(const OBShape *s, const double m[12]);
 OBShape *ob_revolve(const OBShape *profile, const double axisOrigin[3], const double axisDir[3], double angleRad);
 OBShape *ob_boolean(const OBShape *a, const OBShape *b, int32_t op);
 OBShape *ob_unify(const OBShape *s);

@@ -91,6 +91,14 @@ public final class Shape: @unchecked Sendable {
         return try Shape.wrap(ob_translate(handle, &d), "Verschieben fehlgeschlagen")
     }
 
+    /// Rigid transform `p' = rotation * p + translation` (rotation must be orthonormal, det = +1).
+    public func transformed(rotation r: simd_double3x3, translation t: Vec3) throws -> Shape {
+        var m = [r[0, 0], r[1, 0], r[2, 0], t.x,
+                 r[0, 1], r[1, 1], r[2, 1], t.y,
+                 r[0, 2], r[1, 2], r[2, 2], t.z]
+        return try Shape.wrap(ob_transform(handle, &m), "Transformieren fehlgeschlagen")
+    }
+
     public func revolved(origin: SIMD3<Double>, axis: SIMD3<Double>, angle: Double) throws -> Shape {
         var o = [origin.x, origin.y, origin.z], a = [axis.x, axis.y, axis.z]
         return try Shape.wrap(ob_revolve(handle, &o, &a, angle), "Drehung fehlgeschlagen")

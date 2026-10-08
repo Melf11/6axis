@@ -142,3 +142,75 @@ final class DrawingEditTests: XCTestCase {
         XCTAssertEqual(round, t)
     }
 }
+
+final class DrawingPartsTests: XCTestCase {
+    /// Box-shaped board via sketch on XZ, extruded along -Y.
+    func board(_ x: ClosedRange<Double>, _ z: ClosedRange<Double>, depth: Double = 300) throws -> Shape {
+        var doc = CADDocument()
+        var sk = Sketch(plane: .xz)
+        let p = [sk.addPoint(Vec2(x.lowerBound, z.lowerBound)), sk.addPoint(Vec2(x.upperBound, z.lowerBound)),
+                 sk.addPoint(Vec2(x.upperBound, z.upperBound)), sk.addPoint(Vec2(x.lowerBound, z.upperBound))]
+        for i in 0..<4 { sk.addLine(p[i], p[(i + 1) % 4]) }
+        let s = Feature(name: "S", kind: .sketch(sk))
+        var ex = ExtrudeFeature()
+        ex.profiles = [ProfileRef(sketch: s.id, sample: Vec2((x.lowerBound + x.upperBound) / 2, (z.lowerBound + z.upperBound) / 2))]
+        ex.distance = "\(depth)"
+        let f = Feature(name: "E", kind: .extrude(ex))
+        doc.features = [s, f]
+        return try XCTUnwrap(ModelBuilder().build(doc).bodies[f.id]?.shape)
+    }
+
+    func cabinet() throws -> [DrawingGenerator.Part] {
+        [
+            .init(name: "Seite", shape: try board(0...19, 0...600)),
+            .init(name: "Seite", shape: try board(481...500, 0...600)),
+            .init(name: "Boden", shape: try board(19...481, 0...19)),
+            .init(name: "Deckel", shape: try board(19...481, 581...600)),
+        ]
+    }
+
+    func testIdenticalPartsAreGrouped() throws {
+        let groups = DrawingGenerator().groupParts(try cabinet())
+        XCTAssertEqual(groups.count, 2, "two sides identical, bottom and top identical")
+        XCTAssertEqual(groups[0].count, 2)
+        XCTAssertEqual([groups[0].length, groups[0].width, groups[0].thickness], [600, 300, 19])
+        XCTAssertEqual([groups[1].length, groups[1].width, groups[1].thickness], [462, 300, 19])
+    }
+
+    func testPartIsOrientedLengthWidthThickness() throws {
+        let side = try board(0...19, 0...600)
+        let n = DrawingGenerator.normalized(side)
+        let bb = try XCTUnwrap(n.boundingBox)
+        let e = bb.max - bb.min
+        XCTAssertEqual(e.x, 600, accuracy: 1e-6)
+        XCTAssertEqual(e.z, 300, accuracy: 1e-6)
+        XCTAssertEqual(e.y, 19, accuracy: 1e-6)
+        XCTAssertEqual(simd_length(bb.min), 0, accuracy: 1e-6)
+        XCTAssertEqual(n.volume, side.volume, accuracy: 1e-3, "rotation, no mirroring or scaling")
+    }
+
+    func testAssemblyWithPartsListBalloonsAndPartSheets() throws {
+        var settings = DrawingSettings()
+        settings.material = "Eiche"
+        let pages = DrawingGenerator().generatePages(.init(parts: try cabinet(), settings: settings, fallbackTitle: "Korpus"))
+        XCTAssertGreaterThanOrEqual(pages.count, 2)
+        XCTAssertEqual(pages[0].name, "Gesamtansicht")
+        let texts = Set(pages[0].texts.map(\.text))
+        for t in ["Pos.", "Benennung", "Anzahl", "Seite", "Boden", "600", "462", "Eiche", "1", "2", "1 / \(pages.count)"] {
+            XCTAssertTrue(texts.contains(t), "missing \(t)")
+        }
+        XCTAssertTrue(pages[0].dimensions.contains { $0.id == "balloon.1" })
+        // Part sheet: prefixed ids, heading with count and cut size.
+        let parts = pages[1]
+        XCTAssertTrue(parts.dimensions.contains { $0.id == "p1.front.x.600" }, "\(parts.dimensions.map(\.id))")
+        XCTAssertTrue(parts.texts.contains { $0.text.contains("Pos. 1") && $0.text.contains("2 Stück") && $0.text.contains("600 × 300 × 19") })
+        XCTAssertTrue(parts.texts.contains { $0.text == "2 / \(pages.count)" })
+    }
+
+    func testSingleBodyHasNoPartSheets() throws {
+        let pages = DrawingGenerator().generatePages(.init(parts: [.init(name: "Brett", shape: try board(0...100, 0...50))],
+                                                           settings: DrawingSettings(), fallbackTitle: "x"))
+        XCTAssertEqual(pages.count, 1)
+        XCTAssertFalse(pages[0].texts.contains { $0.text == "Benennung" && $0.position.y > 50 }, "no parts list for one body")
+    }
+}

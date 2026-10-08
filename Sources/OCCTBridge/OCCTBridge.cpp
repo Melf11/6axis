@@ -306,6 +306,14 @@ OBShape *ob_translate(const OBShape *s, const double v[3]) {
     });
 }
 
+OBShape *ob_transform(const OBShape *s, const double m[12]) {
+    return guarded("Transformieren", [&]() -> OBShape * {
+        gp_Trsf t;
+        t.SetValues(m[0], m[1], m[2], m[3], m[4], m[5], m[6], m[7], m[8], m[9], m[10], m[11]);
+        return wrap(BRepBuilderAPI_Transform(s->shape, t, Standard_True).Shape(), "Transformieren ergab nichts");
+    });
+}
+
 OBShape *ob_revolve(const OBShape *profile, const double axisOrigin[3], const double axisDir[3], double angleRad) {
     return guarded("Drehung", [&]() -> OBShape * {
         gp_Ax1 axis(toPnt(axisOrigin), gp_Dir(axisDir[0], axisDir[1], axisDir[2]));

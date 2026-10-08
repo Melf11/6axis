@@ -92,36 +92,65 @@ enum DrawingRenderer {
 
     static func pointsPerMM() -> CGFloat { 72 / 25.4 }
 
-    /// Writes a vector PDF at true scale (1 mm on paper = 1 mm in the PDF).
-    static func writePDF(_ page: DrawingPage, to url: URL, title: String) throws {
+    /// Writes a vector PDF at true scale (1 mm on paper = 1 mm in the PDF), one PDF page per sheet.
+    static func writePDF(_ pages: [DrawingPage], to url: URL, title: String) throws {
+        guard let first = pages.first else { return }
         let k = pointsPerMM()
-        var box = CGRect(x: 0, y: 0, width: page.sheet.width * k, height: page.sheet.height * k)
+        var box = CGRect(x: 0, y: 0, width: first.sheet.width * k, height: first.sheet.height * k)
         let info: [CFString: Any] = [kCGPDFContextTitle: title, kCGPDFContextCreator: "6axis"]
         guard let ctx = CGContext(url as CFURL, mediaBox: &box, info as CFDictionary) else {
             throw NSError(domain: "6axis", code: 1, userInfo: [NSLocalizedDescriptionKey: "PDF konnte nicht erstellt werden"])
         }
-        ctx.beginPDFPage(nil)
-        draw(page, in: ctx, pointsPerMM: k)
-        ctx.endPDFPage()
+        for page in pages {
+            var media = CGRect(x: 0, y: 0, width: page.sheet.width * k, height: page.sheet.height * k)
+            let pageInfo = [kCGPDFContextMediaBox: Data(bytes: &media, count: MemoryLayout<CGRect>.size)] as CFDictionary
+            ctx.beginPDFPage(pageInfo)
+            draw(page, in: ctx, pointsPerMM: k)
+            ctx.endPDFPage()
+        }
         ctx.closePDF()
+    }
+
+    static func writePDF(_ page: DrawingPage, to url: URL, title: String) throws {
+        try writePDF([page], to: url, title: title)
     }
 }
 
-/// Printable view of a drawing page at true scale.
+/// Printable view: all sheets stacked vertically, one printed page each, at true scale.
 final class DrawingPrintView: NSView {
-    let page: DrawingPage
+    let pages: [DrawingPage]
+    private let pageSize: NSSize
 
-    init(page: DrawingPage) {
-        self.page = page
+    init(pages: [DrawingPage]) {
+        self.pages = pages
         let k = DrawingRenderer.pointsPerMM()
-        super.init(frame: NSRect(x: 0, y: 0, width: page.sheet.width * k, height: page.sheet.height * k))
+        let w = (pages.map(\.sheet.width).max() ?? 297) * k, h = (pages.map(\.sheet.height).max() ?? 210) * k
+        pageSize = NSSize(width: w, height: h)
+        super.init(frame: NSRect(x: 0, y: 0, width: w, height: h * CGFloat(max(pages.count, 1))))
     }
 
     @available(*, unavailable)
     required init?(coder: NSCoder) { fatalError() }
 
+    override var isFlipped: Bool { false }
+
+    override func knowsPageRange(_ range: NSRangePointer) -> Bool {
+        range.pointee = NSRange(location: 1, length: pages.count)
+        return true
+    }
+
+    override func rectForPage(_ page: Int) -> NSRect {
+        // Page 1 is the topmost slice of the (unflipped) view.
+        NSRect(x: 0, y: CGFloat(pages.count - page) * pageSize.height, width: pageSize.width, height: pageSize.height)
+    }
+
     override func draw(_ dirtyRect: NSRect) {
         guard let cg = NSGraphicsContext.current?.cgContext else { return }
-        DrawingRenderer.draw(page, in: cg, pointsPerMM: DrawingRenderer.pointsPerMM())
+        for (i, page) in pages.enumerated() {
+            cg.saveGState()
+            cg.translateBy(x: 0, y: CGFloat(pages.count - 1 - i) * pageSize.height)
+            DrawingRenderer.draw(page, in: cg, pointsPerMM: DrawingRenderer.pointsPerMM())
+            cg.restoreGState()
+        }
     }
 }
