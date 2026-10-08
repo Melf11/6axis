@@ -85,7 +85,7 @@ Inhalt:
 - [x] Produktseite zweisprachig (`website/en/`, Screenshots mit englischer Oberfläche über `scripts/screenshots.sh`)
 - [x] **Dateiformat-Versionierung:** Format 2 (1.0); ältere Dateien werden schrittweise migriert, Dateien aus neueren Versionen mit klarer Meldung abgelehnt, fehlende Felder sind erlaubt, verständliche Fehlermeldungen bei beschädigten Dateien. Test-Sammlung `Tests/SixAxisCoreTests/Fixtures` mit den Beispielen aus 0.9.0 – bei jedem Release kommen die Beispiele dazu
 - [ ] **Rückmeldungen der Tester** aus 0.9 einarbeiten (Bedienung von Zeichnungsfenster, Radialmenü, Navigation, DXF in CAM-/Lasersoftware)
-- [ ] **README** aktualisieren (Funktionsliste, Screenshots, Installation)
+- [x] **README** aktualisiert (Funktionsliste, Screenshots, Installation, Beispiele, Englisch)
 - [x] Mehr Tests: `scripts/ui-check.sh` prüft im CI und vor jedem Release die Oberfläche über die Demo-Läufe (Deutsch und Englisch, Zeichnung, Beispiele, Neuberechnung im Hintergrund) – Screenshots als Download; Beispielmodelle, Parameteränderungen und Dateien aus 0.9.0 als Regressionstests
 
 ---

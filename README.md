@@ -8,6 +8,13 @@
 
 *English:* 6axis is a free, open-source, fully offline parametric CAD app for macOS, with a sketch → feature → timeline workflow, focused on mechanical design, woodworking and 3D printing. The app is available in German and English (it follows the system language); contributions, including further translations, are welcome.
 
+<p align="center">
+  <img src="website/assets/model.png" width="49%" alt="Modell mit Werkzeugleiste, Browser und Zeitleiste">
+  <img src="website/assets/drawing.png" width="49%" alt="Technische Zeichnung eines Korpus mit Stückliste">
+</p>
+
+**Produktseite:** https://melf11.github.io/6axis/ · **Download:** [neuestes Release](https://github.com/Melf11/6axis/releases/latest)
+
 ## Installation
 
 Die fertige App gibt es unter [Releases](https://github.com/Melf11/6axis/releases/latest) (Mac mit Apple Silicon, macOS 15+). 6axis ist nicht von Apple notarisiert: Beim ersten Start einmal *Systemeinstellungen → Datenschutz & Sicherheit → Dennoch öffnen* wählen. Details auf der [Produktseite](https://melf11.github.io/6axis/).
