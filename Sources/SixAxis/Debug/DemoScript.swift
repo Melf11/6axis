@@ -71,6 +71,12 @@ enum DemoScript {
                     renderPNG(rp, to: dir.appendingPathComponent("rounded.png"), pixelsPerMM: 6)
                     FileHandle.standardError.write(Data("ROUNDED \(rp.texts.map(\.text).filter { $0.contains("R") || $0.contains("Ø") })\n".utf8))
                 }
+                for (name, shape) in [("chamfer", chamferedShelf()), ("wedge", wedgePart())] {
+                    guard let shape else { continue }
+                    let pg = DrawingGenerator().generate(.init(parts: [.init(name: name, shape: shape)], settings: DrawingSettings(), fallbackTitle: name == "wedge" ? "Keil" : "Regalbrett"))
+                    renderPNG(pg, to: dir.appendingPathComponent("\(name).png"), pixelsPerMM: 6)
+                    FileHandle.standardError.write(Data("\(name.uppercased()) \(pg.texts.map(\.text).filter { $0.contains("°") })\n".utf8))
+                }
                 // Open the real drawing window and capture it.
                 editor.openDrawingWindow()
                 try? await Task.sleep(nanoseconds: 2_500_000_000)
@@ -195,6 +201,41 @@ enum DemoScript {
         }
         doc.features.append(Feature(name: "F", kind: .fillet(fillet)))
         return ModelBuilder().build(doc).bodies[e.id]?.shape
+    }
+
+    /// Prism from a closed polygon in a sketch plane.
+    static func prism(_ plane: PlaneRef, _ pts: [Vec2], depth: Double) -> (CADDocument, UUID) {
+        var doc = CADDocument()
+        var sk = Sketch(plane: plane)
+        let ids = pts.map { sk.addPoint($0) }
+        for i in ids.indices { sk.addLine(ids[i], ids[(i + 1) % ids.count]) }
+        let sketch = Feature(name: "S", kind: .sketch(sk))
+        var ex = ExtrudeFeature()
+        ex.profiles = [ProfileRef(sketch: sketch.id, sample: (pts[0] + pts[1] + pts[2]) / 3)]
+        ex.distance = "\(depth)"
+        let e = Feature(name: "E", kind: .extrude(ex))
+        doc.features = [sketch, e]
+        return (doc, e.id)
+    }
+
+    /// Shelf board 400 × 250 × 19 with 3 mm chamfers on the four vertical corners.
+    static func chamferedShelf() -> SixAxisCore.Shape? {
+        var (doc, id) = prism(.xy, [Vec2(0, 0), Vec2(400, 0), Vec2(400, 250), Vec2(0, 250)], depth: 19)
+        guard let body = ModelBuilder().build(doc).bodies[id] else { return nil }
+        var ch = ChamferFeature()
+        ch.distance = "15"
+        ch.edges = body.edgeInfos.compactMap { info -> BodyEdgeRef? in
+            guard let info, info.kind == .line, abs(info.end.z - info.start.z) > 1 else { return nil }
+            return BodyEdgeRef(body: id, edge: body.edgeRef(info.index)!)
+        }
+        doc.features.append(Feature(name: "C", kind: .chamfer(ch)))
+        return ModelBuilder().build(doc).bodies[id]?.shape
+    }
+
+    /// Wedge: 300 long, 60 high on the left, 30 on the right, 80 deep.
+    static func wedgePart() -> SixAxisCore.Shape? {
+        let (doc, id) = prism(.xz, [Vec2(0, 0), Vec2(300, 0), Vec2(300, 30), Vec2(0, 60)], depth: 80)
+        return ModelBuilder().build(doc).bodies[id]?.shape
     }
 
     static func renderPNG(_ page: DrawingPage, to url: URL, pixelsPerMM: CGFloat, highlight: String? = nil) {

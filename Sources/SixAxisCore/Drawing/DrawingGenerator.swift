@@ -97,6 +97,10 @@ public final class DrawingGenerator: @unchecked Sendable {
         var holes: [Circle2D] = []
         /// Visible arcs (fillets, rounded corners) seen in true shape.
         var arcs: [Circle2D] = []
+        /// Small 45° edges (chamfers), as segments.
+        var chamfers: [(Vec2, Vec2)] = []
+        /// Other inclined straight edges (slopes, steep chamfers).
+        var slopes: [(Vec2, Vec2)] = []
 
         var size: Vec2 { maxP - minP }
     }
@@ -133,6 +137,32 @@ public final class DrawingGenerator: @unchecked Sendable {
             }
         }
         v.arcs = arcs
+
+        // Inclined straight edges. A chamfer is short and at 45°; everything else is a slope that gets an
+        // angle dimension, and its end points join the baseline dimensions.
+        var inclined: [(Vec2, Vec2)] = []
+        for line in p.polylines where !line.hidden && !line.smooth && line.points.count == 2 {
+            let a = line.points[0], c = line.points[1]
+            let d = c - a
+            guard abs(d.x) >= tol * 10, abs(d.y) >= tol * 10, simd_length(d) >= 0.3 else { continue }
+            if !inclined.contains(where: { (simd_distance($0.0, a) < tol * 10 && simd_distance($0.1, c) < tol * 10)
+                || (simd_distance($0.0, c) < tol * 10 && simd_distance($0.1, a) < tol * 10) }) {
+                inclined.append((a, c))
+            }
+        }
+        let small = min(b.max.x - b.min.x, b.max.y - b.min.y) * 0.25
+        for seg in inclined {
+            let d = seg.1 - seg.0
+            if abs(abs(d.x) - abs(d.y)) < max(abs(d.x), abs(d.y)) * 0.01 && max(abs(d.x), abs(d.y)) <= max(small, 1) {
+                v.chamfers.append(seg)
+            } else {
+                v.slopes.append(seg)
+                for p in [seg.0, seg.1] {
+                    v.xs.append(Feature(position: p.x, low: p.y, high: p.y))
+                    v.ys.append(Feature(position: p.y, low: p.x, high: p.x))
+                }
+            }
+        }
         return v
     }
 
@@ -209,9 +239,21 @@ public final class DrawingGenerator: @unchecked Sendable {
         set.sideHatch = hatch
         func holeX(_ v: ViewData) -> [Feature] { v.holes.map { Feature(position: $0.center.x, low: $0.center.y - $0.radius, high: $0.center.y + $0.radius, isHole: true) } }
         func holeY(_ v: ViewData) -> [Feature] { v.holes.map { Feature(position: $0.center.y, low: $0.center.x - $0.radius, high: $0.center.x + $0.radius, isHole: true) } }
-        let frontXAll = Self.baseline(front.xs + holeX(front), from: front.minP.x)
-        let frontZAll = Self.baseline(front.ys + holeY(front), from: front.minP.y)
-        let sideYAll = Self.baseline(side.xs + holeX(side), from: side.minP.x)
+        // Edges created by 45° chamfers show up as extra lines in the other views; their positions
+        // repeat the chamfer callout and are left out (ISO: each dimension only once).
+        let chamferSizes = Set((front.chamfers + top.chamfers + side.chamfers).map { Int((abs($0.1.x - $0.0.x) * 10).rounded()) })
+        func withoutChamferEdges(_ f: [Feature], _ lo: Double, _ hi: Double) -> [Feature] {
+            guard !chamferSizes.isEmpty else { return f }
+            return f.filter { feat in
+                !chamferSizes.contains { c in
+                    let size = Double(c) / 10
+                    return abs(feat.position - lo - size) < 0.25 || abs(hi - feat.position - size) < 0.25
+                }
+            }
+        }
+        let frontXAll = Self.baseline(withoutChamferEdges(front.xs, front.minP.x, front.maxP.x) + holeX(front), from: front.minP.x)
+        let frontZAll = Self.baseline(withoutChamferEdges(front.ys, front.minP.y, front.maxP.y) + holeY(front), from: front.minP.y)
+        let sideYAll = Self.baseline(withoutChamferEdges(side.xs, side.minP.x, side.maxP.x) + holeX(side), from: side.minP.x)
         // Heights are dimensioned in the front view; the side view only adds heights of side holes.
         let frontZValues = Set(frontZAll.map { Int(($0.position - front.minP.y).rounded()) })
         let sideZAll = Self.baseline(holeY(side), from: side.minP.y).filter { !frontZValues.contains(Int(($0.position - side.minP.y).rounded())) }
@@ -449,9 +491,11 @@ public final class DrawingGenerator: @unchecked Sendable {
         horizontalBaseline(&page, set.topX, base: set.top.minP.x, map: pt.toPaper, view: set.top, offsets: o)
         verticalBaseline(&page, set.topY, base: set.top.minP.y, map: pt.toPaper, view: set.top, leftSide: true, offsets: o)
         if settings.showDimensions {
-            var radiiDone = Set<Int>()
+            var radiiDone = Set<Int>(), chamfersDone = Set<Int>()
             for (v, pv) in [(set.front, pf), (set.top, pt), (set.side, pl)] {
                 addRadiusLabels(&page, v, viewId: pv.id, map: pv.toPaper, s: s, hidden: settings.hiddenDimensions, offsets: o, done: &radiiDone)
+                addChamferLabels(&page, v, viewId: pv.id, map: pv.toPaper, hidden: settings.hiddenDimensions, offsets: o, done: &chamfersDone)
+                addAngleDimensions(&page, v, viewId: pv.id, map: pv.toPaper, hidden: settings.hiddenDimensions, offsets: o)
                 addHoleLabels(&page, v, viewId: pv.id, map: pv.toPaper, s: s, hidden: settings.hiddenDimensions, offsets: o)
             }
         }
@@ -877,6 +921,81 @@ public final class DrawingGenerator: @unchecked Sendable {
             if simd_distance(p, b.0 + e * t) < d { return true }
         }
         return false
+    }
+
+    /// 45° chamfers: leader to the chamfer with "Fase 2 × 45°" (ISO 129-1), "(4×)" for repeated ones,
+    /// once per view set.
+    private func addChamferLabels(_ page: inout DrawingPage, _ v: ViewData, viewId: String, map: (Vec2) -> Vec2,
+                                  hidden: Set<String>, offsets: [String: DimensionOffset], done: inout Set<Int>) {
+        let groups = Dictionary(grouping: v.chamfers) { Int((abs($0.1.x - $0.0.x) * 10).rounded()) }
+        for (s10, segs) in groups.sorted(by: { $0.key < $1.key }) where !done.contains(s10) {
+            done.insert(s10)
+            let id = "\(viewId).chamfer.\(s10)"
+            guard !hidden.contains(id),
+                  let seg = segs.max(by: { ($0.0 + $0.1).x + ($0.0 + $0.1).y < ($1.0 + $1.1).x + ($1.0 + $1.1).y }) else { continue }
+            let tip = map((seg.0 + seg.1) / 2)
+            // Leader perpendicular to the chamfer, pointing away from the view's centre.
+            let d = simd_normalize(map(seg.1) - map(seg.0))
+            var u = Vec2(-d.y, d.x)
+            let viewCenter = map((v.minP + v.maxP) / 2)
+            if simd_dot(u, tip - viewCenter) < 0 { u = -u }
+            let shift = offsets[id].map { Vec2($0.along, $0.distance) } ?? .zero
+            let text = "Fase \(Self.mmText(Double(s10) / 10)) × 45°" + (segs.count > 1 ? " (\(segs.count)×)" : "")
+            let shelf = Double(text.count) * 2.0 + 2
+            let knee = Self.leaderKnee(&page, tip: tip, u: u, shift: shift, width: shelf)!
+            let right = knee.x >= tip.x - 1e-9
+            let end = knee + Vec2(right ? shelf : -shelf, 0)
+            page.lines.append(DrawingLine(points: [tip, knee, end], style: .thin, group: id))
+            page.arrows.append(DrawingArrow(tip: tip, direction: -simd_normalize(knee - tip), group: id))
+            page.texts.append(DrawingText(text: text, position: knee + Vec2(right ? 1 : -1, 1), height: 3.5,
+                                          anchor: right ? .left : .right, group: id))
+            page.dimensions.append(PlacedDimension(id: id, text: text, segments: [(tip, knee), (knee, end)],
+                                                   textCenter: (knee + end) / 2 + Vec2(0, 2.5), normal: Vec2(0, 1), along: Vec2(1, 0), isCustom: false))
+        }
+    }
+
+    /// Angle dimension for a slope: arc between the inclined edge and the horizontal or vertical
+    /// reference at its lower/left end, value in whole degrees (ISO 129-1).
+    private func addAngleDimensions(_ page: inout DrawingPage, _ v: ViewData, viewId: String, map: (Vec2) -> Vec2,
+                                    hidden: Set<String>, offsets: [String: DimensionOffset]) {
+        for (k, seg) in v.slopes.enumerated() {
+            let d0 = seg.1 - seg.0
+            let flat = abs(d0.y) <= abs(d0.x)                       // reference: horizontal if the slope is flatter than 45°
+            // Vertex: the end nearer to the reference edge's start (left for horizontal, bottom for vertical).
+            let (va, vb) = flat ? (seg.0.x <= seg.1.x ? (seg.0, seg.1) : (seg.1, seg.0))
+                                : (seg.0.y <= seg.1.y ? (seg.0, seg.1) : (seg.1, seg.0))
+            let vertex = map(va), other = map(vb)
+            let us = simd_normalize(other - vertex)
+            let ur = flat ? Vec2(us.x >= 0 ? 1 : -1, 0) : Vec2(0, us.y >= 0 ? 1 : -1)
+            let degrees = Int((acos(max(-1, min(1, simd_dot(us, ur)))) * 180 / .pi).rounded())
+            guard degrees > 0 && degrees < 90 else { continue }
+            let id = "\(viewId).angle.\(degrees).\(k)"
+            guard !hidden.contains(id) else { continue }
+            let off = offsets[id] ?? DimensionOffset()
+            let a0 = atan2(ur.y, ur.x), a1 = atan2(us.y, us.x)
+            var sweep = a1 - a0
+            if sweep > .pi { sweep -= 2 * .pi }
+            if sweep < -.pi { sweep += 2 * .pi }
+            // Small angles need a large radius so the arc is long enough for both arrows (≈ 14 mm).
+            let length = simd_distance(vertex, other)
+            let r = max(12, min(14 / max(abs(sweep), 1e-3), length * 0.85)) + off.distance
+            let arc = (0...24).map { i -> Vec2 in
+                let t = a0 + sweep * Double(i) / 24
+                return vertex + r * Vec2(cos(t), sin(t))
+            }
+            // Extension along the reference (the slope itself is the other leg).
+            page.lines.append(DrawingLine(points: [vertex + ur * 1.5, vertex + ur * (r + 2)], style: .thin, group: id))
+            page.lines.append(DrawingLine(points: arc, style: .thin, group: id))
+            let tangent0 = simd_normalize(arc[1] - arc[0]), tangent1 = simd_normalize(arc[24] - arc[23])
+            page.arrows.append(DrawingArrow(tip: arc[0], direction: -tangent0, group: id))
+            page.arrows.append(DrawingArrow(tip: arc[24], direction: tangent1, group: id))
+            let mid = a0 + sweep / 2
+            let textPos = vertex + (r + 4) * Vec2(cos(mid), sin(mid)) + Vec2(off.along, 0) - Vec2(0, 1.75)
+            page.texts.append(DrawingText(text: "\(degrees)°", position: textPos, height: 3.5, anchor: .center, group: id))
+            page.dimensions.append(PlacedDimension(id: id, text: "\(degrees)°", segments: (0..<24).map { (arc[$0], arc[$0 + 1]) },
+                                                   textCenter: textPos + Vec2(0, 1.75), normal: Vec2(cos(mid), sin(mid)),
+                                                   along: Vec2(1, 0), isCustom: false))
+        }
     }
 
     /// Radius callouts (ISO 129-1): leader from outside with the arrow on the arc, "R5" or "4× R5".
