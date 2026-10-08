@@ -1,0 +1,15 @@
+name: Idee vorschlagen
+description: Eine neue Funktion oder Verbesserung
+labels: [idee]
+body:
+  - type: textarea
+    id: idee
+    attributes:
+      label: Was wünschst du dir?
+      description: Beschreibe die Funktion und wofür du sie brauchst (z. B. ein Werkstück, an dem du arbeitest).
+    validations:
+      required: true
+  - type: input
+    id: umgebung
+    attributes:
+      label: Version

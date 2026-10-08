@@ -1,6 +1,6 @@
 # Roadmap
 
-Stand: Oktober 2026 · Version im Repository: 0.1 (nur aus dem Quellcode baubar)
+Stand: Oktober 2026 · Version im Repository: 0.9 (in Arbeit)
 
 Reihenfolge nach Absprache: **zuerst ein weitergebbares Release**, damit Freunde 6axis testen können – danach die Funktionen. Holz-Werkzeuge und Plattenzuschnitt werden in der [Feature-Sammlung](#feature-sammlung) gesammelt und kommen am Ende.
 
@@ -21,21 +21,21 @@ Reihenfolge nach Absprache: **zuerst ein weitergebbares Release**, damit Freunde
 Ziel: Ein Freund lädt eine Datei von GitHub, öffnet sie und kann konstruieren – ohne Homebrew, ohne Xcode, ohne Apple-Entwicklerkonto.
 
 ### 1. App eigenständig machen
-- [ ] Alle benötigten Bibliotheken in `6axis.app/Contents/Frameworks` kopieren: OpenCASCADE (~30 `libTK*`), TBB und deren Abhängigkeiten (z. B. FreeType) – rekursiv ermittelt mit `otool -L`
-- [ ] Verweise mit `install_name_tool` auf `@rpath` umstellen, `@executable_path/../Frameworks` als rpath setzen; keine Pfade nach `/opt/homebrew` mehr (`otool` prüft das im Build und bricht sonst ab)
-- [ ] Ad-hoc signieren (`codesign --sign - --deep`) – auf Apple Silicon Pflicht, damit die App überhaupt startet
-- [ ] Release-Build (`-c release`), Version und Build-Nummer aus dem Git-Tag ins `Info.plist`
-- [ ] Lizenzen beilegen: MIT für 6axis, LGPL-2.1-Text und Quellverweis für OpenCASCADE (Bibliotheken bleiben austauschbare dylibs → LGPL-konform)
+- [x] Alle benötigten Bibliotheken in `6axis.app/Contents/Frameworks` kopieren: OpenCASCADE (~30 `libTK*`), TBB und deren Abhängigkeiten (z. B. FreeType) – rekursiv ermittelt mit `otool -L`
+- [x] Verweise mit `install_name_tool` auf `@rpath` umstellen, `@executable_path/../Frameworks` als rpath setzen; keine Pfade nach `/opt/homebrew` mehr (`otool` prüft das im Build und bricht sonst ab)
+- [x] Ad-hoc signieren (`codesign --sign -`, Bibliotheken einzeln, dann die App) – auf Apple Silicon Pflicht, damit die App überhaupt startet
+- [x] Release-Build (`-c release`), Version und Build-Nummer aus dem Git-Tag ins `Info.plist`
+- [x] Lizenzen beilegen: MIT für 6axis, LGPL-2.1-Text und Quellverweis für OpenCASCADE (Bibliotheken bleiben austauschbare dylibs → LGPL-konform)
 - [ ] Prüfung auf einem sauberen Mac bzw. in einem Benutzerkonto ohne Homebrew
 
-**Einschränkung 0.9:** nur **Apple Silicon** (M1 und neuer), macOS 14+. Intel-Macs bräuchten OpenCASCADE als x86_64- bzw. Universal-Build aus dem Quellcode (siehe Offene Punkte).
+**Einschränkung 0.9:** nur **Apple Silicon** (M1 und neuer), macOS 15+. Intel-Macs bräuchten OpenCASCADE als x86_64- bzw. Universal-Build aus dem Quellcode (siehe Offene Punkte).
 
 ### 2. GitHub Actions
-- [ ] **CI** (`.github/workflows/ci.yml`) bei jedem Push und Pull Request: macOS-Runner (Apple Silicon), `brew install opencascade`, `swift build`, `swift test`, App bauen
-- [ ] Optional im CI: UI-Demo-Lauf (`SIXAXIS_DEMO=1`) und Zeichnungs-Demo, Screenshots als Artefakt – hilfreich bei Pull Requests
-- [ ] **Release** (`.github/workflows/release.yml`) beim Push eines Tags `v*` (z. B. `v0.9.0`):
+- [x] **CI** (`.github/workflows/ci.yml`) bei jedem Push und Pull Request: macOS-Runner (Apple Silicon), `brew install opencascade`, `swift build`, `swift test`, App bauen
+- [x] Optional im CI: UI-Demo-Lauf (`SIXAXIS_DEMO=1`) und Zeichnungs-Demo, Screenshots als Artefakt – hilfreich bei Pull Requests
+- [x] **Release** (`.github/workflows/release.yml`) beim Push eines Tags `v*` (z. B. `v0.9.0`):
   - App bauen und Bibliotheken einbetten (Schritt 1)
-  - **DMG** mit Hintergrund und Verknüpfung zu „Programme“ (`hdiutil`), zusätzlich ZIP
+  - **DMG** mit Anleitung „Erster Start“ und Verknüpfung zu „Programme“ (`hdiutil`), zusätzlich ZIP
   - SHA-256-Prüfsummen
   - GitHub Release mit Versionshinweisen (aus den Commits seit dem letzten Tag) und Installationsanleitung
 - [ ] Homebrew-Cache im Workflow, damit Builds schnell bleiben
@@ -49,15 +49,15 @@ Ohne Notarisierung zeigt macOS beim ersten Start eine Warnung. Die Anleitung (Re
 4. Alternative für Erfahrene: `xattr -dr com.apple.quarantine /Applications/6axis.app`
 
 ### 4. Für Tester
-- [ ] Menü **Hilfe → „Feedback geben …“**: öffnet ein vorausgefülltes GitHub-Issue (Version, macOS-Version) im Browser – nur auf Klick, keine Telemetrie
-- [ ] Issue-Vorlagen „Fehler melden“ und „Idee“ im Repository
+- [x] Menü **Hilfe → „Fehler melden …“ / „Idee vorschlagen …“**: öffnet ein vorausgefülltes GitHub-Issue (Version, macOS-Version) im Browser – nur auf Klick, keine Telemetrie
+- [x] Issue-Vorlagen „Fehler melden“ und „Idee“ im Repository
 - [ ] Version in „Über 6axis“ und im Fenstertitel der Zeichnung
 
 ### 5. Produktseite (GitHub Pages)
 Einfache, schnelle Seite unter `https://melf11.github.io/6axis/`, eigener Ordner `website/`, veröffentlicht per GitHub Actions (`actions/deploy-pages`), nur HTML/CSS, keine Tracker, keine externen Schriften.
 
 Inhalt:
-- **Kopf:** Logo, „6axis – freies CAD für den Mac. Für Konstruktion, 3D-Druck und Holz.“, großer Knopf **Herunterladen** (→ `releases/latest`), Hinweis „macOS 14+, Apple Silicon, kostenlos & Open Source“
+- **Kopf:** Logo, „6axis – freies CAD für den Mac. Für Konstruktion, 3D-Druck und Holz.“, großer Knopf **Herunterladen** (→ `releases/latest`), Hinweis „macOS 15+, Apple Silicon, kostenlos & Open Source“
 - **Screenshots:** Modell, Skizze mit Bemaßung, technische Zeichnung (Korpus mit Stückliste) – erzeugt mit den Demo-Läufen (`scripts/screenshots.sh`)
 - **Drei Säulen:** *Konstruieren* (Skizze, Parameter, Zeitleiste), *3D-Druck* (STL, Slicer, Gewicht), *Werkstatt* (Zeichnung, Zuschnittliste, DXF 1:1)
 - **Installation** in drei Schritten (siehe oben) mit Bildern

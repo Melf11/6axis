@@ -68,6 +68,13 @@ struct AppCommands: Commands {
         CommandGroup(replacing: .appInfo) {
             Button("Über 6axis") { Branding.showAboutPanel() }
         }
+        CommandGroup(replacing: .help) {
+            Button("Fehler melden …") { Branding.openFeedback(kind: "bug") }
+            Button("Idee vorschlagen …") { Branding.openFeedback(kind: "idea") }
+            Divider()
+            Button("6axis-Webseite") { NSWorkspace.shared.open(URL(string: Branding.website)!) }
+            Button("Quellcode auf GitHub") { NSWorkspace.shared.open(URL(string: Branding.repository)!) }
+        }
         CommandGroup(replacing: .newItem) {
             Button("Neues Design") { editor.newDocument() }.keyboardShortcut("n")
             Button("Öffnen …") { editor.open() }.keyboardShortcut("o")

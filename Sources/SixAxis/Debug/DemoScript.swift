@@ -45,6 +45,14 @@ enum DemoScript {
                 renderPNG(page, to: dir.appendingPathComponent("drawing.png"), pixelsPerMM: 5)
                 for (i, p) in pages.enumerated() { renderPNG(p, to: dir.appendingPathComponent("sheet-\(i + 1).png"), pixelsPerMM: 5) }
                 try? DrawingRenderer.writePDF(pages, to: dir.appendingPathComponent("drawing.pdf"), title: "Korpus")
+                // Clean sheet for the website hero: only the three views with their dimensions.
+                var heroInput = DrawingController.input(editor)
+                heroInput.settings.showIso = false
+                heroInput.settings.showBalloons = false
+                heroInput.settings.showPartsList = false
+                heroInput.settings.showPartSheets = false
+                let hero = DrawingGenerator().generate(heroInput)
+                try? hero.svg(cropToViews: true).write(to: dir.appendingPathComponent("hero.svg"), atomically: true, encoding: .utf8)
                 FileHandle.standardError.write(Data("SHEETS \(pages.map { "\($0.name) \($0.sheet.name) \($0.scaleText ?? $0.scale.label)" })\n".utf8))
                 let dims = page.texts.map(\.text).filter { Int($0) != nil || $0.hasPrefix("Ø") || $0.contains("× Ø") }
                 FileHandle.standardError.write(Data("DRAWING \(page.sheet.name) \(page.scale.label) dims=\(dims)\n".utf8))

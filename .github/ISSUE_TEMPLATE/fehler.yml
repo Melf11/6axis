@@ -1,0 +1,28 @@
+name: Fehler melden
+description: Etwas funktioniert nicht wie erwartet
+labels: [fehler]
+body:
+  - type: textarea
+    id: beschreibung
+    attributes:
+      label: Was ist passiert?
+      description: Was hast du gemacht, was hast du erwartet, was ist stattdessen passiert?
+    validations:
+      required: true
+  - type: textarea
+    id: schritte
+    attributes:
+      label: Schritte zum Nachstellen
+      placeholder: |
+        1. Skizze auf XY-Ebene erstellen
+        2. …
+  - type: input
+    id: umgebung
+    attributes:
+      label: Version und Mac
+      description: Wird beim Öffnen über 6axis → Hilfe → „Fehler melden …“ automatisch ausgefüllt.
+  - type: textarea
+    id: anhang
+    attributes:
+      label: Bildschirmfoto oder Datei
+      description: Gern ein Bildschirmfoto oder die .6axis-Datei (per Drag & Drop hier hinein).

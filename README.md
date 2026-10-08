@@ -8,6 +8,10 @@
 
 *English:* 6axis is a free, open-source, fully offline parametric CAD app for macOS, inspired by Fusion 360's workflow and focused on mechanical design and 3D printing. The UI is currently German; contributions (including localization) are welcome.
 
+## Installation
+
+Die fertige App gibt es unter [Releases](https://github.com/Melf11/6axis/releases/latest) (Mac mit Apple Silicon, macOS 15+). 6axis ist nicht von Apple notarisiert: Beim ersten Start einmal *Systemeinstellungen → Datenschutz & Sicherheit → Dennoch öffnen* wählen. Details auf der [Produktseite](https://melf11.github.io/6axis/).
+
 ## Funktionen
 
 - **Skizzen** auf Ursprungsebenen oder ebenen Körperflächen: Linie, Rechteck, Mittelpunkt-Rechteck, Kreis, 3-Punkt-Bogen – mit Rasterfang (⌘ = frei) und Maßeingabe direkt beim Zeichnen (Tab wechselt zwischen Länge, Breite, Winkel …)

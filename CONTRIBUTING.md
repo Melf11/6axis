@@ -28,3 +28,16 @@ Swift-Standardstil, 4 Leerzeichen, kurze Kommentare, die das *Warum* erklären. 
 ## Lizenz
 
 Mit deinem Beitrag stimmst du zu, dass er unter der MIT-Lizenz veröffentlicht wird.
+
+## Release veröffentlichen
+
+1. `main` ist grün (CI) und `docs/roadmap.md` ist aktuell.
+2. Lokal testen: `scripts/build-app.sh release && scripts/make-dmg.sh` – die App in `build/` muss ohne Homebrew-Pfade starten (das Skript prüft das).
+3. Tag setzen und pushen:
+   ```bash
+   git tag v0.9.0
+   git push origin v0.9.0
+   ```
+   Der Workflow **Release** baut die App, packt DMG/ZIP mit Prüfsummen und veröffentlicht das GitHub Release. Tags mit Bindestrich (`v0.9.1-beta.1`) werden als Vorabversion markiert.
+
+Die Produktseite (`website/`) wird bei jeder Änderung auf `main` automatisch über GitHub Pages veröffentlicht. Bilder neu erzeugen: `scripts/screenshots.sh`.

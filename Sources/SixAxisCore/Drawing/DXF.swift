@@ -140,3 +140,56 @@ extension DrawingGenerator {
         return w.output()
     }
 }
+
+extension DrawingPage {
+    /// The sheet as SVG in millimetres, for the web and vector editors. Lines carry a class per
+    /// ISO line type. `cropToViews` frames only the orthographic views with their dimensions.
+    public func svg(cropToViews: Bool = false) -> String {
+        let h = sheet.height
+        var box = (x: 0.0, y: 0.0, w: sheet.width, h: h)
+        if cropToViews {
+            var lo = Vec2(repeating: .greatestFiniteMagnitude), hi = -lo
+            for v in views where v.id != "iso" && !v.id.hasPrefix("detail.") { lo = simd_min(lo, v.min); hi = simd_max(hi, v.max) }
+            for d in dimensions where !d.id.hasPrefix("balloon.") {
+                for s in d.segments { lo = simd_min(lo, simd_min(s.0, s.1)); hi = simd_max(hi, simd_max(s.0, s.1)) }
+                lo = simd_min(lo, d.textCenter - Vec2(8, 4)); hi = simd_max(hi, d.textCenter + Vec2(8, 4))
+            }
+            if lo.x <= hi.x {
+                lo -= Vec2(4, 4); hi += Vec2(4, 4)
+                box = (lo.x, h - hi.y, hi.x - lo.x, hi.y - lo.y)
+            }
+        }
+        func pt(_ p: Vec2) -> String { String(format: "%.2f,%.2f", p.x, h - p.y) }
+        func esc(_ s: String) -> String {
+            s.replacingOccurrences(of: "&", with: "&amp;").replacingOccurrences(of: "<", with: "&lt;").replacingOccurrences(of: ">", with: "&gt;")
+        }
+        let vb = String(format: "%.1f %.1f %.1f %.1f", box.x, box.y, box.w, box.h)
+        var out = "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"\(vb)\" width=\"\(Int(box.w))mm\" height=\"\(Int(box.h))mm\">\n"
+        for l in lines where l.points.count >= 2 {
+            let cls: String
+            switch l.style {
+            case .frame: if cropToViews { continue }; cls = "frame"
+            case .visible: cls = l.group == nil ? "visible" : "dim"
+            case .hidden: cls = "hidden"
+            case .center: cls = "center"
+            case .thin: cls = l.group == nil ? "thin" : "dim"
+            case .iso: cls = "iso"
+            case .hatch: cls = "hatch"
+            }
+            let dash = l.style.dash.map { " stroke-dasharray=\"\($0.map { String(format: "%.2f", $0) }.joined(separator: " "))\"" } ?? ""
+            out += "<polyline class=\"\(cls)\" points=\"\(l.points.map(pt).joined(separator: " "))\" fill=\"none\" stroke-width=\"\(l.style.width)\"\(dash)/>\n"
+        }
+        for a in arrows {
+            let u = simd_normalize(a.direction), n = Vec2(-u.y, u.x)
+            let back = a.tip - u * 3, half = 3 * tan(15 * Double.pi / 180)
+            out += "<polygon class=\"arrow\" points=\"\(pt(a.tip)) \(pt(back + n * half)) \(pt(back - n * half))\"/>\n"
+        }
+        for t in texts {
+            let anchor = t.anchor == .left ? "start" : (t.anchor == .center ? "middle" : "end")
+            let p = Vec2(t.position.x, h - t.position.y)
+            let rot = t.angle != 0 ? " transform=\"rotate(\(String(format: "%.2f", -t.angle * 180 / .pi)) \(String(format: "%.2f,%.2f", p.x, p.y)))\"" : ""
+            out += "<text class=\"\(t.group == nil ? "label" : "value")\" x=\"\(String(format: "%.2f", p.x))\" y=\"\(String(format: "%.2f", p.y))\" font-size=\"\(String(format: "%.2f", t.height / 0.72))\" text-anchor=\"\(anchor)\"\(t.bold ? " font-weight=\"600\"" : "")\(rot)>\(esc(t.text))</text>\n"
+        }
+        return out + "</svg>\n"
+    }
+}

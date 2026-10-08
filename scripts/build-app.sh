@@ -1,11 +1,16 @@
 #!/bin/bash
-# Builds 6axis.app into ./build. Usage: scripts/build-app.sh [debug|release]
+# Builds 6axis.app into ./build.
+#   scripts/build-app.sh debug     fast build for development (uses Homebrew's OpenCASCADE)
+#   scripts/build-app.sh release   optimised, self-contained app (libraries embedded, see bundle-libs.sh)
+# Version: $VERSION, else the latest git tag (v0.9.0 → 0.9.0); build number: $BUILD_NUMBER, else commit count.
 set -euo pipefail
 
 CONFIG="${1:-release}"
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 APP="$ROOT/build/6axis.app"
-VERSION="0.1.0"
+VERSION="${VERSION:-$(git -C "$ROOT" describe --tags --abbrev=0 2>/dev/null | sed 's/^v//' || true)}"
+VERSION="${VERSION:-0.9.0}"
+BUILD_NUMBER="${BUILD_NUMBER:-$(git -C "$ROOT" rev-list --count HEAD 2>/dev/null || echo 1)}"
 
 cd "$ROOT"
 swift build -c "$CONFIG" --product SixAxis
@@ -27,9 +32,9 @@ cat > "$APP/Contents/Info.plist" <<PLIST
     <key>CFBundleExecutable</key><string>SixAxis</string>
     <key>CFBundlePackageType</key><string>APPL</string>
     <key>CFBundleShortVersionString</key><string>$VERSION</string>
-    <key>CFBundleVersion</key><string>1</string>
+    <key>CFBundleVersion</key><string>$BUILD_NUMBER</string>
     <key>CFBundleIconFile</key><string>AppIcon</string>
-    <key>LSMinimumSystemVersion</key><string>14.0</string>
+    <key>LSMinimumSystemVersion</key><string>15.0</string>
     <key>LSApplicationCategoryType</key><string>public.app-category.graphics-design</string>
     <key>NSHighResolutionCapable</key><true/>
     <key>NSPrincipalClass</key><string>NSApplication</string>
@@ -57,5 +62,12 @@ cat > "$APP/Contents/Info.plist" <<PLIST
 </plist>
 PLIST
 
-codesign --force --sign - "$APP" >/dev/null 2>&1 || true
-echo "Built $APP"
+mkdir -p "$APP/Contents/Resources/Licenses"
+cp "$ROOT/LICENSE" "$APP/Contents/Resources/Licenses/6axis-LICENSE.txt"
+
+if [ "$CONFIG" = "release" ]; then
+    "$ROOT/scripts/bundle-libs.sh" "$APP"
+else
+    codesign --force --sign - "$APP" >/dev/null 2>&1 || true
+fi
+echo "Built $APP ($VERSION, build $BUILD_NUMBER)"
