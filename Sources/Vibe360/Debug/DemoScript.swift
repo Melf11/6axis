@@ -1,0 +1,133 @@
+import AppKit
+import Foundation
+import simd
+import VibeCore
+
+/// Scripted UI walkthrough for development and CI:
+///   VIBE360_DEMO=1 VIBE360_SNAPSHOTS=/tmp/shots open build/Vibe360.app
+/// Drives the editor through real mouse-event code paths and writes PNG snapshots.
+@MainActor
+enum DemoScript {
+    static func runIfRequested(_ editor: Editor) {
+        let env = ProcessInfo.processInfo.environment
+        guard env["VIBE360_DEMO"] != nil else { return }
+        let dir = URL(fileURLWithPath: env["VIBE360_SNAPSHOTS"] ?? NSTemporaryDirectory())
+        try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        Task { @MainActor in
+            await run(editor, dir: dir, keepOpen: env["VIBE360_KEEP_OPEN"] != nil)
+        }
+    }
+
+    static func pause(_ s: Double = 0.6) async {
+        try? await Task.sleep(nanoseconds: UInt64(s * 1_000_000_000))
+    }
+
+    static func snap(_ editor: Editor, _ name: String, _ dir: URL) async {
+        await pause(0.7)
+        guard let img = editor.snapshotProvider(), let tiff = img.tiffRepresentation,
+              let rep = NSBitmapImageRep(data: tiff), let png = rep.representation(using: .png, properties: [:]) else {
+            print("DEMO: snapshot \(name) failed")
+            return
+        }
+        try? png.write(to: dir.appendingPathComponent("\(name).png"))
+        print("DEMO: wrote \(name)")
+    }
+
+    /// Clicks at a sketch-plane coordinate through the normal hover/mouse pipeline.
+    static func clickSketch(_ editor: Editor, _ uv: Vec2, count: Int = 1) {
+        guard let plane = editor.activePlane, let pt = editor.camera.project(plane.point(uv)) else { return }
+        clickScreen(editor, pt, count: count)
+    }
+
+    static func clickScreen(_ editor: Editor, _ pt: CGPoint, count: Int = 1, modifiers: NSEvent.ModifierFlags = []) {
+        editor.updateHover(at: pt)
+        editor.mouseDown(at: pt, modifiers: modifiers, clickCount: count)
+        editor.mouseUp(at: pt, modifiers: modifiers, clickCount: count)
+    }
+
+    static func run(_ editor: Editor, dir: URL, keepOpen: Bool) async {
+        await pause(1.0)
+        await snap(editor, "01-start", dir)
+
+        // Sketch on XY: rectangle + dimensions via the real tools.
+        editor.beginCommand(.sketchPlane)
+        await snap(editor, "02-choose-plane", dir)
+        editor.commit { $0.parameters = [UserParameter(name: "breite", expression: "70 mm")] }
+        editor.beginSketch(on: .xy)
+        await pause(0.8)
+        editor.camera.distance = 160
+        editor.camera.target = SIMD3(30, 20, 0)
+        editor.setSketchTool(.rectangle)
+        clickSketch(editor, Vec2(0, 0))
+        editor.updateHover(at: editor.camera.project(editor.activePlane!.point(Vec2(58, 38)))!)
+        await snap(editor, "03-rect-preview", dir)
+        clickSketch(editor, Vec2(60, 40))
+        editor.setSketchTool(.circle)
+        clickSketch(editor, Vec2(30, 20))
+        clickSketch(editor, Vec2(38, 20))
+        editor.setSketchTool(.dimension)
+        // Bottom line length: click line, then place.
+        clickSketch(editor, Vec2(30, 0))
+        clickSketch(editor, Vec2(30, -10))
+        if let d = editor.editingDimension { editor.setDimensionValue(d, "breite"); editor.editingDimension = nil }
+        await snap(editor, "04-sketch", dir)
+
+        editor.finishSketch()
+        editor.homeView()
+        await pause(0.6)
+
+        // Extrude: click the outer profile.
+        editor.beginCommand(.extrude)
+        if let sid = editor.doc.features.first?.id, let sb = editor.state.sketches[sid],
+           let outer = sb.regions.max(by: { $0.area < $1.area }),
+           let pt = editor.camera.project(sb.plane.point(outer.sample)) {
+            clickScreen(editor, pt)
+        }
+        editor.setExtrudeDistance(15)
+        await snap(editor, "05-extrude-preview", dir)
+        editor.commitCommand()
+        editor.fitAll()
+        await snap(editor, "06-body", dir)
+
+        // Fillet the four vertical edges.
+        editor.beginCommand(.fillet)
+        if let body = editor.state.orderedBodies.first {
+            for (i, e) in body.edgeInfos.enumerated() {
+                guard let e, e.kind == .line, abs(e.end.z - e.start.z) > 1 else { continue }
+                let ref = body.edgeRef(i)!
+                editor.updateCommandFeature { k in
+                    if case var .fillet(f) = k { f.edges.append(BodyEdgeRef(body: body.id, edge: ref)); k = .fillet(f) }
+                }
+            }
+        }
+        editor.updateCommandFeature { k in if case var .fillet(f) = k { f.radius = "5"; k = .fillet(f) } }
+        await snap(editor, "07-fillet", dir)
+        editor.commitCommand()
+
+        // Shell from the top face.
+        editor.beginCommand(.shell)
+        if let body = editor.state.orderedBodies.first,
+           let top = body.faceInfos.compactMap({ $0 }).filter({ $0.normal.z > 0.99 }).max(by: { $0.centroid.z < $1.centroid.z }),
+           let pt = editor.camera.project(top.centroid + Vec3(20, 0, 0)) {
+            clickScreen(editor, pt)
+        }
+        await snap(editor, "08-shell", dir)
+        editor.commitCommand()
+        editor.selection = []
+        await snap(editor, "09-final", dir)
+
+        editor.showCommandPalette = true
+        await snap(editor, "10-palette", dir)
+        editor.showCommandPalette = false
+        editor.markingMenu = CGPoint(x: editor.camera.viewSize.width / 2, y: editor.camera.viewSize.height / 2)
+        await snap(editor, "11-marking", dir)
+        editor.markingMenu = nil
+
+        print("DEMO: errors \(editor.state.errors)")
+        print("DEMO: done")
+        if !keepOpen {
+            editor.isDirty = false
+            NSApp.terminate(nil)
+        }
+    }
+}
