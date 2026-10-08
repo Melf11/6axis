@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>6axis – kostenloses CAD für den Mac</title>
+  <meta name="description" content="6axis ist ein kostenloses, freies CAD-Programm für den Mac: konstruieren wie in Fusion 360, STL für den 3D-Druck und bemaßte Werkstattzeichnungen mit Stückliste. Offline und Open Source.">
+  <meta property="og:title" content="6axis – kostenloses CAD für den Mac">
+  <meta property="og:description" content="Vom Modell zur Werkstattzeichnung. Offline, ohne Konto, Open Source.">
+  <meta property="og:image" content="assets/drawing.png">
+  <link rel="icon" href="assets/logo.png">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="bar">
+    <a class="brand" href="./"><img src="assets/logo.png" alt="" width="32" height="32"><span>6axis</span></a>
+    <nav aria-label="Seitennavigation">
+      <a href="#funktionen">Funktionen</a>
+      <a href="#installation">Installation</a>
+      <a href="https://github.com/Melf11/6axis">GitHub</a>
+    </nav>
+    <a class="button small" href="https://github.com/Melf11/6axis/releases/latest">Herunterladen</a>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="hero-text">
+        <h1>Vom Modell zur Werkstatt&shy;zeichnung.</h1>
+        <p class="lead">6axis ist ein kostenloses CAD-Programm für den Mac. Du skizzierst und konstruierst wie in Fusion&nbsp;360 – und bekommst die bemaßte Zeichnung, die Stückliste und die STL für den Drucker gleich mit. Offline, ohne Konto, Open Source.</p>
+        <div class="cta">
+          <a class="button" href="https://github.com/Melf11/6axis/releases/latest">6axis herunterladen</a>
+          <a class="link" href="https://github.com/Melf11/6axis">Quellcode ansehen</a>
+        </div>
+        <p class="fine">Kostenlos für Macs mit Apple Silicon (M1 oder neuer) ab macOS&nbsp;15.</p>
+      </div>
+      <figure class="hero-drawing" aria-label="Technische Zeichnung eines Korpus mit Bemaßung, erzeugt von 6axis">
+        <div id="drawing" class="drawing"><img src="assets/hero.svg" alt="Dreitafelprojektion eines Korpus mit Bezugsmaßen"></div>
+        <figcaption>Diese Zeichnung hat 6axis aus einem 3D-Modell erzeugt – mit Bezugsmaßen von der Anschlagkante.</figcaption>
+      </figure>
+    </section>
+
+    <figure class="showcase">
+      <img src="assets/model.png" alt="6axis mit einem ausgehöhlten Gehäuse: Werkzeugleiste, Browser, Zeitleiste und ViewCube" loading="lazy">
+      <figcaption>Werkzeugleiste, Browser, Zeitleiste und ViewCube – die Bedienung kennst du aus Fusion&nbsp;360.</figcaption>
+    </figure>
+
+    <section id="funktionen" class="pillars">
+      <article class="pillar x">
+        <div class="axis" aria-hidden="true"><i></i>X</div>
+        <h2>Konstruieren</h2>
+        <p>Skizzen mit Abhängigkeiten und Maßen, die du direkt beim Zeichnen eintippst. Extrusion, Drehung, Abrundung, Fase und Wandstärke. Jeder Schritt bleibt in der Zeitleiste änderbar, Parameter wie <code>breite / 2</code> rechnen mit.</p>
+        <img src="assets/sketch.png" alt="Skizze mit bemaßtem Rechteck und Kreis" loading="lazy">
+      </article>
+      <article class="pillar y">
+        <div class="axis" aria-hidden="true"><i></i>Y</div>
+        <h2>3D-Druck</h2>
+        <p>STL und STEP exportieren oder das Teil mit einem Klick in PrusaSlicer, Bambu Studio, OrcaSlicer oder Cura öffnen. Volumen und Gewicht siehst du sofort – für PLA, PETG, ABS und mehr.</p>
+        <img src="assets/marking.png" alt="Radialmenü per Rechtsklick über einem Bauteil" loading="lazy">
+      </article>
+      <article class="pillar z">
+        <div class="axis" aria-hidden="true"><i></i>Z</div>
+        <h2>Werkstatt</h2>
+        <p>Die technische Zeichnung entsteht nebenbei: drei Ansichten nach Norm, Bezugsmaße, Bohrungen, Radien und Fasen, Schnitt und Einzelheiten. Dazu Stückliste mit Zuschnittmaßen, Einzelteilblätter und DXF im Maßstab 1:1 für CNC und Laser.</p>
+        <img src="assets/parts.png" alt="Einzelteilblatt mit Seite, Boden und Fachboden eines Korpus" loading="lazy">
+      </article>
+    </section>
+
+    <section id="installation" class="install">
+      <h2>Installation</h2>
+      <p>6axis ist ohne kostenpflichtiges Apple-Entwicklerkonto gebaut und deshalb nicht von Apple notarisiert. Beim ersten Start fragt macOS deshalb einmal nach.</p>
+      <ol>
+        <li><strong>Herunterladen</strong> – die Datei <em>6axis-…dmg</em> aus dem <a href="https://github.com/Melf11/6axis/releases/latest">neuesten Release</a>.</li>
+        <li><strong>Installieren</strong> – die DMG öffnen und 6axis auf „Programme“ ziehen.</li>
+        <li><strong>Öffnen</strong> – macOS meldet, dass 6axis nicht überprüft werden kann. Auf <em>Fertig</em> klicken.</li>
+        <li><strong>Freigeben</strong> – in den <em>Systemeinstellungen → Datenschutz &amp; Sicherheit</em> ganz unten auf <em>Dennoch öffnen</em> klicken und bestätigen. Danach startet 6axis ganz normal.</li>
+      </ol>
+      <p class="terminal">Im Terminal geht der letzte Schritt auch so:<br><code>xattr -dr com.apple.quarantine /Applications/6axis.app</code></p>
+    </section>
+
+    <section class="open">
+      <h2>Frei und offen</h2>
+      <p>6axis steht unter der MIT-Lizenz: Du darfst es nutzen, weitergeben und verändern. Der Quellcode liegt auf GitHub, Mitmachen ist ausdrücklich erwünscht. Fehler und Ideen meldest du in der App unter <em>Hilfe → Fehler melden</em> oder direkt als <a href="https://github.com/Melf11/6axis/issues">Issue</a>.</p>
+      <p>Die Geometrie rechnet <a href="https://dev.opencascade.org">Open CASCADE Technology</a>, gezeichnet wird mit Metal – alles läuft auf deinem Mac, ohne Internet und ohne Konto.</p>
+    </section>
+  </main>
+
+  <footer>
+    <p>6axis ist ein unabhängiges Open-Source-Projekt und steht in keiner Verbindung zu Autodesk. „Fusion 360“ ist eine Marke von Autodesk, Inc.</p>
+  </footer>
+
+  <script>
+    // Inline the drawing so its lines can draw themselves once (skipped for reduced motion).
+    (async () => {
+      const box = document.getElementById('drawing');
+      try {
+        const res = await fetch('assets/hero.svg');
+        if (!res.ok) return;
+        box.innerHTML = await res.text();
+        const svg = box.querySelector('svg');
+        svg.removeAttribute('width');
+        svg.removeAttribute('height');
+        svg.setAttribute('role', 'img');
+        svg.setAttribute('aria-label', 'Dreitafelprojektion eines Korpus mit Bezugsmaßen');
+        svg.querySelectorAll('polyline.visible').forEach((l, i) => {
+          l.setAttribute('pathLength', '1');
+          l.style.animationDelay = `${Math.min(i * 12, 900)}ms`;
+        });
+        requestAnimationFrame(() => box.classList.add('ready'));
+      } catch (_) { /* the <img> fallback stays */ }
+    })();
+  </script>
+</body>
+</html>

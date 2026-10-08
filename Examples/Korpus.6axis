@@ -1,0 +1,1448 @@
+{
+  "bodies" : [
+    "3992FB13-A62C-446A-AAF3-BA8576153EF9",
+    {
+      "grain" : "length",
+      "material" : "Eiche massiv",
+      "name" : "Seite links",
+      "visible" : true
+    },
+    "3719869C-CD53-438C-A336-50D5F8DE56E8",
+    {
+      "grain" : "none",
+      "material" : "Birke Multiplex",
+      "name" : "Rückwand",
+      "visible" : true
+    },
+    "1E96C477-2262-40D9-88AE-014BA9D40D57",
+    {
+      "grain" : "length",
+      "material" : "Eiche massiv",
+      "name" : "Seite rechts",
+      "visible" : true
+    },
+    "9D4AE3AE-08C1-4E7B-A52D-910A766FCD73",
+    {
+      "grain" : "length",
+      "material" : "Eiche massiv",
+      "name" : "Deckel",
+      "visible" : true
+    },
+    "4FDD4204-E6A3-49D2-BA8D-860FDADB8222",
+    {
+      "grain" : "length",
+      "material" : "Eiche massiv",
+      "name" : "Fachboden",
+      "visible" : true
+    },
+    "BF905C9C-F0EB-4AB3-907A-D79040B80B76",
+    {
+      "grain" : "length",
+      "material" : "Eiche massiv",
+      "name" : "Boden",
+      "visible" : true
+    }
+  ],
+  "drawing" : {
+    "author" : "",
+    "customDimensions" : [
+
+    ],
+    "details" : [
+
+    ],
+    "dimensionOffsets" : {
+
+    },
+    "drawingNumber" : "",
+    "hiddenDimensions" : [
+
+    ],
+    "material" : "Eiche 19 mm",
+    "sectionLeft" : false,
+    "sheet" : "auto",
+    "showBalloons" : true,
+    "showDimensions" : true,
+    "showHidden" : true,
+    "showIso" : true,
+    "showPartSheets" : true,
+    "showPartsList" : true,
+    "title" : "Korpus",
+    "viewOffsets" : {
+
+    }
+  },
+  "features" : [
+    {
+      "id" : "F321C53B-6FEB-41B0-BCA9-643CE6229F16",
+      "kind" : {
+        "sketch" : {
+          "_0" : {
+            "constraints" : [
+              {
+                "id" : 9,
+                "kind" : {
+                  "horizontal" : {
+                    "line" : 5
+                  }
+                },
+                "labelOffset" : [
+                  0,
+                  0
+                ]
+              },
+              {
+                "id" : 10,
+                "kind" : {
+                  "vertical" : {
+                    "line" : 6
+                  }
+                },
+                "labelOffset" : [
+                  0,
+                  0
+                ]
+              },
+              {
+                "id" : 11,
+                "kind" : {
+                  "horizontal" : {
+                    "line" : 7
+                  }
+                },
+                "labelOffset" : [
+                  0,
+                  0
+                ]
+              },
+              {
+                "id" : 12,
+                "kind" : {
+                  "vertical" : {
+                    "line" : 8
+                  }
+                },
+                "labelOffset" : [
+                  0,
+                  0
+                ]
+              },
+              {
+                "id" : 13,
+                "kind" : {
+                  "length" : {
+                    "line" : 5,
+                    "value" : "19 mm"
+                  }
+                },
+                "labelOffset" : [
+                  0,
+                  -12
+                ]
+              },
+              {
+                "id" : 14,
+                "kind" : {
+                  "length" : {
+                    "line" : 6,
+                    "value" : "600 mm"
+                  }
+                },
+                "labelOffset" : [
+                  12,
+                  0
+                ]
+              }
+            ],
+            "curves" : [
+              {
+                "construction" : false,
+                "geometry" : {
+                  "line" : {
+                    "end" : 2,
+                    "start" : 1
+                  }
+                },
+                "id" : 5
+              },
+              {
+                "construction" : false,
+                "geometry" : {
+                  "line" : {
+                    "end" : 3,
+                    "start" : 2
+                  }
+                },
+                "id" : 6
+              },
+              {
+                "construction" : false,
+                "geometry" : {
+                  "line" : {
+                    "end" : 4,
+                    "start" : 3
+                  }
+                },
+                "id" : 7
+              },
+              {
+                "construction" : false,
+                "geometry" : {
+                  "line" : {
+                    "end" : 1,
+                    "start" : 4
+                  }
+                },
+                "id" : 8
+              }
+            ],
+            "nextId" : 15,
+            "plane" : {
+              "xz" : {
+
+              }
+            },
+            "points" : [
+              {
+                "fixed" : true,
+                "id" : 0,
+                "position" : [
+                  0,
+                  0
+                ]
+              },
+              {
+                "fixed" : false,
+                "id" : 1,
+                "position" : [
+                  0,
+                  0
+                ]
+              },
+              {
+                "fixed" : false,
+                "id" : 2,
+                "position" : [
+                  19,
+                  0
+                ]
+              },
+              {
+                "fixed" : false,
+                "id" : 3,
+                "position" : [
+                  19,
+                  600
+                ]
+              },
+              {
+                "fixed" : false,
+                "id" : 4,
+                "position" : [
+                  0,
+                  600
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "name" : "Skizze Seite links",
+      "suppressed" : false
+    },
+    {
+      "id" : "3992FB13-A62C-446A-AAF3-BA8576153EF9",
+      "kind" : {
+        "extrude" : {
+          "_0" : {
+            "distance" : "tiefe",
+            "distance2" : "10 mm",
+            "extent" : "oneSide",
+            "faces" : [
+
+            ],
+            "operation" : "newBody",
+            "profiles" : [
+              {
+                "sample" : [
+                  9.5,
+                  300
+                ],
+                "sketch" : "F321C53B-6FEB-41B0-BCA9-643CE6229F16"
+              }
+            ],
+            "targets" : [
+
+            ]
+          }
+        }
+      },
+      "name" : "Seite links",
+      "suppressed" : false
+    },
+    {
+      "id" : "B3A76C87-38C5-4E33-9DA9-F4BF0167C0B3",
+      "kind" : {
+        "sketch" : {
+          "_0" : {
+            "constraints" : [
+              {
+                "id" : 9,
+                "kind" : {
+                  "horizontal" : {
+                    "line" : 5
+                  }
+                },
+                "labelOffset" : [
+                  0,
+                  0
+                ]
+              },
+              {
+                "id" : 10,
+                "kind" : {
+                  "vertical" : {
+                    "line" : 6
+                  }
+                },
+                "labelOffset" : [
+                  0,
+                  0
+                ]
+              },
+              {
+                "id" : 11,
+                "kind" : {
+                  "horizontal" : {
+                    "line" : 7
+                  }
+                },
+                "labelOffset" : [
+                  0,
+                  0
+                ]
+              },
+              {
+                "id" : 12,
+                "kind" : {
+                  "vertical" : {
+                    "line" : 8
+                  }
+                },
+                "labelOffset" : [
+                  0,
+                  0
+                ]
+              },
+              {
+                "id" : 13,
+                "kind" : {
+                  "length" : {
+                    "line" : 5,
+                    "value" : "19 mm"
+                  }
+                },
+                "labelOffset" : [
+                  0,
+                  -12
+                ]
+              },
+              {
+                "id" : 14,
+                "kind" : {
+                  "length" : {
+                    "line" : 6,
+                    "value" : "600 mm"
+                  }
+                },
+                "labelOffset" : [
+                  12,
+                  0
+                ]
+              }
+            ],
+            "curves" : [
+              {
+                "construction" : false,
+                "geometry" : {
+                  "line" : {
+                    "end" : 2,
+                    "start" : 1
+                  }
+                },
+                "id" : 5
+              },
+              {
+                "construction" : false,
+                "geometry" : {
+                  "line" : {
+                    "end" : 3,
+                    "start" : 2
+                  }
+                },
+                "id" : 6
+              },
+              {
+                "construction" : false,
+                "geometry" : {
+                  "line" : {
+                    "end" : 4,
+                    "start" : 3
+                  }
+                },
+                "id" : 7
+              },
+              {
+                "construction" : false,
+                "geometry" : {
+                  "line" : {
+                    "end" : 1,
+                    "start" : 4
+                  }
+                },
+                "id" : 8
+              }
+            ],
+            "nextId" : 15,
+            "plane" : {
+              "xz" : {
+
+              }
+            },
+            "points" : [
+              {
+                "fixed" : true,
+                "id" : 0,
+                "position" : [
+                  0,
+                  0
+                ]
+              },
+              {
+                "fixed" : false,
+                "id" : 1,
+                "position" : [
+                  481,
+                  0
+                ]
+              },
+              {
+                "fixed" : false,
+                "id" : 2,
+                "position" : [
+                  500,
+                  0
+                ]
+              },
+              {
+                "fixed" : false,
+                "id" : 3,
+                "position" : [
+                  500,
+                  600
+                ]
+              },
+              {
+                "fixed" : false,
+                "id" : 4,
+                "position" : [
+                  481,
+                  600
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "name" : "Skizze Seite rechts",
+      "suppressed" : false
+    },
+    {
+      "id" : "1E96C477-2262-40D9-88AE-014BA9D40D57",
+      "kind" : {
+        "extrude" : {
+          "_0" : {
+            "distance" : "tiefe",
+            "distance2" : "10 mm",
+            "extent" : "oneSide",
+            "faces" : [
+
+            ],
+            "operation" : "newBody",
+            "profiles" : [
+              {
+                "sample" : [
+                  490.5,
+                  300
+                ],
+                "sketch" : "B3A76C87-38C5-4E33-9DA9-F4BF0167C0B3"
+              }
+            ],
+            "targets" : [
+
+            ]
+          }
+        }
+      },
+      "name" : "Seite rechts",
+      "suppressed" : false
+    },
+    {
+      "id" : "C9B33F05-4EEF-40CA-84A6-98F430ABCA38",
+      "kind" : {
+        "sketch" : {
+          "_0" : {
+            "constraints" : [
+              {
+                "id" : 9,
+                "kind" : {
+                  "horizontal" : {
+                    "line" : 5
+                  }
+                },
+                "labelOffset" : [
+                  0,
+                  0
+                ]
+              },
+              {
+                "id" : 10,
+                "kind" : {
+                  "vertical" : {
+                    "line" : 6
+                  }
+                },
+                "labelOffset" : [
+                  0,
+                  0
+                ]
+              },
+              {
+                "id" : 11,
+                "kind" : {
+                  "horizontal" : {
+                    "line" : 7
+                  }
+                },
+                "labelOffset" : [
+                  0,
+                  0
+                ]
+              },
+              {
+                "id" : 12,
+                "kind" : {
+                  "vertical" : {
+                    "line" : 8
+                  }
+                },
+                "labelOffset" : [
+                  0,
+                  0
+                ]
+              },
+              {
+                "id" : 13,
+                "kind" : {
+                  "length" : {
+                    "line" : 5,
+                    "value" : "462 mm"
+                  }
+                },
+                "labelOffset" : [
+                  0,
+                  -12
+                ]
+              },
+              {
+                "id" : 14,
+                "kind" : {
+                  "length" : {
+                    "line" : 6,
+                    "value" : "19 mm"
+                  }
+                },
+                "labelOffset" : [
+                  12,
+                  0
+                ]
+              }
+            ],
+            "curves" : [
+              {
+                "construction" : false,
+                "geometry" : {
+                  "line" : {
+                    "end" : 2,
+                    "start" : 1
+                  }
+                },
+                "id" : 5
+              },
+              {
+                "construction" : false,
+                "geometry" : {
+                  "line" : {
+                    "end" : 3,
+                    "start" : 2
+                  }
+                },
+                "id" : 6
+              },
+              {
+                "construction" : false,
+                "geometry" : {
+                  "line" : {
+                    "end" : 4,
+                    "start" : 3
+                  }
+                },
+                "id" : 7
+              },
+              {
+                "construction" : false,
+                "geometry" : {
+                  "line" : {
+                    "end" : 1,
+                    "start" : 4
+                  }
+                },
+                "id" : 8
+              }
+            ],
+            "nextId" : 15,
+            "plane" : {
+              "xz" : {
+
+              }
+            },
+            "points" : [
+              {
+                "fixed" : true,
+                "id" : 0,
+                "position" : [
+                  0,
+                  0
+                ]
+              },
+              {
+                "fixed" : false,
+                "id" : 1,
+                "position" : [
+                  19,
+                  0
+                ]
+              },
+              {
+                "fixed" : false,
+                "id" : 2,
+                "position" : [
+                  481,
+                  0
+                ]
+              },
+              {
+                "fixed" : false,
+                "id" : 3,
+                "position" : [
+                  481,
+                  19
+                ]
+              },
+              {
+                "fixed" : false,
+                "id" : 4,
+                "position" : [
+                  19,
+                  19
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "name" : "Skizze Boden",
+      "suppressed" : false
+    },
+    {
+      "id" : "BF905C9C-F0EB-4AB3-907A-D79040B80B76",
+      "kind" : {
+        "extrude" : {
+          "_0" : {
+            "distance" : "tiefe",
+            "distance2" : "10 mm",
+            "extent" : "oneSide",
+            "faces" : [
+
+            ],
+            "operation" : "newBody",
+            "profiles" : [
+              {
+                "sample" : [
+                  250,
+                  9.5
+                ],
+                "sketch" : "C9B33F05-4EEF-40CA-84A6-98F430ABCA38"
+              }
+            ],
+            "targets" : [
+
+            ]
+          }
+        }
+      },
+      "name" : "Boden",
+      "suppressed" : false
+    },
+    {
+      "id" : "ECA01182-AD05-446A-A13A-56E22B8F3885",
+      "kind" : {
+        "sketch" : {
+          "_0" : {
+            "constraints" : [
+              {
+                "id" : 9,
+                "kind" : {
+                  "horizontal" : {
+                    "line" : 5
+                  }
+                },
+                "labelOffset" : [
+                  0,
+                  0
+                ]
+              },
+              {
+                "id" : 10,
+                "kind" : {
+                  "vertical" : {
+                    "line" : 6
+                  }
+                },
+                "labelOffset" : [
+                  0,
+                  0
+                ]
+              },
+              {
+                "id" : 11,
+                "kind" : {
+                  "horizontal" : {
+                    "line" : 7
+                  }
+                },
+                "labelOffset" : [
+                  0,
+                  0
+                ]
+              },
+              {
+                "id" : 12,
+                "kind" : {
+                  "vertical" : {
+                    "line" : 8
+                  }
+                },
+                "labelOffset" : [
+                  0,
+                  0
+                ]
+              },
+              {
+                "id" : 13,
+                "kind" : {
+                  "length" : {
+                    "line" : 5,
+                    "value" : "462 mm"
+                  }
+                },
+                "labelOffset" : [
+                  0,
+                  -12
+                ]
+              },
+              {
+                "id" : 14,
+                "kind" : {
+                  "length" : {
+                    "line" : 6,
+                    "value" : "19 mm"
+                  }
+                },
+                "labelOffset" : [
+                  12,
+                  0
+                ]
+              }
+            ],
+            "curves" : [
+              {
+                "construction" : false,
+                "geometry" : {
+                  "line" : {
+                    "end" : 2,
+                    "start" : 1
+                  }
+                },
+                "id" : 5
+              },
+              {
+                "construction" : false,
+                "geometry" : {
+                  "line" : {
+                    "end" : 3,
+                    "start" : 2
+                  }
+                },
+                "id" : 6
+              },
+              {
+                "construction" : false,
+                "geometry" : {
+                  "line" : {
+                    "end" : 4,
+                    "start" : 3
+                  }
+                },
+                "id" : 7
+              },
+              {
+                "construction" : false,
+                "geometry" : {
+                  "line" : {
+                    "end" : 1,
+                    "start" : 4
+                  }
+                },
+                "id" : 8
+              }
+            ],
+            "nextId" : 15,
+            "plane" : {
+              "xz" : {
+
+              }
+            },
+            "points" : [
+              {
+                "fixed" : true,
+                "id" : 0,
+                "position" : [
+                  0,
+                  0
+                ]
+              },
+              {
+                "fixed" : false,
+                "id" : 1,
+                "position" : [
+                  19,
+                  581
+                ]
+              },
+              {
+                "fixed" : false,
+                "id" : 2,
+                "position" : [
+                  481,
+                  581
+                ]
+              },
+              {
+                "fixed" : false,
+                "id" : 3,
+                "position" : [
+                  481,
+                  600
+                ]
+              },
+              {
+                "fixed" : false,
+                "id" : 4,
+                "position" : [
+                  19,
+                  600
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "name" : "Skizze Deckel",
+      "suppressed" : false
+    },
+    {
+      "id" : "9D4AE3AE-08C1-4E7B-A52D-910A766FCD73",
+      "kind" : {
+        "extrude" : {
+          "_0" : {
+            "distance" : "tiefe",
+            "distance2" : "10 mm",
+            "extent" : "oneSide",
+            "faces" : [
+
+            ],
+            "operation" : "newBody",
+            "profiles" : [
+              {
+                "sample" : [
+                  250,
+                  590.5
+                ],
+                "sketch" : "ECA01182-AD05-446A-A13A-56E22B8F3885"
+              }
+            ],
+            "targets" : [
+
+            ]
+          }
+        }
+      },
+      "name" : "Deckel",
+      "suppressed" : false
+    },
+    {
+      "id" : "6B9355D7-2D57-4187-90F8-626A617E889A",
+      "kind" : {
+        "sketch" : {
+          "_0" : {
+            "constraints" : [
+              {
+                "id" : 9,
+                "kind" : {
+                  "horizontal" : {
+                    "line" : 5
+                  }
+                },
+                "labelOffset" : [
+                  0,
+                  0
+                ]
+              },
+              {
+                "id" : 10,
+                "kind" : {
+                  "vertical" : {
+                    "line" : 6
+                  }
+                },
+                "labelOffset" : [
+                  0,
+                  0
+                ]
+              },
+              {
+                "id" : 11,
+                "kind" : {
+                  "horizontal" : {
+                    "line" : 7
+                  }
+                },
+                "labelOffset" : [
+                  0,
+                  0
+                ]
+              },
+              {
+                "id" : 12,
+                "kind" : {
+                  "vertical" : {
+                    "line" : 8
+                  }
+                },
+                "labelOffset" : [
+                  0,
+                  0
+                ]
+              },
+              {
+                "id" : 13,
+                "kind" : {
+                  "length" : {
+                    "line" : 5,
+                    "value" : "462 mm"
+                  }
+                },
+                "labelOffset" : [
+                  0,
+                  -12
+                ]
+              },
+              {
+                "id" : 14,
+                "kind" : {
+                  "length" : {
+                    "line" : 6,
+                    "value" : "19 mm"
+                  }
+                },
+                "labelOffset" : [
+                  12,
+                  0
+                ]
+              }
+            ],
+            "curves" : [
+              {
+                "construction" : false,
+                "geometry" : {
+                  "line" : {
+                    "end" : 2,
+                    "start" : 1
+                  }
+                },
+                "id" : 5
+              },
+              {
+                "construction" : false,
+                "geometry" : {
+                  "line" : {
+                    "end" : 3,
+                    "start" : 2
+                  }
+                },
+                "id" : 6
+              },
+              {
+                "construction" : false,
+                "geometry" : {
+                  "line" : {
+                    "end" : 4,
+                    "start" : 3
+                  }
+                },
+                "id" : 7
+              },
+              {
+                "construction" : false,
+                "geometry" : {
+                  "line" : {
+                    "end" : 1,
+                    "start" : 4
+                  }
+                },
+                "id" : 8
+              }
+            ],
+            "nextId" : 15,
+            "plane" : {
+              "xz" : {
+
+              }
+            },
+            "points" : [
+              {
+                "fixed" : true,
+                "id" : 0,
+                "position" : [
+                  0,
+                  0
+                ]
+              },
+              {
+                "fixed" : false,
+                "id" : 1,
+                "position" : [
+                  19,
+                  290
+                ]
+              },
+              {
+                "fixed" : false,
+                "id" : 2,
+                "position" : [
+                  481,
+                  290
+                ]
+              },
+              {
+                "fixed" : false,
+                "id" : 3,
+                "position" : [
+                  481,
+                  309
+                ]
+              },
+              {
+                "fixed" : false,
+                "id" : 4,
+                "position" : [
+                  19,
+                  309
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "name" : "Skizze Fachboden",
+      "suppressed" : false
+    },
+    {
+      "id" : "4FDD4204-E6A3-49D2-BA8D-860FDADB8222",
+      "kind" : {
+        "extrude" : {
+          "_0" : {
+            "distance" : "tiefe - rueckversatz",
+            "distance2" : "10 mm",
+            "extent" : "oneSide",
+            "faces" : [
+
+            ],
+            "operation" : "newBody",
+            "profiles" : [
+              {
+                "sample" : [
+                  250,
+                  299.5
+                ],
+                "sketch" : "6B9355D7-2D57-4187-90F8-626A617E889A"
+              }
+            ],
+            "targets" : [
+
+            ]
+          }
+        }
+      },
+      "name" : "Fachboden",
+      "suppressed" : false
+    },
+    {
+      "id" : "362D42B4-B4E8-40A2-9D13-F93B89C4A337",
+      "kind" : {
+        "sketch" : {
+          "_0" : {
+            "constraints" : [
+              {
+                "id" : 9,
+                "kind" : {
+                  "horizontal" : {
+                    "line" : 5
+                  }
+                },
+                "labelOffset" : [
+                  0,
+                  0
+                ]
+              },
+              {
+                "id" : 10,
+                "kind" : {
+                  "vertical" : {
+                    "line" : 6
+                  }
+                },
+                "labelOffset" : [
+                  0,
+                  0
+                ]
+              },
+              {
+                "id" : 11,
+                "kind" : {
+                  "horizontal" : {
+                    "line" : 7
+                  }
+                },
+                "labelOffset" : [
+                  0,
+                  0
+                ]
+              },
+              {
+                "id" : 12,
+                "kind" : {
+                  "vertical" : {
+                    "line" : 8
+                  }
+                },
+                "labelOffset" : [
+                  0,
+                  0
+                ]
+              },
+              {
+                "id" : 13,
+                "kind" : {
+                  "length" : {
+                    "line" : 5,
+                    "value" : "500 mm"
+                  }
+                },
+                "labelOffset" : [
+                  0,
+                  -12
+                ]
+              },
+              {
+                "id" : 14,
+                "kind" : {
+                  "length" : {
+                    "line" : 6,
+                    "value" : "600 mm"
+                  }
+                },
+                "labelOffset" : [
+                  12,
+                  0
+                ]
+              }
+            ],
+            "curves" : [
+              {
+                "construction" : false,
+                "geometry" : {
+                  "line" : {
+                    "end" : 2,
+                    "start" : 1
+                  }
+                },
+                "id" : 5
+              },
+              {
+                "construction" : false,
+                "geometry" : {
+                  "line" : {
+                    "end" : 3,
+                    "start" : 2
+                  }
+                },
+                "id" : 6
+              },
+              {
+                "construction" : false,
+                "geometry" : {
+                  "line" : {
+                    "end" : 4,
+                    "start" : 3
+                  }
+                },
+                "id" : 7
+              },
+              {
+                "construction" : false,
+                "geometry" : {
+                  "line" : {
+                    "end" : 1,
+                    "start" : 4
+                  }
+                },
+                "id" : 8
+              }
+            ],
+            "nextId" : 15,
+            "plane" : {
+              "xz" : {
+
+              }
+            },
+            "points" : [
+              {
+                "fixed" : true,
+                "id" : 0,
+                "position" : [
+                  0,
+                  0
+                ]
+              },
+              {
+                "fixed" : false,
+                "id" : 1,
+                "position" : [
+                  0,
+                  0
+                ]
+              },
+              {
+                "fixed" : false,
+                "id" : 2,
+                "position" : [
+                  500,
+                  0
+                ]
+              },
+              {
+                "fixed" : false,
+                "id" : 3,
+                "position" : [
+                  500,
+                  600
+                ]
+              },
+              {
+                "fixed" : false,
+                "id" : 4,
+                "position" : [
+                  0,
+                  600
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "name" : "Skizze Rückwand",
+      "suppressed" : false
+    },
+    {
+      "id" : "3719869C-CD53-438C-A336-50D5F8DE56E8",
+      "kind" : {
+        "extrude" : {
+          "_0" : {
+            "distance" : "-8 mm",
+            "distance2" : "10 mm",
+            "extent" : "oneSide",
+            "faces" : [
+
+            ],
+            "operation" : "newBody",
+            "profiles" : [
+              {
+                "sample" : [
+                  250,
+                  300
+                ],
+                "sketch" : "362D42B4-B4E8-40A2-9D13-F93B89C4A337"
+              }
+            ],
+            "targets" : [
+
+            ]
+          }
+        }
+      },
+      "name" : "Rückwand",
+      "suppressed" : false
+    },
+    {
+      "id" : "C87182C9-E887-46F4-BF2D-4D560CC05018",
+      "kind" : {
+        "sketch" : {
+          "_0" : {
+            "constraints" : [
+
+            ],
+            "curves" : [
+              {
+                "construction" : false,
+                "geometry" : {
+                  "circle" : {
+                    "center" : 1,
+                    "radius" : 4
+                  }
+                },
+                "id" : 2
+              },
+              {
+                "construction" : false,
+                "geometry" : {
+                  "circle" : {
+                    "center" : 3,
+                    "radius" : 4
+                  }
+                },
+                "id" : 4
+              }
+            ],
+            "nextId" : 5,
+            "plane" : {
+              "xy" : {
+
+              }
+            },
+            "points" : [
+              {
+                "fixed" : true,
+                "id" : 0,
+                "position" : [
+                  0,
+                  0
+                ]
+              },
+              {
+                "fixed" : false,
+                "id" : 1,
+                "position" : [
+                  100,
+                  -150
+                ]
+              },
+              {
+                "fixed" : false,
+                "id" : 3,
+                "position" : [
+                  400,
+                  -150
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "name" : "Skizze Dübellöcher",
+      "suppressed" : false
+    },
+    {
+      "id" : "23301D01-A0F6-4B51-8F6B-D803948CB6D3",
+      "kind" : {
+        "extrude" : {
+          "_0" : {
+            "distance" : "700 mm",
+            "distance2" : "10 mm",
+            "extent" : "oneSide",
+            "faces" : [
+
+            ],
+            "operation" : "cut",
+            "profiles" : [
+              {
+                "sample" : [
+                  100,
+                  -150
+                ],
+                "sketch" : "C87182C9-E887-46F4-BF2D-4D560CC05018"
+              },
+              {
+                "sample" : [
+                  400,
+                  -150
+                ],
+                "sketch" : "C87182C9-E887-46F4-BF2D-4D560CC05018"
+              }
+            ],
+            "targets" : [
+
+            ]
+          }
+        }
+      },
+      "name" : "Dübellöcher Ø8",
+      "suppressed" : false
+    }
+  ],
+  "formatVersion" : 1,
+  "hiddenSketches" : [
+    "362D42B4-B4E8-40A2-9D13-F93B89C4A337",
+    "B3A76C87-38C5-4E33-9DA9-F4BF0167C0B3",
+    "C87182C9-E887-46F4-BF2D-4D560CC05018",
+    "6B9355D7-2D57-4187-90F8-626A617E889A",
+    "F321C53B-6FEB-41B0-BCA9-643CE6229F16",
+    "ECA01182-AD05-446A-A13A-56E22B8F3885",
+    "C9B33F05-4EEF-40CA-84A6-98F430ABCA38"
+  ],
+  "parameters" : [
+    {
+      "comment" : "Korpustiefe ohne Rückwand",
+      "expression" : "300 mm",
+      "id" : "362AA438-7B8B-440E-9558-AC3550497567",
+      "name" : "tiefe"
+    },
+    {
+      "comment" : "Fachboden hinten zurückgesetzt",
+      "expression" : "20 mm",
+      "id" : "47A201DA-7355-40AF-AC3C-D795A3ABC0C9",
+      "name" : "rueckversatz"
+    }
+  ]
+}

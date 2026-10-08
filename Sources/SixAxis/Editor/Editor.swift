@@ -299,6 +299,16 @@ final class Editor {
         resetSession()
     }
 
+    /// Opens a bundled example as an unsaved copy (Sichern asks for a location).
+    func openExample(_ example: Examples.Example) {
+        guard confirmDiscard() else { return }
+        doc = example.document
+        fileURL = nil
+        resetSession()
+        homeView()
+        showToast("Beispiel „\(example.title)“ geöffnet – Parameter unter Ändern → Parameter")
+    }
+
     private func resetSession() {
         undoStack.removeAll()
         redoStack.removeAll()
@@ -528,14 +538,24 @@ final class Editor {
     // MARK: - Measurements
 
     /// Volume/mass summary for the selection (or all visible bodies) — handy for 3D printing.
-    var physicalSummary: (title: String, volume: Double, area: Double)? {
+    /// Volume, area and – when every body has a material with known density – the mass in grams
+    /// and a material label (single material name, or "gemischt").
+    var physicalSummary: (title: String, volume: Double, area: Double, mass: Double?, material: String?)? {
         let selectedBodies = Set(selection.compactMap(\.bodyId))
         let bodies = state.orderedBodies.filter {
             selectedBodies.isEmpty ? doc.isBodyVisible($0.id) : selectedBodies.contains($0.id)
         }
         guard !bodies.isEmpty else { return nil }
         let title = bodies.count == 1 ? doc.bodyName(bodies[0].id) : "\(bodies.count) Körper"
-        return (title, bodies.reduce(0) { $0 + $1.shape.volume }, bodies.reduce(0) { $0 + $1.shape.area })
+        let materials = bodies.map { doc.bodies[$0.id]?.material ?? "" }
+        let densities = materials.map { MaterialDensity.lookup($0) }
+        var mass: Double?
+        var label: String?
+        if densities.allSatisfy({ $0 != nil }) {
+            mass = zip(bodies, densities).reduce(0) { $0 + $1.0.shape.volume / 1000 * $1.1! }
+            label = Set(materials).count == 1 ? materials[0] : "gemischt"
+        }
+        return (title, bodies.reduce(0) { $0 + $1.shape.volume }, bodies.reduce(0) { $0 + $1.shape.area }, mass, label)
     }
 }
 

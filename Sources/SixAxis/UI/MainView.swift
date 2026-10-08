@@ -168,10 +168,13 @@ private struct BottomBar: View {
         if let p = editor.physicalSummary {
             let cm3 = p.volume / 1000
             let settings = AppSettings.shared
-            let material = settings.material == .custom ? "" : " " + settings.material.title
+            // Body materials win; otherwise the 3D-printing material from the settings.
+            let grams = p.mass ?? cm3 * settings.density
+            let material = p.material ?? (settings.material == .custom ? "" : settings.material.title)
+            let weight = grams >= 1000 ? String(format: "%.2f kg", grams / 1000) : String(format: "%.1f g", grams)
             VStack(alignment: .trailing, spacing: 2) {
                 Text(p.title).font(.system(size: 11, weight: .semibold))
-                Text(String(format: "%.2f cm³ · ≈ %.1f g", cm3, cm3 * settings.density) + material)
+                Text(String(format: "%.2f cm³ · ≈ ", cm3) + weight + (material.isEmpty ? "" : " " + material))
                     .font(.system(size: 11, design: .rounded))
                     .foregroundStyle(.secondary)
             }

@@ -1,0 +1,175 @@
+/* 6axis product page. Colours come from the logo: night blue, paper, and the three axis colours
+   (X red, Y green, Z blue) which mark the three pillars and colour the dimensions of the drawing. */
+:root {
+  --paper: #F6F7F9;
+  --sheet: #FFFFFF;
+  --ink: #18202F;
+  --ink-soft: #5B6578;
+  --rule: #DDE1E8;
+  --night: #1E2742;
+  --x: #E8475A;
+  --y: #1FA97A;
+  --z: #3F7BF0;
+  --radius: 14px;
+  color-scheme: light dark;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #121827;
+    --sheet: #1A2236;
+    --ink: #E9EDF5;
+    --ink-soft: #A3ADC2;
+    --rule: #2B3550;
+    --x: #FF6B7A;
+    --y: #3EDBA0;
+    --z: #6B9BFF;
+  }
+}
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font: 17px/1.55 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+img { max-width: 100%; display: block; }
+a { color: var(--z); text-underline-offset: 3px; }
+a:focus-visible, .button:focus-visible { outline: 3px solid var(--z); outline-offset: 3px; border-radius: 8px; }
+code {
+  font: 0.92em ui-monospace, "SF Mono", Menlo, monospace;
+  background: color-mix(in srgb, var(--ink) 7%, transparent);
+  padding: 0.1em 0.35em;
+  border-radius: 5px;
+}
+
+/* Header */
+.bar {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  max-width: 1160px;
+  margin: 0 auto;
+  padding: 18px 24px;
+}
+.brand { display: flex; align-items: center; gap: 10px; color: var(--ink); text-decoration: none; font-weight: 700; font-size: 20px; letter-spacing: -0.01em; }
+.bar nav { display: flex; gap: 22px; margin-left: auto; }
+.bar nav a { color: var(--ink-soft); text-decoration: none; font-size: 15px; }
+.bar nav a:hover { color: var(--ink); }
+
+.button {
+  display: inline-block;
+  background: var(--night);
+  color: #fff;
+  text-decoration: none;
+  font-weight: 600;
+  padding: 14px 24px;
+  border-radius: 12px;
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+.button:hover { background: color-mix(in srgb, var(--night) 82%, var(--z)); }
+.button:active { transform: translateY(1px); }
+.button.small { padding: 9px 16px; font-size: 15px; border-radius: 10px; }
+@media (prefers-color-scheme: dark) {
+  .button { background: var(--z); color: #0B1220; }
+  .button:hover { background: color-mix(in srgb, var(--z) 85%, white); }
+}
+
+main { max-width: 1160px; margin: 0 auto; padding: 0 24px; }
+
+/* Hero: the drawing is the protagonist */
+.hero {
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  gap: 56px;
+  align-items: center;
+  padding: 56px 0 72px;
+}
+h1 {
+  font: 800 clamp(40px, 5.6vw, 68px)/1.02 -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", sans-serif;
+  letter-spacing: -0.035em;
+  margin: 0 0 22px;
+  hyphens: manual;
+}
+.lead { font-size: 20px; color: var(--ink-soft); max-width: 34em; margin: 0 0 30px; }
+.cta { display: flex; align-items: center; gap: 22px; flex-wrap: wrap; }
+.link { font-weight: 600; text-decoration: none; }
+.link:hover { text-decoration: underline; }
+.fine { color: var(--ink-soft); font-size: 14px; margin-top: 18px; }
+
+.hero-drawing { margin: 0; }
+.drawing {
+  background: var(--sheet);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  padding: 4% 5%;
+  aspect-ratio: 160 / 155;
+}
+.drawing svg, .drawing img { width: 100%; height: 100%; }
+.hero-drawing figcaption { color: var(--ink-soft); font-size: 14px; margin-top: 12px; }
+
+/* Drawing styles (classes come from 6axis' SVG export, ISO 128 line types) */
+.drawing svg .visible, .drawing svg .iso, .drawing svg .frame { stroke: var(--ink); stroke-linecap: round; }
+.drawing svg .hidden, .drawing svg .center, .drawing svg .thin, .drawing svg .hatch { stroke: var(--ink-soft); }
+.drawing svg .dim { stroke: var(--z); }
+.drawing svg .arrow { fill: var(--z); }
+.drawing svg text { font-family: -apple-system, BlinkMacSystemFont, sans-serif; fill: var(--ink); }
+.drawing svg text.value { fill: var(--z); }
+
+/* One orchestrated moment: contours draw themselves, then dimensions appear. */
+@media (prefers-reduced-motion: no-preference) {
+  .drawing.ready svg .visible { stroke-dasharray: 1; stroke-dashoffset: 1; animation: draw 0.9s ease-out forwards; }
+  .drawing.ready svg .hidden, .drawing.ready svg .center, .drawing.ready svg .thin,
+  .drawing.ready svg .dim, .drawing.ready svg .arrow, .drawing.ready svg text {
+    opacity: 0; animation: appear 0.7s ease-out 1.5s forwards;
+  }
+  .drawing.ready svg .dim, .drawing.ready svg .arrow, .drawing.ready svg text.value { animation-delay: 1.9s; }
+}
+@keyframes draw { to { stroke-dashoffset: 0; } }
+@keyframes appear { to { opacity: 1; } }
+
+/* Showcase screenshot */
+.showcase { margin: 0 0 96px; }
+.showcase img { border-radius: var(--radius); border: 1px solid var(--rule); box-shadow: 0 30px 60px -30px rgba(24, 32, 47, 0.45); }
+.showcase figcaption { color: var(--ink-soft); font-size: 15px; margin-top: 14px; }
+
+/* Three pillars, marked with the logo's axis colours */
+.pillars { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 40px; margin-bottom: 104px; }
+.pillar h2 { font-size: 26px; letter-spacing: -0.02em; margin: 10px 0 10px; }
+.pillar p { color: var(--ink-soft); margin: 0 0 22px; }
+.pillar img { border-radius: 10px; border: 1px solid var(--rule); aspect-ratio: 4 / 3; object-fit: cover; object-position: center 35%; }
+.axis { display: flex; align-items: center; gap: 10px; font: 700 15px ui-rounded, -apple-system, sans-serif; }
+.axis i { display: block; width: 44px; height: 4px; border-radius: 2px; background: currentColor; }
+.pillar.x .axis { color: var(--x); }
+.pillar.y .axis { color: var(--y); }
+.pillar.z .axis { color: var(--z); }
+
+/* Installation: a real sequence, so it is numbered */
+.install, .open { max-width: 760px; margin-bottom: 88px; }
+.install h2, .open h2 { font-size: 34px; letter-spacing: -0.025em; margin: 0 0 14px; }
+.install > p, .open p { color: var(--ink-soft); }
+.install ol { counter-reset: step; list-style: none; padding: 0; margin: 28px 0; }
+.install li { counter-increment: step; position: relative; padding: 0 0 22px 56px; }
+.install li::before {
+  content: counter(step);
+  position: absolute; left: 0; top: -2px;
+  width: 36px; height: 36px; border-radius: 50%;
+  display: grid; place-items: center;
+  font: 700 16px ui-rounded, -apple-system, sans-serif;
+  color: var(--sheet); background: var(--ink);
+}
+.install li:not(:last-child)::after {
+  content: ""; position: absolute; left: 17px; top: 40px; bottom: 4px; width: 2px; background: var(--rule);
+}
+.terminal { font-size: 15px; }
+
+footer { max-width: 1160px; margin: 0 auto; padding: 28px 24px 48px; border-top: 1px solid var(--rule); color: var(--ink-soft); font-size: 13px; }
+
+@media (max-width: 900px) {
+  .hero { grid-template-columns: 1fr; gap: 36px; padding-top: 28px; }
+  .pillars { grid-template-columns: 1fr; gap: 56px; }
+  .bar nav { display: none; }
+  .bar .button.small { margin-left: auto; }
+}

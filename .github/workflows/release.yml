@@ -1,0 +1,53 @@
+name: Release
+
+# Push a tag to publish a release, e.g.:
+#   git tag v0.9.0 && git push origin v0.9.0
+# Tags with a hyphen (v0.9.1-beta.1) become pre-releases.
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build & publish
+    runs-on: macos-15
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
+      - name: OpenCASCADE
+        run: brew install opencascade
+
+      - name: Tests
+        run: swift test
+
+      - name: Build self-contained app
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}" BUILD_NUMBER="${{ github.run_number }}" scripts/build-app.sh release
+
+      - name: Disk image, ZIP, checksums
+        run: scripts/make-dmg.sh
+
+      - name: Release notes
+        run: scripts/release-notes.sh "$GITHUB_REF_NAME" > "$RUNNER_TEMP/notes.md"
+
+      - name: Publish GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: 6axis ${{ github.ref_name }}
+          body_path: ${{ runner.temp }}/notes.md
+          prerelease: ${{ contains(github.ref_name, '-') }}
+          files: |
+            build/6axis-*.dmg
+            build/6axis-*.zip
+            build/6axis-*.sha256

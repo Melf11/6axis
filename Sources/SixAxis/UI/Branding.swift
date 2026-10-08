@@ -14,12 +14,36 @@ enum Branding {
 
     static var logo: NSImage { NSApp.applicationIconImage ?? NSImage() }
 
+    static let repository = "https://github.com/Melf11/6axis"
+    static let website = "https://melf11.github.io/6axis/"
+
+    static var version: String {
+        let v = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "dev"
+        let b = Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "0"
+        return "\(v) (\(b))"
+    }
+
+    /// Opens a pre-filled GitHub issue in the browser – only on explicit click, no telemetry.
+    static func openFeedback(kind: String = "bug") {
+        var model = [CChar](repeating: 0, count: 64)
+        var size = model.count
+        sysctlbyname("hw.model", &model, &size, nil, 0)
+        let os = ProcessInfo.processInfo.operatingSystemVersionString
+        let info = "6axis \(version) · macOS \(os) · \(String(cString: model))"
+        var c = URLComponents(string: repository + "/issues/new")!
+        c.queryItems = [
+            URLQueryItem(name: "template", value: kind == "bug" ? "fehler.yml" : "idee.yml"),
+            URLQueryItem(name: "umgebung", value: info),
+        ]
+        if let url = c.url { NSWorkspace.shared.open(url) }
+    }
+
     static func showAboutPanel() {
         let credits = NSMutableAttributedString(
             string: "Freies, natives CAD für Konstruktion und 3D-Druck – vollständig offline.\n\n",
             attributes: [.font: NSFont.systemFont(ofSize: 11), .foregroundColor: NSColor.labelColor])
         credits.append(NSAttributedString(
-            string: "Open Source unter der MIT-Lizenz. Geometriekernel: Open CASCADE Technology (LGPL 2.1).\ngithub.com/Melf11/6axis",
+            string: "Open Source unter der MIT-Lizenz. Geometriekernel: Open CASCADE Technology (LGPL 2.1).\nLizenzen der enthaltenen Bibliotheken: 6axis.app/Contents/Resources/Licenses\ngithub.com/Melf11/6axis",
             attributes: [.font: NSFont.systemFont(ofSize: 10), .foregroundColor: NSColor.secondaryLabelColor]))
         NSApp.orderFrontStandardAboutPanel(options: [
             .applicationName: "6axis",
