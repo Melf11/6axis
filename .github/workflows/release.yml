@@ -35,6 +35,10 @@ jobs:
         run: |
           VERSION="${GITHUB_REF_NAME#v}" BUILD_NUMBER="${{ github.run_number }}" scripts/build-app.sh release
 
+      - name: UI check
+        timeout-minutes: 15
+        run: scripts/ui-check.sh "$RUNNER_TEMP/ui-check"
+
       - name: Disk image, ZIP, checksums
         run: scripts/make-dmg.sh
 

@@ -1,5 +1,15 @@
 import SwiftUI
 
+/// Panel styling. Automated UI checks set SIXAXIS_FAST_SNAPSHOTS: window snapshots render blur and
+/// shadows on the CPU (seconds per image), so panels become opaque and shadowless there.
+enum PanelStyle {
+    static let fast = ProcessInfo.processInfo.environment["SIXAXIS_FAST_SNAPSHOTS"] != nil
+    static var fill: AnyShapeStyle {
+        fast ? AnyShapeStyle(Color(nsColor: .windowBackgroundColor)) : AnyShapeStyle(.regularMaterial)
+    }
+    static var shadowOpacity: Double { fast ? 0 : 0.12 }
+}
+
 /// Shared look: translucent floating panels over the full-bleed viewport.
 struct FloatingPanel: ViewModifier {
     var radius: CGFloat = 12
@@ -8,9 +18,9 @@ struct FloatingPanel: ViewModifier {
     func body(content: Content) -> some View {
         content
             .padding(padding)
-            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: radius, style: .continuous))
+            .background(PanelStyle.fill, in: RoundedRectangle(cornerRadius: radius, style: .continuous))
             .overlay(RoundedRectangle(cornerRadius: radius, style: .continuous).strokeBorder(.primary.opacity(0.08), lineWidth: 0.5))
-            .shadow(color: .black.opacity(0.12), radius: 14, y: 4)
+            .shadow(color: .black.opacity(PanelStyle.shadowOpacity), radius: PanelStyle.fast ? 0 : 14, y: 4)
     }
 }
 

@@ -37,16 +37,16 @@ jobs:
       - name: App (self-contained)
         run: scripts/build-app.sh release
 
-      - name: Drawing demo
-        # Renders the demo cabinet's drawing sheets as PNG/PDF/DXF – handy for reviewing pull requests.
-        continue-on-error: true
-        timeout-minutes: 5
-        run: SIXAXIS_DEMO=1 SIXAXIS_DRAWING_DEMO="$RUNNER_TEMP/drawing" build/6axis.app/Contents/MacOS/SixAxis
+      - name: UI check
+        # Scripted demos in real windows (German and English): modelling, drawing, examples,
+        # background rebuild. Fails on model errors, crashes, hangs or missing screenshots.
+        timeout-minutes: 15
+        run: scripts/ui-check.sh "$RUNNER_TEMP/ui-check"
 
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: drawing-demo
-          path: ${{ runner.temp }}/drawing
+          name: ui-check
+          path: ${{ runner.temp }}/ui-check
           if-no-files-found: ignore
           retention-days: 14

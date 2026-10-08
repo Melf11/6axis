@@ -38,7 +38,7 @@ Ziel: Ein Freund lädt eine Datei von GitHub, öffnet sie und kann konstruieren 
   - **DMG** mit Anleitung „Erster Start“ und Verknüpfung zu „Programme“ (`hdiutil`), zusätzlich ZIP
   - SHA-256-Prüfsummen
   - GitHub Release mit Versionshinweisen (aus den Commits seit dem letzten Tag) und Installationsanleitung
-- [ ] Homebrew-Cache im Workflow, damit Builds schnell bleiben
+- [x] ~~Homebrew-Cache~~ nicht nötig: OpenCASCADE installiert sich im Workflow in 12 s
 - [x] Ablauf zum Veröffentlichen in `CONTRIBUTING.md`: `git tag v0.9.0 && git push --tags`
 
 ### 3. Installation ohne Apple-Entwicklerkonto
@@ -86,7 +86,7 @@ Inhalt:
 - [x] **Dateiformat-Versionierung:** Format 2 (1.0); ältere Dateien werden schrittweise migriert, Dateien aus neueren Versionen mit klarer Meldung abgelehnt, fehlende Felder sind erlaubt, verständliche Fehlermeldungen bei beschädigten Dateien. Test-Sammlung `Tests/SixAxisCoreTests/Fixtures` mit den Beispielen aus 0.9.0 – bei jedem Release kommen die Beispiele dazu
 - [ ] **Rückmeldungen der Tester** aus 0.9 einarbeiten (Bedienung von Zeichnungsfenster, Radialmenü, Navigation, DXF in CAM-/Lasersoftware)
 - [ ] **README** aktualisieren (Funktionsliste, Screenshots, Installation)
-- [ ] Mehr Tests: Benutzeroberfläche über die Demo-Läufe im CI, Beispielmodelle als Regressionstests
+- [x] Mehr Tests: `scripts/ui-check.sh` prüft im CI und vor jedem Release die Oberfläche über die Demo-Läufe (Deutsch und Englisch, Zeichnung, Beispiele, Neuberechnung im Hintergrund) – Screenshots als Download; Beispielmodelle, Parameteränderungen und Dateien aus 0.9.0 als Regressionstests
 
 ---
 

@@ -188,7 +188,7 @@ struct MarkingMenu: View {
     }
 
     private func itemView(_ cmd: EditorCommand, isActive: Bool) -> some View {
-        let fill: AnyShapeStyle = isActive ? AnyShapeStyle(Color.accentColor) : AnyShapeStyle(.regularMaterial)
+        let fill: AnyShapeStyle = isActive ? AnyShapeStyle(Color.accentColor) : PanelStyle.fill
         return HStack(spacing: 6) {
             Image(systemName: cmd.symbol)
                 .foregroundStyle(isActive ? Color.white : Color.accentColor)

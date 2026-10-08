@@ -428,7 +428,7 @@ private struct ExtrudeHandle: View {
                 .font(.system(size: 11, weight: .semibold, design: .rounded))
                 .padding(.horizontal, 7)
                 .padding(.vertical, 3)
-                .background(Capsule().fill(.regularMaterial))
+                .background(Capsule().fill(PanelStyle.fill))
                 .fixedSize()
                 .offset(x: 50, y: -16)
                 .allowsHitTesting(false)
