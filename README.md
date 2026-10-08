@@ -4,9 +4,9 @@
 
 **Freies, natives Mac-CAD für Konstruktion und 3D-Druck – vollständig offline.**
 
-6axis ist ein parametrisches 3D-CAD-Programm für macOS, das sich am bewährten Bedienkonzept von Fusion 360 orientiert: Skizze mit Abhängigkeiten → Extrusion/Drehung → Abrundung, Fase, Wandstärke – alles in einer Zeitleiste, die sich jederzeit nachträglich ändern lässt. Gebaut mit Swift, SwiftUI und Metal auf dem Open-Source-Geometriekernel OpenCASCADE.
+6axis ist ein parametrisches 3D-CAD-Programm für macOS, mit einem klaren, modernen Arbeitsablauf: Skizze mit Abhängigkeiten → Extrusion/Drehung → Abrundung, Fase, Wandstärke – alles in einer Zeitleiste, die sich jederzeit nachträglich ändern lässt. Gebaut mit Swift, SwiftUI und Metal auf dem Open-Source-Geometriekernel OpenCASCADE.
 
-*English:* 6axis is a free, open-source, fully offline parametric CAD app for macOS, inspired by Fusion 360's workflow and focused on mechanical design and 3D printing. The UI is currently German; contributions (including localization) are welcome.
+*English:* 6axis is a free, open-source, fully offline parametric CAD app for macOS, with a sketch → feature → timeline workflow, focused on mechanical design, woodworking and 3D printing. The UI is currently German; contributions (including localization) are welcome.
 
 ## Installation
 
@@ -30,7 +30,7 @@ Im Ordner [`Examples/`](Examples) und in der App unter **Ablage → Beispiele**:
 - **Technische Zeichnung** (⇧⌘D): normgerechte 3-Tafel-Projektion (Methode 1) mit Isometrie, automatischer Bezugsbemaßung in ganzen Millimetern, Bohrungen mit Ø und Mittellinien, Radien, Fasen und Winkeln, Schriftfeld, automatischem Blatt/Maßstab, Positionsnummern, Stück-/Zuschnittliste, Einzelteilblättern, Schnitt A–A und Einzelheiten – live synchron mit dem Modell, als PDF, DXF (auch Einzelteile 1:1 für CNC/Laser) oder direkt drucken ([Plan](docs/technical-drawing.md))
 - **Export**: STL (3D-Druck), STEP; **Import**: STEP; **„Im Slicer öffnen“** (PrusaSlicer, Bambu Studio, OrcaSlicer, Cura …)
 - **Material und Faserrichtung** je Körper; Volumen und geschätztes Gewicht (PLA, PETG, Holz …)
-- Fusion-artige Bedienung: Ribbon, Browser, ViewCube, Radialmenü per Rechtsklick, Befehlssuche mit **S**, Tastenkürzel (L, R, C, A, D, E, F, X …)
+- Bedienung: Ribbon, Browser, ViewCube, Radialmenü per Rechtsklick, Befehlssuche mit **S**, Tastenkürzel (L, R, C, A, D, E, F, X …)
 - Automatisches Sichern: Das letzte Design (auch ungesichert) und die Ansicht werden beim nächsten Start wiederhergestellt
 - **Einstellungen**: Scrollrichtung (natürliches Scrollen), Navigation, Kantenstärke, Studio-Schattierung mit Bodenschatten, Raster, STL-Qualität, Slicer
 - Unbegrenztes Rückgängig/Wiederholen, Dark Mode, Retina, 120 Hz
@@ -108,4 +108,3 @@ Beiträge sind sehr willkommen – siehe [CONTRIBUTING.md](CONTRIBUTING.md).
 ## Lizenz
 
 [MIT](LICENSE). 6axis nutzt OpenCASCADE Technology (LGPL 2.1 mit Ausnahme) als dynamisch gelinkte Bibliothek.
-„Fusion 360“ ist eine Marke von Autodesk, Inc.; 6axis ist ein unabhängiges Projekt und steht in keiner Verbindung zu Autodesk.
