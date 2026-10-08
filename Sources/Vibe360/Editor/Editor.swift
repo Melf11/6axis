@@ -162,6 +162,10 @@ final class Editor {
     var sketchId: UUID?
     var sketchTool: SketchTool = .select
     var toolPoints: [SnapTarget] = []
+    /// Typed values for the active drawing tool (e.g. width/height). Empty = follow the mouse.
+    var toolInputs: [String] = ["", ""]
+    /// Index of the focused tool input field, nil when the viewport has keyboard focus.
+    var toolInputFocus: Int?
     var cursor: SnapTarget?
     var inference: Inference?
     var lastSolve: SolveResult?
@@ -184,6 +188,7 @@ final class Editor {
     // Viewport hooks (set by the Metal view)
     @ObservationIgnored var requestRedraw: () -> Void = {}
     @ObservationIgnored var snapshotProvider: () -> NSImage? = { nil }
+    @ObservationIgnored var focusViewport: () -> Void = {}
     @ObservationIgnored var pickProvider: (CGPoint, CGFloat) -> [UInt32] = { _, _ in [] }
     @ObservationIgnored var pickTable: [Pick] = []
     @ObservationIgnored var pickIds: [Pick: UInt32] = [:]

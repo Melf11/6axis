@@ -19,6 +19,7 @@ struct ViewportOverlay: View {
             if editor.sketchId != nil {
                 constraintGlyphs
                 dimensionLabels
+                toolInputBoxes
             }
             extrudeHandle
         }
@@ -62,25 +63,26 @@ struct ViewportOverlay: View {
             }
         }
         guard let p0 = editor.toolPoints.first?.position else { return }
+        let e = editor.effectiveToolEnd(c)
         switch editor.sketchTool {
         case .line:
-            ctx.stroke(path([p0, c]), with: .color(accent), style: style)
-            label(ctx, formatValue(simd_distance(p0, c)), near: c)
-            if let inf = editor.inference, let s = screen((p0 + c) / 2) {
+            ctx.stroke(path([p0, e]), with: .color(accent), style: style)
+            if !editor.hasLockedInput, let inf = editor.inference, let s = screen((p0 + e) / 2) {
                 badge(ctx, inf == .horizontal ? "H" : "V", at: CGPoint(x: s.x, y: s.y - 14))
             }
         case .rectangle, .centerRectangle:
-            let lo = editor.sketchTool == .centerRectangle ? p0 - (c - p0) : p0
-            ctx.stroke(path([lo, Vec2(c.x, lo.y), c, Vec2(lo.x, c.y), lo]), with: .color(accent), style: style)
-            label(ctx, "\(formatValue(abs(c.x - lo.x))) × \(formatValue(abs(c.y - lo.y)))", near: c)
+            let lo = editor.sketchTool == .centerRectangle ? p0 - (e - p0) : p0
+            ctx.stroke(path([lo, Vec2(e.x, lo.y), e, Vec2(lo.x, e.y), lo]), with: .color(accent), style: style)
         case .circle:
-            let r = simd_distance(p0, c)
+            let r = simd_distance(p0, e)
             let pts = (0...72).map { i -> Vec2 in
                 let t = Double(i) / 72 * 2 * .pi
                 return p0 + r * Vec2(cos(t), sin(t))
             }
             ctx.stroke(path(pts), with: .color(accent), style: style)
-            label(ctx, "⌀ " + formatValue(2 * r), near: c)
+            var radius = Path()
+            if let a = screen(p0), let b = screen(e) { radius.move(to: a); radius.addLine(to: b) }
+            ctx.stroke(radius, with: .color(accent.opacity(0.6)), style: StrokeStyle(lineWidth: 1, dash: [3, 3]))
         case .arc:
             if editor.toolPoints.count == 1 {
                 ctx.stroke(path([p0, c]), with: .color(accent), style: style)
@@ -117,6 +119,50 @@ struct ViewportOverlay: View {
         let rect = CGRect(x: p.x - 8, y: p.y - 8, width: 16, height: 16)
         ctx.fill(Path(roundedRect: rect, cornerRadius: 4), with: .color(.orange))
         ctx.draw(t, at: p)
+    }
+
+    // MARK: Typed tool inputs
+
+    /// Screen anchors for each input box, pushed away from the shape so they don't cover it.
+    private func toolInputPositions() -> [CGPoint] {
+        guard let p0 = editor.toolPoints.first?.position, let cur = editor.cursor?.position else { return [] }
+        let e = editor.effectiveToolEnd(cur)
+        func away(_ p: Vec2, from center: Vec2, by d: CGFloat) -> CGPoint? {
+            guard let sp = screen(p), let sc = screen(center) else { return nil }
+            var v = CGVector(dx: sp.x - sc.x, dy: sp.y - sc.y)
+            let len = hypot(v.dx, v.dy)
+            v = len > 1e-3 ? CGVector(dx: v.dx / len, dy: v.dy / len) : CGVector(dx: 0, dy: 1)
+            return CGPoint(x: sp.x + v.dx * d, y: sp.y + v.dy * d)
+        }
+        switch editor.sketchTool {
+        case .line:
+            let mid = (p0 + e) / 2
+            let side = mid + simd_normalize(e - p0 + Vec2(1e-12, 0)).perpendicular
+            let lengthPos = away(mid, from: side, by: -30) ?? .zero
+            let anglePos = away(p0, from: e, by: 48) ?? .zero
+            return [lengthPos, anglePos]
+        case .rectangle, .centerRectangle:
+            let lo = editor.sketchTool == .centerRectangle ? p0 - (e - p0) : p0
+            let center = (lo + e) / 2
+            let bottomMid = Vec2(center.x, lo.y), sideMid = Vec2(e.x, center.y)
+            return [away(bottomMid, from: center, by: 26) ?? .zero, away(sideMid, from: center, by: 70) ?? .zero]
+        case .circle:
+            return [away(e, from: p0, by: 70) ?? .zero]
+        default:
+            return []
+        }
+    }
+
+    private var toolInputBoxes: some View {
+        let specs = editor.toolInputSpecs
+        let positions = toolInputPositions()
+        let live = editor.toolLiveValues
+        return ForEach(Array(specs.enumerated()), id: \.offset) { i, spec in
+            if i < positions.count {
+                ToolInputBox(editor: editor, index: i, spec: spec, live: i < live.count ? live[i] : nil)
+                    .position(positions[i])
+            }
+        }
     }
 
     // MARK: Dimensions

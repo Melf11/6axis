@@ -13,9 +13,9 @@ extension Editor {
     func beginSketch(on plane: PlaneRef, tool: SketchTool? = nil) {
         let sk = Sketch(plane: plane)
         let f = Feature(name: doc.nextName(for: .sketch(sk)), kind: .sketch(sk))
-        let before = command?.snapshot ?? doc
+        // The plane-picking command never changes the document, so the current state is the undo point.
+        let before = doc
         command = nil
-        doc = before
         let insertAt = doc.activeCount
         doc.features.insert(f, at: insertAt)
         if let r = doc.rollback { doc.rollback = r + 1 }
@@ -180,6 +180,7 @@ extension Editor {
         }
         sketchTool = tool
         toolPoints.removeAll()
+        resetToolInputs()
         dimensionFirst = nil
         constraintPicks.removeAll()
         editingDimension = nil
@@ -196,6 +197,7 @@ extension Editor {
     func cancelSketchTool() {
         if !toolPoints.isEmpty || dimensionFirst != nil || !constraintPicks.isEmpty {
             toolPoints.removeAll()
+            resetToolInputs()
             dimensionFirst = nil
             dimensionSecond = nil
             constraintPicks.removeAll()
@@ -208,6 +210,8 @@ extension Editor {
     }
 
     func sketchClick(at pt: CGPoint, modifiers: NSEvent.ModifierFlags, clickCount: Int) {
+        let pointsBefore = toolPoints
+        defer { if toolPoints != pointsBefore { resetToolInputs() } }
         switch sketchTool {
         case .select:
             if let h = hover {
@@ -233,21 +237,37 @@ extension Editor {
     }
 
     private func lineClick(_ pt: CGPoint, clickCount: Int) {
-        guard let s = snap(at: pt) else { return }
+        guard let raw = snap(at: pt) else { return }
         if clickCount == 2 { toolPoints.removeAll(); return }
-        guard let start = toolPoints.first else {
-            toolPoints = [s]
-            chainStart = s.point
+        guard !toolPoints.isEmpty else {
+            toolPoints = [raw]
+            chainStart = raw.point
             return
         }
-        guard simd_distance(start.position, s.position) > 1e-6 else { return }
-        let inf = inference
+        createLine(to: lockedSnap(raw))
+    }
+
+    /// Adds a line from the current start point; continues the chain like Fusion.
+    func createLine(to s: SnapTarget) {
+        guard let start = toolPoints.first, simd_distance(start.position, s.position) > 1e-6 else { return }
+        let inf = hasLockedInput ? nil : inference
+        let length = lockedInputText(0), angle = toolInputValue(1)
+        let k = dimensionOffsetDistance
         let endId: Int? = mutateSketch { sk in
             let a = resolvePoint(start, &sk)
             let b = resolvePoint(s, &sk)
             let l = sk.addLine(a, b)
             if inf == .horizontal { sk.addConstraint(.horizontal(line: l)) }
             if inf == .vertical { sk.addConstraint(.vertical(line: l)) }
+            if let angle {
+                let m = normalizedAngle(angle * .pi / 180) * 180 / .pi
+                if [0, 180, 360].contains(where: { abs(m - $0) < 1e-9 }) { sk.addConstraint(.horizontal(line: l)) }
+                if [90, 270].contains(where: { abs(m - $0) < 1e-9 }) { sk.addConstraint(.vertical(line: l)) }
+            }
+            if let length {
+                let d = s.position - start.position
+                sk.addConstraint(.length(line: l, value: length), labelOffset: simd_normalize(d).perpendicular * k)
+            }
             if chainStart == nil { chainStart = a }
             return b
         }
@@ -262,12 +282,20 @@ extension Editor {
     }
 
     private func rectangleClick(_ pt: CGPoint) {
-        guard let s = snap(at: pt) else { return }
-        guard let first = toolPoints.first else { toolPoints = [s]; return }
+        guard let raw = snap(at: pt) else { return }
+        guard !toolPoints.isEmpty else { toolPoints = [raw]; return }
+        createRectangle(to: lockedSnap(raw))
+    }
+
+    func createRectangle(to s: SnapTarget) {
+        guard let first = toolPoints.first else { return }
         let centered = sketchTool == .centerRectangle
         let a = first.position, b = s.position
         let lo = centered ? a - (b - a) : a
         guard abs(b.x - lo.x) > 1e-6, abs(b.y - lo.y) > 1e-6 else { return }
+        let width = lockedInputText(0), height = lockedInputText(1)
+        let k = dimensionOffsetDistance
+        let sx: Double = b.x >= lo.x ? 1 : -1, sy: Double = b.y >= lo.y ? 1 : -1
         mutateSketch { sk in
             let corners = [lo, Vec2(b.x, lo.y), b, Vec2(lo.x, b.y)]
             var ids = corners.map { sk.addPoint($0) }
@@ -283,19 +311,30 @@ extension Editor {
                 let c = resolvePoint(first, &sk)
                 sk.addConstraint(.midpoint(point: c, line: diag))
             }
+            // Typed values become driving dimensions, placed outside the rectangle.
+            if let width { sk.addConstraint(.length(line: l[0], value: width), labelOffset: Vec2(0, -sy * k)) }
+            if let height { sk.addConstraint(.length(line: l[1], value: height), labelOffset: Vec2(sx * k, 0)) }
         }
         toolPoints.removeAll()
     }
 
     private func circleClick(_ pt: CGPoint) {
-        guard let s = snap(at: pt) else { return }
-        guard let center = toolPoints.first else { toolPoints = [s]; return }
+        guard let raw = snap(at: pt) else { return }
+        guard !toolPoints.isEmpty else { toolPoints = [raw]; return }
+        createCircle(to: lockedSnap(raw))
+    }
+
+    func createCircle(to s: SnapTarget) {
+        guard let center = toolPoints.first else { return }
         let r = simd_distance(center.position, s.position)
         guard r > 1e-6 else { return }
+        let diameter = lockedInputText(0)
+        let dir = simd_normalize(s.position - center.position)
         mutateSketch { sk in
             let c = resolvePoint(center, &sk)
             let circle = sk.addCircle(center: c, radius: r)
             if let p = s.point { sk.addConstraint(.pointOnCurve(point: p, curve: circle)) }
+            if let diameter { sk.addConstraint(.diameter(curve: circle, value: diameter), labelOffset: dir * (r * 1.25)) }
         }
         toolPoints.removeAll()
     }

@@ -45,6 +45,21 @@ enum DemoScript {
         editor.mouseUp(at: pt, modifiers: modifiers, clickCount: count)
     }
 
+    static func key(_ chars: String, _ keyCode: UInt16) {
+        guard let w = NSApp.windows.first(where: { $0.isVisible }) else { return }
+        for type in [NSEvent.EventType.keyDown, .keyUp] {
+            if let e = NSEvent.keyEvent(with: type, location: .zero, modifierFlags: [], timestamp: ProcessInfo.processInfo.systemUptime,
+                                        windowNumber: w.windowNumber, context: nil, characters: chars,
+                                        charactersIgnoringModifiers: chars, isARepeat: false, keyCode: keyCode) {
+                w.sendEvent(e)
+            }
+        }
+    }
+
+    static func type(_ text: String) {
+        for ch in text { key(String(ch), 0) }
+    }
+
     static func run(_ editor: Editor, dir: URL, keepOpen: Bool) async {
         await pause(1.0)
         await snap(editor, "01-start", dir)
@@ -60,16 +75,18 @@ enum DemoScript {
         editor.setSketchTool(.rectangle)
         clickSketch(editor, Vec2(0, 0))
         editor.updateHover(at: editor.camera.project(editor.activePlane!.point(Vec2(58, 38)))!)
-        await snap(editor, "03-rect-preview", dir)
-        clickSketch(editor, Vec2(60, 40))
+        await pause(0.5)
+        // Real keyboard path: type into the width field, Tab to height, type, Return.
+        type("breite")
+        key("\t", 48)
+        type("40")
+        await snap(editor, "03-rect-inputs", dir)
+        key("\r", 36)
+        await pause(0.3)
         editor.setSketchTool(.circle)
-        clickSketch(editor, Vec2(30, 20))
-        clickSketch(editor, Vec2(38, 20))
-        editor.setSketchTool(.dimension)
-        // Bottom line length: click line, then place.
-        clickSketch(editor, Vec2(30, 0))
-        clickSketch(editor, Vec2(30, -10))
-        if let d = editor.editingDimension { editor.setDimensionValue(d, "breite"); editor.editingDimension = nil }
+        clickSketch(editor, Vec2(35, 20))
+        clickSketch(editor, Vec2(43, 20))
+        editor.setSketchTool(.select)
         await snap(editor, "04-sketch", dir)
 
         editor.finishSketch()
@@ -123,6 +140,9 @@ enum DemoScript {
         await snap(editor, "11-marking", dir)
         editor.markingMenu = nil
 
+        if let sk = editor.doc.features.first?.kind.sketch {
+            print("DEMO: sketch dims \(sk.constraints.compactMap { $0.kind.dimensionValue })")
+        }
         print("DEMO: errors \(editor.state.errors)")
         print("DEMO: done")
         if !keepOpen {

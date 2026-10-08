@@ -37,6 +37,10 @@ final class ViewportNSView: MTKView {
         }
         editor.requestRedraw = { [weak self] in self?.needsDisplay = true }
         editor.snapshotProvider = { [weak self] in self?.snapshotWindow() }
+        editor.focusViewport = { [weak self] in
+            guard let self else { return }
+            DispatchQueue.main.async { self.window?.makeFirstResponder(self) }
+        }
         editor.pickProvider = { [weak self] pt, radius in
             guard let self, let renderer = self.renderer else { return [] }
             self.syncScene()
@@ -140,6 +144,8 @@ final class ViewportNSView: MTKView {
     }
 
     override func mouseDown(with event: NSEvent) {
+        // Clicking the canvas takes keyboard focus back from on-canvas input fields.
+        editor.toolInputFocus = nil
         window?.makeFirstResponder(self)
         lastDrag = point(event)
         if event.modifierFlags.contains(.option) { return }
