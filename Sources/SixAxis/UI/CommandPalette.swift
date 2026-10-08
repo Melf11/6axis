@@ -35,6 +35,7 @@ extension Editor {
                 NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
             },
             EditorCommand(id: "params", title: "Parameter ändern", symbol: "function", keywords: "parameters variablen", available: true) { self.showParameters = true },
+            EditorCommand(id: "drawing", title: "Technische Zeichnung", symbol: "doc.richtext", shortcut: "⇧⌘D", keywords: "zeichnung drawing 3-tafel ansicht bemaßung pdf", available: hasBodies) { self.openDrawingWindow() },
             EditorCommand(id: "stl", title: "Als STL exportieren", symbol: "square.and.arrow.up", keywords: "export 3d druck print", available: hasBodies) { self.exportSTL() },
             EditorCommand(id: "step", title: "Als STEP exportieren", symbol: "square.and.arrow.up.on.square", keywords: "export cad", available: hasBodies) { self.exportSTEP() },
             EditorCommand(id: "slicer", title: "Im Slicer öffnen", symbol: "printer.fill", keywords: "print druck prusa bambu orca cura", available: hasBodies) { self.openInSlicer() },

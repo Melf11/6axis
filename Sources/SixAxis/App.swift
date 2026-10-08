@@ -48,6 +48,12 @@ struct SixAxisApp: App {
         .windowToolbarStyle(.unified)
         .commands { AppCommands(editor: editor) }
 
+        Window("Zeichnung", id: "drawing") {
+            DrawingWindow(editor: editor)
+                .frame(minWidth: 700, minHeight: 480)
+        }
+        .defaultSize(width: 1200, height: 860)
+
         Settings {
             SettingsView()
         }
@@ -56,6 +62,7 @@ struct SixAxisApp: App {
 
 struct AppCommands: Commands {
     let editor: Editor
+    @Environment(\.openWindow) private var openWindow
 
     var body: some Commands {
         CommandGroup(replacing: .appInfo) {
@@ -94,6 +101,12 @@ struct AppCommands: Commands {
             Toggle("Ursprungsebenen", isOn: Binding(get: { editor.showOriginPlanes }, set: { editor.showOriginPlanes = $0; editor.sceneVersion &+= 1 }))
             Toggle("Browser", isOn: Binding(get: { editor.browserVisible }, set: { editor.browserVisible = $0 }))
                 .keyboardShortcut("b", modifiers: [.command, .option])
+        }
+        CommandMenu("Zeichnung") {
+            Button("Technische Zeichnung öffnen") { openWindow(id: "drawing") }.keyboardShortcut("d", modifiers: [.command, .shift])
+            Divider()
+            Button("Zeichnung als PDF exportieren …") { editor.exportDrawingPDF() }
+            Button("Zeichnung drucken …") { editor.printDrawing() }
         }
         CommandMenu("Konstruktion") {
             Button("Befehlssuche …") { editor.showCommandPalette = true }.keyboardShortcut("k")

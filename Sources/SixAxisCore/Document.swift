@@ -235,6 +235,8 @@ public struct CADDocument: Codable, Hashable, Sendable {
     public var rollback: Int? = nil
     public var bodies: [UUID: BodyMeta] = [:]
     public var hiddenSketches: Set<UUID> = []
+    /// Technical drawing settings; optional so older files decode unchanged.
+    public var drawing: DrawingSettings?
 
     public init() {}
 

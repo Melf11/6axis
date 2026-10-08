@@ -153,6 +153,10 @@ final class Editor {
     var darkMode = false
     /// Increments whenever GPU scene data must be rebuilt.
     var sceneVersion = 0
+    /// Increments whenever the model geometry may have changed (drives the drawing window).
+    var modelRevision = 0
+    @ObservationIgnored let drawing = DrawingController()
+    @ObservationIgnored var openDrawingWindow: () -> Void = {}
 
     // Interaction
     var selection: [Pick] = []
@@ -226,6 +230,7 @@ final class Editor {
         state = builder.build(doc)
         assignBodyNames()
         sceneVersion &+= 1
+        modelRevision &+= 1
         requestRedraw()
         scheduleAutosave()
     }

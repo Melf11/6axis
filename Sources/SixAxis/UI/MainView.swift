@@ -3,6 +3,7 @@ import SixAxisCore
 
 struct MainView: View {
     @Bindable var editor: Editor
+    @Environment(\.openWindow) private var openWindow
 
     var body: some View {
         ZStack {
@@ -75,6 +76,7 @@ struct MainView: View {
         .animation(.snappy(duration: 0.15), value: editor.showCommandPalette)
         .animation(.snappy(duration: 0.15), value: editor.markingMenu)
         .sheet(isPresented: $editor.showParameters) { ParametersSheet(editor: editor) }
+        .onAppear { editor.openDrawingWindow = { openWindow(id: "drawing") } }
     }
 }
 

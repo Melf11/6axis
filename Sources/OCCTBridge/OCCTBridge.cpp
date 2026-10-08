@@ -28,6 +28,9 @@
 #include <GCPnts_AbscissaPoint.hxx>
 #include <GCPnts_TangentialDeflection.hxx>
 #include <GProp_GProps.hxx>
+#include <HLRAlgo_Projector.hxx>
+#include <HLRBRep_Algo.hxx>
+#include <HLRBRep_HLRToShape.hxx>
 #include <IFSelect_ReturnStatus.hxx>
 #include <Poly_Triangulation.hxx>
 #include <STEPControl_Reader.hxx>
@@ -303,6 +306,14 @@ OBShape *ob_translate(const OBShape *s, const double v[3]) {
     });
 }
 
+OBShape *ob_transform(const OBShape *s, const double m[12]) {
+    return guarded("Transformieren", [&]() -> OBShape * {
+        gp_Trsf t;
+        t.SetValues(m[0], m[1], m[2], m[3], m[4], m[5], m[6], m[7], m[8], m[9], m[10], m[11]);
+        return wrap(BRepBuilderAPI_Transform(s->shape, t, Standard_True).Shape(), "Transformieren ergab nichts");
+    });
+}
+
 OBShape *ob_revolve(const OBShape *profile, const double axisOrigin[3], const double axisDir[3], double angleRad) {
     return guarded("Drehung", [&]() -> OBShape * {
         gp_Ax1 axis(toPnt(axisOrigin), gp_Dir(axisDir[0], axisDir[1], axisDir[2]));
@@ -555,6 +566,99 @@ void ob_mesh_free(OBMesh *m) {
     std::free(m->edgePoints);
     std::free(m->edgeIds);
     std::memset(m, 0, sizeof(OBMesh));
+}
+
+int32_t ob_hlr(const OBShape *s, const double viewDir[3], const double xDir[3], double deflection, OBProjection *out) {
+    std::memset(out, 0, sizeof(OBProjection));
+    if (!s || s->shape.IsNull()) {
+        setError("Nichts zu projizieren");
+        return 0;
+    }
+    try {
+        Handle(HLRBRep_Algo) algo = new HLRBRep_Algo();
+        algo->Add(s->shape);
+        gp_Ax2 ax(gp_Pnt(0, 0, 0), gp_Dir(viewDir[0], viewDir[1], viewDir[2]), gp_Dir(xDir[0], xDir[1], xDir[2]));
+        algo->Projector(HLRAlgo_Projector(ax));
+        algo->Update();
+        algo->Hide();
+        HLRBRep_HLRToShape result(algo);
+
+        std::vector<float> pts;
+        std::vector<int32_t> starts;
+        std::vector<uint8_t> flags;
+        std::vector<double> circles;
+        std::vector<uint8_t> circleFlags;
+
+        auto collect = [&](const TopoDS_Shape &compound, uint8_t flag) {
+            if (compound.IsNull()) return;
+            for (TopExp_Explorer ex(compound, TopAbs_EDGE); ex.More(); ex.Next()) {
+                TopoDS_Edge e = TopoDS::Edge(ex.Current());
+                try {
+                    BRepAdaptor_Curve c(e);
+                    if (c.GetType() == GeomAbs_Circle) {
+                        gp_Circ circ = c.Circle();
+                        double f = c.FirstParameter(), l = c.LastParameter();
+                        // Projected circles lie in the drawing plane; orientation of the local frame decides direction.
+                        double sweep = l - f;
+                        double a0 = f;
+                        gp_Dir n = circ.Axis().Direction();
+                        gp_Dir xd = circ.XAxis().Direction();
+                        double base = std::atan2(xd.Y(), xd.X());
+                        if (n.Z() < 0) { a0 = -l; }
+                        circles.insert(circles.end(), {circ.Location().X(), circ.Location().Y(), circ.Radius(), base + a0, sweep});
+                        circleFlags.push_back(flag);
+                    }
+                    GCPnts_TangentialDeflection disc(c, 0.08, deflection);
+                    if (disc.NbPoints() < 2) continue;
+                    starts.push_back((int32_t)(pts.size() / 2));
+                    for (int i = 1; i <= disc.NbPoints(); i++) {
+                        gp_Pnt p = disc.Value(i);
+                        pts.push_back((float)p.X());
+                        pts.push_back((float)p.Y());
+                    }
+                    flags.push_back(flag);
+                } catch (...) {
+                }
+            }
+        };
+        collect(result.VCompound(), 0);
+        collect(result.OutLineVCompound(), OB_LINE_OUTLINE);
+        collect(result.Rg1LineVCompound(), OB_LINE_SMOOTH);
+        collect(result.HCompound(), OB_LINE_HIDDEN);
+        collect(result.OutLineHCompound(), OB_LINE_HIDDEN | OB_LINE_OUTLINE);
+        starts.push_back((int32_t)(pts.size() / 2));
+
+        auto dup = [](const auto &v) {
+            using T = typename std::decay_t<decltype(v)>::value_type;
+            T *p = (T *)std::malloc(std::max<size_t>(1, v.size()) * sizeof(T));
+            if (!v.empty()) std::memcpy(p, v.data(), v.size() * sizeof(T));
+            return p;
+        };
+        out->points = dup(pts);
+        out->pointCount = (int32_t)(pts.size() / 2);
+        out->polyStart = dup(starts);
+        out->polyFlags = dup(flags);
+        out->polyCount = (int32_t)flags.size();
+        out->circles = dup(circles);
+        out->circleFlags = dup(circleFlags);
+        out->circleCount = (int32_t)circleFlags.size();
+        return 1;
+    } catch (const Standard_Failure &e) {
+        setError(std::string("Projektion: ") + (e.GetMessageString() ? e.GetMessageString() : ""));
+    } catch (...) {
+        setError("Projektion fehlgeschlagen");
+    }
+    return 0;
+}
+
+void ob_projection_free(OBProjection *p) {
+    if (!p) return;
+    std::free(p->points);
+    std::free(p->polyStart);
+    std::free(p->polyFlags);
+    std::free(p->circles);
+    std::free(p->circleFlags);
+    std::memset(p, 0, sizeof(OBProjection));
 }
 
 int32_t ob_write_stl(const OBShape *s, const char *path, double linearDeflection, int32_t ascii) {

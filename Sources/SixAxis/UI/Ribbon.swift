@@ -58,6 +58,10 @@ struct Ribbon: View {
                 ToolButton(title: "Import", symbol: "square.and.arrow.down", shortcut: "⌘I") { editor.importSTEP() }
             }
             RibbonDivider()
+            group("Dokumentation") {
+                ToolButton(title: "Zeichnung", symbol: "doc.richtext", shortcut: "⇧⌘D", enabled: hasBodies) { editor.openDrawingWindow() }
+            }
+            RibbonDivider()
             group("3D-Druck") {
                 ToolButton(title: "STL", symbol: "square.and.arrow.up", shortcut: "⌘E", enabled: hasBodies) { editor.exportSTL() }
                 ToolButton(title: "Slicer", symbol: "printer.fill", shortcut: "⇧⌘P", enabled: hasBodies) { editor.openInSlicer() }

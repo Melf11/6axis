@@ -35,6 +35,44 @@ enum DemoScript {
             }
             return
         }
+        if let out = env["SIXAXIS_DRAWING_DEMO"] {
+            Task { @MainActor in
+                buildCabinet(editor)
+                let pages = editor.drawing.generateAllNow(editor)
+                let page = pages[0]
+                let dir = URL(fileURLWithPath: out)
+                try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+                renderPNG(page, to: dir.appendingPathComponent("drawing.png"), pixelsPerMM: 5)
+                for (i, p) in pages.enumerated() { renderPNG(p, to: dir.appendingPathComponent("sheet-\(i + 1).png"), pixelsPerMM: 5) }
+                try? DrawingRenderer.writePDF(pages, to: dir.appendingPathComponent("drawing.pdf"), title: "Korpus")
+                FileHandle.standardError.write(Data("SHEETS \(pages.map { "\($0.name) \($0.sheet.name) \($0.scaleText ?? $0.scale.label)" })\n".utf8))
+                let dims = page.texts.map(\.text).filter { Int($0) != nil || $0.hasPrefix("Ø") || $0.contains("× Ø") }
+                FileHandle.standardError.write(Data("DRAWING \(page.sheet.name) \(page.scale.label) dims=\(dims)\n".utf8))
+                // Stage 3 edits: hide, move, add a user dimension, move the iso view.
+                editor.updateDrawingSettings { s in
+                    s.hiddenDimensions.insert("front.x.481")
+                    s.dimensionOffsets["front.y.290"] = DimensionOffset(distance: 6, along: 0)
+                    s.customDimensions.append(CustomDimension(view: "front", a: Vec2(481, 309), b: Vec2(481, 581),
+                                                              orientation: .vertical, offset: 14))
+                    s.viewOffsets["iso"] = Vec2(15, 8)
+                }
+                let edited = editor.drawing.generateNow(editor)
+                renderPNG(edited, to: dir.appendingPathComponent("edited.png"), pixelsPerMM: 5, highlight: "front.y.290")
+                let editedDims = edited.texts.map(\.text).filter { Int($0) != nil }
+                FileHandle.standardError.write(Data("EDITED dims=\(editedDims) custom=\(edited.dimensions.filter(\.isCustom).map(\.text))\n".utf8))
+                // Open the real drawing window and capture it.
+                editor.openDrawingWindow()
+                try? await Task.sleep(nanoseconds: 2_500_000_000)
+                if let w = NSApp.windows.first(where: { $0.title.hasPrefix("Zeichnung") }), let view = w.contentView,
+                   let rep = view.bitmapImageRepForCachingDisplay(in: view.bounds) {
+                    view.cacheDisplay(in: view.bounds, to: rep)
+                    try? rep.representation(using: .png, properties: [:])?.write(to: dir.appendingPathComponent("window.png"))
+                    FileHandle.standardError.write(Data("WINDOW captured \(w.title)\n".utf8))
+                }
+                exit(0)
+            }
+            return
+        }
         guard env["SIXAXIS_DEMO"] != nil else { return }
         let dir = URL(fileURLWithPath: env["SIXAXIS_SNAPSHOTS"] ?? NSTemporaryDirectory())
         try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
@@ -68,6 +106,54 @@ enum DemoScript {
         editor.updateHover(at: pt)
         editor.mouseDown(at: pt, modifiers: modifiers, clickCount: count)
         editor.mouseUp(at: pt, modifiers: modifiers, clickCount: count)
+    }
+
+    /// Small cabinet (Korpus) of 19 mm boards: two sides, bottom, top, shelf, plus two dowel holes.
+    static func buildCabinet(_ editor: Editor) {
+        var features: [Feature] = []
+        func board(_ name: String, x: ClosedRange<Double>, z: ClosedRange<Double>, depth: Double = 300) {
+            var sk = Sketch(plane: .xz)
+            let p = [sk.addPoint(Vec2(x.lowerBound, z.lowerBound)), sk.addPoint(Vec2(x.upperBound, z.lowerBound)),
+                     sk.addPoint(Vec2(x.upperBound, z.upperBound)), sk.addPoint(Vec2(x.lowerBound, z.upperBound))]
+            for i in 0..<4 { sk.addLine(p[i], p[(i + 1) % 4]) }
+            let s = Feature(name: "Skizze \(name)", kind: .sketch(sk))
+            var ex = ExtrudeFeature()
+            ex.profiles = [ProfileRef(sketch: s.id, sample: Vec2((x.lowerBound + x.upperBound) / 2, (z.lowerBound + z.upperBound) / 2))]
+            ex.distance = "\(depth)"
+            ex.operation = .newBody
+            features += [s, Feature(name: name, kind: .extrude(ex))]
+        }
+        board("Seite", x: 0...19, z: 0...600)
+        board("Seite", x: 481...500, z: 0...600)
+        board("Boden", x: 19...481, z: 0...19)
+        board("Deckel", x: 19...481, z: 581...600)
+        board("Fachboden", x: 19...481, z: 290...309, depth: 280)
+        // Dowel holes through the horizontal boards (sketch on XY, cut upwards).
+        var sk = Sketch(plane: .xy)
+        sk.addCircle(center: sk.addPoint(Vec2(100, -150)), radius: 4)
+        sk.addCircle(center: sk.addPoint(Vec2(400, -150)), radius: 4)
+        let hs = Feature(name: "Bohrungen", kind: .sketch(sk))
+        var cut = ExtrudeFeature()
+        cut.profiles = [ProfileRef(sketch: hs.id, sample: Vec2(100, -150)), ProfileRef(sketch: hs.id, sample: Vec2(400, -150))]
+        cut.distance = "700"
+        cut.operation = .cut
+        features += [hs, Feature(name: "Dübellöcher", kind: .extrude(cut))]
+        editor.commit { d in
+            for f in features { if case .extrude(let e) = f.kind, e.operation == .newBody { d.bodies[f.id] = BodyMeta(name: f.name) } }
+        }
+        editor.commit { $0.features = features; $0.drawing = { var d = DrawingSettings(); d.title = "Korpus"; d.material = "Eiche 19 mm"; d.author = "Tischlerei"; return d }() }
+        if !editor.state.errors.isEmpty { FileHandle.standardError.write(Data("ERRORS \(editor.state.errors)\n".utf8)) }
+    }
+
+    static func renderPNG(_ page: DrawingPage, to url: URL, pixelsPerMM: CGFloat, highlight: String? = nil) {
+        let w = Int(page.sheet.width * pixelsPerMM), h = Int(page.sheet.height * pixelsPerMM)
+        guard let cg = CGContext(data: nil, width: w, height: h, bitsPerComponent: 8, bytesPerRow: 0,
+                                 space: CGColorSpaceCreateDeviceRGB(), bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue) else { return }
+        DrawingRenderer.draw(page, in: cg, pointsPerMM: pixelsPerMM,
+                             highlight: highlight.map { [$0: NSColor.systemBlue.cgColor] } ?? [:])
+        guard let img = cg.makeImage() else { return }
+        let rep = NSBitmapImageRep(cgImage: img)
+        try? rep.representation(using: .png, properties: [:])?.write(to: url)
     }
 
     static func key(_ chars: String, _ keyCode: UInt16) {
