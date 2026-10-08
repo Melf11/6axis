@@ -1,0 +1,102 @@
+import AppKit
+import Foundation
+import Observation
+import SixAxisCore
+
+/// Keeps the technical drawing in sync with the model. Generation runs on a background queue,
+/// debounced, and only while the drawing window is open.
+@Observable
+final class DrawingController {
+    private(set) var page: DrawingPage?
+    private(set) var isUpdating = false
+    var isOpen = false
+
+    @ObservationIgnored private let generator = DrawingGenerator()
+    @ObservationIgnored private let queue = DispatchQueue(label: "app.6axis.drawing", qos: .userInitiated)
+    @ObservationIgnored private var token = 0
+    @ObservationIgnored private var pending: DispatchWorkItem?
+
+    /// Requests a refresh shortly after the last change (keeps typing and dragging fluid).
+    func schedule(_ editor: Editor, delay: TimeInterval = 0.25) {
+        guard isOpen else { return }
+        pending?.cancel()
+        let work = DispatchWorkItem { [weak self, weak editor] in
+            guard let self, let editor else { return }
+            self.regenerate(editor)
+        }
+        pending = work
+        DispatchQueue.main.asyncAfter(deadline: .now() + delay, execute: work)
+    }
+
+    func regenerate(_ editor: Editor) {
+        // While a feature dialog shows a preview, keep the drawing of the committed model.
+        if editor.command != nil, page != nil { return }
+        let shapes = editor.state.orderedBodies.filter { editor.doc.isBodyVisible($0.id) }.map(\.shape)
+        let input = DrawingGenerator.Input(
+            shapes: shapes,
+            settings: editor.doc.drawing ?? DrawingSettings(),
+            fallbackTitle: editor.fileURL?.deletingPathExtension().lastPathComponent ?? "Unbenannt")
+        token += 1
+        let current = token
+        isUpdating = true
+        let generator = self.generator
+        queue.async { [weak self] in
+            let page = generator.generate(input)
+            DispatchQueue.main.async {
+                guard let self, current == self.token else { return }
+                self.page = page
+                self.isUpdating = false
+            }
+        }
+    }
+
+    /// Synchronous generation (export, printing, tests).
+    func generateNow(_ editor: Editor) -> DrawingPage {
+        let shapes = editor.state.orderedBodies.filter { editor.doc.isBodyVisible($0.id) }.map(\.shape)
+        return generator.generate(.init(shapes: shapes, settings: editor.doc.drawing ?? DrawingSettings(),
+                                        fallbackTitle: editor.fileURL?.deletingPathExtension().lastPathComponent ?? "Unbenannt"))
+    }
+}
+
+extension Editor {
+    var drawingSettings: DrawingSettings { doc.drawing ?? DrawingSettings() }
+
+    /// Undoable change of the drawing settings (stored in the document).
+    func updateDrawingSettings(_ change: (inout DrawingSettings) -> Void) {
+        var s = drawingSettings
+        change(&s)
+        guard s != drawingSettings else { return }
+        commit { $0.drawing = s }
+    }
+
+    func exportDrawingPDF() {
+        let page = drawing.generateNow(self)
+        let panel = NSSavePanel()
+        panel.allowedContentTypes = [.pdf]
+        let base = drawingSettings.title.isEmpty ? (fileURL?.deletingPathExtension().lastPathComponent ?? "Zeichnung") : drawingSettings.title
+        panel.nameFieldStringValue = base + ".pdf"
+        guard panel.runModal() == .OK, let url = panel.url else { return }
+        do {
+            try DrawingRenderer.writePDF(page, to: url, title: base)
+            showToast("PDF exportiert: \(url.lastPathComponent)")
+        } catch {
+            showToast(error.localizedDescription)
+        }
+    }
+
+    func printDrawing() {
+        let page = drawing.generateNow(self)
+        let info = NSPrintInfo.shared.copy() as! NSPrintInfo
+        let k = DrawingRenderer.pointsPerMM()
+        info.paperSize = NSSize(width: page.sheet.width * k, height: page.sheet.height * k)
+        info.orientation = .landscape
+        info.topMargin = 0; info.bottomMargin = 0; info.leftMargin = 0; info.rightMargin = 0
+        info.horizontalPagination = .fit
+        info.verticalPagination = .fit
+        info.isHorizontallyCentered = true
+        info.isVerticallyCentered = true
+        let op = NSPrintOperation(view: DrawingPrintView(page: page), printInfo: info)
+        op.jobTitle = drawingSettings.title.isEmpty ? "Zeichnung" : drawingSettings.title
+        op.run()
+    }
+}

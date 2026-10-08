@@ -8,7 +8,7 @@ let occtPrefix = ProcessInfo.processInfo.environment["OCCT_PREFIX"] ?? "/opt/hom
 let occtLibraries = [
     "TKernel", "TKMath", "TKG2d", "TKG3d", "TKGeomBase", "TKGeomAlgo", "TKBRep",
     "TKTopAlgo", "TKPrim", "TKBO", "TKBool", "TKFillet", "TKOffset", "TKShHealing",
-    "TKMesh", "TKXSBase", "TKDE", "TKDESTEP", "TKDESTL",
+    "TKMesh", "TKHLR", "TKXSBase", "TKDE", "TKDESTEP", "TKDESTL",
 ]
 
 let package = Package(

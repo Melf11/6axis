@@ -1,0 +1,122 @@
+import AppKit
+import CoreText
+import SixAxisCore
+import simd
+
+/// Draws a `DrawingPage` with Core Graphics. Used for the window, PDF export and printing,
+/// so what you see is exactly what you print.
+enum DrawingRenderer {
+    /// Draws the page into `cg`, whose user space is in points with y pointing up and the
+    /// sheet's bottom-left corner at the origin. `pointsPerMM` maps paper millimetres to points.
+    static func draw(_ page: DrawingPage, in cg: CGContext, pointsPerMM k: CGFloat, ink: CGColor = .black) {
+        cg.saveGState()
+        cg.setLineCap(.round)
+        cg.setLineJoin(.round)
+        cg.setStrokeColor(ink)
+        cg.setFillColor(ink)
+
+        // Paper.
+        cg.setFillColor(CGColor(gray: 1, alpha: 1))
+        cg.fill(CGRect(x: 0, y: 0, width: page.sheet.width * k, height: page.sheet.height * k))
+        cg.setFillColor(ink)
+
+        for line in page.lines where line.points.count >= 2 {
+            cg.setLineWidth(CGFloat(line.style.width) * k)
+            if let dash = line.style.dash {
+                cg.setLineDash(phase: 0, lengths: dash.map { CGFloat($0) * k })
+                cg.setLineCap(.butt)
+            } else {
+                cg.setLineDash(phase: 0, lengths: [])
+                cg.setLineCap(.round)
+            }
+            cg.beginPath()
+            cg.move(to: point(line.points[0], k))
+            for p in line.points.dropFirst() { cg.addLine(to: point(p, k)) }
+            cg.strokePath()
+        }
+        cg.setLineDash(phase: 0, lengths: [])
+
+        // ISO 129 arrowheads: 3 mm long, 15° half-angle, filled.
+        for a in page.arrows {
+            let u = simd_normalize(a.direction)
+            let n = Vec2(-u.y, u.x)
+            let back = a.tip - u * 3
+            let half = 3 * tan(15 * Double.pi / 180)
+            cg.beginPath()
+            cg.move(to: point(a.tip, k))
+            cg.addLine(to: point(back + n * half, k))
+            cg.addLine(to: point(back - n * half, k))
+            cg.closePath()
+            cg.fillPath()
+        }
+
+        for t in page.texts { drawText(t, in: cg, k: k, color: ink) }
+        cg.restoreGState()
+    }
+
+    private static func point(_ p: Vec2, _ k: CGFloat) -> CGPoint { CGPoint(x: p.x * k, y: p.y * k) }
+
+    /// Text height is the capital height in mm (ISO 3098); font size derived from the cap-height ratio.
+    private static func drawText(_ t: DrawingText, in cg: CGContext, k: CGFloat, color: CGColor) {
+        guard !t.text.isEmpty else { return }
+        let base = t.bold ? NSFont.systemFont(ofSize: 10, weight: .semibold) : NSFont.systemFont(ofSize: 10)
+        let size = CGFloat(t.height) * k / (base.capHeight / base.pointSize)
+        let font = t.bold ? NSFont.systemFont(ofSize: size, weight: .semibold) : NSFont.systemFont(ofSize: size)
+        let attr = NSAttributedString(string: t.text, attributes: [
+            .font: font,
+            .foregroundColor: NSColor(cgColor: color) ?? .black,
+        ])
+        let line = CTLineCreateWithAttributedString(attr)
+        let width = CTLineGetTypographicBounds(line, nil, nil, nil)
+        let dx: CGFloat
+        switch t.anchor {
+        case .left: dx = 0
+        case .center: dx = -width / 2
+        case .right: dx = -width
+        }
+        cg.saveGState()
+        cg.translateBy(x: t.position.x * k, y: t.position.y * k)
+        cg.rotate(by: CGFloat(t.angle))
+        cg.textMatrix = .identity
+        cg.textPosition = CGPoint(x: dx, y: 0)
+        CTLineDraw(line, cg)
+        cg.restoreGState()
+    }
+
+    // MARK: Export
+
+    static func pointsPerMM() -> CGFloat { 72 / 25.4 }
+
+    /// Writes a vector PDF at true scale (1 mm on paper = 1 mm in the PDF).
+    static func writePDF(_ page: DrawingPage, to url: URL, title: String) throws {
+        let k = pointsPerMM()
+        var box = CGRect(x: 0, y: 0, width: page.sheet.width * k, height: page.sheet.height * k)
+        let info: [CFString: Any] = [kCGPDFContextTitle: title, kCGPDFContextCreator: "6axis"]
+        guard let ctx = CGContext(url as CFURL, mediaBox: &box, info as CFDictionary) else {
+            throw NSError(domain: "6axis", code: 1, userInfo: [NSLocalizedDescriptionKey: "PDF konnte nicht erstellt werden"])
+        }
+        ctx.beginPDFPage(nil)
+        draw(page, in: ctx, pointsPerMM: k)
+        ctx.endPDFPage()
+        ctx.closePDF()
+    }
+}
+
+/// Printable view of a drawing page at true scale.
+final class DrawingPrintView: NSView {
+    let page: DrawingPage
+
+    init(page: DrawingPage) {
+        self.page = page
+        let k = DrawingRenderer.pointsPerMM()
+        super.init(frame: NSRect(x: 0, y: 0, width: page.sheet.width * k, height: page.sheet.height * k))
+    }
+
+    @available(*, unavailable)
+    required init?(coder: NSCoder) { fatalError() }
+
+    override func draw(_ dirtyRect: NSRect) {
+        guard let cg = NSGraphicsContext.current?.cgContext else { return }
+        DrawingRenderer.draw(page, in: cg, pointsPerMM: DrawingRenderer.pointsPerMM())
+    }
+}

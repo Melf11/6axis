@@ -98,6 +98,25 @@ int32_t ob_edge_info(const OBShape *s, int32_t index, OBEdgeInfo *out);
 int32_t ob_mesh(const OBShape *s, double linearDeflection, double angularDeflection, OBMesh *out);
 void ob_mesh_free(OBMesh *m);
 
+/// Hidden-line projection result. Coordinates are 2D in the projection plane (model units).
+enum { OB_LINE_HIDDEN = 1, OB_LINE_OUTLINE = 2, OB_LINE_SMOOTH = 4 };
+
+typedef struct {
+    float *points;          // 2 * pointCount (x, y)
+    int32_t pointCount;
+    int32_t *polyStart;     // polyCount + 1 offsets into points
+    uint8_t *polyFlags;     // OB_LINE_* per polyline
+    int32_t polyCount;
+    double *circles;        // 5 * circleCount: cx, cy, r, startAngle, sweep (full circle: sweep = 2pi)
+    uint8_t *circleFlags;   // OB_LINE_* per circle
+    int32_t circleCount;
+} OBProjection;
+
+/// Exact hidden-line removal. `viewDir` points from the model towards the viewer, `xDir` is the
+/// drawing's horizontal axis. Returns 0 on failure (see ob_last_error).
+int32_t ob_hlr(const OBShape *s, const double viewDir[3], const double xDir[3], double deflection, OBProjection *out);
+void ob_projection_free(OBProjection *p);
+
 int32_t ob_write_stl(const OBShape *s, const char *path, double linearDeflection, int32_t ascii);
 int32_t ob_write_step(const OBShape *s, const char *path);
 OBShape *ob_read_step(const char *path);

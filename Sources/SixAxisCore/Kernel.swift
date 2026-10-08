@@ -248,3 +248,60 @@ public struct TriangleMesh: Sendable {
     public var faceCount: Int
     public var edgeCount: Int
 }
+
+// MARK: - Hidden-line projection
+
+public struct Polyline2D: Sendable {
+    public var points: [Vec2]
+    public var hidden: Bool
+    public var outline: Bool
+    /// Tangent (smooth) edges: usually not drawn in technical drawings.
+    public var smooth: Bool
+}
+
+public struct Circle2D: Sendable {
+    public var center: Vec2
+    public var radius: Double
+    public var full: Bool
+    public var hidden: Bool
+}
+
+public struct Projection2D: Sendable {
+    public var polylines: [Polyline2D] = []
+    public var circles: [Circle2D] = []
+
+    public init() {}
+
+    /// Bounding box of visible and hidden geometry (smooth edges excluded).
+    public var bounds: (min: Vec2, max: Vec2)? {
+        var lo = Vec2(repeating: .greatestFiniteMagnitude), hi = -lo
+        for p in polylines where !p.smooth {
+            for q in p.points { lo = simd_min(lo, q); hi = simd_max(hi, q) }
+        }
+        return lo.x <= hi.x ? (lo, hi) : nil
+    }
+}
+
+extension Shape {
+    /// Exact hidden-line projection. `viewDir` points towards the viewer; `xDir` becomes the drawing's +x.
+    public func project(viewDir: Vec3, xDir: Vec3, deflection: Double) throws -> Projection2D {
+        var p = OBProjection()
+        var d = [viewDir.x, viewDir.y, viewDir.z], x = [xDir.x, xDir.y, xDir.z]
+        guard ob_hlr(handle, &d, &x, deflection, &p) != 0 else { throw KernelError.last("Projektion fehlgeschlagen") }
+        defer { ob_projection_free(&p) }
+        var out = Projection2D()
+        for i in 0..<Int(p.polyCount) {
+            let a = Int(p.polyStart[i]), b = Int(p.polyStart[i + 1])
+            let pts = (a..<b).map { Vec2(Double(p.points[2 * $0]), Double(p.points[2 * $0 + 1])) }
+            let f = Int32(p.polyFlags[i])
+            out.polylines.append(Polyline2D(points: pts, hidden: f & Int32(OB_LINE_HIDDEN) != 0,
+                                            outline: f & Int32(OB_LINE_OUTLINE) != 0, smooth: f & Int32(OB_LINE_SMOOTH) != 0))
+        }
+        for i in 0..<Int(p.circleCount) {
+            let c = p.circles + 5 * i
+            out.circles.append(Circle2D(center: Vec2(c[0], c[1]), radius: c[2], full: abs(c[4]) > 2 * .pi - 1e-6,
+                                        hidden: Int32(p.circleFlags[i]) & Int32(OB_LINE_HIDDEN) != 0))
+        }
+        return out
+    }
+}
