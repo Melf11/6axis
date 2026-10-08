@@ -88,6 +88,23 @@ struct DisplaySettings: View {
                 }
                 .pickerStyle(.segmented)
             }
+            Section("Körper") {
+                Picker("Schattierung", selection: $s.shading) {
+                    ForEach(AppSettings.Shading.allCases) { Text($0.title).tag($0) }
+                }
+                .pickerStyle(.segmented)
+                Toggle("Bodenschatten", isOn: $s.groundShadow)
+                Toggle("Kanten anzeigen", isOn: $s.showEdges)
+                LabeledContent("Kantenstärke") {
+                    HStack {
+                        Slider(value: $s.edgeWidth, in: 0.5...4)
+                        Text(String(format: "%.1f pt", s.edgeWidth))
+                            .monospacedDigit()
+                            .frame(width: 44, alignment: .trailing)
+                    }
+                }
+                .disabled(!s.showEdges)
+            }
             Section("Ansichtsfenster") {
                 Toggle("Raster anzeigen", isOn: $s.showGrid)
                 Toggle("Neue Designs orthografisch anzeigen", isOn: $s.defaultOrthographic)

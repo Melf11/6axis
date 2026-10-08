@@ -25,6 +25,12 @@ final class AppSettings {
         }
     }
 
+    enum Shading: String, CaseIterable, Identifiable {
+        case studio, simple
+        var id: String { rawValue }
+        var title: String { self == .studio ? "Studio" : "Einfach" }
+    }
+
     enum STLQuality: String, CaseIterable, Identifiable {
         case coarse, normal, fine
         var id: String { rawValue }
@@ -92,6 +98,11 @@ final class AppSettings {
     var appearance: Appearance { didSet { save(); applyAppearance() } }
     var showGrid: Bool { didSet { save() } }
     var defaultOrthographic: Bool { didSet { save() } }
+    var shading: Shading { didSet { save() } }
+    var showEdges: Bool { didSet { save() } }
+    /// Body edge width in points.
+    var edgeWidth: Double { didSet { save() } }
+    var groundShadow: Bool { didSet { save() } }
     /// Snap sketch points to the grid (⌘ = free).
     var snapToGrid: Bool { didSet { save() } }
 
@@ -126,6 +137,10 @@ final class AppSettings {
         showGrid = bool("display.grid", true)
         defaultOrthographic = bool("display.ortho", false)
         snapToGrid = bool("sketch.snapToGrid", true)
+        shading = Shading(rawValue: string("display.shading", "studio")) ?? .studio
+        showEdges = bool("display.edges", true)
+        edgeWidth = double("display.edgeWidth", 1.4)
+        groundShadow = bool("display.groundShadow", true)
         stlQuality = STLQuality(rawValue: string("print.stlQuality", "normal")) ?? .normal
         material = Material(rawValue: string("print.material", "pla")) ?? .pla
         customDensity = double("print.customDensity", 1.2)
@@ -149,6 +164,10 @@ final class AppSettings {
         d.set(showGrid, forKey: "display.grid")
         d.set(defaultOrthographic, forKey: "display.ortho")
         d.set(snapToGrid, forKey: "sketch.snapToGrid")
+        d.set(shading.rawValue, forKey: "display.shading")
+        d.set(showEdges, forKey: "display.edges")
+        d.set(edgeWidth, forKey: "display.edgeWidth")
+        d.set(groundShadow, forKey: "display.groundShadow")
         d.set(stlQuality.rawValue, forKey: "print.stlQuality")
         d.set(material.rawValue, forKey: "print.material")
         d.set(customDensity, forKey: "print.customDensity")

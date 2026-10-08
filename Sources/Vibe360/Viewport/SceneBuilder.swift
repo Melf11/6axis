@@ -99,8 +99,22 @@ struct SceneBuilder {
                 edgeLines.append(LineInstance(seg.0, seg.1, id: eid))
             }
         }
-        scene.lines.append(LineBatch(instances: edgeLines, width: 1.4 * scale, color: style.edge, depthBias: 0.0015))
+        // Hidden edges stay pickable (transparent), so fillets still work; hover/selection still shows them.
+        let showEdges = AppSettings.shared.showEdges
+        let edgeColor = showEdges ? style.edge : SIMD4<Float>(0, 0, 0, 0)
+        let edgeWidth = Float(showEdges ? AppSettings.shared.edgeWidth : 2) * scale
+        scene.lines.append(LineBatch(instances: edgeLines, width: edgeWidth, color: edgeColor, depthBias: 0.0015))
         scene.meshes.append(contentsOf: translucent)
+        if AppSettings.shared.groundShadow {
+            var lo = SIMD3<Float>(repeating: .greatestFiniteMagnitude), hi = -lo
+            for m in scene.meshes where !m.translucent {
+                for v in m.vertices {
+                    lo = simd_min(lo, SIMD3(v.px, v.py, v.pz))
+                    hi = simd_max(hi, SIMD3(v.px, v.py, v.pz))
+                }
+            }
+            if lo.x <= hi.x { scene.shadowBounds = (lo, hi) }
+        }
 
         addCommandHighlights()
 

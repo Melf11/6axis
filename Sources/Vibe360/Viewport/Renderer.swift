@@ -1,6 +1,7 @@
 import AppKit
 import Metal
 import MetalKit
+import MetalPerformanceShaders
 import simd
 
 // MARK: - GPU data layouts (must match Shaders.swift)
@@ -52,7 +53,7 @@ struct Globals {
     var lightDir = SIMD4<Float>.zero
     var pickMode: UInt32 = 0
     var orthographic: UInt32 = 0
-    var pad1: UInt32 = 0
+    var shading: UInt32 = 0
     var pad2: UInt32 = 0
     var hoverColor = SIMD4<Float>.zero
     var selectColor = SIMD4<Float>.zero
@@ -108,7 +109,16 @@ struct FillBatch {
     var pickable = true
 }
 
+struct ShadowQuad {
+    var rect: SIMD4<Float>   // minX, minY, maxX, maxY
+    var z: Float
+    var opacity: Float
+    var pad = SIMD2<Float>.zero
+}
+
 struct RenderScene {
+    /// Bounding box of opaque bodies for the soft ground shadow; nil = no shadow.
+    var shadowBounds: (min: SIMD3<Float>, max: SIMD3<Float>)?
     var meshes: [MeshBatch] = []
     var fills: [FillBatch] = []
     var lines: [LineBatch] = []
@@ -146,6 +156,11 @@ final class Renderer: NSObject, MTKViewDelegate {
     private var fillPipeline: MTLRenderPipelineState!
     private var fillPickPipeline: MTLRenderPipelineState!
     private var bgPipeline: MTLRenderPipelineState!
+    private var shadowMaskPipeline: MTLRenderPipelineState!
+    private var shadowPipeline: MTLRenderPipelineState!
+    private var shadowTight: MTLTexture?
+    private var shadowWide: MTLTexture?
+    private var shadowQuad: ShadowQuad?
     private var depthStates: [DepthMode: MTLDepthStencilState] = [:]
 
     private struct GPUMesh { let vb: MTLBuffer; let ib: MTLBuffer; let count: Int; let color: SIMD4<Float>; let translucent: Bool }
@@ -214,6 +229,12 @@ final class Renderer: NSObject, MTKViewDelegate {
         fillPipeline = try make("fill_vs", "fill_fs", pick: false)
         fillPickPipeline = try make("fill_vs", "fill_pick_fs", pick: true)
         bgPipeline = try make("bg_vs", "bg_fs", pick: false, blend: false)
+        shadowPipeline = try make("shadow_vs", "shadow_fs", pick: false)
+        let md = MTLRenderPipelineDescriptor()
+        md.vertexFunction = lib.makeFunction(name: "mesh_vs")
+        md.fragmentFunction = lib.makeFunction(name: "shadow_mask_fs")
+        md.colorAttachments[0].pixelFormat = .r8Unorm
+        shadowMaskPipeline = try device.makeRenderPipelineState(descriptor: md)
 
         for mode in [DepthMode.normal, .readOnly, .always] {
             let d = MTLDepthStencilDescriptor()
@@ -245,10 +266,68 @@ final class Renderer: NSObject, MTKViewDelegate {
             guard let b = buffer(l.instances) else { return nil }
             return GPUInstances(buffer: b, count: l.instances.count, u: DrawUniforms(color: l.color, width: l.width, depthBias: l.depthBias), depth: l.depth, pickable: l.pickable)
         }
+        if let b = scene.shadowBounds { renderShadow(b.min, b.max) } else { shadowQuad = nil }
         gpuPoints = scene.points.compactMap { p in
             guard let b = buffer(p.instances) else { return nil }
             return GPUInstances(buffer: b, count: p.instances.count, u: DrawUniforms(depthBias: p.depthBias), depth: p.depth, pickable: true)
         }
+    }
+
+    // MARK: Ground shadow
+
+    /// Renders the bodies' silhouette from above, blurs it twice (contact + ambient) and
+    /// places it as a quad on the ground (z = 0, or below the lowest body).
+    private func renderShadow(_ lo: SIMD3<Float>, _ hi: SIMD3<Float>) {
+        let size = max(hi.x - lo.x, hi.y - lo.y, 1)
+        let half = size / 2 + size * 0.6 + 4
+        let cx = (lo.x + hi.x) / 2, cy = (lo.y + hi.y) / 2
+        let res = 256
+        func tex(_ usage: MTLTextureUsage) -> MTLTexture? {
+            let d = MTLTextureDescriptor.texture2DDescriptor(pixelFormat: .r8Unorm, width: res, height: res, mipmapped: false)
+            d.usage = usage
+            d.storageMode = .private
+            return device.makeTexture(descriptor: d)
+        }
+        guard let mask = tex([.renderTarget, .shaderRead]),
+              let tight = shadowTight ?? tex([.shaderRead, .shaderWrite]),
+              let wide = shadowWide ?? tex([.shaderRead, .shaderWrite]),
+              let cmd = queue.makeCommandBuffer() else { return }
+        shadowTight = tight
+        shadowWide = wide
+
+        let rpd = MTLRenderPassDescriptor()
+        rpd.colorAttachments[0].texture = mask
+        rpd.colorAttachments[0].loadAction = .clear
+        rpd.colorAttachments[0].clearColor = MTLClearColor(red: 0, green: 0, blue: 0, alpha: 0)
+        rpd.colorAttachments[0].storeAction = .store
+        guard let enc = cmd.makeRenderCommandEncoder(descriptor: rpd) else { return }
+        // Orthographic top-down projection of the shadow square.
+        var g = Globals()
+        g.viewProj = simd_float4x4(rows: [
+            SIMD4(1 / half, 0, 0, -cx / half),
+            SIMD4(0, 1 / half, 0, -cy / half),
+            SIMD4(0, 0, 0, 0.5),
+            SIMD4(0, 0, 0, 1),
+        ])
+        g.eye = SIMD4(cx, cy, hi.z + 1000, 1)
+        g.orthographic = 1
+        g.forward = SIMD4(0, 0, -1, 0)
+        var u = DrawUniforms()
+        enc.setRenderPipelineState(shadowMaskPipeline)
+        enc.setCullMode(.none)
+        enc.setVertexBytes(&g, length: MemoryLayout<Globals>.stride, index: 1)
+        enc.setVertexBytes(&u, length: MemoryLayout<DrawUniforms>.stride, index: 2)
+        for m in gpuMeshes where !m.translucent {
+            enc.setVertexBuffer(m.vb, offset: 0, index: 0)
+            enc.drawIndexedPrimitives(type: .triangle, indexCount: m.count, indexType: .uint32, indexBuffer: m.ib, indexBufferOffset: 0)
+        }
+        enc.endEncoding()
+        MPSImageGaussianBlur(device: device, sigma: 3).encode(commandBuffer: cmd, sourceTexture: mask, destinationTexture: tight)
+        MPSImageGaussianBlur(device: device, sigma: 30).encode(commandBuffer: cmd, sourceTexture: mask, destinationTexture: wide)
+        cmd.commit()
+
+        let z = min(0, lo.z) - size * 0.0005
+        shadowQuad = ShadowQuad(rect: SIMD4(cx - half, cy - half, cx + half, cy + half), z: z, opacity: 1)
     }
 
     // MARK: Drawing
@@ -269,6 +348,7 @@ final class Renderer: NSObject, MTKViewDelegate {
         g.lightDir = SIMD4(l, 0)
         g.pickMode = pick ? 1 : 0
         g.orthographic = cam.orthographic ? 1 : 0
+        g.shading = AppSettings.shared.shading == .simple ? 1 : 0
         g.hoverColor = pal.hover
         g.selectColor = pal.select
         g.forward = SIMD4(cam.forward, 0)
@@ -361,6 +441,16 @@ final class Renderer: NSObject, MTKViewDelegate {
             }
         }
         meshes(translucent: false)
+        if !pick, var q = shadowQuad, let tight = shadowTight, let wide = shadowWide {
+            q.opacity = 0.62
+            enc.setRenderPipelineState(shadowPipeline)
+            enc.setDepthStencilState(depthStates[.readOnly])
+            enc.setVertexBytes(&q, length: MemoryLayout<ShadowQuad>.stride, index: 0)
+            enc.setFragmentBytes(&q, length: MemoryLayout<ShadowQuad>.stride, index: 0)
+            enc.setFragmentTexture(tight, index: 0)
+            enc.setFragmentTexture(wide, index: 1)
+            enc.drawPrimitives(type: .triangle, vertexStart: 0, vertexCount: 6)
+        }
 
         func instances(_ list: [GPUInstances], pipeline: MTLRenderPipelineState, vertexCount: Int, instanced: Bool) {
             enc.setRenderPipelineState(pipeline)
