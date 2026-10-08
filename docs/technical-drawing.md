@@ -11,7 +11,7 @@ Ziel: Aus dem 3D-Modell wird automatisch eine normgerechte 3-Tafel-Projektion mi
 | Genauigkeit | **Ganze Millimeter** |
 | Blatt | **Querformat**, automatisch A4 → A3 → A2, je nach Größe |
 | Mehrere Körper | **Gesamtansicht** mit allen Teilen in Einbaulage, dazu Positionsnummern, Stückliste und Einzelteilblätter (abschaltbar) |
-| Material / Faserrichtung | später |
+| Material / Faserrichtung | pro Körper im Browser, in Stückliste und Einzelteilen |
 
 ## Normen
 
@@ -60,7 +60,7 @@ SixAxis      Drawing/   Fenster, Darstellung (Core Graphics), PDF-Export, Druck
 - [~] **Etappe 2 – Automatische Bemaßung**: Gesamtmaße, Bezugsmaße von links/unten, Bohrungen (Ø, n×, Mittellinien, Lage) erledigt; offen: verdeckte Merkmale, Abstände bei sehr dichten Maßen, Schrägen und Radien
 - [x] **Etappe 3 – Bearbeiten**: Maße auswählen (Hover/Klick), ziehen (Maßlinie rastet in 7-mm-Reihen ein und weicht anderen aus, Wert verschiebt sich entlang der Linie), ausblenden (⌫), eigene Maße zwischen Eckpunkten/Bohrungsmitten (D, waagerecht/senkrecht/schräg je nach Platzierung, folgen Modelländerungen), Ansichten verschieben (Projektionsflucht bleibt erhalten, Isometrie frei), Zurücksetzen-Menü, alles rückgängig machbar und in der Datei gespeichert. Stabile Maß-Kennungen („front.x.481“) halten Anpassungen über Modelländerungen hinweg
 - [x] **Etappe 4 – Mehrere Körper**: Positionsnummern (ISO 6433, verschiebbar), Stück-/Zuschnittliste über dem Schriftfeld (ISO 7573: Pos., Benennung, Anzahl, Länge × Breite × Dicke, Material), Erkennung gleicher Teile (Maße, Volumen, Topologie), Einzelteilblätter mit automatischer Ausrichtung (Länge → x, Breite → oben, Dicke → Tiefe), bis zu 4 Teile je Blatt mit eigenem Maßstab, Blattnummern „n / N“, Blatt-Reiter im Fenster, mehrseitiger PDF-Export und Druck, Schalter im Menü „Blätter“
-- [ ] Etappe 5 – Erweiterungen
+- [x] **Etappe 5 – Erweiterungen**: Material und Faserrichtung je Körper (Browser → Rechtsklick; Stückliste, Faserpfeil auf Einzelteilen, getrennte Positionen bei anderem Material), DXF-Export R12 (Blatt mit ISO-Ebenen; Einzelteile 1:1 für CNC/Laser mit echten Kreisen), Schnitt A–A der Seitenansicht (Schraffur je Teil wechselnd, Schnittverlauf mit Pfeilen, mit der Maus verschiebbar), Einzelheiten (Werkzeug E: Mittelpunkt und Radius klicken, Vergrößerung automatisch 2:1/5:1/…, verschiebbar, löschbar)
 
 ### Testen
 

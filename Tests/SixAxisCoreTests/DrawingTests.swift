@@ -214,3 +214,81 @@ final class DrawingPartsTests: XCTestCase {
         XCTAssertFalse(pages[0].texts.contains { $0.text == "Benennung" && $0.position.y > 50 }, "no parts list for one body")
     }
 }
+
+final class DrawingStage5Tests: XCTestCase {
+    let parts = DrawingPartsTests()
+
+    func testBodyMetaDecodesOlderFiles() throws {
+        let old = #"{"name":"Seite","visible":true}"#
+        let m = try JSONDecoder().decode(BodyMeta.self, from: Data(old.utf8))
+        XCTAssertEqual(m.name, "Seite")
+        XCTAssertEqual(m.material, "")
+        XCTAssertEqual(m.grain, .none)
+    }
+
+    func testMaterialSeparatesGroupsAndShowsInList() throws {
+        var p = try parts.cabinet()
+        p[0].material = "Eiche massiv"; p[0].grain = .length
+        p[1].material = "Buche massiv"
+        let groups = DrawingGenerator().groupParts(p)
+        XCTAssertEqual(groups.count, 3, "same size but different material → different positions")
+        let page = DrawingGenerator().generatePages(.init(parts: p, settings: DrawingSettings(), fallbackTitle: "K"))[0]
+        XCTAssertTrue(page.texts.contains { $0.text == "Eiche massiv ↔" })
+        XCTAssertTrue(page.texts.contains { $0.text == "Buche massiv" })
+    }
+
+    func testPartsDXFHasLayersAndRealCircles() throws {
+        let board = try DrawingTests().boardWithHole()
+        let dxf = DrawingGenerator().partsDXF(.init(parts: [.init(name: "Brett", shape: board)], settings: DrawingSettings(), fallbackTitle: "x"))
+        XCTAssertTrue(dxf.hasPrefix("0\nSECTION\n2\nHEADER"))
+        XCTAssertTrue(dxf.contains("AC1009"))
+        XCTAssertTrue(dxf.hasSuffix("0\nEOF\n"))
+        XCTAssertTrue(dxf.contains("POS_1"))
+        XCTAssertEqual(dxf.components(separatedBy: "0\nCIRCLE\n").count - 1, 1, "the Ø10 hole as one CIRCLE entity")
+        XCTAssertTrue(dxf.contains("\n40\n5.0000\n"), "radius 5")
+    }
+
+    func testSheetDXFUsesISOLayers() throws {
+        let page = DrawingGenerator().generate(.init(shapes: [try DrawingTests().boardWithHole()], settings: DrawingSettings(), fallbackTitle: "x"))
+        let dxf = page.dxf()
+        for layer in ["KONTUR", "VERDECKT", "MITTELLINIE", "BEMASSUNG", "RAHMEN"] { XCTAssertTrue(dxf.contains("\n8\n\(layer)\n"), layer) }
+        XCTAssertTrue(dxf.contains("%%c10"), "Ø written as %%c for DXF")
+    }
+
+    func testSectionAA() throws {
+        var s = DrawingSettings()
+        s.sectionLeft = true
+        let page = DrawingGenerator().generatePages(.init(parts: try parts.cabinet(), settings: s, fallbackTitle: "K"))[0]
+        XCTAssertTrue(page.texts.contains { $0.text == "A–A" })
+        XCTAssertGreaterThan(page.lines.filter { $0.style == .hatch }.count, 5, "cut boards are hatched")
+        let marker = try XCTUnwrap(page.dimensions.first { $0.id == "section.A" })
+        XCTAssertEqual(marker.value, 250, accuracy: 1e-6, "default plane through the middle")
+    }
+
+    func testDetailView() throws {
+        var s = DrawingSettings()
+        s.scale = "1:10"
+        s.details = [DetailView(letter: "Z", view: "front", center: Vec2(10, 10), radius: 30, factor: 5)]
+        let page = DrawingGenerator().generatePages(.init(parts: try parts.cabinet(), settings: s, fallbackTitle: "K"))[0]
+        let d = s.details[0]
+        XCTAssertTrue(page.views.contains { $0.id == d.viewId })
+        XCTAssertTrue(page.texts.contains { $0.text == "Z (1:2)" })
+        XCTAssertTrue(page.dimensions.contains { $0.id == d.markId })
+        XCTAssertTrue(page.snapPoints.contains { $0.view == d.viewId }, "corners in the detail are snappable")
+    }
+
+    func testHatchAndClipGeometry() {
+        let square = [[Vec2(0, 0), Vec2(10, 0), Vec2(10, 10), Vec2(0, 10), Vec2(0, 0)]]
+        let lines = DrawingGenerator.hatch(square, angle: .pi / 4, spacing: 1)
+        XCTAssertGreaterThan(lines.count, 10)
+        for (a, b) in lines {
+            for p in [a, b, (a + b) / 2] { XCTAssertTrue(p.x > -1e-6 && p.x < 10 + 1e-6 && p.y > -1e-6 && p.y < 10 + 1e-6) }
+        }
+        let clipped = DrawingGenerator.clip([Vec2(-10, 0), Vec2(10, 0)], center: .zero, radius: 5)
+        XCTAssertEqual(clipped.count, 1)
+        XCTAssertEqual(clipped[0].first!.x, -5, accuracy: 1e-9)
+        XCTAssertEqual(clipped[0].last!.x, 5, accuracy: 1e-9)
+        XCTAssertEqual(DrawingGenerator.ratio(0.5), "1:2")
+        XCTAssertEqual(DrawingGenerator.ratio(2), "2:1")
+    }
+}

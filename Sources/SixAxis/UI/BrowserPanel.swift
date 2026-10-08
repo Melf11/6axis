@@ -8,6 +8,7 @@ struct BrowserPanel: View {
     @State private var renameText = ""
     @State private var bodiesOpen = true
     @State private var sketchesOpen = true
+    @State private var materialFor: UUID?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -49,6 +50,9 @@ struct BrowserPanel: View {
         .frame(maxHeight: 420)
         .fixedSize(horizontal: false, vertical: true)
         .floatingPanel()
+        .sheet(item: Binding(get: { materialFor.map(IdentifiedUUID.init) }, set: { materialFor = $0?.id })) { item in
+            BodyMaterialSheet(editor: editor, bodyId: item.id)
+        }
     }
 
     private var sketches: [Feature] {
@@ -91,6 +95,9 @@ struct BrowserPanel: View {
                     .onExitCommand { renaming = nil }
             } else {
                 Text(editor.doc.bodyName(id)).font(.system(size: 12)).lineLimit(1)
+                if let m = editor.doc.bodies[id]?.material, !m.isEmpty {
+                    Text(m).font(.system(size: 10)).foregroundStyle(.tertiary).lineLimit(1)
+                }
             }
             Spacer()
             if editor.state.errors.isEmpty == false, let src = editor.state.bodies[id]?.sourceFeature, editor.state.errors[src] != nil {
@@ -109,6 +116,7 @@ struct BrowserPanel: View {
         }
         .contextMenu {
             Button("Umbenennen") { renameText = editor.doc.bodyName(id); renaming = id }
+            Button("Material & Faserrichtung …") { materialFor = id }
             Button(editor.doc.isBodyVisible(id) ? "Ausblenden" : "Einblenden") { editor.toggleBodyVisibility(id) }
             Divider()
             Button("Als STL exportieren …") { editor.selection = [.body(id)]; editor.exportSTL() }
@@ -165,5 +173,69 @@ struct BrowserPanel: View {
         }
         .buttonStyle(.plain)
         .help(visible ? "Ausblenden" : "Einblenden")
+    }
+}
+
+private struct IdentifiedUUID: Identifiable { let id: UUID }
+
+/// Material and grain direction of a body (used in parts lists and part drawings).
+struct BodyMaterialSheet: View {
+    @Bindable var editor: Editor
+    let bodyId: UUID
+    @State private var material = ""
+    @State private var grain: GrainDirection = .none
+    @Environment(\.dismiss) private var dismiss
+
+    static let presets = [
+        "Eiche massiv", "Buche massiv", "Ahorn massiv", "Nussbaum massiv", "Kiefer massiv", "Fichte massiv", "Lärche massiv",
+        "Birke Multiplex", "Buche Multiplex", "Sperrholz", "Tischlerplatte", "MDF", "MDF lackiert", "Spanplatte", "Spanplatte melaminbeschichtet", "OSB", "HPL",
+    ]
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            Text(editor.doc.bodyName(bodyId)).font(.title3.weight(.semibold)).padding(16)
+            Form {
+                HStack {
+                    TextField("Material", text: $material, prompt: Text("z. B. Eiche massiv"))
+                    Menu {
+                        ForEach(Self.presets, id: \.self) { p in Button(p) { material = p } }
+                    } label: {
+                        Image(systemName: "list.bullet")
+                    }
+                    .menuStyle(.borderlessButton)
+                    .fixedSize()
+                    .help("Werkstoff auswählen")
+                }
+                Picker("Faserrichtung", selection: $grain) {
+                    ForEach(GrainDirection.allCases, id: \.self) { Text($0.title).tag($0) }
+                }
+                .pickerStyle(.segmented)
+                Text("Längs = entlang der größten Abmessung. Wird als Pfeil in der Einzelteilzeichnung und in der Stückliste gezeigt.")
+                    .font(.caption).foregroundStyle(.secondary)
+            }
+            .formStyle(.grouped)
+            HStack {
+                Spacer()
+                Button("Abbrechen") { dismiss() }.keyboardShortcut(.cancelAction)
+                Button("Übernehmen") {
+                    let m = material.trimmingCharacters(in: .whitespaces), g = grain
+                    editor.commit { d in
+                        var meta = d.bodies[bodyId] ?? BodyMeta(name: editor.doc.bodyName(bodyId))
+                        meta.material = m
+                        meta.grain = g
+                        d.bodies[bodyId] = meta
+                    }
+                    dismiss()
+                }
+                .keyboardShortcut(.defaultAction)
+                .buttonStyle(.borderedProminent)
+            }
+            .padding(16)
+        }
+        .frame(width: 420)
+        .onAppear {
+            material = editor.doc.bodies[bodyId]?.material ?? ""
+            grain = editor.doc.bodies[bodyId]?.grain ?? .none
+        }
     }
 }

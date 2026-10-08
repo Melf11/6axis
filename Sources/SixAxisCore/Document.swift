@@ -215,12 +215,42 @@ public struct Feature: Codable, Hashable, Identifiable, Sendable {
     }
 }
 
+/// Wood grain direction relative to the part's length (for drawings and cut lists).
+public enum GrainDirection: String, Codable, CaseIterable, Hashable, Sendable {
+    case none, length, width
+
+    public var title: String {
+        switch self {
+        case .none: return "Ohne"
+        case .length: return "Längs"
+        case .width: return "Quer"
+        }
+    }
+}
+
 public struct BodyMeta: Codable, Hashable, Sendable {
     public var name: String
     public var visible: Bool = true
-    public init(name: String, visible: Bool = true) {
+    /// e.g. "Eiche massiv", "Birke Multiplex"; empty = drawing default.
+    public var material: String = ""
+    public var grain: GrainDirection = .none
+
+    public init(name: String, visible: Bool = true, material: String = "", grain: GrainDirection = .none) {
         self.name = name
         self.visible = visible
+        self.material = material
+        self.grain = grain
+    }
+
+    enum CodingKeys: String, CodingKey { case name, visible, material, grain }
+
+    /// New fields are optional so older files keep working.
+    public init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        name = try c.decode(String.self, forKey: .name)
+        visible = try c.decodeIfPresent(Bool.self, forKey: .visible) ?? true
+        material = try c.decodeIfPresent(String.self, forKey: .material) ?? ""
+        grain = try c.decodeIfPresent(GrainDirection.self, forKey: .grain) ?? .none
     }
 }
 

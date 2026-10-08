@@ -11,13 +11,14 @@ import simd
 struct DrawingWindow: View {
     @Bindable var editor: Editor
 
-    enum Tool { case select, addDimension }
+    enum Tool { case select, addDimension, addDetail }
 
     private enum Drag {
         case pan(start: CGSize)
         case dimension(id: String, start: Vec2, offset: DimensionOffset, normal: Vec2, along: Vec2)
         case custom(id: UUID, start: Vec2, offset: Double, normal: Vec2)
         case view(id: String, start: Vec2, offset: Vec2, constraint: PlacedView.Constraint)
+        case section(x0: Double, scale: Double)
     }
 
     @State private var zoom: CGFloat = 1
@@ -29,6 +30,8 @@ struct DrawingWindow: View {
     @State private var selected: String?
     @State private var mouse: Vec2?
     @State private var picks: [DrawingSnapPoint] = []
+    /// Detail tool: chosen centre (view, model point, paper point).
+    @State private var detailCenter: (view: PlacedView, model: Vec2, paper: Vec2)?
     @State private var drag: Drag?
     @State private var dragSnapshot: CADDocument?
     @State private var showTitleBlock = false
@@ -71,6 +74,7 @@ struct DrawingWindow: View {
         .onKeyPress(.escape) { cancel(); return .handled }
         .onKeyPress(characters: CharacterSet(charactersIn: "dD")) { _ in setTool(.addDimension); return .handled }
         .onKeyPress(characters: CharacterSet(charactersIn: "vV")) { _ in setTool(.select); return .handled }
+        .onKeyPress(characters: CharacterSet(charactersIn: "eE")) { _ in setTool(.addDetail); return .handled }
         .onAppear {
             controller.isOpen = true
             controller.regenerate(editor)
@@ -200,6 +204,13 @@ struct DrawingWindow: View {
             let label = ctx.resolve(Text(v.title).font(.system(size: 10, weight: .medium)).foregroundStyle(Color.accentColor))
             ctx.draw(label, at: CGPoint(x: r.minX + 4, y: r.minY - 8), anchor: .leading)
         }
+        if tool == .addDetail, let c = detailCenter, let m = mouse {
+            let r = simd_distance(c.paper, m) * Double(t.k)
+            let cc = t.toView(c.paper)
+            ctx.stroke(Path(ellipseIn: CGRect(x: cc.x - r, y: cc.y - r, width: 2 * r, height: 2 * r)),
+                       with: .color(.accentColor), style: StrokeStyle(lineWidth: 1.5, dash: [5, 3]))
+            ctx.fill(Path(ellipseIn: CGRect(x: cc.x - 3, y: cc.y - 3, width: 6, height: 6)), with: .color(.accentColor))
+        }
         guard tool == .addDimension else { return }
         // Snap markers of the view under the cursor, the nearest one emphasised.
         let viewId = picks.first?.view ?? hoverView
@@ -253,14 +264,42 @@ struct DrawingWindow: View {
                 selected = c.key
                 picks.removeAll()
             }
+        case .addDetail:
+            if let c = detailCenter {
+                addDetail(center: c, radiusPaper: simd_distance(c.paper, pp))
+                detailCenter = nil
+            } else if let v = hitView(page, pp), v.id != "iso", !v.id.hasPrefix("detail.") {
+                detailCenter = (v, v.toModel(pp), pp)
+            }
         }
+    }
+
+    /// New detail: enlargement chosen so the detail is about 70 mm across on paper (2:1, 5:1, 10:1 …).
+    private func addDetail(center c: (view: PlacedView, model: Vec2, paper: Vec2), radiusPaper: Double) {
+        guard radiusPaper > 1 else { return }
+        let radius = radiusPaper / c.view.scale
+        let wanted = 70 / (2 * radiusPaper)
+        let factor = [20.0, 10, 5, 2].first { $0 <= wanted } ?? 2
+        let used = Set(editor.drawingSettings.details.map(\.letter))
+        let letter = "ZYXWVUTSRQP".map(String.init).first { !used.contains($0) } ?? "Z"
+        let d = DetailView(letter: letter, view: c.view.id, center: c.model, radius: radius, factor: factor)
+        editor.updateDrawingSettings { $0.details.append(d) }
+        selected = d.markId
+        tool = .select
     }
 
     private func dragChanged(_ page: DrawingPage, _ t: Transform, _ v: DragGesture.Value) {
         let start = t.toPaper(v.startLocation), now = t.toPaper(v.location)
         if drag == nil {
             dragSnapshot = editor.doc
-            if tool == .select, let d = hitDimension(page, start, tolerance: 6 / Double(t.k)) {
+            if tool == .select, let d = hitDimension(page, start, tolerance: 6 / Double(t.k)), d.id == "section.A",
+               let front = page.views.first(where: { $0.id == "front" }) {
+                selected = d.id
+                drag = .section(x0: d.value, scale: front.scale)
+            } else if tool == .select, let d = hitDimension(page, start, tolerance: 6 / Double(t.k)), d.id.hasSuffix(".mark") {
+                selected = d.id
+                drag = .pan(start: pan)
+            } else if tool == .select, let d = hitDimension(page, start, tolerance: 6 / Double(t.k)) {
                 selected = d.id
                 if d.isCustom, let c = editor.drawingSettings.customDimensions.first(where: { $0.key == d.id }) {
                     drag = .custom(id: c.id, start: start, offset: c.offset, normal: d.normal)
@@ -304,6 +343,8 @@ struct DrawingWindow: View {
             if constraint == .horizontal { d.y = 0 }
             if constraint == .vertical { d.x = 0 }
             editor.setDrawingSettingsLive { $0.viewOffsets[id] = offset + d }
+        case let .section(x0, scale):
+            editor.setDrawingSettingsLive { $0.sectionX = x0 + delta.x / scale }
         case nil:
             break
         }
@@ -320,17 +361,24 @@ struct DrawingWindow: View {
     private func setTool(_ t: Tool) {
         tool = t
         picks.removeAll()
+        detailCenter = nil
         if t == .addDimension { selected = nil }
     }
 
     private func cancel() {
-        if !picks.isEmpty { picks.removeAll() } else if tool != .select { tool = .select } else { selected = nil }
+        if detailCenter != nil { detailCenter = nil } else if !picks.isEmpty { picks.removeAll() } else if tool != .select { tool = .select } else { selected = nil }
     }
 
     private func deleteSelection() {
         guard let id = selected else { return }
         editor.updateDrawingSettings { s in
-            if id.hasPrefix("custom.") {
+            if id == "section.A" {
+                s.sectionLeft = false
+                s.sectionX = nil
+            } else if id.hasPrefix("detail.") {
+                s.details.removeAll { $0.markId == id }
+                s.viewOffsets[id.replacingOccurrences(of: ".mark", with: "")] = nil
+            } else if id.hasPrefix("custom.") {
                 s.customDimensions.removeAll { $0.key == id }
             } else {
                 s.hiddenDimensions.insert(id)
@@ -393,12 +441,14 @@ struct DrawingWindow: View {
         if let id = selected, let d = currentPage?.dimensions.first(where: { $0.id == id }) {
             HStack(spacing: 10) {
                 Image(systemName: d.isCustom ? "ruler.fill" : "ruler").foregroundStyle(Color.accentColor)
-                Text(d.isCustom ? "Eigenes Maß \(d.text)" : "Maß \(d.text)").font(.system(size: 12, weight: .medium))
+                Text(d.isCustom ? "Eigenes Maß \(d.text)" : (d.id.hasPrefix("detail.") || d.id.hasPrefix("section.") || d.id.hasPrefix("balloon.") ? d.text : "Maß \(d.text)"))
+                    .font(.system(size: 12, weight: .medium))
                 Divider().frame(height: 16)
                 if !d.isCustom, editor.drawingSettings.dimensionOffsets[id] != nil {
                     Button("Position zurücksetzen", action: resetSelected)
                 }
-                Button(d.isCustom ? "Löschen" : "Ausblenden", role: .destructive, action: deleteSelection)
+                Button(d.isCustom || d.id.hasPrefix("detail.") ? "Löschen" : (d.id == "section.A" ? "Schnitt aus" : "Ausblenden"),
+                       role: .destructive, action: deleteSelection)
                     .help("⌫")
             }
             .buttonStyle(.borderless)
@@ -423,13 +473,15 @@ struct DrawingWindow: View {
     private var hint: String {
         switch tool {
         case .select:
-            return "Maß oder Ansicht ziehen · ⌫ blendet aus · D neues Maß"
+            return "Maß oder Ansicht ziehen · ⌫ blendet aus · D neues Maß · E Einzelheit"
         case .addDimension:
             switch picks.count {
             case 0: return "Ersten Punkt wählen (Ecke oder Bohrungsmitte)"
             case 1: return "Zweiten Punkt wählen"
             default: return "Maßlinie platzieren · Esc bricht ab"
             }
+        case .addDetail:
+            return detailCenter == nil ? "Einzelheit: Mittelpunkt in einer Ansicht klicken" : "Radius klicken · Esc bricht ab"
         }
     }
 
@@ -459,9 +511,10 @@ struct DrawingWindow: View {
             Picker("Werkzeug", selection: Binding(get: { tool }, set: { setTool($0) })) {
                 Label("Auswählen", systemImage: "cursorarrow").tag(Tool.select)
                 Label("Maß hinzufügen", systemImage: "ruler").tag(Tool.addDimension)
+                Label("Einzelheit", systemImage: "plus.magnifyingglass").tag(Tool.addDetail)
             }
             .pickerStyle(.segmented)
-            .help("Auswählen (V) · Maß hinzufügen (D)")
+            .help("Auswählen (V) · Maß hinzufügen (D) · Einzelheit (E)")
         }
         ToolbarItemGroup(placement: .principal) {
             Picker("Blatt", selection: Binding(get: { editor.drawingSettings.sheet },
@@ -491,8 +544,14 @@ struct DrawingWindow: View {
             Button { editor.printDrawing() } label: { Label("Drucken", systemImage: "printer") }
                 .help("Drucken (⌘P)")
                 .keyboardShortcut("p")
-            Button { editor.exportDrawingPDF() } label: { Label("PDF", systemImage: "arrow.down.doc") }
-                .help("Als PDF exportieren (maßstabsgetreu)")
+            Menu {
+                Button("PDF (alle Blätter, maßstabsgetreu) …") { editor.exportDrawingPDF() }
+                Button("DXF – aktuelles Blatt …") { editor.exportDrawingDXF(sheet: pageIndex) }
+                Button("DXF – Einzelteile 1:1 für CNC/Laser …") { editor.exportPartsDXF() }
+            } label: {
+                Label("Export", systemImage: "square.and.arrow.up")
+            }
+            .help("Als PDF oder DXF exportieren")
         }
     }
 
@@ -502,10 +561,12 @@ struct DrawingWindow: View {
             Toggle("Positionsnummern", isOn: settingBinding(\.showBalloons))
             Toggle("Stückliste / Zuschnittliste", isOn: settingBinding(\.showPartsList))
             Toggle("Einzelteilzeichnungen", isOn: settingBinding(\.showPartSheets))
+            Divider()
+            Toggle("Seitenansicht als Schnitt A–A", isOn: settingBinding(\.sectionLeft))
         } label: {
             Label("Blätter", systemImage: "doc.on.doc")
         }
-        .help("Positionsnummern, Stückliste und Einzelteilzeichnungen (bei mehreren Körpern)")
+        .help("Positionsnummern, Stückliste, Einzelteile und Schnitt")
     }
 
     private var resetMenu: some View {
@@ -521,6 +582,8 @@ struct DrawingWindow: View {
                 .disabled(s.viewOffsets.isEmpty)
             Button("Eigene Maße löschen (\(s.customDimensions.count))") { editor.updateDrawingSettings { $0.customDimensions.removeAll() } }
                 .disabled(s.customDimensions.isEmpty)
+            Button("Einzelheiten löschen (\(s.details.count))") { editor.updateDrawingSettings { $0.details.removeAll() } }
+                .disabled(s.details.isEmpty)
             Divider()
             Button("Alle Anpassungen zurücksetzen") {
                 editor.updateDrawingSettings {
@@ -528,6 +591,7 @@ struct DrawingWindow: View {
                     $0.dimensionOffsets.removeAll()
                     $0.viewOffsets.removeAll()
                     $0.customDimensions.removeAll()
+                    $0.details.removeAll()
                 }
             }
             .disabled(!s.hasManualEdits)

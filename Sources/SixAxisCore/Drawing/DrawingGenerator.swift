@@ -9,9 +9,13 @@ public final class DrawingGenerator: @unchecked Sendable {
     public struct Part: Sendable {
         public var name: String
         public var shape: Shape
-        public init(name: String, shape: Shape) {
+        public var material: String
+        public var grain: GrainDirection
+        public init(name: String, shape: Shape, material: String = "", grain: GrainDirection = .none) {
             self.name = name
             self.shape = shape
+            self.material = material
+            self.grain = grain
         }
     }
 
@@ -152,6 +156,9 @@ public final class DrawingGenerator: @unchecked Sendable {
         var topX: [(Feature, String)] = []
         var topY: [(Feature, String)] = []
         var rows = (frontBelow: 0, frontLeft: 0, sideRight: 0, topBelow: 0, topLeft: 0)
+        /// Section A–A: plane position (model X) and per-body cut-face outlines in side-view coordinates.
+        var sectionX: Double?
+        var sideHatch: [[[Vec2]]] = []
 
         static func band(_ n: Int) -> Double { n == 0 ? 6 : 10 + 7 * Double(n - 1) + 6 }
 
@@ -173,12 +180,23 @@ public final class DrawingGenerator: @unchecked Sendable {
         func bestScale(_ size: Vec2) -> DrawingScale? { DrawingScale.all.first { fits($0.factor, size) } }
     }
 
-    func makeViewSet(_ shapes: [Shape], prefix: String, settings: DrawingSettings) -> ViewSet? {
+    func makeViewSet(_ shapes: [Shape], prefix: String, settings: DrawingSettings, section: Bool = false) -> ViewSet? {
         guard !shapes.isEmpty,
               let front = projection(shapes, .front).flatMap(Self.analyze),
-              let top = projection(shapes, .top).flatMap(Self.analyze),
-              let side = projection(shapes, .left).flatMap(Self.analyze) else { return nil }
+              let top = projection(shapes, .top).flatMap(Self.analyze) else { return nil }
+        // Section A–A: the left view shows what remains behind the cutting plane, cut faces hatched.
+        var sectionX: Double?
+        var hatch: [[[Vec2]]] = []
+        var sideShapes = shapes
+        if section, let cut = sectionCut(shapes, x: settings.sectionX) {
+            sectionX = cut.x
+            sideShapes = cut.remaining
+            hatch = cut.faces.map { $0.faceOutlines(viewDir: View.left.axes.dir, xDir: View.left.axes.x, deflection: 0.05) }
+        }
+        guard let side = projection(sideShapes, .left).flatMap(Self.analyze) else { return nil }
         var set = ViewSet(prefix: prefix, front: front, top: top, side: side)
+        set.sectionX = sectionX
+        set.sideHatch = hatch
         func holeX(_ v: ViewData) -> [Feature] { v.holes.map { Feature(position: $0.center.x, low: $0.center.y - $0.radius, high: $0.center.y + $0.radius, isHole: true) } }
         func holeY(_ v: ViewData) -> [Feature] { v.holes.map { Feature(position: $0.center.y, low: $0.center.x - $0.radius, high: $0.center.x + $0.radius, isHole: true) } }
         let frontXAll = Self.baseline(front.xs + holeX(front), from: front.minP.x)
@@ -210,10 +228,188 @@ public final class DrawingGenerator: @unchecked Sendable {
         return set
     }
 
+    // MARK: - Section A–A
+
+    private var sectionCache: [String: (x: Double, remaining: [Shape], faces: [Shape])] = [:]
+
+    /// Removes the material in front of the plane X = x (seen from the left) and returns the cut faces per body.
+    func sectionCut(_ shapes: [Shape], x requested: Double?) -> (x: Double, remaining: [Shape], faces: [Shape])? {
+        let all = shapes.count == 1 ? shapes[0] : Shape.compound(shapes)
+        guard let bb = all.boundingBox else { return nil }
+        let x = min(max(requested ?? (bb.min.x + bb.max.x) / 2, bb.min.x + 0.01), bb.max.x - 0.01)
+        let key = shapes.map { "\(ObjectIdentifier($0).hashValue)" }.joined(separator: ",") + "@\(Int((x * 100).rounded()))"
+        lock.lock()
+        if let c = sectionCache[key] { lock.unlock(); return c }
+        lock.unlock()
+        let pad = Vec3(10, 10, 10)
+        guard let box = try? Shape.box(min: bb.min - pad, max: Vec3(x, bb.max.y + 10, bb.max.z + 10)) else { return nil }
+        let size = simd_length(bb.max - bb.min) + 100
+        guard let plane = try? Shape.planeFace(origin: Vec3(x, (bb.min.y + bb.max.y) / 2, (bb.min.z + bb.max.z) / 2),
+                                               normal: Vec3(1, 0, 0), xDir: Vec3(0, 1, 0), halfSize: size) else { return nil }
+        var remaining: [Shape] = [], faces: [Shape] = []
+        for s in shapes {
+            if let r = try? s.boolean(.cut, box), r.solidCount > 0 { remaining.append(r) }
+            if let f = try? s.boolean(.common, plane), f.faceCount > 0 { faces.append(f) }
+        }
+        let result = (x, remaining.isEmpty ? shapes : remaining, faces)
+        lock.lock()
+        if sectionCache.count > 16 { sectionCache.removeAll() }
+        sectionCache[key] = result
+        lock.unlock()
+        return result
+    }
+
+    /// Hatch lines (paper mm) inside closed outlines, even-odd rule.
+    static func hatch(_ outlines: [[Vec2]], angle: Double, spacing: Double) -> [(Vec2, Vec2)] {
+        let d = Vec2(cos(angle), sin(angle)), n = Vec2(-d.y, d.x)
+        var edges: [(Vec2, Vec2)] = []
+        for poly in outlines where poly.count >= 2 {
+            for i in 0..<(poly.count - 1) { edges.append((poly[i], poly[i + 1])) }
+        }
+        guard !edges.isEmpty else { return [] }
+        let ts = edges.flatMap { [simd_dot($0.0, n), simd_dot($0.1, n)] }
+        guard let tMin = ts.min(), let tMax = ts.max() else { return [] }
+        var out: [(Vec2, Vec2)] = []
+        var t = (tMin / spacing).rounded(.up) * spacing
+        while t < tMax {
+            var hits: [Double] = []
+            for (a, b) in edges {
+                let na = simd_dot(a, n) - t, nb = simd_dot(b, n) - t
+                if (na < 0) != (nb < 0) {
+                    let p = a + (b - a) * (na / (na - nb))
+                    hits.append(simd_dot(p, d))
+                }
+            }
+            hits.sort()
+            var i = 0
+            while i + 1 < hits.count {
+                if hits[i + 1] - hits[i] > 1e-6 { out.append((n * t + d * hits[i], n * t + d * hits[i + 1])) }
+                i += 2
+            }
+            t += spacing
+        }
+        return out
+    }
+
+    private func addSection(_ page: inout DrawingPage, _ set: ViewSet, front pf: PlacedView, side pl: PlacedView) {
+        guard let x = set.sectionX else { return }
+        // Hatching: alternate direction per body so adjacent parts stay distinguishable (ISO 128-50).
+        for (i, outlines) in set.sideHatch.enumerated() {
+            let paper = outlines.map { $0.map(pl.toPaper) }
+            let angle = i % 2 == 0 ? Double.pi / 4 : 3 * Double.pi / 4
+            for (a, b) in Self.hatch(paper, angle: angle, spacing: 2.5 + Double(i % 3) * 0.5) {
+                page.lines.append(DrawingLine(points: [a, b], style: .hatch))
+            }
+        }
+        page.texts.append(DrawingText(text: "A–A", position: Vec2((pl.min.x + pl.max.x) / 2, pl.max.y + 6), height: 5, anchor: .center, bold: true))
+        // Cutting plane in the front view: thin chain line, thick ends, arrows in the viewing direction (+X).
+        let id = "section.A"
+        let px = pf.toPaper(Vec2(x, 0)).x
+        let top = pf.max.y + 7, bottom = pf.min.y - 7
+        page.lines.append(DrawingLine(points: [Vec2(px, bottom), Vec2(px, top)], style: .center, group: id))
+        page.lines.append(DrawingLine(points: [Vec2(px, pf.max.y + 1.5), Vec2(px, top)], style: .frame, group: id))
+        page.lines.append(DrawingLine(points: [Vec2(px, pf.min.y - 1.5), Vec2(px, bottom)], style: .frame, group: id))
+        for y in [top, bottom] {
+            page.lines.append(DrawingLine(points: [Vec2(px, y), Vec2(px + 8, y)], style: .thin, group: id))
+            page.arrows.append(DrawingArrow(tip: Vec2(px + 8, y), direction: Vec2(1, 0), group: id))
+            page.texts.append(DrawingText(text: "A", position: Vec2(px + 10, y - 1.75), height: 5, anchor: .left, bold: true, group: id))
+        }
+        var d = PlacedDimension(id: id, text: "Schnitt A–A", segments: [(Vec2(px, bottom), Vec2(px, top))],
+                                textCenter: Vec2(px + 11, top), normal: Vec2(1, 0), along: Vec2(0, 1), isCustom: false)
+        d.value = x
+        page.dimensions.append(d)
+    }
+
+    // MARK: - Details ("Einzelheit Z")
+
+    private func addDetails(_ page: inout DrawingPage, _ details: [DetailView], sources: [String: (ViewData, PlacedView)],
+                            settings: DrawingSettings) {
+        let area = Self.drawingArea(page.sheet)
+        var nextRight = area.origin.x + area.size.x - 6
+        for d in details {
+            guard let (v, pv) = sources[d.view] else { continue }
+            let k = pv.scale * d.factor
+            let R = d.radius * k
+            // Mark in the source view.
+            let c = pv.toPaper(d.center), r = d.radius * pv.scale
+            let ring = (0...48).map { c + r * Vec2(cos(Double($0) / 48 * 2 * .pi), sin(Double($0) / 48 * 2 * .pi)) }
+            page.lines.append(DrawingLine(points: ring, style: .thin, group: d.markId))
+            let lp = c + simd_normalize(Vec2(1, 1)) * (r + 4)
+            page.texts.append(DrawingText(text: d.letter, position: lp, height: 5, anchor: .left, bold: true, group: d.markId))
+            page.dimensions.append(PlacedDimension(id: d.markId, text: "Einzelheit \(d.letter)",
+                                                   segments: (0..<48).map { (ring[$0], ring[$0 + 1]) },
+                                                   textCenter: lp + Vec2(2, 2), normal: Vec2(0, 1), along: Vec2(1, 0), isCustom: false))
+            // Detail view, by default stacked from the top-right corner.
+            let base = Vec2(nextRight - R, area.origin.y + area.size.y - R - 10)
+            nextRight -= 2 * R + 14
+            let dc = base + (settings.viewOffsets[d.viewId] ?? .zero)
+            let placed = PlacedView(id: d.viewId, title: "Einzelheit \(d.letter)", min: dc - Vec2(R, R), max: dc + Vec2(R, R),
+                                    origin: dc, modelMin: d.center, scale: k, constraint: .free)
+            page.views.append(placed)
+            for line in v.projection.polylines where !line.smooth && (settings.showHidden || !line.hidden) {
+                for seg in Self.clip(line.points, center: d.center, radius: d.radius) {
+                    page.lines.append(DrawingLine(points: seg.map(placed.toPaper), style: line.hidden ? .hidden : .visible))
+                }
+            }
+            for h in v.holes where simd_distance(h.center, d.center) < d.radius {
+                let hc = placed.toPaper(h.center), hr = h.radius * k + 2.5
+                page.lines.append(DrawingLine(points: [hc - Vec2(hr, 0), hc + Vec2(hr, 0)], style: .center))
+                page.lines.append(DrawingLine(points: [hc - Vec2(0, hr), hc + Vec2(0, hr)], style: .center))
+            }
+            let boundary = (0...64).map { dc + R * Vec2(cos(Double($0) / 64 * 2 * .pi), sin(Double($0) / 64 * 2 * .pi)) }
+            page.lines.append(DrawingLine(points: boundary, style: .thin))
+            page.texts.append(DrawingText(text: "\(d.letter) (\(Self.ratio(k)))", position: dc + Vec2(0, R + 4), height: 5, anchor: .center, bold: true))
+            // Corners inside the detail can anchor user dimensions.
+            let snaps = page.snapPoints.filter { $0.view == pv.id && simd_distance($0.model, d.center) <= d.radius }
+            page.snapPoints += snaps.map { DrawingSnapPoint(view: d.viewId, paper: placed.toPaper($0.model), model: $0.model) }
+        }
+    }
+
+    /// Parts of a polyline inside a circle.
+    static func clip(_ pts: [Vec2], center c: Vec2, radius r: Double) -> [[Vec2]] {
+        var out: [[Vec2]] = []
+        var current: [Vec2] = []
+        func inside(_ p: Vec2) -> Bool { simd_distance(p, c) <= r }
+        for i in 0..<max(0, pts.count - 1) {
+            let a = pts[i], b = pts[i + 1]
+            let d = b - a
+            // |a + t d - c|² = r²
+            let f = a - c
+            let A = simd_dot(d, d), B = 2 * simd_dot(f, d), C = simd_dot(f, f) - r * r
+            var t0 = 0.0, t1 = 1.0
+            if A < 1e-12 { if !inside(a) { continue } } else {
+                let disc = B * B - 4 * A * C
+                if disc < 0 { if !current.isEmpty { out.append(current); current = [] }; continue }
+                let s = sqrt(disc)
+                t0 = max(0, (-B - s) / (2 * A)); t1 = min(1, (-B + s) / (2 * A))
+                if t0 >= t1 { if !current.isEmpty { out.append(current); current = [] }; continue }
+            }
+            let p0 = a + d * t0, p1 = a + d * t1
+            if current.isEmpty || simd_distance(current.last!, p0) > 1e-9 {
+                if !current.isEmpty { out.append(current) }
+                current = [p0]
+            }
+            current.append(p1)
+            if t1 < 1 { out.append(current); current = [] }
+        }
+        if current.count > 1 { out.append(current) }
+        return out.filter { $0.count > 1 }
+    }
+
+    /// Scale as ISO ratio, e.g. 0.5 → "1:2", 2 → "2:1".
+    static func ratio(_ k: Double) -> String {
+        if k >= 1 {
+            let v = (k * 10).rounded() / 10
+            return v == v.rounded() ? "\(Int(v)):1" : String(format: "%.1f:1", v)
+        }
+        let v = (1 / k * 10).rounded() / 10
+        return v == v.rounded() ? "1:\(Int(v))" : String(format: "1:%.1f", v)
+    }
+
     /// Draws a view set centred in `region` at scale `s` and returns the placed views (front, left, top).
     @discardableResult
     func emit(_ set: ViewSet, into page: inout DrawingPage, region: (origin: Vec2, size: Vec2), s: Double,
-              settings: DrawingSettings) -> [PlacedView] {
+              settings: DrawingSettings, sources: inout [String: (ViewData, PlacedView)]) -> [PlacedView] {
         let L = set.layoutSize(s)
         let p = set.prefix
         // Manual offsets keep the projection alignment: the front view moves everything,
@@ -247,6 +443,10 @@ public final class DrawingGenerator: @unchecked Sendable {
                 addHoleLabels(&page, v, viewId: pv.id, map: pv.toPaper, s: s, hidden: settings.hiddenDimensions, offsets: o)
             }
         }
+        addSection(&page, set, front: pf, side: pl)
+        sources[pf.id] = (set.front, pf)
+        sources[pl.id] = (set.side, pl)
+        sources[pt.id] = (set.top, pt)
         return [pf, pl, pt]
     }
 
@@ -265,6 +465,8 @@ public final class DrawingGenerator: @unchecked Sendable {
         public var length: Int
         public var width: Int
         public var thickness: Int
+        public var material: String
+        public var grain: GrainDirection
         var shape: Shape
     }
 
@@ -274,14 +476,16 @@ public final class DrawingGenerator: @unchecked Sendable {
             guard let bb = part.shape.boundingBox else { continue }
             let e = (bb.max - bb.min)
             let sorted = [e.x, e.y, e.z].sorted(by: >)
+            // Same size, volume, topology, material and grain → same part.
             let key = sorted.map { String(format: "%.1f", $0) }.joined(separator: "x")
-                + "|\(Int(part.shape.volume.rounded()))|\(part.shape.faceCount)"
+                + "|\(Int(part.shape.volume.rounded()))|\(part.shape.faceCount)|\(part.material)|\(part.grain.rawValue)"
             if let i = groups.firstIndex(where: { $0.key == key }) {
                 groups[i].group.count += 1
             } else {
                 groups.append((key, PartGroup(position: groups.count + 1, name: part.name, count: 1,
                                               length: Int(sorted[0].rounded()), width: Int(sorted[1].rounded()),
-                                              thickness: Int(sorted[2].rounded()), shape: part.shape)))
+                                              thickness: Int(sorted[2].rounded()), material: part.material,
+                                              grain: part.grain, shape: part.shape)))
             }
         }
         return groups.map(\.group)
@@ -317,7 +521,7 @@ public final class DrawingGenerator: @unchecked Sendable {
         let multi = input.parts.count > 1
         let sheets: [Sheet] = settings.sheet == .auto ? [.a4, .a3, .a2] : [sheetFor(settings.sheet)!]
 
-        guard let set = makeViewSet(input.shapes, prefix: "", settings: settings) else {
+        guard let set = makeViewSet(input.shapes, prefix: "", settings: settings, section: settings.sectionLeft) else {
             var page = DrawingPage(sheet: sheets[0], scale: DrawingScale.named("1:1")!)
             page.texts.append(DrawingText(text: "Keine sichtbaren Körper", position: Vec2(page.sheet.width / 2, page.sheet.height / 2 + 10), height: 5))
             var pages = [page]
@@ -356,7 +560,8 @@ public final class DrawingGenerator: @unchecked Sendable {
         page.isEmpty = false
         let s = scale.factor
         let r = region(sheet)
-        let placed = emit(set, into: &page, region: r, s: s, settings: settings)
+        var sources: [String: (ViewData, PlacedView)] = [:]
+        let placed = emit(set, into: &page, region: r, s: s, settings: settings, sources: &sources)
         for c in settings.customDimensions where !settings.hiddenDimensions.contains(c.key) {
             addCustomDimension(&page, c)
         }
@@ -387,6 +592,7 @@ public final class DrawingGenerator: @unchecked Sendable {
         if multi && settings.showPartsList {
             addPartsList(&page, groups, material: settings.material)
         }
+        addDetails(&page, settings.details.filter { sources[$0.view] != nil }, sources: sources, settings: settings)
 
         var pages = [page]
         if multi && settings.showPartSheets {
@@ -468,7 +674,9 @@ public final class DrawingGenerator: @unchecked Sendable {
         // Header next to the title block, positions numbered upwards.
         row(0, ["Pos.", "Benennung", "Anzahl", "Länge", "Breite", "Dicke", "Material"], bold: true)
         for (i, g) in groups.enumerated() {
-            row(i + 1, ["\(g.position)", g.name, "\(g.count)", "\(g.length)", "\(g.width)", "\(g.thickness)", material])
+            let mat = g.material.isEmpty ? material : g.material
+            let grain = g.grain == .none ? "" : (g.grain == .length ? " ↔" : " ↕")
+            row(i + 1, ["\(g.position)", g.name, "\(g.count)", "\(g.length)", "\(g.width)", "\(g.thickness)", mat + grain])
         }
     }
 
@@ -495,6 +703,7 @@ public final class DrawingGenerator: @unchecked Sendable {
             page.name = pages.isEmpty && sets.count <= perSheet ? "Einzelteile" : "Einzelteile \(n + 1)"
             page.isEmpty = false
             var scales: Set<String> = []
+            var sources: [String: (ViewData, PlacedView)] = [:]
             for (i, (g, set)) in chunk.enumerated() {
                 let col = i % layout.cols, row = i / layout.cols
                 let origin = Vec2(area.origin.x + Double(col) * area.size.x / Double(layout.cols),
@@ -502,17 +711,36 @@ public final class DrawingGenerator: @unchecked Sendable {
                 let sc = set.bestScale(size) ?? DrawingScale.all.last!
                 scales.insert(sc.label)
                 page.scale = sc
-                emit(set, into: &page, region: (origin, size), s: sc.factor, settings: settings)
-                let heading = "Pos. \(g.position)   \(g.name)   \(g.count) Stück   \(g.length) × \(g.width) × \(g.thickness)   M \(sc.label)"
+                let placed = emit(set, into: &page, region: (origin, size), s: sc.factor, settings: settings, sources: &sources)
+                if g.grain != .none, let front = placed.first { addGrainArrow(&page, front, along: g.grain) }
+                let mat = g.material.isEmpty ? settings.material : g.material
+                let heading = "Pos. \(g.position)   \(g.name)   \(g.count) Stück   \(g.length) × \(g.width) × \(g.thickness)"
+                    + (mat.isEmpty ? "" : "   \(mat)") + "   M \(sc.label)"
                 page.texts.append(DrawingText(text: heading, position: origin + Vec2(2, size.y + 4), height: 3.5, anchor: .left, bold: true))
             }
             page.scaleText = scales.count == 1 ? scales.first : "siehe Teile"
+            addDetails(&page, settings.details.filter { sources[$0.view] != nil }, sources: sources, settings: settings)
             for c in settings.customDimensions where !settings.hiddenDimensions.contains(c.key) {
                 addCustomDimension(&page, c)
             }
             pages.append(page)
         }
         return pages
+    }
+
+    /// Grain direction symbol (DIN 919): double-headed arrow in the part's main face.
+    private func addGrainArrow(_ page: inout DrawingPage, _ v: PlacedView, along grain: GrainDirection) {
+        let c = (v.min + v.max) / 2
+        let size = v.max - v.min
+        let u = grain == .length ? Vec2(1, 0) : Vec2(0, 1)
+        let half = (grain == .length ? size.x : size.y) * 0.3
+        guard half > 4 else { return }
+        let a = c - u * half, b = c + u * half
+        page.lines.append(DrawingLine(points: [a, b], style: .thin))
+        page.arrows.append(DrawingArrow(tip: a, direction: -u))
+        page.arrows.append(DrawingArrow(tip: b, direction: u))
+        let n = Vec2(-u.y, u.x)
+        page.texts.append(DrawingText(text: "Faser", position: c + n * 1.5, height: 2.5, angle: atan2(u.y, u.x), anchor: .center))
     }
 
     private func addTitleBlocks(_ pages: inout [DrawingPage], _ input: Input) {

@@ -291,6 +291,27 @@ public struct Projection2D: Sendable {
 }
 
 extension Shape {
+    public static func box(min lo: Vec3, max hi: Vec3) throws -> Shape {
+        var a = [lo.x, lo.y, lo.z], b = [hi.x, hi.y, hi.z]
+        return try Shape.wrap(ob_box(&a, &b), "Quader fehlgeschlagen")
+    }
+
+    public static func planeFace(origin: Vec3, normal: Vec3, xDir: Vec3, halfSize: Double) throws -> Shape {
+        var o = [origin.x, origin.y, origin.z], n = [normal.x, normal.y, normal.z], x = [xDir.x, xDir.y, xDir.z]
+        return try Shape.wrap(ob_plane_face(&o, &n, &x, halfSize), "Schnittebene fehlgeschlagen")
+    }
+
+    /// Boundary polylines of every face, projected into the view plane (for hatching section faces).
+    public func faceOutlines(viewDir: Vec3, xDir: Vec3, deflection: Double) -> [[Vec2]] {
+        var p = OBProjection()
+        var d = [viewDir.x, viewDir.y, viewDir.z], x = [xDir.x, xDir.y, xDir.z]
+        guard ob_face_outlines(handle, &d, &x, deflection, &p) != 0 else { return [] }
+        defer { ob_projection_free(&p) }
+        return (0..<Int(p.polyCount)).map { i in
+            (Int(p.polyStart[i])..<Int(p.polyStart[i + 1])).map { Vec2(Double(p.points[2 * $0]), Double(p.points[2 * $0 + 1])) }
+        }
+    }
+
     /// Exact hidden-line projection. `viewDir` points towards the viewer; `xDir` becomes the drawing's +x.
     public func project(viewDir: Vec3, xDir: Vec3, deflection: Double) throws -> Projection2D {
         var p = OBProjection()

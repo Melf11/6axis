@@ -27,6 +27,10 @@ public struct DrawingSettings: Codable, Hashable, Sendable {
     public var showBalloons = true
     public var showPartsList = true
     public var showPartSheets = true
+    /// Stage 5: left view as section A–A at model X = `sectionX` (nil = centre).
+    public var sectionLeft = false
+    public var sectionX: Double? = nil
+    public var details: [DetailView] = []
     public var title = ""
     public var drawingNumber = ""
     public var author = ""
@@ -42,6 +46,7 @@ public struct DrawingSettings: Codable, Hashable, Sendable {
 
     enum CodingKeys: String, CodingKey {
         case sheet, scale, showHidden, showDimensions, showIso, showBalloons, showPartsList, showPartSheets
+        case sectionLeft, sectionX, details
         case title, drawingNumber, author, material
         case hiddenDimensions, dimensionOffsets, viewOffsets, customDimensions
     }
@@ -58,6 +63,9 @@ public struct DrawingSettings: Codable, Hashable, Sendable {
         showBalloons = try c.decodeIfPresent(Bool.self, forKey: .showBalloons) ?? d.showBalloons
         showPartsList = try c.decodeIfPresent(Bool.self, forKey: .showPartsList) ?? d.showPartsList
         showPartSheets = try c.decodeIfPresent(Bool.self, forKey: .showPartSheets) ?? d.showPartSheets
+        sectionLeft = try c.decodeIfPresent(Bool.self, forKey: .sectionLeft) ?? false
+        sectionX = try c.decodeIfPresent(Double.self, forKey: .sectionX)
+        details = try c.decodeIfPresent([DetailView].self, forKey: .details) ?? []
         title = try c.decodeIfPresent(String.self, forKey: .title) ?? ""
         drawingNumber = try c.decodeIfPresent(String.self, forKey: .drawingNumber) ?? ""
         author = try c.decodeIfPresent(String.self, forKey: .author) ?? ""
@@ -69,7 +77,7 @@ public struct DrawingSettings: Codable, Hashable, Sendable {
     }
 
     public var hasManualEdits: Bool {
-        !hiddenDimensions.isEmpty || !dimensionOffsets.isEmpty || !viewOffsets.isEmpty || !customDimensions.isEmpty
+        !hiddenDimensions.isEmpty || !dimensionOffsets.isEmpty || !viewOffsets.isEmpty || !customDimensions.isEmpty || !details.isEmpty
     }
 }
 
@@ -83,6 +91,31 @@ public struct DimensionOffset: Codable, Hashable, Sendable {
         self.distance = distance
         self.along = along
     }
+}
+
+/// Enlarged detail ("Einzelheit Z") of a circular region of a view.
+public struct DetailView: Codable, Hashable, Identifiable, Sendable {
+    public var id: UUID
+    public var letter: String
+    /// Id of the source view, e.g. "front" or "p2.front".
+    public var view: String
+    /// Centre and radius in the source view's model coordinates (mm).
+    public var center: Vec2
+    public var radius: Double
+    /// Enlargement relative to the source view's scale.
+    public var factor: Double
+
+    public init(id: UUID = UUID(), letter: String, view: String, center: Vec2, radius: Double, factor: Double) {
+        self.id = id
+        self.letter = letter
+        self.view = view
+        self.center = center
+        self.radius = radius
+        self.factor = factor
+    }
+
+    public var viewId: String { "detail.\(id.uuidString)" }
+    public var markId: String { "detail.\(id.uuidString).mark" }
 }
 
 /// A dimension added by the user between two snap points of a view.
@@ -143,6 +176,7 @@ public enum LineStyle: Sendable {
     case center       // 0.25 dash-dot
     case thin         // 0.25 continuous (dimension, extension, leader, title block)
     case iso          // 0.35 continuous (pictorial view)
+    case hatch        // 0.18 continuous (section hatching, ISO 128-50)
 
     public var width: Double {
         switch self {
@@ -150,6 +184,7 @@ public enum LineStyle: Sendable {
         case .visible: return 0.5
         case .iso: return 0.35
         case .hidden, .center, .thin: return 0.25
+        case .hatch: return 0.18
         }
     }
 
@@ -202,6 +237,8 @@ public struct PlacedDimension: Sendable, Identifiable {
     /// Unit vector along the dimension line.
     public var along: Vec2
     public var isCustom: Bool
+    /// Extra numeric payload (e.g. the section plane's model X).
+    public var value: Double = 0
 }
 
 /// A projected view on the sheet.

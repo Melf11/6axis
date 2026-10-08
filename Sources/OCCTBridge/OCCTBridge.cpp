@@ -20,6 +20,7 @@
 #include <BRepLib_ToolTriangulatedShape.hxx>
 #include <BRepMesh_IncrementalMesh.hxx>
 #include <BRepOffsetAPI_MakeThickSolid.hxx>
+#include <BRepPrimAPI_MakeBox.hxx>
 #include <BRepPrimAPI_MakePrism.hxx>
 #include <BRepPrimAPI_MakeRevol.hxx>
 #include <BRep_Builder.hxx>
@@ -649,6 +650,65 @@ int32_t ob_hlr(const OBShape *s, const double viewDir[3], const double xDir[3], 
         setError("Projektion fehlgeschlagen");
     }
     return 0;
+}
+
+OBShape *ob_box(const double minP[3], const double maxP[3]) {
+    return guarded("Quader", [&]() -> OBShape * {
+        return wrap(BRepPrimAPI_MakeBox(toPnt(minP), toPnt(maxP)).Shape(), "Quader ergab nichts");
+    });
+}
+
+OBShape *ob_plane_face(const double origin[3], const double normal[3], const double xDir[3], double halfSize) {
+    return guarded("Schnittebene", [&]() -> OBShape * {
+        gp_Ax3 ax(toPnt(origin), gp_Dir(normal[0], normal[1], normal[2]), gp_Dir(xDir[0], xDir[1], xDir[2]));
+        return wrap(BRepBuilderAPI_MakeFace(gp_Pln(ax), -halfSize, halfSize, -halfSize, halfSize).Face(), "Schnittebene ergab nichts");
+    });
+}
+
+int32_t ob_face_outlines(const OBShape *s, const double viewDir[3], const double xDir[3], double deflection, OBProjection *out) {
+    std::memset(out, 0, sizeof(OBProjection));
+    if (!s || s->shape.IsNull()) return 0;
+    try {
+        gp_Dir z(viewDir[0], viewDir[1], viewDir[2]), x(xDir[0], xDir[1], xDir[2]);
+        gp_Dir y = z.Crossed(x);
+        std::vector<float> pts;
+        std::vector<int32_t> starts;
+        std::vector<uint8_t> flags;
+        for (int32_t fi = 1; fi <= s->faces.Extent(); fi++) {
+            for (TopExp_Explorer ex(s->faces(fi), TopAbs_EDGE); ex.More(); ex.Next()) {
+                TopoDS_Edge e = TopoDS::Edge(ex.Current());
+                if (BRep_Tool::Degenerated(e)) continue;
+                BRepAdaptor_Curve c(e);
+                GCPnts_TangentialDeflection disc(c, 0.08, deflection);
+                if (disc.NbPoints() < 2) continue;
+                starts.push_back((int32_t)(pts.size() / 2));
+                for (int i = 1; i <= disc.NbPoints(); i++) {
+                    gp_XYZ p = disc.Value(i).XYZ();
+                    pts.push_back((float)p.Dot(x.XYZ()));
+                    pts.push_back((float)p.Dot(y.XYZ()));
+                }
+                flags.push_back((uint8_t)((fi - 1) % 256));
+            }
+        }
+        starts.push_back((int32_t)(pts.size() / 2));
+        auto dup = [](const auto &v) {
+            using T = typename std::decay_t<decltype(v)>::value_type;
+            T *p = (T *)std::malloc(std::max<size_t>(1, v.size()) * sizeof(T));
+            if (!v.empty()) std::memcpy(p, v.data(), v.size() * sizeof(T));
+            return p;
+        };
+        out->points = dup(pts);
+        out->pointCount = (int32_t)(pts.size() / 2);
+        out->polyStart = dup(starts);
+        out->polyFlags = dup(flags);
+        out->polyCount = (int32_t)flags.size();
+        out->circles = (double *)std::malloc(sizeof(double));
+        out->circleFlags = (uint8_t *)std::malloc(1);
+        return 1;
+    } catch (...) {
+        setError("Umrisse fehlgeschlagen");
+        return 0;
+    }
 }
 
 void ob_projection_free(OBProjection *p) {
