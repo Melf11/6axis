@@ -1,6 +1,6 @@
 # Roadmap
 
-Stand: Oktober 2026 · Version im Repository: 0.9 (in Arbeit)
+Stand: Oktober 2026 · Aktuelles Release: [0.9.0](https://github.com/Melf11/6axis/releases/tag/v0.9.0) · in Arbeit: 1.0
 
 Reihenfolge nach Absprache: **zuerst ein weitergebbares Release**, damit Freunde 6axis testen können – danach die Funktionen. Holz-Werkzeuge und Plattenzuschnitt werden in der [Feature-Sammlung](#feature-sammlung) gesammelt und kommen am Ende.
 
@@ -39,7 +39,7 @@ Ziel: Ein Freund lädt eine Datei von GitHub, öffnet sie und kann konstruieren 
   - SHA-256-Prüfsummen
   - GitHub Release mit Versionshinweisen (aus den Commits seit dem letzten Tag) und Installationsanleitung
 - [ ] Homebrew-Cache im Workflow, damit Builds schnell bleiben
-- [ ] Ablauf zum Veröffentlichen in `CONTRIBUTING.md`: `git tag v0.9.0 && git push --tags`
+- [x] Ablauf zum Veröffentlichen in `CONTRIBUTING.md`: `git tag v0.9.0 && git push --tags`
 
 ### 3. Installation ohne Apple-Entwicklerkonto
 Ohne Notarisierung zeigt macOS beim ersten Start eine Warnung. Die Anleitung (Release-Text, Produktseite, README) erklärt die Schritte für macOS 15:
@@ -51,7 +51,8 @@ Ohne Notarisierung zeigt macOS beim ersten Start eine Warnung. Die Anleitung (Re
 ### 4. Für Tester
 - [x] Menü **Hilfe → „Fehler melden …“ / „Idee vorschlagen …“**: öffnet ein vorausgefülltes GitHub-Issue (Version, macOS-Version) im Browser – nur auf Klick, keine Telemetrie
 - [x] Issue-Vorlagen „Fehler melden“ und „Idee“ im Repository
-- [ ] Version in „Über 6axis“ und im Fenstertitel der Zeichnung
+- [x] Version in „Über 6axis“
+- [ ] Version im Fenstertitel der Zeichnung
 
 ### 5. Produktseite (GitHub Pages)
 Einfache, schnelle Seite unter `https://melf11.github.io/6axis/`, eigener Ordner `website/`, veröffentlicht per GitHub Actions (`actions/deploy-pages`), nur HTML/CSS, keine Tracker, keine externen Schriften.
@@ -64,6 +65,11 @@ Inhalt:
 - **Open Source:** MIT, GitHub-Link, Mitmachen
 - Hell/Dunkel automatisch, mobilfreundlich; Sprache Deutsch (Englisch mit 1.0)
 
+### Zusätzlich umgesetzt
+- [x] Beispiele (Korpus, Schneidebrett, Aufbewahrungsbox) in `Examples/` und unter **Ablage → Beispiele**
+- [x] Gewicht in der Statusleiste nach Körpermaterial (Holz, Kunststoffe, Metalle)
+- [x] Produktseite online: https://melf11.github.io/6axis/
+
 ### Fertig, wenn
 - Ein Tag `v0.9.0` erzeugt automatisch ein GitHub Release mit DMG
 - Das DMG startet auf einem Mac ohne Homebrew
@@ -73,6 +79,7 @@ Inhalt:
 
 ## 1.0 – Stabil
 
+- [x] **Parameter verschieben Geometrie zuverlässig:** Profile merken sich ihre Lage relativ zu den Skizzenpunkten, Kanten und Flächen von Abrundung/Fase/Wandstärke bleiben bei gleicher Topologie über ihren Index erhalten. Ändern von z. B. Korpusbreite oder -höhe baut fehlerfrei neu auf; ältere Dateien funktionieren weiter. Alle Beispiele sind vollständig parametrisch.
 - [ ] **Neuberechnung im Hintergrund:** Modell-Neuaufbau nicht mehr auf dem Hauptthread, Oberfläche bleibt bei großen Modellen flüssig; Fortschrittsanzeige bei langen Booleschen Operationen
 - [ ] **Englisch:** alle Texte über String Catalog, Deutsch und Englisch, Sprache folgt dem System; Produktseite zweisprachig
 - [ ] **Dateiformat-Versionierung:** `formatVersion` auswerten, Migrationen für ältere Dateien, Test-Sammlung alter Beispieldateien

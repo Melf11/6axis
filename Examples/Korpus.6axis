@@ -1,45 +1,45 @@
 {
   "bodies" : [
-    "3992FB13-A62C-446A-AAF3-BA8576153EF9",
+    "C1CE6307-F5E6-46F2-8586-968BEB1480F5",
     {
       "grain" : "length",
       "material" : "Eiche massiv",
       "name" : "Seite links",
       "visible" : true
     },
-    "3719869C-CD53-438C-A336-50D5F8DE56E8",
-    {
-      "grain" : "none",
-      "material" : "Birke Multiplex",
-      "name" : "Rückwand",
-      "visible" : true
-    },
-    "1E96C477-2262-40D9-88AE-014BA9D40D57",
+    "C48BBD04-4B5E-4745-8F4F-BFAC3928B154",
     {
       "grain" : "length",
       "material" : "Eiche massiv",
       "name" : "Seite rechts",
       "visible" : true
     },
-    "9D4AE3AE-08C1-4E7B-A52D-910A766FCD73",
+    "E3F3FB95-3F71-4E88-BC76-9703E95628B9",
+    {
+      "grain" : "length",
+      "material" : "Eiche massiv",
+      "name" : "Boden",
+      "visible" : true
+    },
+    "F15A64DF-87F5-4A97-9E93-7AA55889051E",
     {
       "grain" : "length",
       "material" : "Eiche massiv",
       "name" : "Deckel",
       "visible" : true
     },
-    "4FDD4204-E6A3-49D2-BA8D-860FDADB8222",
+    "91573D55-96BB-4D09-9EBC-3DAB5783E275",
     {
       "grain" : "length",
       "material" : "Eiche massiv",
       "name" : "Fachboden",
       "visible" : true
     },
-    "BF905C9C-F0EB-4AB3-907A-D79040B80B76",
+    "DFA72BDD-AE1F-4927-BE2E-2705BCA089B8",
     {
-      "grain" : "length",
-      "material" : "Eiche massiv",
-      "name" : "Boden",
+      "grain" : "none",
+      "material" : "Birke Multiplex",
+      "name" : "Rückwand",
       "visible" : true
     }
   ],
@@ -74,7 +74,7 @@
   },
   "features" : [
     {
-      "id" : "F321C53B-6FEB-41B0-BCA9-643CE6229F16",
+      "id" : "21153F24-A9D6-4ED0-B2C1-1DEE95661EB1",
       "kind" : {
         "sketch" : {
           "_0" : {
@@ -132,7 +132,7 @@
                 "kind" : {
                   "length" : {
                     "line" : 5,
-                    "value" : "19 mm"
+                    "value" : "staerke"
                   }
                 },
                 "labelOffset" : [
@@ -145,11 +145,39 @@
                 "kind" : {
                   "length" : {
                     "line" : 6,
-                    "value" : "600 mm"
+                    "value" : "hoehe"
                   }
                 },
                 "labelOffset" : [
                   12,
+                  0
+                ]
+              },
+              {
+                "id" : 15,
+                "kind" : {
+                  "horizontalDistance" : {
+                    "_0" : 0,
+                    "_1" : 1,
+                    "value" : "0 mm"
+                  }
+                },
+                "labelOffset" : [
+                  0,
+                  0
+                ]
+              },
+              {
+                "id" : 16,
+                "kind" : {
+                  "verticalDistance" : {
+                    "_0" : 0,
+                    "_1" : 1,
+                    "value" : "0 mm"
+                  }
+                },
+                "labelOffset" : [
+                  0,
                   0
                 ]
               }
@@ -196,7 +224,7 @@
                 "id" : 8
               }
             ],
-            "nextId" : 15,
+            "nextId" : 17,
             "plane" : {
               "xz" : {
 
@@ -251,7 +279,7 @@
       "suppressed" : false
     },
     {
-      "id" : "3992FB13-A62C-446A-AAF3-BA8576153EF9",
+      "id" : "C1CE6307-F5E6-46F2-8586-968BEB1480F5",
       "kind" : {
         "extrude" : {
           "_0" : {
@@ -264,11 +292,29 @@
             "operation" : "newBody",
             "profiles" : [
               {
+                "anchor" : {
+                  "offset" : [
+                    0,
+                    0
+                  ],
+                  "points" : [
+                    1,
+                    2,
+                    3,
+                    4
+                  ],
+                  "weights" : [
+                    0.25,
+                    0.25,
+                    0.25,
+                    0.25
+                  ]
+                },
                 "sample" : [
                   9.5,
                   300
                 ],
-                "sketch" : "F321C53B-6FEB-41B0-BCA9-643CE6229F16"
+                "sketch" : "21153F24-A9D6-4ED0-B2C1-1DEE95661EB1"
               }
             ],
             "targets" : [
@@ -281,7 +327,7 @@
       "suppressed" : false
     },
     {
-      "id" : "B3A76C87-38C5-4E33-9DA9-F4BF0167C0B3",
+      "id" : "DBD77AE5-9C17-4C54-AE2A-36C43F97D485",
       "kind" : {
         "sketch" : {
           "_0" : {
@@ -339,7 +385,7 @@
                 "kind" : {
                   "length" : {
                     "line" : 5,
-                    "value" : "19 mm"
+                    "value" : "staerke"
                   }
                 },
                 "labelOffset" : [
@@ -352,11 +398,39 @@
                 "kind" : {
                   "length" : {
                     "line" : 6,
-                    "value" : "600 mm"
+                    "value" : "hoehe"
                   }
                 },
                 "labelOffset" : [
                   12,
+                  0
+                ]
+              },
+              {
+                "id" : 15,
+                "kind" : {
+                  "horizontalDistance" : {
+                    "_0" : 0,
+                    "_1" : 1,
+                    "value" : "breite - staerke"
+                  }
+                },
+                "labelOffset" : [
+                  0,
+                  0
+                ]
+              },
+              {
+                "id" : 16,
+                "kind" : {
+                  "verticalDistance" : {
+                    "_0" : 0,
+                    "_1" : 1,
+                    "value" : "0 mm"
+                  }
+                },
+                "labelOffset" : [
+                  0,
                   0
                 ]
               }
@@ -403,7 +477,7 @@
                 "id" : 8
               }
             ],
-            "nextId" : 15,
+            "nextId" : 17,
             "plane" : {
               "xz" : {
 
@@ -458,7 +532,7 @@
       "suppressed" : false
     },
     {
-      "id" : "1E96C477-2262-40D9-88AE-014BA9D40D57",
+      "id" : "C48BBD04-4B5E-4745-8F4F-BFAC3928B154",
       "kind" : {
         "extrude" : {
           "_0" : {
@@ -471,11 +545,29 @@
             "operation" : "newBody",
             "profiles" : [
               {
+                "anchor" : {
+                  "offset" : [
+                    0,
+                    0
+                  ],
+                  "points" : [
+                    1,
+                    2,
+                    3,
+                    4
+                  ],
+                  "weights" : [
+                    0.25,
+                    0.25,
+                    0.25,
+                    0.25
+                  ]
+                },
                 "sample" : [
                   490.5,
                   300
                 ],
-                "sketch" : "B3A76C87-38C5-4E33-9DA9-F4BF0167C0B3"
+                "sketch" : "DBD77AE5-9C17-4C54-AE2A-36C43F97D485"
               }
             ],
             "targets" : [
@@ -488,7 +580,7 @@
       "suppressed" : false
     },
     {
-      "id" : "C9B33F05-4EEF-40CA-84A6-98F430ABCA38",
+      "id" : "762D063B-8ECE-4CE7-88D4-62830CEEA303",
       "kind" : {
         "sketch" : {
           "_0" : {
@@ -546,7 +638,7 @@
                 "kind" : {
                   "length" : {
                     "line" : 5,
-                    "value" : "462 mm"
+                    "value" : "breite - 2 * staerke"
                   }
                 },
                 "labelOffset" : [
@@ -559,11 +651,39 @@
                 "kind" : {
                   "length" : {
                     "line" : 6,
-                    "value" : "19 mm"
+                    "value" : "staerke"
                   }
                 },
                 "labelOffset" : [
                   12,
+                  0
+                ]
+              },
+              {
+                "id" : 15,
+                "kind" : {
+                  "horizontalDistance" : {
+                    "_0" : 0,
+                    "_1" : 1,
+                    "value" : "staerke"
+                  }
+                },
+                "labelOffset" : [
+                  0,
+                  0
+                ]
+              },
+              {
+                "id" : 16,
+                "kind" : {
+                  "verticalDistance" : {
+                    "_0" : 0,
+                    "_1" : 1,
+                    "value" : "0 mm"
+                  }
+                },
+                "labelOffset" : [
+                  0,
                   0
                 ]
               }
@@ -610,7 +730,7 @@
                 "id" : 8
               }
             ],
-            "nextId" : 15,
+            "nextId" : 17,
             "plane" : {
               "xz" : {
 
@@ -665,7 +785,7 @@
       "suppressed" : false
     },
     {
-      "id" : "BF905C9C-F0EB-4AB3-907A-D79040B80B76",
+      "id" : "E3F3FB95-3F71-4E88-BC76-9703E95628B9",
       "kind" : {
         "extrude" : {
           "_0" : {
@@ -678,11 +798,29 @@
             "operation" : "newBody",
             "profiles" : [
               {
+                "anchor" : {
+                  "offset" : [
+                    0,
+                    0
+                  ],
+                  "points" : [
+                    1,
+                    2,
+                    3,
+                    4
+                  ],
+                  "weights" : [
+                    0.25,
+                    0.25,
+                    0.25,
+                    0.25
+                  ]
+                },
                 "sample" : [
                   250,
                   9.5
                 ],
-                "sketch" : "C9B33F05-4EEF-40CA-84A6-98F430ABCA38"
+                "sketch" : "762D063B-8ECE-4CE7-88D4-62830CEEA303"
               }
             ],
             "targets" : [
@@ -695,7 +833,7 @@
       "suppressed" : false
     },
     {
-      "id" : "ECA01182-AD05-446A-A13A-56E22B8F3885",
+      "id" : "AC4AFD23-CF43-440B-BEA6-BD30486405B6",
       "kind" : {
         "sketch" : {
           "_0" : {
@@ -753,7 +891,7 @@
                 "kind" : {
                   "length" : {
                     "line" : 5,
-                    "value" : "462 mm"
+                    "value" : "breite - 2 * staerke"
                   }
                 },
                 "labelOffset" : [
@@ -766,11 +904,39 @@
                 "kind" : {
                   "length" : {
                     "line" : 6,
-                    "value" : "19 mm"
+                    "value" : "staerke"
                   }
                 },
                 "labelOffset" : [
                   12,
+                  0
+                ]
+              },
+              {
+                "id" : 15,
+                "kind" : {
+                  "horizontalDistance" : {
+                    "_0" : 0,
+                    "_1" : 1,
+                    "value" : "staerke"
+                  }
+                },
+                "labelOffset" : [
+                  0,
+                  0
+                ]
+              },
+              {
+                "id" : 16,
+                "kind" : {
+                  "verticalDistance" : {
+                    "_0" : 0,
+                    "_1" : 1,
+                    "value" : "hoehe - staerke"
+                  }
+                },
+                "labelOffset" : [
+                  0,
                   0
                 ]
               }
@@ -817,7 +983,7 @@
                 "id" : 8
               }
             ],
-            "nextId" : 15,
+            "nextId" : 17,
             "plane" : {
               "xz" : {
 
@@ -872,7 +1038,7 @@
       "suppressed" : false
     },
     {
-      "id" : "9D4AE3AE-08C1-4E7B-A52D-910A766FCD73",
+      "id" : "F15A64DF-87F5-4A97-9E93-7AA55889051E",
       "kind" : {
         "extrude" : {
           "_0" : {
@@ -885,11 +1051,29 @@
             "operation" : "newBody",
             "profiles" : [
               {
+                "anchor" : {
+                  "offset" : [
+                    0,
+                    0
+                  ],
+                  "points" : [
+                    1,
+                    2,
+                    3,
+                    4
+                  ],
+                  "weights" : [
+                    0.25,
+                    0.25,
+                    0.25,
+                    0.25
+                  ]
+                },
                 "sample" : [
                   250,
                   590.5
                 ],
-                "sketch" : "ECA01182-AD05-446A-A13A-56E22B8F3885"
+                "sketch" : "AC4AFD23-CF43-440B-BEA6-BD30486405B6"
               }
             ],
             "targets" : [
@@ -902,7 +1086,7 @@
       "suppressed" : false
     },
     {
-      "id" : "6B9355D7-2D57-4187-90F8-626A617E889A",
+      "id" : "C453EAC6-058A-42DB-9669-75B208AC07F5",
       "kind" : {
         "sketch" : {
           "_0" : {
@@ -960,7 +1144,7 @@
                 "kind" : {
                   "length" : {
                     "line" : 5,
-                    "value" : "462 mm"
+                    "value" : "breite - 2 * staerke"
                   }
                 },
                 "labelOffset" : [
@@ -973,11 +1157,39 @@
                 "kind" : {
                   "length" : {
                     "line" : 6,
-                    "value" : "19 mm"
+                    "value" : "staerke"
                   }
                 },
                 "labelOffset" : [
                   12,
+                  0
+                ]
+              },
+              {
+                "id" : 15,
+                "kind" : {
+                  "horizontalDistance" : {
+                    "_0" : 0,
+                    "_1" : 1,
+                    "value" : "staerke"
+                  }
+                },
+                "labelOffset" : [
+                  0,
+                  0
+                ]
+              },
+              {
+                "id" : 16,
+                "kind" : {
+                  "verticalDistance" : {
+                    "_0" : 0,
+                    "_1" : 1,
+                    "value" : "fachhoehe"
+                  }
+                },
+                "labelOffset" : [
+                  0,
                   0
                 ]
               }
@@ -1024,7 +1236,7 @@
                 "id" : 8
               }
             ],
-            "nextId" : 15,
+            "nextId" : 17,
             "plane" : {
               "xz" : {
 
@@ -1079,7 +1291,7 @@
       "suppressed" : false
     },
     {
-      "id" : "4FDD4204-E6A3-49D2-BA8D-860FDADB8222",
+      "id" : "91573D55-96BB-4D09-9EBC-3DAB5783E275",
       "kind" : {
         "extrude" : {
           "_0" : {
@@ -1092,11 +1304,29 @@
             "operation" : "newBody",
             "profiles" : [
               {
+                "anchor" : {
+                  "offset" : [
+                    0,
+                    0
+                  ],
+                  "points" : [
+                    1,
+                    2,
+                    3,
+                    4
+                  ],
+                  "weights" : [
+                    0.25,
+                    0.25,
+                    0.25,
+                    0.25
+                  ]
+                },
                 "sample" : [
                   250,
                   299.5
                 ],
-                "sketch" : "6B9355D7-2D57-4187-90F8-626A617E889A"
+                "sketch" : "C453EAC6-058A-42DB-9669-75B208AC07F5"
               }
             ],
             "targets" : [
@@ -1109,7 +1339,7 @@
       "suppressed" : false
     },
     {
-      "id" : "362D42B4-B4E8-40A2-9D13-F93B89C4A337",
+      "id" : "0D648D81-3C4B-48D2-AE45-56A481911D99",
       "kind" : {
         "sketch" : {
           "_0" : {
@@ -1167,7 +1397,7 @@
                 "kind" : {
                   "length" : {
                     "line" : 5,
-                    "value" : "500 mm"
+                    "value" : "breite"
                   }
                 },
                 "labelOffset" : [
@@ -1180,11 +1410,39 @@
                 "kind" : {
                   "length" : {
                     "line" : 6,
-                    "value" : "600 mm"
+                    "value" : "hoehe"
                   }
                 },
                 "labelOffset" : [
                   12,
+                  0
+                ]
+              },
+              {
+                "id" : 15,
+                "kind" : {
+                  "horizontalDistance" : {
+                    "_0" : 0,
+                    "_1" : 1,
+                    "value" : "0 mm"
+                  }
+                },
+                "labelOffset" : [
+                  0,
+                  0
+                ]
+              },
+              {
+                "id" : 16,
+                "kind" : {
+                  "verticalDistance" : {
+                    "_0" : 0,
+                    "_1" : 1,
+                    "value" : "0 mm"
+                  }
+                },
+                "labelOffset" : [
+                  0,
                   0
                 ]
               }
@@ -1231,7 +1489,7 @@
                 "id" : 8
               }
             ],
-            "nextId" : 15,
+            "nextId" : 17,
             "plane" : {
               "xz" : {
 
@@ -1286,11 +1544,11 @@
       "suppressed" : false
     },
     {
-      "id" : "3719869C-CD53-438C-A336-50D5F8DE56E8",
+      "id" : "DFA72BDD-AE1F-4927-BE2E-2705BCA089B8",
       "kind" : {
         "extrude" : {
           "_0" : {
-            "distance" : "-8 mm",
+            "distance" : "-rueckwand",
             "distance2" : "10 mm",
             "extent" : "oneSide",
             "faces" : [
@@ -1299,11 +1557,29 @@
             "operation" : "newBody",
             "profiles" : [
               {
+                "anchor" : {
+                  "offset" : [
+                    0,
+                    0
+                  ],
+                  "points" : [
+                    1,
+                    2,
+                    3,
+                    4
+                  ],
+                  "weights" : [
+                    0.25,
+                    0.25,
+                    0.25,
+                    0.25
+                  ]
+                },
                 "sample" : [
                   250,
                   300
                 ],
-                "sketch" : "362D42B4-B4E8-40A2-9D13-F93B89C4A337"
+                "sketch" : "0D648D81-3C4B-48D2-AE45-56A481911D99"
               }
             ],
             "targets" : [
@@ -1316,12 +1592,93 @@
       "suppressed" : false
     },
     {
-      "id" : "C87182C9-E887-46F4-BF2D-4D560CC05018",
+      "id" : "FB1F00E2-47D8-4FD7-AAB2-BE58D15562F0",
       "kind" : {
         "sketch" : {
           "_0" : {
             "constraints" : [
-
+              {
+                "id" : 3,
+                "kind" : {
+                  "horizontalDistance" : {
+                    "_0" : 0,
+                    "_1" : 1,
+                    "value" : "100 mm"
+                  }
+                },
+                "labelOffset" : [
+                  0,
+                  0
+                ]
+              },
+              {
+                "id" : 4,
+                "kind" : {
+                  "verticalDistance" : {
+                    "_0" : 0,
+                    "_1" : 1,
+                    "value" : "tiefe \/ 2"
+                  }
+                },
+                "labelOffset" : [
+                  0,
+                  0
+                ]
+              },
+              {
+                "id" : 5,
+                "kind" : {
+                  "diameter" : {
+                    "curve" : 2,
+                    "value" : "8 mm"
+                  }
+                },
+                "labelOffset" : [
+                  0,
+                  0
+                ]
+              },
+              {
+                "id" : 8,
+                "kind" : {
+                  "horizontalDistance" : {
+                    "_0" : 0,
+                    "_1" : 6,
+                    "value" : "breite - 100 mm"
+                  }
+                },
+                "labelOffset" : [
+                  0,
+                  0
+                ]
+              },
+              {
+                "id" : 9,
+                "kind" : {
+                  "verticalDistance" : {
+                    "_0" : 0,
+                    "_1" : 6,
+                    "value" : "tiefe \/ 2"
+                  }
+                },
+                "labelOffset" : [
+                  0,
+                  0
+                ]
+              },
+              {
+                "id" : 10,
+                "kind" : {
+                  "diameter" : {
+                    "curve" : 7,
+                    "value" : "8 mm"
+                  }
+                },
+                "labelOffset" : [
+                  0,
+                  0
+                ]
+              }
             ],
             "curves" : [
               {
@@ -1338,14 +1695,14 @@
                 "construction" : false,
                 "geometry" : {
                   "circle" : {
-                    "center" : 3,
+                    "center" : 6,
                     "radius" : 4
                   }
                 },
-                "id" : 4
+                "id" : 7
               }
             ],
-            "nextId" : 5,
+            "nextId" : 11,
             "plane" : {
               "xy" : {
 
@@ -1370,7 +1727,7 @@
               },
               {
                 "fixed" : false,
-                "id" : 3,
+                "id" : 6,
                 "position" : [
                   400,
                   -150
@@ -1384,11 +1741,11 @@
       "suppressed" : false
     },
     {
-      "id" : "23301D01-A0F6-4B51-8F6B-D803948CB6D3",
+      "id" : "BAA901CB-23D5-45D4-829D-D5B13D90F115",
       "kind" : {
         "extrude" : {
           "_0" : {
-            "distance" : "700 mm",
+            "distance" : "hoehe + 100 mm",
             "distance2" : "10 mm",
             "extent" : "oneSide",
             "faces" : [
@@ -1397,18 +1754,42 @@
             "operation" : "cut",
             "profiles" : [
               {
+                "anchor" : {
+                  "offset" : [
+                    0,
+                    0
+                  ],
+                  "points" : [
+                    1
+                  ],
+                  "weights" : [
+                    1
+                  ]
+                },
                 "sample" : [
                   100,
                   -150
                 ],
-                "sketch" : "C87182C9-E887-46F4-BF2D-4D560CC05018"
+                "sketch" : "FB1F00E2-47D8-4FD7-AAB2-BE58D15562F0"
               },
               {
+                "anchor" : {
+                  "offset" : [
+                    0,
+                    0
+                  ],
+                  "points" : [
+                    6
+                  ],
+                  "weights" : [
+                    1
+                  ]
+                },
                 "sample" : [
                   400,
                   -150
                 ],
-                "sketch" : "C87182C9-E887-46F4-BF2D-4D560CC05018"
+                "sketch" : "FB1F00E2-47D8-4FD7-AAB2-BE58D15562F0"
               }
             ],
             "targets" : [
@@ -1423,26 +1804,56 @@
   ],
   "formatVersion" : 1,
   "hiddenSketches" : [
-    "362D42B4-B4E8-40A2-9D13-F93B89C4A337",
-    "B3A76C87-38C5-4E33-9DA9-F4BF0167C0B3",
-    "C87182C9-E887-46F4-BF2D-4D560CC05018",
-    "6B9355D7-2D57-4187-90F8-626A617E889A",
-    "F321C53B-6FEB-41B0-BCA9-643CE6229F16",
-    "ECA01182-AD05-446A-A13A-56E22B8F3885",
-    "C9B33F05-4EEF-40CA-84A6-98F430ABCA38"
+    "FB1F00E2-47D8-4FD7-AAB2-BE58D15562F0",
+    "C453EAC6-058A-42DB-9669-75B208AC07F5",
+    "0D648D81-3C4B-48D2-AE45-56A481911D99",
+    "AC4AFD23-CF43-440B-BEA6-BD30486405B6",
+    "DBD77AE5-9C17-4C54-AE2A-36C43F97D485",
+    "21153F24-A9D6-4ED0-B2C1-1DEE95661EB1",
+    "762D063B-8ECE-4CE7-88D4-62830CEEA303"
   ],
   "parameters" : [
     {
-      "comment" : "Korpustiefe ohne Rückwand",
+      "comment" : "Außenmaß",
+      "expression" : "500 mm",
+      "id" : "D9082E88-5BDA-4EED-9B67-B2EFD6D6EDEF",
+      "name" : "breite"
+    },
+    {
+      "comment" : "Außenmaß",
+      "expression" : "600 mm",
+      "id" : "1743C054-45E2-47DE-B7A6-73EB38F36C8B",
+      "name" : "hoehe"
+    },
+    {
+      "comment" : "ohne Rückwand",
       "expression" : "300 mm",
-      "id" : "362AA438-7B8B-440E-9558-AC3550497567",
+      "id" : "BC213E0A-DD18-44E4-87CF-35C7246D006B",
       "name" : "tiefe"
+    },
+    {
+      "comment" : "Plattenstärke",
+      "expression" : "19 mm",
+      "id" : "914E8163-989D-4420-93DC-20802A5625A1",
+      "name" : "staerke"
+    },
+    {
+      "comment" : "Unterkante Fachboden",
+      "expression" : "290 mm",
+      "id" : "1E70DBFF-0E9C-43F3-B45C-D53A8C79E689",
+      "name" : "fachhoehe"
     },
     {
       "comment" : "Fachboden hinten zurückgesetzt",
       "expression" : "20 mm",
-      "id" : "47A201DA-7355-40AF-AC3C-D795A3ABC0C9",
+      "id" : "46A839AB-DA9E-420D-8923-78EC9E10D6A0",
       "name" : "rueckversatz"
+    },
+    {
+      "comment" : "Stärke Rückwand",
+      "expression" : "8 mm",
+      "id" : "604B12E3-3948-4C64-94AC-1AF69761EF8E",
+      "name" : "rueckwand"
     }
   ]
 }

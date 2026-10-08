@@ -9,6 +9,9 @@ public struct FaceRef: Codable, Hashable, Sendable {
     public var index: Int
     public var centroid: Vec3
     public var normal: Vec3
+    /// Face count of the body when the reference was made. If the body still has the same topology,
+    /// `index` stays valid even when parameters moved the face (see BuiltBody.resolve).
+    public var count: Int? = nil
 
     public init(index: Int, centroid: Vec3, normal: Vec3) {
         self.index = index
@@ -20,6 +23,10 @@ public struct FaceRef: Codable, Hashable, Sendable {
 public struct EdgeRef: Codable, Hashable, Sendable {
     public var index: Int
     public var midpoint: Vec3
+    /// Edge count of the body and the edge's kind/direction when the reference was made (topology check).
+    public var count: Int? = nil
+    public var kind: Int? = nil
+    public var direction: Vec3? = nil
 
     public init(index: Int, midpoint: Vec3) {
         self.index = index
@@ -43,7 +50,71 @@ public struct BodyEdgeRef: Codable, Hashable, Sendable {
 public struct ProfileRef: Codable, Hashable, Sendable {
     public var sketch: UUID
     public var sample: Vec2
-    public init(sketch: UUID, sample: Vec2) { self.sketch = sketch; self.sample = sample }
+    /// The sample expressed relative to sketch points, so it follows the geometry when parameters
+    /// or dimensions change. Nil in files from 0.9 and earlier (then only `sample` is used).
+    public var anchor: ProfileAnchor? = nil
+    public init(sketch: UUID, sample: Vec2, anchor: ProfileAnchor? = nil) {
+        self.sketch = sketch
+        self.sample = sample
+        self.anchor = anchor
+    }
+}
+
+/// sample = Σ weights[i] · position(points[i]) + offset
+public struct ProfileAnchor: Codable, Hashable, Sendable {
+    public var points: [Int]
+    public var weights: [Double]
+    public var offset: Vec2
+    public init(points: [Int], weights: [Double], offset: Vec2 = .zero) {
+        self.points = points
+        self.weights = weights
+        self.offset = offset
+    }
+
+    /// Current position of the anchored point, nil if a point no longer exists.
+    public func position(in sketch: Sketch) -> Vec2? {
+        var p = offset
+        for (id, w) in zip(points, weights) {
+            guard let q = sketch.point(id) else { return nil }
+            p += q * w
+        }
+        return p
+    }
+
+    /// Anchor for `p`: the barycentric weights of every non-degenerate triangle of nearby sketch points
+    /// that contains `p`, averaged (a rectangle's center becomes ¼ of each corner). Without such a
+    /// triangle (e.g. a lone circle): the nearest point plus an offset.
+    public static func make(for p: Vec2, in sketch: Sketch) -> ProfileAnchor? {
+        let pts = Array(sketch.points.sorted { simd_distance($0.position, p) < simd_distance($1.position, p) }.prefix(12))
+        guard let nearest = pts.first else { return nil }
+        var sum: [Int: Double] = [:]
+        var count = 0
+        for i in 0..<pts.count {
+            for j in (i + 1)..<max(i + 1, pts.count) {
+                for k in (j + 1)..<max(j + 1, pts.count) {
+                    let p0 = pts[i].position, p1 = pts[j].position, p2 = pts[k].position
+                    let det = (p1.x - p0.x) * (p2.y - p0.y) - (p2.x - p0.x) * (p1.y - p0.y)
+                    let scale = max(simd_length_squared(p1 - p0), simd_length_squared(p2 - p0), 1e-12)
+                    guard abs(det) > 1e-3 * scale else { continue }      // skip slivers and coincident points
+                    let w1 = ((p.x - p0.x) * (p2.y - p0.y) - (p2.x - p0.x) * (p.y - p0.y)) / det
+                    let w2 = ((p1.x - p0.x) * (p.y - p0.y) - (p.x - p0.x) * (p1.y - p0.y)) / det
+                    let w0 = 1 - w1 - w2
+                    guard min(w0, w1, w2) >= -1e-9 else { continue }
+                    sum[pts[i].id, default: 0] += w0
+                    sum[pts[j].id, default: 0] += w1
+                    sum[pts[k].id, default: 0] += w2
+                    count += 1
+                }
+            }
+        }
+        guard count > 0 else { return ProfileAnchor(points: [nearest.id], weights: [1], offset: p - nearest.position) }
+        let ids = sum.keys.sorted()
+        let weights = ids.map { sum[$0]! / Double(count) }
+        // Rounding residue goes into the offset so the anchor reproduces p exactly.
+        var q = Vec2.zero
+        for (id, w) in zip(ids, weights) { q += sketch.point(id)! * w }
+        return ProfileAnchor(points: ids, weights: weights, offset: p - q)
+    }
 }
 
 public enum PlaneRef: Codable, Hashable, Sendable {

@@ -28,37 +28,52 @@ public enum Examples {
 
     // MARK: - Korpus
 
-    /// Cabinet 500 × 600 with sides, bottom, top, shelf, 8 mm back panel and two dowel holes.
-    /// Depth is the parameter `tiefe`; the shelf is set back by 20 mm.
+    /// Cabinet with sides, bottom, top, shelf, back panel and two dowel holes – every size is a parameter.
     public static func cabinet() -> CADDocument {
         var doc = CADDocument()
         doc.parameters = [
-            UserParameter(name: "tiefe", expression: "300 mm", comment: "Korpustiefe ohne Rückwand"),
+            UserParameter(name: "breite", expression: "500 mm", comment: "Außenmaß"),
+            UserParameter(name: "hoehe", expression: "600 mm", comment: "Außenmaß"),
+            UserParameter(name: "tiefe", expression: "300 mm", comment: "ohne Rückwand"),
+            UserParameter(name: "staerke", expression: "19 mm", comment: "Plattenstärke"),
+            UserParameter(name: "fachhoehe", expression: "290 mm", comment: "Unterkante Fachboden"),
             UserParameter(name: "rueckversatz", expression: "20 mm", comment: "Fachboden hinten zurückgesetzt"),
+            UserParameter(name: "rueckwand", expression: "8 mm", comment: "Stärke Rückwand"),
         ]
-        func board(_ name: String, x: ClosedRange<Double>, z: ClosedRange<Double>, depth: String,
-                   material: String = "Eiche massiv", grain: GrainDirection = .length) {
-            let (s, e) = rectangle(.xz, name: name, x: x, y: z, distance: depth)
+        func board(_ name: String, x: (String, Double), z: (String, Double), w: (String, Double), h: (String, Double),
+                   depth: String, material: String = "Eiche massiv", grain: GrainDirection = .length) {
+            let (s, e) = rectangle(.xz, name: name, x: x, y: z, width: w, height: h, distance: depth)
             doc.features += [s, e]
             doc.bodies[e.id] = BodyMeta(name: name, material: material, grain: grain)
         }
-        board("Seite links", x: 0...19, z: 0...600, depth: "tiefe")
-        board("Seite rechts", x: 481...500, z: 0...600, depth: "tiefe")
-        board("Boden", x: 19...481, z: 0...19, depth: "tiefe")
-        board("Deckel", x: 19...481, z: 581...600, depth: "tiefe")
-        board("Fachboden", x: 19...481, z: 290...309, depth: "tiefe - rueckversatz")
+        let inner = ("breite - 2 * staerke", 462.0)
+        board("Seite links", x: ("0 mm", 0), z: ("0 mm", 0), w: ("staerke", 19), h: ("hoehe", 600), depth: "tiefe")
+        board("Seite rechts", x: ("breite - staerke", 481), z: ("0 mm", 0), w: ("staerke", 19), h: ("hoehe", 600), depth: "tiefe")
+        board("Boden", x: ("staerke", 19), z: ("0 mm", 0), w: inner, h: ("staerke", 19), depth: "tiefe")
+        board("Deckel", x: ("staerke", 19), z: ("hoehe - staerke", 581), w: inner, h: ("staerke", 19), depth: "tiefe")
+        board("Fachboden", x: ("staerke", 19), z: ("fachhoehe", 290), w: inner, h: ("staerke", 19), depth: "tiefe - rueckversatz")
         // The XZ plane faces -Y: boards grow to the front, the back panel goes behind (negative distance).
-        board("Rückwand", x: 0...500, z: 0...600, depth: "-8 mm", material: "Birke Multiplex", grain: .none)
+        board("Rückwand", x: ("0 mm", 0), z: ("0 mm", 0), w: ("breite", 500), h: ("hoehe", 600), depth: "-rueckwand",
+              material: "Birke Multiplex", grain: .none)
 
+        // Dowel holes Ø8 through the horizontal boards, 100 mm from the sides, centred in the depth.
         var sk = Sketch(plane: .xy)
-        sk.addCircle(center: sk.addPoint(Vec2(100, -150)), radius: 4)
-        sk.addCircle(center: sk.addPoint(Vec2(400, -150)), radius: 4)
-        let holes = Feature(name: "Skizze Dübellöcher", kind: .sketch(sk))
+        var holes: [ProfileRef] = []
+        let sketchId = UUID()
+        for (x, xv) in [("100 mm", 100.0), ("breite - 100 mm", 400.0)] {
+            let c = sk.addPoint(Vec2(xv, -150))
+            let circle = sk.addCircle(center: c, radius: 4)
+            sk.addConstraint(.horizontalDistance(Sketch.originId, c, value: x))
+            sk.addConstraint(.verticalDistance(Sketch.originId, c, value: "tiefe / 2"))
+            sk.addConstraint(.diameter(curve: circle, value: "8 mm"))
+            holes.append(ProfileRef(sketch: sketchId, sample: Vec2(xv, -150), anchor: ProfileAnchor(points: [c], weights: [1])))
+        }
+        let holeSketch = Feature(id: sketchId, name: "Skizze Dübellöcher", kind: .sketch(sk))
         var cut = ExtrudeFeature()
-        cut.profiles = [ProfileRef(sketch: holes.id, sample: Vec2(100, -150)), ProfileRef(sketch: holes.id, sample: Vec2(400, -150))]
-        cut.distance = "700 mm"
+        cut.profiles = holes
+        cut.distance = "hoehe + 100 mm"
         cut.operation = .cut
-        doc.features += [holes, Feature(name: "Dübellöcher Ø8", kind: .extrude(cut))]
+        doc.features += [holeSketch, Feature(name: "Dübellöcher Ø8", kind: .extrude(cut))]
 
         var drawing = DrawingSettings()
         drawing.title = "Korpus"
@@ -69,18 +84,24 @@ public enum Examples {
 
     // MARK: - Schneidebrett
 
-    /// Cutting board 400 × 250 with R20 corners, a Ø30 hanging hole and 2 mm chamfered top edges.
+    /// Cutting board with rounded corners, a Ø30 hanging hole and 2 mm chamfered top edges.
     public static func cuttingBoard() -> CADDocument {
         var doc = CADDocument()
         doc.parameters = [
+            UserParameter(name: "laenge", expression: "400 mm", comment: ""),
+            UserParameter(name: "breite", expression: "250 mm", comment: ""),
             UserParameter(name: "dicke", expression: "25 mm", comment: "Brettstärke"),
             UserParameter(name: "eckradius", expression: "20 mm", comment: ""),
         ]
-        var (sketch, extrude) = rectangle(.xy, name: "Brett", x: 0...400, y: 0...250, distance: "dicke")
+        var (sketch, extrude) = rectangle(.xy, name: "Brett", x: ("0 mm", 0), y: ("0 mm", 0),
+                                          width: ("laenge", 400), height: ("breite", 250), distance: "dicke")
         guard case var .sketch(sk) = sketch.kind else { return doc }
-        sk.addCircle(center: sk.addPoint(Vec2(360, 210)), radius: 15)
+        let c = sk.addPoint(Vec2(360, 210))
+        let hole = sk.addCircle(center: c, radius: 15)
+        sk.addConstraint(.horizontalDistance(Sketch.originId, c, value: "laenge - 40 mm"))
+        sk.addConstraint(.verticalDistance(Sketch.originId, c, value: "breite - 40 mm"))
+        sk.addConstraint(.diameter(curve: hole, value: "30 mm"))
         sketch.kind = .sketch(sk)
-        extrude.name = "Brett"
         doc.features = [sketch, extrude]
         doc.bodies[extrude.id] = BodyMeta(name: "Schneidebrett", material: "Eiche massiv", grain: .length)
 
@@ -102,15 +123,18 @@ public enum Examples {
 
     // MARK: - Aufbewahrungsbox
 
-    /// Open box 120 × 80 × 50 for 3D printing: rounded vertical edges, 2 mm walls.
+    /// Open box for 3D printing, centred on the origin: rounded vertical edges, thin walls.
     public static func storageBox() -> CADDocument {
         var doc = CADDocument()
         doc.parameters = [
+            UserParameter(name: "laenge", expression: "120 mm", comment: ""),
+            UserParameter(name: "breite", expression: "80 mm", comment: ""),
             UserParameter(name: "hoehe", expression: "50 mm", comment: ""),
             UserParameter(name: "wand", expression: "2 mm", comment: "Wandstärke, Vielfaches der Düse (0,4)"),
             UserParameter(name: "radius", expression: "10 mm", comment: "Eckradius außen"),
         ]
-        let (sketch, extrude) = rectangle(.xy, name: "Box", x: -60...60, y: -40...40, distance: "hoehe")
+        let (sketch, extrude) = rectangle(.xy, name: "Box", x: ("laenge / 2", -60), y: ("breite / 2", -40),
+                                          width: ("laenge", 120), height: ("breite", 80), distance: "hoehe")
         doc.features = [sketch, extrude]
         doc.bodies[extrude.id] = BodyMeta(name: "Box", material: "PLA")
         appendFillet(&doc, body: extrude.id, radius: "radius") { e in e.kind == .line && abs(e.end.z - e.start.z) > 1 }
@@ -129,23 +153,27 @@ public enum Examples {
 
     // MARK: - Helpers
 
-    /// Closed, fully constrained rectangle sketch plus an extrusion of it as a new body.
-    static func rectangle(_ plane: PlaneRef, name: String, x: ClosedRange<Double>, y: ClosedRange<Double>,
-                          distance: String) -> (sketch: Feature, extrude: Feature) {
+    /// Fully constrained rectangle (position from the sketch origin, width, height – each an expression
+    /// with its initial value) plus an extrusion of it as a new body. The profile is anchored to the
+    /// four corners, so it follows parameter changes.
+    static func rectangle(_ plane: PlaneRef, name: String, x: (String, Double), y: (String, Double),
+                          width: (String, Double), height: (String, Double), distance: String) -> (sketch: Feature, extrude: Feature) {
         var sk = Sketch(plane: plane)
-        let p = [sk.addPoint(Vec2(x.lowerBound, y.lowerBound)), sk.addPoint(Vec2(x.upperBound, y.lowerBound)),
-                 sk.addPoint(Vec2(x.upperBound, y.upperBound)), sk.addPoint(Vec2(x.lowerBound, y.upperBound))]
+        let x0 = x.1, y0 = y.1, x1 = x.1 + width.1, y1 = y.1 + height.1
+        let p = [sk.addPoint(Vec2(x0, y0)), sk.addPoint(Vec2(x1, y0)), sk.addPoint(Vec2(x1, y1)), sk.addPoint(Vec2(x0, y1))]
         let l = (0..<4).map { sk.addLine(p[$0], p[($0 + 1) % 4]) }
         sk.addConstraint(.horizontal(line: l[0]))
         sk.addConstraint(.vertical(line: l[1]))
         sk.addConstraint(.horizontal(line: l[2]))
         sk.addConstraint(.vertical(line: l[3]))
-        let fmt = { (v: Double) in String(format: "%g mm", v) }
-        sk.addConstraint(.length(line: l[0], value: fmt(x.upperBound - x.lowerBound)), labelOffset: Vec2(0, -12))
-        sk.addConstraint(.length(line: l[1], value: fmt(y.upperBound - y.lowerBound)), labelOffset: Vec2(12, 0))
+        sk.addConstraint(.length(line: l[0], value: width.0), labelOffset: Vec2(0, -12))
+        sk.addConstraint(.length(line: l[1], value: height.0), labelOffset: Vec2(12, 0))
+        sk.addConstraint(.horizontalDistance(Sketch.originId, p[0], value: x.0))
+        sk.addConstraint(.verticalDistance(Sketch.originId, p[0], value: y.0))
         let s = Feature(name: "Skizze \(name)", kind: .sketch(sk))
         var ex = ExtrudeFeature()
-        ex.profiles = [ProfileRef(sketch: s.id, sample: Vec2((x.lowerBound + x.upperBound) / 2, (y.lowerBound + y.upperBound) / 2))]
+        ex.profiles = [ProfileRef(sketch: s.id, sample: Vec2((x0 + x1) / 2, (y0 + y1) / 2),
+                                  anchor: ProfileAnchor(points: p, weights: [0.25, 0.25, 0.25, 0.25]))]
         ex.distance = distance
         ex.operation = .newBody
         return (s, Feature(name: name, kind: .extrude(ex)))

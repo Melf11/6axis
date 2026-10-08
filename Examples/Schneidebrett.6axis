@@ -1,6 +1,6 @@
 {
   "bodies" : [
-    "02F4842B-BBF4-4CDA-889B-4433ADE4A402",
+    "C7910C61-6F77-4E9E-9F0F-C955EFB32DA7",
     {
       "grain" : "length",
       "material" : "Eiche massiv",
@@ -39,7 +39,7 @@
   },
   "features" : [
     {
-      "id" : "A0E217CD-928F-4C43-9330-7F3BE33F6408",
+      "id" : "36EF0919-D2A9-432D-9529-B1C1E9EFFD8E",
       "kind" : {
         "sketch" : {
           "_0" : {
@@ -97,7 +97,7 @@
                 "kind" : {
                   "length" : {
                     "line" : 5,
-                    "value" : "400 mm"
+                    "value" : "laenge"
                   }
                 },
                 "labelOffset" : [
@@ -110,11 +110,80 @@
                 "kind" : {
                   "length" : {
                     "line" : 6,
-                    "value" : "250 mm"
+                    "value" : "breite"
                   }
                 },
                 "labelOffset" : [
                   12,
+                  0
+                ]
+              },
+              {
+                "id" : 15,
+                "kind" : {
+                  "horizontalDistance" : {
+                    "_0" : 0,
+                    "_1" : 1,
+                    "value" : "0 mm"
+                  }
+                },
+                "labelOffset" : [
+                  0,
+                  0
+                ]
+              },
+              {
+                "id" : 16,
+                "kind" : {
+                  "verticalDistance" : {
+                    "_0" : 0,
+                    "_1" : 1,
+                    "value" : "0 mm"
+                  }
+                },
+                "labelOffset" : [
+                  0,
+                  0
+                ]
+              },
+              {
+                "id" : 19,
+                "kind" : {
+                  "horizontalDistance" : {
+                    "_0" : 0,
+                    "_1" : 17,
+                    "value" : "laenge - 40 mm"
+                  }
+                },
+                "labelOffset" : [
+                  0,
+                  0
+                ]
+              },
+              {
+                "id" : 20,
+                "kind" : {
+                  "verticalDistance" : {
+                    "_0" : 0,
+                    "_1" : 17,
+                    "value" : "breite - 40 mm"
+                  }
+                },
+                "labelOffset" : [
+                  0,
+                  0
+                ]
+              },
+              {
+                "id" : 21,
+                "kind" : {
+                  "diameter" : {
+                    "curve" : 18,
+                    "value" : "30 mm"
+                  }
+                },
+                "labelOffset" : [
+                  0,
                   0
                 ]
               }
@@ -164,14 +233,14 @@
                 "construction" : false,
                 "geometry" : {
                   "circle" : {
-                    "center" : 15,
+                    "center" : 17,
                     "radius" : 15
                   }
                 },
-                "id" : 16
+                "id" : 18
               }
             ],
-            "nextId" : 17,
+            "nextId" : 22,
             "plane" : {
               "xy" : {
 
@@ -220,7 +289,7 @@
               },
               {
                 "fixed" : false,
-                "id" : 15,
+                "id" : 17,
                 "position" : [
                   360,
                   210
@@ -234,7 +303,7 @@
       "suppressed" : false
     },
     {
-      "id" : "02F4842B-BBF4-4CDA-889B-4433ADE4A402",
+      "id" : "C7910C61-6F77-4E9E-9F0F-C955EFB32DA7",
       "kind" : {
         "extrude" : {
           "_0" : {
@@ -247,11 +316,29 @@
             "operation" : "newBody",
             "profiles" : [
               {
+                "anchor" : {
+                  "offset" : [
+                    0,
+                    0
+                  ],
+                  "points" : [
+                    1,
+                    2,
+                    3,
+                    4
+                  ],
+                  "weights" : [
+                    0.25,
+                    0.25,
+                    0.25,
+                    0.25
+                  ]
+                },
                 "sample" : [
                   200,
                   125
                 ],
-                "sketch" : "A0E217CD-928F-4C43-9330-7F3BE33F6408"
+                "sketch" : "36EF0919-D2A9-432D-9529-B1C1E9EFFD8E"
               }
             ],
             "targets" : [
@@ -264,15 +351,22 @@
       "suppressed" : false
     },
     {
-      "id" : "B06E6C2A-9298-4986-B6D9-0461A37C7947",
+      "id" : "17790458-1176-431B-9B24-155BDEFC90A1",
       "kind" : {
         "fillet" : {
           "_0" : {
             "edges" : [
               {
-                "body" : "02F4842B-BBF4-4CDA-889B-4433ADE4A402",
+                "body" : "C7910C61-6F77-4E9E-9F0F-C955EFB32DA7",
                 "edge" : {
+                  "count" : 15,
+                  "direction" : [
+                    0,
+                    0,
+                    1
+                  ],
                   "index" : 0,
+                  "kind" : 0,
                   "midpoint" : [
                     0,
                     250,
@@ -281,9 +375,16 @@
                 }
               },
               {
-                "body" : "02F4842B-BBF4-4CDA-889B-4433ADE4A402",
+                "body" : "C7910C61-6F77-4E9E-9F0F-C955EFB32DA7",
                 "edge" : {
+                  "count" : 15,
+                  "direction" : [
+                    0,
+                    0,
+                    1
+                  ],
                   "index" : 1,
+                  "kind" : 0,
                   "midpoint" : [
                     0,
                     0,
@@ -292,9 +393,16 @@
                 }
               },
               {
-                "body" : "02F4842B-BBF4-4CDA-889B-4433ADE4A402",
+                "body" : "C7910C61-6F77-4E9E-9F0F-C955EFB32DA7",
                 "edge" : {
+                  "count" : 15,
+                  "direction" : [
+                    0,
+                    0,
+                    1
+                  ],
                   "index" : 4,
+                  "kind" : 0,
                   "midpoint" : [
                     400,
                     250,
@@ -303,9 +411,16 @@
                 }
               },
               {
-                "body" : "02F4842B-BBF4-4CDA-889B-4433ADE4A402",
+                "body" : "C7910C61-6F77-4E9E-9F0F-C955EFB32DA7",
                 "edge" : {
+                  "count" : 15,
+                  "direction" : [
+                    0,
+                    0,
+                    1
+                  ],
                   "index" : 7,
+                  "kind" : 0,
                   "midpoint" : [
                     400,
                     0,
@@ -322,16 +437,23 @@
       "suppressed" : false
     },
     {
-      "id" : "D131C5C4-CEBA-4494-9DCB-C987DB5B5C0A",
+      "id" : "24EB93F4-3CFC-4CC0-A02F-AEF8420D107B",
       "kind" : {
         "chamfer" : {
           "_0" : {
             "distance" : "2 mm",
             "edges" : [
               {
-                "body" : "02F4842B-BBF4-4CDA-889B-4433ADE4A402",
+                "body" : "C7910C61-6F77-4E9E-9F0F-C955EFB32DA7",
                 "edge" : {
+                  "count" : 27,
+                  "direction" : [
+                    0,
+                    -1,
+                    0
+                  ],
                   "index" : 3,
+                  "kind" : 0,
                   "midpoint" : [
                     0,
                     125,
@@ -340,9 +462,11 @@
                 }
               },
               {
-                "body" : "02F4842B-BBF4-4CDA-889B-4433ADE4A402",
+                "body" : "C7910C61-6F77-4E9E-9F0F-C955EFB32DA7",
                 "edge" : {
+                  "count" : 27,
                   "index" : 13,
+                  "kind" : 1,
                   "midpoint" : [
                     5.857864376269045,
                     244.14213562373095,
@@ -351,9 +475,11 @@
                 }
               },
               {
-                "body" : "02F4842B-BBF4-4CDA-889B-4433ADE4A402",
+                "body" : "C7910C61-6F77-4E9E-9F0F-C955EFB32DA7",
                 "edge" : {
+                  "count" : 27,
                   "index" : 15,
+                  "kind" : 1,
                   "midpoint" : [
                     5.857864376269042,
                     5.857864376269049,
@@ -362,9 +488,16 @@
                 }
               },
               {
-                "body" : "02F4842B-BBF4-4CDA-889B-4433ADE4A402",
+                "body" : "C7910C61-6F77-4E9E-9F0F-C955EFB32DA7",
                 "edge" : {
+                  "count" : 27,
+                  "direction" : [
+                    -1,
+                    0,
+                    0
+                  ],
                   "index" : 16,
+                  "kind" : 0,
                   "midpoint" : [
                     200,
                     250,
@@ -373,9 +506,16 @@
                 }
               },
               {
-                "body" : "02F4842B-BBF4-4CDA-889B-4433ADE4A402",
+                "body" : "C7910C61-6F77-4E9E-9F0F-C955EFB32DA7",
                 "edge" : {
+                  "count" : 27,
+                  "direction" : [
+                    1,
+                    0,
+                    0
+                  ],
                   "index" : 17,
+                  "kind" : 0,
                   "midpoint" : [
                     200,
                     0,
@@ -384,9 +524,11 @@
                 }
               },
               {
-                "body" : "02F4842B-BBF4-4CDA-889B-4433ADE4A402",
+                "body" : "C7910C61-6F77-4E9E-9F0F-C955EFB32DA7",
                 "edge" : {
+                  "count" : 27,
                   "index" : 18,
+                  "kind" : 1,
                   "midpoint" : [
                     394.14213562373095,
                     244.14213562373095,
@@ -395,9 +537,11 @@
                 }
               },
               {
-                "body" : "02F4842B-BBF4-4CDA-889B-4433ADE4A402",
+                "body" : "C7910C61-6F77-4E9E-9F0F-C955EFB32DA7",
                 "edge" : {
+                  "count" : 27,
                   "index" : 19,
+                  "kind" : 1,
                   "midpoint" : [
                     394.14213562373095,
                     5.857864376269049,
@@ -406,9 +550,16 @@
                 }
               },
               {
-                "body" : "02F4842B-BBF4-4CDA-889B-4433ADE4A402",
+                "body" : "C7910C61-6F77-4E9E-9F0F-C955EFB32DA7",
                 "edge" : {
+                  "count" : 27,
+                  "direction" : [
+                    0,
+                    1,
+                    0
+                  ],
                   "index" : 20,
+                  "kind" : 0,
                   "midpoint" : [
                     400,
                     125,
@@ -426,19 +577,31 @@
   ],
   "formatVersion" : 1,
   "hiddenSketches" : [
-    "A0E217CD-928F-4C43-9330-7F3BE33F6408"
+    "36EF0919-D2A9-432D-9529-B1C1E9EFFD8E"
   ],
   "parameters" : [
     {
+      "comment" : "",
+      "expression" : "400 mm",
+      "id" : "A8CA76C0-E21A-4725-B2FB-4FAF9F4AE7E7",
+      "name" : "laenge"
+    },
+    {
+      "comment" : "",
+      "expression" : "250 mm",
+      "id" : "CBC0B691-52B3-497C-B66F-A8CDAABB00F8",
+      "name" : "breite"
+    },
+    {
       "comment" : "Brettstärke",
       "expression" : "25 mm",
-      "id" : "E2363C14-FA85-4398-A77B-B8DFAA8F3FBA",
+      "id" : "D75624BD-50BA-4FC1-931D-BB788624ED22",
       "name" : "dicke"
     },
     {
       "comment" : "",
       "expression" : "20 mm",
-      "id" : "D7D908C6-37C9-4E08-AB3A-070973E74EC0",
+      "id" : "E59FCAB6-6C33-4070-B0E4-F1874663FDD6",
       "name" : "eckradius"
     }
   ]

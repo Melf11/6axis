@@ -1,6 +1,6 @@
 {
   "bodies" : [
-    "78CB65E7-8C46-4581-9270-18E1C8F9E65B",
+    "9E504BA1-586B-4647-A003-C91517283347",
     {
       "grain" : "none",
       "material" : "PLA",
@@ -10,7 +10,7 @@
   ],
   "features" : [
     {
-      "id" : "B107972A-D1A0-463A-BCDB-CF61AEF3FD81",
+      "id" : "7B086AAE-F7C8-424F-BFFE-C8A7FA536BE8",
       "kind" : {
         "sketch" : {
           "_0" : {
@@ -68,7 +68,7 @@
                 "kind" : {
                   "length" : {
                     "line" : 5,
-                    "value" : "120 mm"
+                    "value" : "laenge"
                   }
                 },
                 "labelOffset" : [
@@ -81,11 +81,39 @@
                 "kind" : {
                   "length" : {
                     "line" : 6,
-                    "value" : "80 mm"
+                    "value" : "breite"
                   }
                 },
                 "labelOffset" : [
                   12,
+                  0
+                ]
+              },
+              {
+                "id" : 15,
+                "kind" : {
+                  "horizontalDistance" : {
+                    "_0" : 0,
+                    "_1" : 1,
+                    "value" : "laenge \/ 2"
+                  }
+                },
+                "labelOffset" : [
+                  0,
+                  0
+                ]
+              },
+              {
+                "id" : 16,
+                "kind" : {
+                  "verticalDistance" : {
+                    "_0" : 0,
+                    "_1" : 1,
+                    "value" : "breite \/ 2"
+                  }
+                },
+                "labelOffset" : [
+                  0,
                   0
                 ]
               }
@@ -132,7 +160,7 @@
                 "id" : 8
               }
             ],
-            "nextId" : 15,
+            "nextId" : 17,
             "plane" : {
               "xy" : {
 
@@ -187,7 +215,7 @@
       "suppressed" : false
     },
     {
-      "id" : "78CB65E7-8C46-4581-9270-18E1C8F9E65B",
+      "id" : "9E504BA1-586B-4647-A003-C91517283347",
       "kind" : {
         "extrude" : {
           "_0" : {
@@ -200,11 +228,29 @@
             "operation" : "newBody",
             "profiles" : [
               {
+                "anchor" : {
+                  "offset" : [
+                    0,
+                    0
+                  ],
+                  "points" : [
+                    1,
+                    2,
+                    3,
+                    4
+                  ],
+                  "weights" : [
+                    0.25,
+                    0.25,
+                    0.25,
+                    0.25
+                  ]
+                },
                 "sample" : [
                   0,
                   0
                 ],
-                "sketch" : "B107972A-D1A0-463A-BCDB-CF61AEF3FD81"
+                "sketch" : "7B086AAE-F7C8-424F-BFFE-C8A7FA536BE8"
               }
             ],
             "targets" : [
@@ -217,15 +263,22 @@
       "suppressed" : false
     },
     {
-      "id" : "1EA39EB2-B32A-47AC-9AB6-7C62E93E9DE6",
+      "id" : "F8B4AE7F-44D4-4780-AEC4-7D55A4101E91",
       "kind" : {
         "fillet" : {
           "_0" : {
             "edges" : [
               {
-                "body" : "78CB65E7-8C46-4581-9270-18E1C8F9E65B",
+                "body" : "9E504BA1-586B-4647-A003-C91517283347",
                 "edge" : {
+                  "count" : 12,
+                  "direction" : [
+                    0,
+                    0,
+                    1
+                  ],
                   "index" : 0,
+                  "kind" : 0,
                   "midpoint" : [
                     -60,
                     40,
@@ -234,9 +287,16 @@
                 }
               },
               {
-                "body" : "78CB65E7-8C46-4581-9270-18E1C8F9E65B",
+                "body" : "9E504BA1-586B-4647-A003-C91517283347",
                 "edge" : {
+                  "count" : 12,
+                  "direction" : [
+                    0,
+                    0,
+                    1
+                  ],
                   "index" : 1,
+                  "kind" : 0,
                   "midpoint" : [
                     -60,
                     -40,
@@ -245,9 +305,16 @@
                 }
               },
               {
-                "body" : "78CB65E7-8C46-4581-9270-18E1C8F9E65B",
+                "body" : "9E504BA1-586B-4647-A003-C91517283347",
                 "edge" : {
+                  "count" : 12,
+                  "direction" : [
+                    0,
+                    0,
+                    1
+                  ],
                   "index" : 4,
+                  "kind" : 0,
                   "midpoint" : [
                     60,
                     40,
@@ -256,9 +323,16 @@
                 }
               },
               {
-                "body" : "78CB65E7-8C46-4581-9270-18E1C8F9E65B",
+                "body" : "9E504BA1-586B-4647-A003-C91517283347",
                 "edge" : {
+                  "count" : 12,
+                  "direction" : [
+                    0,
+                    0,
+                    1
+                  ],
                   "index" : 7,
+                  "kind" : 0,
                   "midpoint" : [
                     60,
                     -40,
@@ -275,19 +349,20 @@
       "suppressed" : false
     },
     {
-      "id" : "49DE4B2F-C32E-414E-B9A3-C30DDAB80AE2",
+      "id" : "9959A7F5-5AA3-4F18-AFB7-B29843876BAD",
       "kind" : {
         "shell" : {
           "_0" : {
             "faces" : [
               {
-                "body" : "78CB65E7-8C46-4581-9270-18E1C8F9E65B",
+                "body" : "9E504BA1-586B-4647-A003-C91517283347",
                 "face" : {
                   "centroid" : [
                     -4.027262520753871e-16,
                     1.7087392948511557e-15,
                     50
                   ],
+                  "count" : 10,
                   "index" : 4,
                   "normal" : [
                     0,
@@ -307,25 +382,37 @@
   ],
   "formatVersion" : 1,
   "hiddenSketches" : [
-    "B107972A-D1A0-463A-BCDB-CF61AEF3FD81"
+    "7B086AAE-F7C8-424F-BFFE-C8A7FA536BE8"
   ],
   "parameters" : [
     {
       "comment" : "",
+      "expression" : "120 mm",
+      "id" : "E7D71331-2C45-40A5-8A86-6786208AFEDC",
+      "name" : "laenge"
+    },
+    {
+      "comment" : "",
+      "expression" : "80 mm",
+      "id" : "7C6A6956-6CE9-4741-90DF-C330DA53C738",
+      "name" : "breite"
+    },
+    {
+      "comment" : "",
       "expression" : "50 mm",
-      "id" : "A416BA25-115A-44D3-B9FC-5D54F2F5BBF8",
+      "id" : "5D280D2C-1619-451E-A95D-E2BDECCC24E3",
       "name" : "hoehe"
     },
     {
       "comment" : "Wandstärke, Vielfaches der Düse (0,4)",
       "expression" : "2 mm",
-      "id" : "542EF9E4-6092-42F7-B509-985399C76D76",
+      "id" : "500A478A-E18B-49B4-B0DF-735A706E5C57",
       "name" : "wand"
     },
     {
       "comment" : "Eckradius außen",
       "expression" : "10 mm",
-      "id" : "23B9A9C1-2245-435A-BFE7-CE09625C5E0E",
+      "id" : "E05BD7BD-A5EE-43C8-8A2B-3BB5E4B95CAC",
       "name" : "radius"
     }
   ]

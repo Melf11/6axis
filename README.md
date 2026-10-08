@@ -14,7 +14,7 @@ Die fertige App gibt es unter [Releases](https://github.com/Melf11/6axis/release
 
 ## Beispiele
 
-Im Ordner [`Examples/`](Examples) und in der App unter **Ablage → Beispiele**: Korpus mit Fachboden und Dübellöchern (inkl. Zeichnung), Schneidebrett mit Abrundungen und Fase, Aufbewahrungsbox für den 3D-Druck. Die Maße hängen an Parametern (*Ändern → Parameter*), z. B. `tiefe`, `dicke` oder `wand`.
+Im Ordner [`Examples/`](Examples) und in der App unter **Ablage → Beispiele**: Korpus mit Fachboden und Dübellöchern (inkl. Zeichnung), Schneidebrett mit Abrundungen und Fase, Aufbewahrungsbox für den 3D-Druck. Die Maße hängen an Parametern (*Ändern → Parameter*), z. B. `breite`, `hoehe`, `tiefe`, `staerke` beim Korpus.
 
 ## Funktionen
 
