@@ -106,6 +106,8 @@ struct AppCommands: Commands {
             Button("Technische Zeichnung öffnen") { openWindow(id: "drawing") }.keyboardShortcut("d", modifiers: [.command, .shift])
             Divider()
             Button("Zeichnung als PDF exportieren …") { editor.exportDrawingPDF() }
+            Button("Gesamtansicht als DXF exportieren …") { editor.exportDrawingDXF() }
+            Button("Einzelteile als DXF (1:1, CNC/Laser) …") { editor.exportPartsDXF() }
             Button("Zeichnung drucken …") { editor.printDrawing() }
         }
         CommandMenu("Konstruktion") {

@@ -1,4 +1,5 @@
 import AppKit
+import UniformTypeIdentifiers
 import Foundation
 import Observation
 import SixAxisCore
@@ -51,7 +52,11 @@ final class DrawingController {
     /// Visible bodies with their browser names.
     static func input(_ editor: Editor) -> DrawingGenerator.Input {
         let parts = editor.state.orderedBodies.filter { editor.doc.isBodyVisible($0.id) }
-            .map { DrawingGenerator.Part(name: editor.doc.bodyName($0.id), shape: $0.shape) }
+            .map { body -> DrawingGenerator.Part in
+                let meta = editor.doc.bodies[body.id]
+                return DrawingGenerator.Part(name: editor.doc.bodyName(body.id), shape: body.shape,
+                                             material: meta?.material ?? "", grain: meta?.grain ?? .none)
+            }
         return DrawingGenerator.Input(parts: parts, settings: editor.doc.drawing ?? DrawingSettings(),
                                       fallbackTitle: editor.fileURL?.deletingPathExtension().lastPathComponent ?? "Unbenannt")
     }
@@ -64,6 +69,7 @@ final class DrawingController {
     /// Synchronous generation (export, printing, tests).
     func generateAllNow(_ editor: Editor) -> [DrawingPage] { generator.generatePages(Self.input(editor)) }
     func generateNow(_ editor: Editor) -> DrawingPage { generateAllNow(editor)[0] }
+    func partsDXF(_ editor: Editor) -> String { generator.partsDXF(Self.input(editor)) }
 }
 
 extension Editor {
@@ -105,6 +111,38 @@ extension Editor {
         } catch {
             showToast(error.localizedDescription)
         }
+    }
+
+    private var drawingBaseName: String {
+        drawingSettings.title.isEmpty ? (fileURL?.deletingPathExtension().lastPathComponent ?? "Zeichnung") : drawingSettings.title
+    }
+
+    private func saveText(_ text: String, suggested: String, ext: String, done: String) {
+        let panel = NSSavePanel()
+        panel.allowedContentTypes = [UTType(filenameExtension: ext) ?? .data]
+        panel.nameFieldStringValue = suggested + "." + ext
+        guard panel.runModal() == .OK, let url = panel.url else { return }
+        do {
+            try text.write(to: url, atomically: true, encoding: .utf8)
+            showToast(done + ": \(url.lastPathComponent)")
+        } catch {
+            showToast(error.localizedDescription)
+        }
+    }
+
+    /// One sheet as DXF (paper millimetres, ISO line types on layers).
+    func exportDrawingDXF(sheet index: Int = 0) {
+        let pages = drawing.generateAllNow(self)
+        guard !pages.isEmpty else { return }
+        let i = min(index, pages.count - 1)
+        let suffix = pages.count > 1 ? " – \(pages[i].name)" : ""
+        saveText(pages[i].dxf(), suggested: drawingBaseName + suffix, ext: "dxf", done: "DXF exportiert")
+    }
+
+    /// Part outlines 1:1 for CNC/laser.
+    func exportPartsDXF() {
+        let dxf = drawing.partsDXF(self)
+        saveText(dxf, suggested: drawingBaseName + " – Einzelteile 1zu1", ext: "dxf", done: "Einzelteile als DXF exportiert")
     }
 
     func printDrawing() {

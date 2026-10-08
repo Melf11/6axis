@@ -491,8 +491,14 @@ struct DrawingWindow: View {
             Button { editor.printDrawing() } label: { Label("Drucken", systemImage: "printer") }
                 .help("Drucken (⌘P)")
                 .keyboardShortcut("p")
-            Button { editor.exportDrawingPDF() } label: { Label("PDF", systemImage: "arrow.down.doc") }
-                .help("Als PDF exportieren (maßstabsgetreu)")
+            Menu {
+                Button("PDF (alle Blätter, maßstabsgetreu) …") { editor.exportDrawingPDF() }
+                Button("DXF – aktuelles Blatt …") { editor.exportDrawingDXF(sheet: pageIndex) }
+                Button("DXF – Einzelteile 1:1 für CNC/Laser …") { editor.exportPartsDXF() }
+            } label: {
+                Label("Export", systemImage: "square.and.arrow.up")
+            }
+            .help("Als PDF oder DXF exportieren")
         }
     }
 

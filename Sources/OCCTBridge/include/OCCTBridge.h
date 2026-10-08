@@ -119,6 +119,13 @@ typedef struct {
 int32_t ob_hlr(const OBShape *s, const double viewDir[3], const double xDir[3], double deflection, OBProjection *out);
 void ob_projection_free(OBProjection *p);
 
+/// Axis-aligned box solid.
+OBShape *ob_box(const double minP[3], const double maxP[3]);
+/// Square planar face centred at `origin` (for section cuts).
+OBShape *ob_plane_face(const double origin[3], const double normal[3], const double xDir[3], double halfSize);
+/// Boundaries of all faces, projected like ob_hlr (no hidden-line removal). polyFlags = face index (mod 256).
+int32_t ob_face_outlines(const OBShape *s, const double viewDir[3], const double xDir[3], double deflection, OBProjection *out);
+
 int32_t ob_write_stl(const OBShape *s, const char *path, double linearDeflection, int32_t ascii);
 int32_t ob_write_step(const OBShape *s, const char *path);
 OBShape *ob_read_step(const char *path);
