@@ -8,7 +8,8 @@ import simd
 enum DrawingRenderer {
     /// Draws the page into `cg`, whose user space is in points with y pointing up and the
     /// sheet's bottom-left corner at the origin. `pointsPerMM` maps paper millimetres to points.
-    static func draw(_ page: DrawingPage, in cg: CGContext, pointsPerMM k: CGFloat, ink: CGColor = .black) {
+    static func draw(_ page: DrawingPage, in cg: CGContext, pointsPerMM k: CGFloat, ink: CGColor = .black,
+                     highlight: [String: CGColor] = [:]) {
         cg.saveGState()
         cg.setLineCap(.round)
         cg.setLineJoin(.round)
@@ -21,7 +22,9 @@ enum DrawingRenderer {
         cg.setFillColor(ink)
 
         for line in page.lines where line.points.count >= 2 {
-            cg.setLineWidth(CGFloat(line.style.width) * k)
+            let color = line.group.flatMap { highlight[$0] }
+            cg.setStrokeColor(color ?? ink)
+            cg.setLineWidth(CGFloat(line.style.width) * k * (color != nil ? 1.6 : 1))
             if let dash = line.style.dash {
                 cg.setLineDash(phase: 0, lengths: dash.map { CGFloat($0) * k })
                 cg.setLineCap(.butt)
@@ -37,7 +40,9 @@ enum DrawingRenderer {
         cg.setLineDash(phase: 0, lengths: [])
 
         // ISO 129 arrowheads: 3 mm long, 15° half-angle, filled.
+        cg.setStrokeColor(ink)
         for a in page.arrows {
+            cg.setFillColor(a.group.flatMap { highlight[$0] } ?? ink)
             let u = simd_normalize(a.direction)
             let n = Vec2(-u.y, u.x)
             let back = a.tip - u * 3
@@ -50,7 +55,7 @@ enum DrawingRenderer {
             cg.fillPath()
         }
 
-        for t in page.texts { drawText(t, in: cg, k: k, color: ink) }
+        for t in page.texts { drawText(t, in: cg, k: k, color: t.group.flatMap { highlight[$0] } ?? ink) }
         cg.restoreGState()
     }
 

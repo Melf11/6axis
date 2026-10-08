@@ -137,26 +137,34 @@ public final class DrawingGenerator: @unchecked Sendable {
         }
 
         // Dimension sets in model units (computed once, independent of scale).
-        var frontX = Self.baseline(front.xs + front.holes.map { Feature(position: $0.center.x, low: $0.center.y - $0.radius, high: $0.center.y + $0.radius, isHole: true) },
-                                   from: front.minP.x)
-        var frontZ = Self.baseline(front.ys + front.holes.map { Feature(position: $0.center.y, low: $0.center.x - $0.radius, high: $0.center.x + $0.radius, isHole: true) },
-                                   from: front.minP.y)
-        var sideY = Self.baseline(side.xs + side.holes.map { Feature(position: $0.center.x, low: $0.center.y - $0.radius, high: $0.center.y + $0.radius, isHole: true) },
-                                  from: side.minP.x)
+        func holeX(_ v: ViewData) -> [Feature] { v.holes.map { Feature(position: $0.center.x, low: $0.center.y - $0.radius, high: $0.center.y + $0.radius, isHole: true) } }
+        func holeY(_ v: ViewData) -> [Feature] { v.holes.map { Feature(position: $0.center.y, low: $0.center.x - $0.radius, high: $0.center.x + $0.radius, isHole: true) } }
+        let frontXAll = Self.baseline(front.xs + holeX(front), from: front.minP.x)
+        let frontZAll = Self.baseline(front.ys + holeY(front), from: front.minP.y)
+        let sideYAll = Self.baseline(side.xs + holeX(side), from: side.minP.x)
         // Heights are dimensioned in the front view; the side view only adds heights of side holes.
-        let frontZValues = Set(frontZ.map { Int(($0.position - front.minP.y).rounded()) })
-        let sideZ = Self.baseline(side.holes.map { Feature(position: $0.center.y, low: $0.center.x - $0.radius, high: $0.center.x + $0.radius, isHole: true) },
-                                  from: side.minP.y).filter { !frontZValues.contains(Int(($0.position - side.minP.y).rounded())) }
+        let frontZValues = Set(frontZAll.map { Int(($0.position - front.minP.y).rounded()) })
+        let sideZAll = Self.baseline(holeY(side), from: side.minP.y).filter { !frontZValues.contains(Int(($0.position - side.minP.y).rounded())) }
         // Top view: only hole positions, X values not already given in the front view.
-        let frontXValues = Set(frontX.map { Int(($0.position - front.minP.x).rounded()) })
-        let topX = Self.baseline(top.holes.map { Feature(position: $0.center.x, low: $0.center.y - $0.radius, high: $0.center.y + $0.radius, isHole: true) },
-                                 from: top.minP.x).filter { !frontXValues.contains(Int(($0.position - top.minP.x).rounded())) }
-        let topY = Self.baseline(top.holes.map { Feature(position: $0.center.y, low: $0.center.x - $0.radius, high: $0.center.x + $0.radius, isHole: true) },
-                                 from: top.minP.y)
-        if !settings.showDimensions { frontX = []; frontZ = []; sideY = [] }
+        let frontXValues = Set(frontXAll.map { Int(($0.position - front.minP.x).rounded()) })
+        let topXAll = Self.baseline(holeX(top), from: top.minP.x).filter { !frontXValues.contains(Int(($0.position - top.minP.x).rounded())) }
+        let topYAll = Self.baseline(holeY(top), from: top.minP.y)
+
+        // Stable ids ("front.x.481") let manual edits survive model changes; hidden ones close up their row.
         let dims = settings.showDimensions
-        let rows = (frontBelow: max(frontX.count, sideY.count), frontLeft: frontZ.count,
-                    sideRight: dims ? sideZ.count : 0, topBelow: dims ? topX.count : 0, topLeft: dims ? topY.count : 0)
+        func visible(_ f: [Feature], _ view: String, _ axis: String, _ base: Double) -> [(Feature, String)] {
+            guard dims else { return [] }
+            return f.map { ($0, Self.dimensionId(view, axis, $0.position - base)) }.filter { !settings.hiddenDimensions.contains($0.1) }
+        }
+        let frontX = visible(frontXAll, "front", "x", front.minP.x)
+        let frontZ = visible(frontZAll, "front", "y", front.minP.y)
+        let sideY = visible(sideYAll, "left", "x", side.minP.x)
+        let sideZ = visible(sideZAll, "left", "y", side.minP.y)
+        let topX = visible(topXAll, "top", "x", top.minP.x)
+        let topY = visible(topYAll, "top", "y", top.minP.y)
+        func depth(_ f: [(Feature, String)]) -> Int { f.isEmpty ? 0 : (Self.assignRows(f, settings.dimensionOffsets).max() ?? 0) + 1 }
+        let rows = (frontBelow: max(depth(frontX), depth(sideY)), frontLeft: depth(frontZ),
+                    sideRight: depth(sideZ), topBelow: depth(topX), topLeft: depth(topY))
 
         func band(_ n: Int) -> Double { n == 0 ? 6 : 10 + 7 * Double(n - 1) + 6 }
 
@@ -203,37 +211,52 @@ public final class DrawingGenerator: @unchecked Sendable {
         addFrameAndTitle(&page, input)
 
         // Placement: front top-left, left-side view to the right, top view below (method 1).
+        // Manual offsets keep the projection alignment: the front view moves everything,
+        // the top view only vertically, the side view only horizontally.
         let s = scale.factor
         let L = layoutSize(s)
         let area = Self.drawingArea(sheet)
+        let all = settings.viewOffsets["front"] ?? .zero
         let originX = area.origin.x + (area.size.x - L.w) / 2 + L.left
         let frontTop = area.origin.y + area.size.y - (area.size.y - L.h) / 2 - 2
-        let frontOrigin = Vec2(originX, frontTop - front.size.y * s)
-        let sideOrigin = Vec2(frontOrigin.x + front.size.x * s + L.gapH, frontOrigin.y)
-        let topOrigin = Vec2(frontOrigin.x, frontOrigin.y - L.gapV - top.size.y * s)
+        let frontOrigin = Vec2(originX, frontTop - front.size.y * s) + all
+        let sideOrigin = Vec2(frontOrigin.x + front.size.x * s + L.gapH + (settings.viewOffsets["left"]?.x ?? 0), frontOrigin.y)
+        let topOrigin = Vec2(frontOrigin.x, frontOrigin.y - L.gapV - top.size.y * s + (settings.viewOffsets["top"]?.y ?? 0))
 
-        func mapper(_ v: ViewData, _ origin: Vec2) -> (Vec2) -> Vec2 {
-            { p in origin + (p - v.minP) * s }
+        func place(_ id: String, _ title: String, _ v: ViewData, _ origin: Vec2, _ c: PlacedView.Constraint, _ k: Double) -> PlacedView {
+            PlacedView(id: id, title: title, min: origin, max: origin + v.size * k, origin: origin, modelMin: v.minP, scale: k, constraint: c)
         }
-        let mf = mapper(front, frontOrigin), ms = mapper(side, sideOrigin), mt = mapper(top, topOrigin)
+        let pf = place("front", "Vorderansicht", front, frontOrigin, .all, s)
+        let pl = place("left", "Seitenansicht von links", side, sideOrigin, .horizontal, s)
+        let pt = place("top", "Draufsicht", top, topOrigin, .vertical, s)
+        page.views = [pf, pl, pt]
 
-        addView(&page, front, mf, showHidden: settings.showHidden)
-        addView(&page, side, ms, showHidden: settings.showHidden)
-        addView(&page, top, mt, showHidden: settings.showHidden)
+        addView(&page, front, pf.toPaper, showHidden: settings.showHidden)
+        addView(&page, side, pl.toPaper, showHidden: settings.showHidden)
+        addView(&page, top, pt.toPaper, showHidden: settings.showHidden)
+        for (v, pv) in [(front, pf), (side, pl), (top, pt)] {
+            addCenterLines(&page, v, map: pv.toPaper, s: s)
+            addSnapPoints(&page, v, pv)
+        }
 
+        let o = settings.dimensionOffsets
         if dims {
             // Front: X from the left edge (below), Z from the bottom edge (left).
-            horizontalBaseline(&page, frontX, base: front.minP.x, map: mf, view: front, below: true, s: s)
-            verticalBaseline(&page, frontZ, base: front.minP.y, map: mf, view: front, leftSide: true, s: s)
-            horizontalBaseline(&page, sideY, base: side.minP.x, map: ms, view: side, below: true, s: s)
-            verticalBaseline(&page, sideZ, base: side.minP.y, map: ms, view: side, leftSide: false, s: s)
-            horizontalBaseline(&page, topX, base: top.minP.x, map: mt, view: top, below: true, s: s)
-            verticalBaseline(&page, topY, base: top.minP.y, map: mt, view: top, leftSide: true, s: s)
-            for (v, m) in [(front, mf), (side, ms), (top, mt)] { addHoleLabels(&page, v, map: m, s: s) }
+            horizontalBaseline(&page, frontX, base: front.minP.x, map: pf.toPaper, view: front, offsets: o)
+            verticalBaseline(&page, frontZ, base: front.minP.y, map: pf.toPaper, view: front, leftSide: true, offsets: o)
+            horizontalBaseline(&page, sideY, base: side.minP.x, map: pl.toPaper, view: side, offsets: o)
+            verticalBaseline(&page, sideZ, base: side.minP.y, map: pl.toPaper, view: side, leftSide: false, offsets: o)
+            horizontalBaseline(&page, topX, base: top.minP.x, map: pt.toPaper, view: top, offsets: o)
+            verticalBaseline(&page, topY, base: top.minP.y, map: pt.toPaper, view: top, leftSide: true, offsets: o)
+            for (v, pv) in [(front, pf), (side, pl), (top, pt)] {
+                addHoleLabels(&page, v, viewId: pv.id, map: pv.toPaper, s: s, hidden: settings.hiddenDimensions, offsets: o)
+            }
         }
-        for (v, m) in [(front, mf), (side, ms), (top, mt)] { addCenterLines(&page, v, map: m, s: s) }
+        for c in settings.customDimensions where !settings.hiddenDimensions.contains(c.key) {
+            addCustomDimension(&page, c)
+        }
 
-        // Pictorial view in the free quadrant (right of the top view, above the title block).
+        // Pictorial view in the free quadrant (right of the top view, above the title block); freely movable.
         if settings.showIso, let iso = projection(shapes, .iso).flatMap(Self.analyze) {
             let regionMin = Vec2(sideOrigin.x, area.origin.y + 2)
             let regionMax = Vec2(area.origin.x + area.size.x - 4, sideOrigin.y - band(rows.frontBelow) - 2)
@@ -241,14 +264,26 @@ public final class DrawingGenerator: @unchecked Sendable {
             if region.x > 35 && region.y > 30 {
                 let fit = min(region.x / max(iso.size.x, 1e-6), region.y / max(iso.size.y, 1e-6)) * 0.9
                 let k = min(fit, s)
-                let center = (regionMin + regionMax) / 2
-                let origin = center - iso.size * k / 2
+                let center = (regionMin + regionMax) / 2 + (settings.viewOffsets["iso"] ?? .zero)
+                let pi = place("iso", "Isometrie", iso, center - iso.size * k / 2, .free, k)
+                page.views.append(pi)
                 for line in iso.projection.polylines where !line.hidden && !line.smooth {
-                    page.lines.append(DrawingLine(points: line.points.map { origin + ($0 - iso.minP) * k }, style: .iso))
+                    page.lines.append(DrawingLine(points: line.points.map(pi.toPaper), style: .iso))
                 }
             }
         }
         return page
+    }
+
+    /// Returns a copy of `page` with one more user dimension (live preview while placing).
+    public func adding(_ c: CustomDimension, to page: DrawingPage) -> DrawingPage {
+        var p = page
+        addCustomDimension(&p, c)
+        return p
+    }
+
+    public static func dimensionId(_ view: String, _ axis: String, _ value: Double) -> String {
+        "\(view).\(axis).\(Int(value.rounded()))"
     }
 
     // MARK: - Geometry output
@@ -260,6 +295,17 @@ public final class DrawingGenerator: @unchecked Sendable {
         }
     }
 
+    /// Corners and line ends of visible edges plus hole centres: anchors for user dimensions.
+    private func addSnapPoints(_ page: inout DrawingPage, _ v: ViewData, _ pv: PlacedView) {
+        var pts: [Vec2] = v.holes.map(\.center)
+        let tol = max(simd_length(v.size) * 1e-5, 1e-4)
+        for line in v.projection.polylines where !line.hidden && !line.smooth {
+            guard let first = line.points.first, let last = line.points.last else { continue }
+            for p in [first, last] where !pts.contains(where: { simd_distance($0, p) < tol }) { pts.append(p) }
+        }
+        page.snapPoints += pts.map { DrawingSnapPoint(view: pv.id, paper: pv.toPaper($0), model: $0) }
+    }
+
     private func addCenterLines(_ page: inout DrawingPage, _ v: ViewData, map: (Vec2) -> Vec2, s: Double) {
         for h in v.holes {
             let c = map(h.center)
@@ -269,87 +315,167 @@ public final class DrawingGenerator: @unchecked Sendable {
         }
     }
 
-    /// Ø callouts: one leader per distinct diameter, "n× Ø8" for repeated holes.
-    private func addHoleLabels(_ page: inout DrawingPage, _ v: ViewData, map: (Vec2) -> Vec2, s: Double) {
+    /// Ø callouts: one leader per distinct diameter, "n× Ø8" for repeated holes. Offsets move the label.
+    private func addHoleLabels(_ page: inout DrawingPage, _ v: ViewData, viewId: String, map: (Vec2) -> Vec2, s: Double,
+                               hidden: Set<String>, offsets: [String: DimensionOffset]) {
         let groups = Dictionary(grouping: v.holes) { Int((2 * $0.radius).rounded()) }
         for (d, holes) in groups.sorted(by: { $0.key < $1.key }) {
-            guard let h = holes.max(by: { $0.center.x + $0.center.y < $1.center.x + $1.center.y }) else { continue }
+            let id = "\(viewId).hole.\(d)"
+            guard !hidden.contains(id),
+                  let h = holes.max(by: { $0.center.x + $0.center.y < $1.center.x + $1.center.y }) else { continue }
             let c = map(h.center)
-            let u = simd_normalize(Vec2(1, 1))
+            let shift = offsets[id].map { Vec2($0.along, $0.distance) } ?? .zero
+            let knee0 = c + simd_normalize(Vec2(1, 1)) * (h.radius * s + 7) + shift
+            let u = simd_normalize(knee0 - c)
             let rim = c + u * h.radius * s
-            let knee = rim + u * 7
             let text = (holes.count > 1 ? "\(holes.count)× " : "") + "Ø\(d)"
             let shelf = Double(text.count) * 2.2 + 2
-            page.lines.append(DrawingLine(points: [rim, knee, knee + Vec2(shelf, 0)], style: .thin))
-            page.arrows.append(DrawingArrow(tip: rim, direction: -u))
-            page.texts.append(DrawingText(text: text, position: knee + Vec2(1, 1), height: 3.5, anchor: .left))
+            page.lines.append(DrawingLine(points: [rim, knee0, knee0 + Vec2(shelf, 0)], style: .thin, group: id))
+            page.arrows.append(DrawingArrow(tip: rim, direction: -u, group: id))
+            page.texts.append(DrawingText(text: text, position: knee0 + Vec2(1, 1), height: 3.5, anchor: .left, group: id))
+            page.dimensions.append(PlacedDimension(id: id, text: text, segments: [(rim, knee0), (knee0, knee0 + Vec2(shelf, 0))],
+                                                   textCenter: knee0 + Vec2(shelf / 2, 2.5), normal: Vec2(0, 1), along: Vec2(1, 0), isCustom: false))
         }
     }
 
     static let textHeight = 3.5
 
-    private func horizontalBaseline(_ page: inout DrawingPage, _ features: [Feature], base: Double,
-                                    map: (Vec2) -> Vec2, view: ViewData, below: Bool, s: Double) {
+    /// Rows (0 = nearest, 7 mm apart) for a stack of baseline dimensions. Dimensions the user moved
+    /// snap to the nearest row and are placed first; the others keep their row or move outwards,
+    /// so values never overlap.
+    static func assignRows(_ features: [(Feature, String)], _ offsets: [String: DimensionOffset]) -> [Int] {
+        var rows = [Int](repeating: -1, count: features.count)
+        var used = Set<Int>()
+        func take(_ i: Int, _ wanted: Int) {
+            var r = max(0, wanted)
+            while used.contains(r) { r += 1 }
+            rows[i] = r
+            used.insert(r)
+        }
+        for (i, (_, id)) in features.enumerated() {
+            if let d = offsets[id]?.distance, d != 0 { take(i, Int(((7 * Double(i) + d) / 7).rounded())) }
+        }
+        for i in features.indices where rows[i] < 0 { take(i, i) }
+        return rows
+    }
+
+    private func horizontalBaseline(_ page: inout DrawingPage, _ features: [(Feature, String)], base: Double,
+                                    map: (Vec2) -> Vec2, view: ViewData, offsets: [String: DimensionOffset]) {
         let x0 = map(Vec2(base, view.minP.y)).x
         let edgeY = map(view.minP).y
-        for (i, f) in features.enumerated() {
-            let lineY = edgeY - 10 - 7 * Double(i)
+        var lowest = edgeY
+        let rows = Self.assignRows(features, offsets)
+        for (i, (f, id)) in features.enumerated() {
+            let off = offsets[id] ?? DimensionOffset()
+            let lineY = edgeY - 10 - 7 * Double(rows[i])
+            lowest = min(lowest, lineY)
             let x1 = map(Vec2(f.position, 0)).x
             let featureLow = map(Vec2(0, f.low)).y
-            page.lines.append(DrawingLine(points: [Vec2(x1, featureLow - 1.5), Vec2(x1, lineY - 2)], style: .thin))
-            dimensionLine(&page, from: Vec2(x0, lineY), to: Vec2(x1, lineY), value: abs(f.position - base))
+            page.lines.append(DrawingLine(points: [Vec2(x1, featureLow - 1.5), Vec2(x1, lineY - 2)], style: .thin, group: id))
+            dimensionLine(&page, id: id, from: Vec2(x0, lineY), to: Vec2(x1, lineY), value: abs(f.position - base),
+                          away: Vec2(0, -1), along: off.along)
         }
         // One extension line at the reference edge, reaching the outermost dimension line.
         if !features.isEmpty {
-            let lowest = edgeY - 10 - 7 * Double(features.count - 1)
             page.lines.append(DrawingLine(points: [Vec2(x0, edgeY - 1.5), Vec2(x0, lowest - 2)], style: .thin))
         }
     }
 
-    private func verticalBaseline(_ page: inout DrawingPage, _ features: [Feature], base: Double,
-                                  map: (Vec2) -> Vec2, view: ViewData, leftSide: Bool, s: Double) {
+    private func verticalBaseline(_ page: inout DrawingPage, _ features: [(Feature, String)], base: Double,
+                                  map: (Vec2) -> Vec2, view: ViewData, leftSide: Bool, offsets: [String: DimensionOffset]) {
         let y0 = map(Vec2(view.minP.x, base)).y
         let edgeX = leftSide ? map(view.minP).x : map(view.maxP).x
         let sign: Double = leftSide ? -1 : 1
-        for (i, f) in features.enumerated() {
-            let lineX = edgeX + sign * (10 + 7 * Double(i))
+        var outer = edgeX
+        let rows = Self.assignRows(features, offsets)
+        for (i, (f, id)) in features.enumerated() {
+            let off = offsets[id] ?? DimensionOffset()
+            let lineX = edgeX + sign * (10 + 7 * Double(rows[i]))
+            outer = leftSide ? min(outer, lineX) : max(outer, lineX)
             let y1 = map(Vec2(0, f.position)).y
             let featureEdge = leftSide ? map(Vec2(f.low, 0)).x : map(Vec2(f.high, 0)).x
-            page.lines.append(DrawingLine(points: [Vec2(featureEdge + sign * 1.5, y1), Vec2(lineX + sign * 2, y1)], style: .thin))
-            dimensionLine(&page, from: Vec2(lineX, y0), to: Vec2(lineX, y1), value: abs(f.position - base))
+            page.lines.append(DrawingLine(points: [Vec2(featureEdge + sign * 1.5, y1), Vec2(lineX + sign * 2, y1)], style: .thin, group: id))
+            dimensionLine(&page, id: id, from: Vec2(lineX, y0), to: Vec2(lineX, y1), value: abs(f.position - base),
+                          away: Vec2(sign, 0), along: off.along)
         }
         if !features.isEmpty {
-            let outer = edgeX + sign * (10 + 7 * Double(features.count - 1))
             page.lines.append(DrawingLine(points: [Vec2(edgeX + sign * 1.5, y0), Vec2(outer + sign * 2, y0)], style: .thin))
         }
     }
 
+    /// User dimension between two view points; endpoints re-snap to the nearest current vertex,
+    /// so the dimension follows small model changes.
+    private func addCustomDimension(_ page: inout DrawingPage, _ c: CustomDimension) {
+        guard let pv = page.views.first(where: { $0.id == c.view }) else { return }
+        let snaps = page.snapPoints.filter { $0.view == c.view }
+        func resnap(_ p: Vec2) -> Vec2 {
+            guard let best = snaps.min(by: { simd_distance($0.model, p) < simd_distance($1.model, p) }),
+                  simd_distance(best.model, p) < 1.0 else { return p }
+            return best.model
+        }
+        let a = resnap(c.a), b = resnap(c.b)
+        let pa = pv.toPaper(a), pb = pv.toPaper(b)
+        let n: Vec2
+        let da: Vec2, db: Vec2
+        let value: Double
+        switch c.orientation {
+        case .horizontal:
+            n = Vec2(0, 1)
+            da = Vec2(pa.x, pa.y + c.offset); db = Vec2(pb.x, pa.y + c.offset)
+            value = abs(b.x - a.x)
+        case .vertical:
+            n = Vec2(1, 0)
+            da = Vec2(pa.x + c.offset, pa.y); db = Vec2(pa.x + c.offset, pb.y)
+            value = abs(b.y - a.y)
+        case .aligned:
+            let d = pb - pa
+            let u = simd_length(d) > 1e-9 ? simd_normalize(d) : Vec2(1, 0)
+            n = Vec2(-u.y, u.x)
+            da = pa + n * c.offset; db = pb + n * c.offset
+            value = simd_distance(a, b)
+        }
+        let sgn: Double = c.offset >= 0 ? 1 : -1
+        for (p, q) in [(pa, da), (pb, db)] where simd_distance(p, q) > 0.5 {
+            let dir = simd_normalize(q - p)
+            page.lines.append(DrawingLine(points: [p + dir * 1.5, q + dir * 2], style: .thin, group: c.key))
+        }
+        dimensionLine(&page, id: c.key, from: da, to: db, value: value, away: n * sgn, along: 0, isCustom: true)
+    }
+
     /// Dimension line with filled arrows and the value in whole millimetres (ISO 129-1).
-    private func dimensionLine(_ page: inout DrawingPage, from a: Vec2, to b: Vec2, value: Double) {
+    /// The value reads from the bottom or the right; `along` shifts it along the line.
+    private func dimensionLine(_ page: inout DrawingPage, id: String, from a: Vec2, to b: Vec2, value: Double,
+                               away: Vec2, along shift: Double, isCustom: Bool = false) {
         let text = "\(Int(value.rounded()))"
         let d = b - a
         let len = simd_length(d)
         guard len > 1e-6 else { return }
         let u = d / len
-        let vertical = abs(u.y) > abs(u.x)
+        // Reading direction: left-to-right, or bottom-to-top for vertical lines.
+        let r = (u.x > 1e-9 || (abs(u.x) <= 1e-9 && u.y > 0)) ? u : -u
+        let angle = atan2(r.y, r.x)
+        let n = Vec2(-r.y, r.x)                      // "above" the line when reading
         let textWidth = Double(text.count) * Self.textHeight * 0.62
-        let n = vertical ? Vec2(-1, 0) : Vec2(0, 1)   // text side: above / left
         let mid = (a + b) / 2
+        var segments = [(a, b)]
+        let textPos: Vec2
         if len >= textWidth + 8 {
-            page.lines.append(DrawingLine(points: [a, b], style: .thin))
-            page.arrows.append(DrawingArrow(tip: a, direction: -u))
-            page.arrows.append(DrawingArrow(tip: b, direction: u))
-            page.texts.append(DrawingText(text: text, position: mid + n * 1.0, height: Self.textHeight,
-                                          angle: vertical ? .pi / 2 : 0, anchor: .center))
+            page.lines.append(DrawingLine(points: [a, b], style: .thin, group: id))
+            page.arrows.append(DrawingArrow(tip: a, direction: -u, group: id))
+            page.arrows.append(DrawingArrow(tip: b, direction: u, group: id))
+            textPos = mid + r * shift + n * 1.0
         } else {
             // Too short: arrows from outside, value placed beyond the end.
-            page.lines.append(DrawingLine(points: [a - u * 5, b + u * (6 + textWidth)], style: .thin))
-            page.arrows.append(DrawingArrow(tip: a, direction: u))
-            page.arrows.append(DrawingArrow(tip: b, direction: -u))
-            let pos = b + u * (4 + textWidth / 2) + n * 1.0
-            page.texts.append(DrawingText(text: text, position: pos, height: Self.textHeight,
-                                          angle: vertical ? .pi / 2 : 0, anchor: .center))
+            let tail = b + u * (6 + textWidth)
+            page.lines.append(DrawingLine(points: [a - u * 5, tail], style: .thin, group: id))
+            page.arrows.append(DrawingArrow(tip: a, direction: u, group: id))
+            page.arrows.append(DrawingArrow(tip: b, direction: -u, group: id))
+            segments = [(a - u * 5, tail)]
+            textPos = b + u * (4 + textWidth / 2) + r * shift + n * 1.0
         }
+        page.texts.append(DrawingText(text: text, position: textPos, height: Self.textHeight, angle: angle, anchor: .center, group: id))
+        page.dimensions.append(PlacedDimension(id: id, text: text, segments: segments, textCenter: textPos + n * (Self.textHeight / 2),
+                                               normal: simd_normalize(away), along: r, isCustom: isCustom))
     }
 
     // MARK: - Sheet, frame, title block (ISO 5457 / ISO 7200)

@@ -50,6 +50,11 @@ final class DrawingController {
         }
     }
 
+    /// Live preview of a user dimension being placed.
+    func preview(_ c: CustomDimension) -> DrawingPage? {
+        page.map { generator.adding(c, to: $0) }
+    }
+
     /// Synchronous generation (export, printing, tests).
     func generateNow(_ editor: Editor) -> DrawingPage {
         let shapes = editor.state.orderedBodies.filter { editor.doc.isBodyVisible($0.id) }.map(\.shape)
@@ -60,6 +65,21 @@ final class DrawingController {
 
 extension Editor {
     var drawingSettings: DrawingSettings { doc.drawing ?? DrawingSettings() }
+
+    /// Live change while dragging: no undo step yet (see `finishDrawingEdit`).
+    func setDrawingSettingsLive(_ change: (inout DrawingSettings) -> Void) {
+        var s = drawingSettings
+        change(&s)
+        guard s != drawingSettings else { return }
+        doc.drawing = s
+    }
+
+    /// Records one undo step for a finished drag that started at `snapshot`.
+    func finishDrawingEdit(from snapshot: CADDocument) {
+        guard doc != snapshot else { return }
+        pushUndo(snapshot)
+        scheduleAutosave()
+    }
 
     /// Undoable change of the drawing settings (stored in the document).
     func updateDrawingSettings(_ change: (inout DrawingSettings) -> Void) {

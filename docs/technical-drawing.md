@@ -58,7 +58,7 @@ SixAxis      Drawing/   Fenster, Darstellung (Core Graphics), PDF-Export, Druck
 
 - [x] **Etappe 1 – Grundlage**: HLR-Projektion (`ob_hlr`), Zeichnungsfenster (⇧⌘D), Blatt mit Rahmen, Zentriermarken und Schriftfeld, Vorder-/Draufsicht/Seitenansicht von links + Isometrie, automatische Blatt- und Maßstabswahl, Live-Synchronisation im Hintergrund, PDF-Export (maßstabsgetreu), Drucken
 - [~] **Etappe 2 – Automatische Bemaßung**: Gesamtmaße, Bezugsmaße von links/unten, Bohrungen (Ø, n×, Mittellinien, Lage) erledigt; offen: verdeckte Merkmale, Abstände bei sehr dichten Maßen, Schrägen und Radien
-- [ ] Etappe 3 – Bearbeiten
+- [x] **Etappe 3 – Bearbeiten**: Maße auswählen (Hover/Klick), ziehen (Maßlinie rastet in 7-mm-Reihen ein und weicht anderen aus, Wert verschiebt sich entlang der Linie), ausblenden (⌫), eigene Maße zwischen Eckpunkten/Bohrungsmitten (D, waagerecht/senkrecht/schräg je nach Platzierung, folgen Modelländerungen), Ansichten verschieben (Projektionsflucht bleibt erhalten, Isometrie frei), Zurücksetzen-Menü, alles rückgängig machbar und in der Datei gespeichert. Stabile Maß-Kennungen („front.x.481“) halten Anpassungen über Modelländerungen hinweg
 - [ ] Etappe 4 – Mehrere Körper erweitert
 - [ ] Etappe 5 – Erweiterungen
 

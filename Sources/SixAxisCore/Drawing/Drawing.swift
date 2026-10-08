@@ -28,7 +28,77 @@ public struct DrawingSettings: Codable, Hashable, Sendable {
     public var author = ""
     public var material = ""
 
+    // Manual edits (stage 3). Keyed by stable dimension/view ids, so they survive model changes.
+    public var hiddenDimensions: Set<String> = []
+    public var dimensionOffsets: [String: DimensionOffset] = [:]
+    public var viewOffsets: [String: Vec2] = [:]
+    public var customDimensions: [CustomDimension] = []
+
     public init() {}
+
+    enum CodingKeys: String, CodingKey {
+        case sheet, scale, showHidden, showDimensions, showIso, title, drawingNumber, author, material
+        case hiddenDimensions, dimensionOffsets, viewOffsets, customDimensions
+    }
+
+    /// Every field is optional on decode so files from older versions keep working.
+    public init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        let d = DrawingSettings()
+        sheet = try c.decodeIfPresent(SheetChoice.self, forKey: .sheet) ?? d.sheet
+        scale = try c.decodeIfPresent(String.self, forKey: .scale)
+        showHidden = try c.decodeIfPresent(Bool.self, forKey: .showHidden) ?? d.showHidden
+        showDimensions = try c.decodeIfPresent(Bool.self, forKey: .showDimensions) ?? d.showDimensions
+        showIso = try c.decodeIfPresent(Bool.self, forKey: .showIso) ?? d.showIso
+        title = try c.decodeIfPresent(String.self, forKey: .title) ?? ""
+        drawingNumber = try c.decodeIfPresent(String.self, forKey: .drawingNumber) ?? ""
+        author = try c.decodeIfPresent(String.self, forKey: .author) ?? ""
+        material = try c.decodeIfPresent(String.self, forKey: .material) ?? ""
+        hiddenDimensions = try c.decodeIfPresent(Set<String>.self, forKey: .hiddenDimensions) ?? []
+        dimensionOffsets = try c.decodeIfPresent([String: DimensionOffset].self, forKey: .dimensionOffsets) ?? [:]
+        viewOffsets = try c.decodeIfPresent([String: Vec2].self, forKey: .viewOffsets) ?? [:]
+        customDimensions = try c.decodeIfPresent([CustomDimension].self, forKey: .customDimensions) ?? []
+    }
+
+    public var hasManualEdits: Bool {
+        !hiddenDimensions.isEmpty || !dimensionOffsets.isEmpty || !viewOffsets.isEmpty || !customDimensions.isEmpty
+    }
+}
+
+/// User adjustment of an automatic dimension, in paper millimetres.
+public struct DimensionOffset: Codable, Hashable, Sendable {
+    /// Moves the dimension line away from (+) or towards (−) the view.
+    public var distance: Double = 0
+    /// Moves the value along the dimension line.
+    public var along: Double = 0
+    public init(distance: Double = 0, along: Double = 0) {
+        self.distance = distance
+        self.along = along
+    }
+}
+
+/// A dimension added by the user between two snap points of a view.
+public struct CustomDimension: Codable, Hashable, Identifiable, Sendable {
+    public enum Orientation: String, Codable, Sendable { case horizontal, vertical, aligned }
+    public var id: UUID
+    public var view: String
+    /// End points in view coordinates (model millimetres in the projection plane).
+    public var a: Vec2
+    public var b: Vec2
+    public var orientation: Orientation
+    /// Signed distance of the dimension line from point `a`, in paper mm, along the dimension's normal.
+    public var offset: Double
+
+    public init(id: UUID = UUID(), view: String, a: Vec2, b: Vec2, orientation: Orientation, offset: Double) {
+        self.id = id
+        self.view = view
+        self.a = a
+        self.b = b
+        self.orientation = orientation
+        self.offset = offset
+    }
+
+    public var key: String { "custom.\(id.uuidString)" }
 }
 
 // MARK: - Paper model (millimetres on paper, origin bottom-left, y up)
@@ -88,6 +158,8 @@ public enum LineStyle: Sendable {
 public struct DrawingLine: Sendable {
     public var points: [Vec2]
     public var style: LineStyle
+    /// Id of the dimension this primitive belongs to (for hover/selection), nil for geometry.
+    public var group: String? = nil
 }
 
 public struct DrawingText: Sendable {
@@ -98,12 +170,54 @@ public struct DrawingText: Sendable {
     public var angle: Double = 0   // radians, counter-clockwise
     public var anchor: Anchor = .center
     public var bold = false
+    public var group: String? = nil
 }
 
 /// Filled arrowhead, ISO 129: 15° half-angle, length 3 mm.
 public struct DrawingArrow: Sendable {
     public var tip: Vec2
     public var direction: Vec2     // unit vector pointing into the tip
+    public var group: String? = nil
+}
+
+// MARK: - Interaction metadata
+
+/// A dimension as placed on the sheet, for hit testing and dragging in the editor.
+public struct PlacedDimension: Sendable, Identifiable {
+    public var id: String
+    public var text: String
+    /// Segments (paper mm) that count as "on the dimension" for clicks.
+    public var segments: [(Vec2, Vec2)]
+    public var textCenter: Vec2
+    /// Unit vector in which the dimension line moves away from its view.
+    public var normal: Vec2
+    /// Unit vector along the dimension line.
+    public var along: Vec2
+    public var isCustom: Bool
+}
+
+/// A projected view on the sheet.
+public struct PlacedView: Sendable, Identifiable {
+    public enum Constraint: Sendable { case all, horizontal, vertical, free }
+    public var id: String
+    public var title: String
+    public var min: Vec2
+    public var max: Vec2
+    /// Paper position of the view's model-space minimum and the factor model → paper.
+    public var origin: Vec2
+    public var modelMin: Vec2
+    public var scale: Double
+    public var constraint: Constraint
+
+    public func toPaper(_ p: Vec2) -> Vec2 { origin + (p - modelMin) * scale }
+    public func toModel(_ p: Vec2) -> Vec2 { modelMin + (p - origin) / scale }
+}
+
+/// A point usable as dimension anchor (vertex or circle centre), in paper and view coordinates.
+public struct DrawingSnapPoint: Sendable {
+    public var view: String
+    public var paper: Vec2
+    public var model: Vec2
 }
 
 public struct DrawingPage: Sendable {
@@ -112,6 +226,9 @@ public struct DrawingPage: Sendable {
     public var lines: [DrawingLine] = []
     public var texts: [DrawingText] = []
     public var arrows: [DrawingArrow] = []
+    public var dimensions: [PlacedDimension] = []
+    public var views: [PlacedView] = []
+    public var snapPoints: [DrawingSnapPoint] = []
     public var isEmpty = true
 
     public init(sheet: Sheet, scale: DrawingScale) {

@@ -45,6 +45,18 @@ enum DemoScript {
                 try? DrawingRenderer.writePDF(page, to: dir.appendingPathComponent("drawing.pdf"), title: "Korpus")
                 let dims = page.texts.map(\.text).filter { Int($0) != nil || $0.hasPrefix("Ø") || $0.contains("× Ø") }
                 FileHandle.standardError.write(Data("DRAWING \(page.sheet.name) \(page.scale.label) dims=\(dims)\n".utf8))
+                // Stage 3 edits: hide, move, add a user dimension, move the iso view.
+                editor.updateDrawingSettings { s in
+                    s.hiddenDimensions.insert("front.x.481")
+                    s.dimensionOffsets["front.y.290"] = DimensionOffset(distance: 6, along: 0)
+                    s.customDimensions.append(CustomDimension(view: "front", a: Vec2(481, 309), b: Vec2(481, 581),
+                                                              orientation: .vertical, offset: 14))
+                    s.viewOffsets["iso"] = Vec2(15, 8)
+                }
+                let edited = editor.drawing.generateNow(editor)
+                renderPNG(edited, to: dir.appendingPathComponent("edited.png"), pixelsPerMM: 5, highlight: "front.y.290")
+                let editedDims = edited.texts.map(\.text).filter { Int($0) != nil }
+                FileHandle.standardError.write(Data("EDITED dims=\(editedDims) custom=\(edited.dimensions.filter(\.isCustom).map(\.text))\n".utf8))
                 // Open the real drawing window and capture it.
                 editor.openDrawingWindow()
                 try? await Task.sleep(nanoseconds: 2_500_000_000)
@@ -127,11 +139,12 @@ enum DemoScript {
         if !editor.state.errors.isEmpty { FileHandle.standardError.write(Data("ERRORS \(editor.state.errors)\n".utf8)) }
     }
 
-    static func renderPNG(_ page: DrawingPage, to url: URL, pixelsPerMM: CGFloat) {
+    static func renderPNG(_ page: DrawingPage, to url: URL, pixelsPerMM: CGFloat, highlight: String? = nil) {
         let w = Int(page.sheet.width * pixelsPerMM), h = Int(page.sheet.height * pixelsPerMM)
         guard let cg = CGContext(data: nil, width: w, height: h, bitsPerComponent: 8, bytesPerRow: 0,
                                  space: CGColorSpaceCreateDeviceRGB(), bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue) else { return }
-        DrawingRenderer.draw(page, in: cg, pointsPerMM: pixelsPerMM)
+        DrawingRenderer.draw(page, in: cg, pointsPerMM: pixelsPerMM,
+                             highlight: highlight.map { [$0: NSColor.systemBlue.cgColor] } ?? [:])
         guard let img = cg.makeImage() else { return }
         let rep = NSBitmapImageRep(cgImage: img)
         try? rep.representation(using: .png, properties: [:])?.write(to: url)
