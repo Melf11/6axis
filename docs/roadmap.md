@@ -132,7 +132,7 @@ Ideen ohne feste Version; Reihenfolge nach Bedarf.
 - **Zuschnittplan** – Teile aus der Stückliste auf Rohplatten (z. B. 2800 × 2070) verteilen, Sägeschnitt-Breite, Faserrichtung beachten, Verschnitt in Prozent, als PDF/Zeichnungsblatt
 
 ### Weitere Ideen
-- Marking-Menü per Rechtsklick-Ziehen (Gesten wie in Fusion), als Option
+- Radialmenü per Rechtsklick-Ziehen (Gesten), als Option
 - Rendering-Ansicht mit Materialien (Holzmaserung)
 - Intel-Unterstützung (Universal-Build)
 - Notarisierte App, sobald ein Apple-Entwicklerkonto vorhanden ist

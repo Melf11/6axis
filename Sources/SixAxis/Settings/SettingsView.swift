@@ -24,7 +24,7 @@ struct NavigationSettings: View {
                 Toggle(isOn: $s.ignoreNaturalScrolling) {
                     Text("„Natürliches Scrollen“ im 3D-Fenster ignorieren")
                     Text(AppSettings.systemUsesNaturalScrolling
-                         ? "Dein Mac nutzt natürliches Scrollen. Aktivieren, damit Zoomen und Drehen der physischen Bewegung folgen – wie in Fusion unter Windows."
+                         ? "Dein Mac nutzt natürliches Scrollen. Aktivieren, damit Zoomen und Drehen der physischen Bewegung folgen – wie bei einer klassischen Maus."
                          : "Dein Mac nutzt klassisches Scrollen; diese Option hat dann keine Wirkung.")
                 }
             } header: {
