@@ -12,6 +12,10 @@
 
 Die fertige App gibt es unter [Releases](https://github.com/Melf11/6axis/releases/latest) (Mac mit Apple Silicon, macOS 15+). 6axis ist nicht von Apple notarisiert: Beim ersten Start einmal *Systemeinstellungen → Datenschutz & Sicherheit → Dennoch öffnen* wählen. Details auf der [Produktseite](https://melf11.github.io/6axis/).
 
+## Beispiele
+
+Im Ordner [`Examples/`](Examples) und in der App unter **Ablage → Beispiele**: Korpus mit Fachboden und Dübellöchern (inkl. Zeichnung), Schneidebrett mit Abrundungen und Fase, Aufbewahrungsbox für den 3D-Druck. Die Maße hängen an Parametern (*Ändern → Parameter*), z. B. `tiefe`, `dicke` oder `wand`.
+
 ## Funktionen
 
 - **Skizzen** auf Ursprungsebenen oder ebenen Körperflächen: Linie, Rechteck, Mittelpunkt-Rechteck, Kreis, 3-Punkt-Bogen – mit Rasterfang (⌘ = frei) und Maßeingabe direkt beim Zeichnen (Tab wechselt zwischen Länge, Breite, Winkel …)

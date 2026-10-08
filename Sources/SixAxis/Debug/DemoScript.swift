@@ -35,6 +35,22 @@ enum DemoScript {
             }
             return
         }
+        // One screenshot per shipped example: SIXAXIS_EXAMPLES_DEMO=dir
+        if let out = env["SIXAXIS_EXAMPLES_DEMO"] {
+            Task { @MainActor in
+                let dir = URL(fileURLWithPath: out)
+                try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+                await pause(1.0)
+                for example in Examples.all {
+                    editor.openExample(example)
+                    await pause(0.8)
+                    if !editor.state.errors.isEmpty { print("EXAMPLE \(example.fileName) errors \(editor.state.errors)") }
+                    await snap(editor, example.fileName, dir)
+                }
+                exit(0)
+            }
+            return
+        }
         if let out = env["SIXAXIS_DRAWING_DEMO"] {
             Task { @MainActor in
                 buildCabinet(editor)
@@ -134,56 +150,9 @@ enum DemoScript {
     }
 
     /// Small cabinet (Korpus) of 19 mm boards: two sides, bottom, top, shelf, plus two dowel holes.
+    /// The shipped cabinet example (Examples.cabinet).
     static func buildCabinet(_ editor: Editor) {
-        var features: [Feature] = []
-        func board(_ name: String, x: ClosedRange<Double>, z: ClosedRange<Double>, depth: Double = 300) {
-            var sk = Sketch(plane: .xz)
-            let p = [sk.addPoint(Vec2(x.lowerBound, z.lowerBound)), sk.addPoint(Vec2(x.upperBound, z.lowerBound)),
-                     sk.addPoint(Vec2(x.upperBound, z.upperBound)), sk.addPoint(Vec2(x.lowerBound, z.upperBound))]
-            for i in 0..<4 { sk.addLine(p[i], p[(i + 1) % 4]) }
-            let s = Feature(name: "Skizze \(name)", kind: .sketch(sk))
-            var ex = ExtrudeFeature()
-            ex.profiles = [ProfileRef(sketch: s.id, sample: Vec2((x.lowerBound + x.upperBound) / 2, (z.lowerBound + z.upperBound) / 2))]
-            ex.distance = "\(depth)"
-            ex.operation = .newBody
-            features += [s, Feature(name: name, kind: .extrude(ex))]
-        }
-        board("Seite", x: 0...19, z: 0...600)
-        board("Seite", x: 481...500, z: 0...600)
-        board("Boden", x: 19...481, z: 0...19)
-        board("Deckel", x: 19...481, z: 581...600)
-        board("Fachboden", x: 19...481, z: 290...309, depth: 280)
-        // Back panel 8 mm, applied to the rear. The XZ sketch plane faces -Y (the viewer of the front view),
-        // so the boards above grow towards the front and the rear face is at y = 0; the panel goes to y ∈ [0, 8].
-        do {
-            var sk = Sketch(plane: .xz)
-            let p = [sk.addPoint(Vec2(0, 0)), sk.addPoint(Vec2(500, 0)), sk.addPoint(Vec2(500, 600)), sk.addPoint(Vec2(0, 600))]
-            for i in 0..<4 { sk.addLine(p[i], p[(i + 1) % 4]) }
-            let s = Feature(name: "Skizze Rückwand", kind: .sketch(sk))
-            var ex = ExtrudeFeature()
-            ex.profiles = [ProfileRef(sketch: s.id, sample: Vec2(250, 300))]
-            ex.distance = "-8"
-            ex.operation = .newBody
-            features += [s, Feature(name: "Rückwand", kind: .extrude(ex))]
-        }
-        // Dowel holes through the horizontal boards (sketch on XY, cut upwards).
-        var sk = Sketch(plane: .xy)
-        sk.addCircle(center: sk.addPoint(Vec2(100, -150)), radius: 4)
-        sk.addCircle(center: sk.addPoint(Vec2(400, -150)), radius: 4)
-        let hs = Feature(name: "Bohrungen", kind: .sketch(sk))
-        var cut = ExtrudeFeature()
-        cut.profiles = [ProfileRef(sketch: hs.id, sample: Vec2(100, -150)), ProfileRef(sketch: hs.id, sample: Vec2(400, -150))]
-        cut.distance = "700"
-        cut.operation = .cut
-        features += [hs, Feature(name: "Dübellöcher", kind: .extrude(cut))]
-        editor.commit { d in
-            for f in features {
-                guard case .extrude(let e) = f.kind, e.operation == .newBody else { continue }
-                let back = f.name == "Rückwand"
-                d.bodies[f.id] = BodyMeta(name: f.name, material: back ? "Birke Multiplex" : "Eiche massiv", grain: back ? .none : .length)
-            }
-        }
-        editor.commit { $0.features = features; $0.drawing = { var d = DrawingSettings(); d.title = "Korpus"; d.material = "Eiche 19 mm"; d.author = "Tischlerei"; return d }() }
+        editor.commit { $0 = Examples.cabinet() }
         if !editor.state.errors.isEmpty { FileHandle.standardError.write(Data("ERRORS \(editor.state.errors)\n".utf8)) }
     }
 

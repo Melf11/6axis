@@ -78,6 +78,11 @@ struct AppCommands: Commands {
         CommandGroup(replacing: .newItem) {
             Button("Neues Design") { editor.newDocument() }.keyboardShortcut("n")
             Button("Öffnen …") { editor.open() }.keyboardShortcut("o")
+            Menu("Beispiele") {
+                ForEach(Examples.all, id: \.fileName) { example in
+                    Button(example.title) { editor.openExample(example) }
+                }
+            }
         }
         CommandGroup(replacing: .saveItem) {
             Button("Sichern") { editor.save() }.keyboardShortcut("s")

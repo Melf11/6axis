@@ -1,0 +1,445 @@
+{
+  "bodies" : [
+    "02F4842B-BBF4-4CDA-889B-4433ADE4A402",
+    {
+      "grain" : "length",
+      "material" : "Eiche massiv",
+      "name" : "Schneidebrett",
+      "visible" : true
+    }
+  ],
+  "drawing" : {
+    "author" : "",
+    "customDimensions" : [
+
+    ],
+    "details" : [
+
+    ],
+    "dimensionOffsets" : {
+
+    },
+    "drawingNumber" : "",
+    "hiddenDimensions" : [
+
+    ],
+    "material" : "Eiche 25 mm",
+    "sectionLeft" : false,
+    "sheet" : "auto",
+    "showBalloons" : true,
+    "showDimensions" : true,
+    "showHidden" : true,
+    "showIso" : true,
+    "showPartSheets" : true,
+    "showPartsList" : true,
+    "title" : "Schneidebrett",
+    "viewOffsets" : {
+
+    }
+  },
+  "features" : [
+    {
+      "id" : "A0E217CD-928F-4C43-9330-7F3BE33F6408",
+      "kind" : {
+        "sketch" : {
+          "_0" : {
+            "constraints" : [
+              {
+                "id" : 9,
+                "kind" : {
+                  "horizontal" : {
+                    "line" : 5
+                  }
+                },
+                "labelOffset" : [
+                  0,
+                  0
+                ]
+              },
+              {
+                "id" : 10,
+                "kind" : {
+                  "vertical" : {
+                    "line" : 6
+                  }
+                },
+                "labelOffset" : [
+                  0,
+                  0
+                ]
+              },
+              {
+                "id" : 11,
+                "kind" : {
+                  "horizontal" : {
+                    "line" : 7
+                  }
+                },
+                "labelOffset" : [
+                  0,
+                  0
+                ]
+              },
+              {
+                "id" : 12,
+                "kind" : {
+                  "vertical" : {
+                    "line" : 8
+                  }
+                },
+                "labelOffset" : [
+                  0,
+                  0
+                ]
+              },
+              {
+                "id" : 13,
+                "kind" : {
+                  "length" : {
+                    "line" : 5,
+                    "value" : "400 mm"
+                  }
+                },
+                "labelOffset" : [
+                  0,
+                  -12
+                ]
+              },
+              {
+                "id" : 14,
+                "kind" : {
+                  "length" : {
+                    "line" : 6,
+                    "value" : "250 mm"
+                  }
+                },
+                "labelOffset" : [
+                  12,
+                  0
+                ]
+              }
+            ],
+            "curves" : [
+              {
+                "construction" : false,
+                "geometry" : {
+                  "line" : {
+                    "end" : 2,
+                    "start" : 1
+                  }
+                },
+                "id" : 5
+              },
+              {
+                "construction" : false,
+                "geometry" : {
+                  "line" : {
+                    "end" : 3,
+                    "start" : 2
+                  }
+                },
+                "id" : 6
+              },
+              {
+                "construction" : false,
+                "geometry" : {
+                  "line" : {
+                    "end" : 4,
+                    "start" : 3
+                  }
+                },
+                "id" : 7
+              },
+              {
+                "construction" : false,
+                "geometry" : {
+                  "line" : {
+                    "end" : 1,
+                    "start" : 4
+                  }
+                },
+                "id" : 8
+              },
+              {
+                "construction" : false,
+                "geometry" : {
+                  "circle" : {
+                    "center" : 15,
+                    "radius" : 15
+                  }
+                },
+                "id" : 16
+              }
+            ],
+            "nextId" : 17,
+            "plane" : {
+              "xy" : {
+
+              }
+            },
+            "points" : [
+              {
+                "fixed" : true,
+                "id" : 0,
+                "position" : [
+                  0,
+                  0
+                ]
+              },
+              {
+                "fixed" : false,
+                "id" : 1,
+                "position" : [
+                  0,
+                  0
+                ]
+              },
+              {
+                "fixed" : false,
+                "id" : 2,
+                "position" : [
+                  400,
+                  0
+                ]
+              },
+              {
+                "fixed" : false,
+                "id" : 3,
+                "position" : [
+                  400,
+                  250
+                ]
+              },
+              {
+                "fixed" : false,
+                "id" : 4,
+                "position" : [
+                  0,
+                  250
+                ]
+              },
+              {
+                "fixed" : false,
+                "id" : 15,
+                "position" : [
+                  360,
+                  210
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "name" : "Skizze Brett",
+      "suppressed" : false
+    },
+    {
+      "id" : "02F4842B-BBF4-4CDA-889B-4433ADE4A402",
+      "kind" : {
+        "extrude" : {
+          "_0" : {
+            "distance" : "dicke",
+            "distance2" : "10 mm",
+            "extent" : "oneSide",
+            "faces" : [
+
+            ],
+            "operation" : "newBody",
+            "profiles" : [
+              {
+                "sample" : [
+                  200,
+                  125
+                ],
+                "sketch" : "A0E217CD-928F-4C43-9330-7F3BE33F6408"
+              }
+            ],
+            "targets" : [
+
+            ]
+          }
+        }
+      },
+      "name" : "Brett",
+      "suppressed" : false
+    },
+    {
+      "id" : "B06E6C2A-9298-4986-B6D9-0461A37C7947",
+      "kind" : {
+        "fillet" : {
+          "_0" : {
+            "edges" : [
+              {
+                "body" : "02F4842B-BBF4-4CDA-889B-4433ADE4A402",
+                "edge" : {
+                  "index" : 0,
+                  "midpoint" : [
+                    0,
+                    250,
+                    12.5
+                  ]
+                }
+              },
+              {
+                "body" : "02F4842B-BBF4-4CDA-889B-4433ADE4A402",
+                "edge" : {
+                  "index" : 1,
+                  "midpoint" : [
+                    0,
+                    0,
+                    12.5
+                  ]
+                }
+              },
+              {
+                "body" : "02F4842B-BBF4-4CDA-889B-4433ADE4A402",
+                "edge" : {
+                  "index" : 4,
+                  "midpoint" : [
+                    400,
+                    250,
+                    12.5
+                  ]
+                }
+              },
+              {
+                "body" : "02F4842B-BBF4-4CDA-889B-4433ADE4A402",
+                "edge" : {
+                  "index" : 7,
+                  "midpoint" : [
+                    400,
+                    0,
+                    12.5
+                  ]
+                }
+              }
+            ],
+            "radius" : "eckradius"
+          }
+        }
+      },
+      "name" : "Abrundung",
+      "suppressed" : false
+    },
+    {
+      "id" : "D131C5C4-CEBA-4494-9DCB-C987DB5B5C0A",
+      "kind" : {
+        "chamfer" : {
+          "_0" : {
+            "distance" : "2 mm",
+            "edges" : [
+              {
+                "body" : "02F4842B-BBF4-4CDA-889B-4433ADE4A402",
+                "edge" : {
+                  "index" : 3,
+                  "midpoint" : [
+                    0,
+                    125,
+                    25
+                  ]
+                }
+              },
+              {
+                "body" : "02F4842B-BBF4-4CDA-889B-4433ADE4A402",
+                "edge" : {
+                  "index" : 13,
+                  "midpoint" : [
+                    5.857864376269045,
+                    244.14213562373095,
+                    25
+                  ]
+                }
+              },
+              {
+                "body" : "02F4842B-BBF4-4CDA-889B-4433ADE4A402",
+                "edge" : {
+                  "index" : 15,
+                  "midpoint" : [
+                    5.857864376269042,
+                    5.857864376269049,
+                    25
+                  ]
+                }
+              },
+              {
+                "body" : "02F4842B-BBF4-4CDA-889B-4433ADE4A402",
+                "edge" : {
+                  "index" : 16,
+                  "midpoint" : [
+                    200,
+                    250,
+                    25
+                  ]
+                }
+              },
+              {
+                "body" : "02F4842B-BBF4-4CDA-889B-4433ADE4A402",
+                "edge" : {
+                  "index" : 17,
+                  "midpoint" : [
+                    200,
+                    0,
+                    25
+                  ]
+                }
+              },
+              {
+                "body" : "02F4842B-BBF4-4CDA-889B-4433ADE4A402",
+                "edge" : {
+                  "index" : 18,
+                  "midpoint" : [
+                    394.14213562373095,
+                    244.14213562373095,
+                    25
+                  ]
+                }
+              },
+              {
+                "body" : "02F4842B-BBF4-4CDA-889B-4433ADE4A402",
+                "edge" : {
+                  "index" : 19,
+                  "midpoint" : [
+                    394.14213562373095,
+                    5.857864376269049,
+                    25
+                  ]
+                }
+              },
+              {
+                "body" : "02F4842B-BBF4-4CDA-889B-4433ADE4A402",
+                "edge" : {
+                  "index" : 20,
+                  "midpoint" : [
+                    400,
+                    125,
+                    25
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      },
+      "name" : "Fase",
+      "suppressed" : false
+    }
+  ],
+  "formatVersion" : 1,
+  "hiddenSketches" : [
+    "A0E217CD-928F-4C43-9330-7F3BE33F6408"
+  ],
+  "parameters" : [
+    {
+      "comment" : "Brettstärke",
+      "expression" : "25 mm",
+      "id" : "E2363C14-FA85-4398-A77B-B8DFAA8F3FBA",
+      "name" : "dicke"
+    },
+    {
+      "comment" : "",
+      "expression" : "20 mm",
+      "id" : "D7D908C6-37C9-4E08-AB3A-070973E74EC0",
+      "name" : "eckradius"
+    }
+  ]
+}
