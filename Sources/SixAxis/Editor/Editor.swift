@@ -192,6 +192,9 @@ final class Editor {
     @ObservationIgnored var requestRedraw: () -> Void = {}
     @ObservationIgnored var snapshotProvider: () -> NSImage? = { nil }
     @ObservationIgnored var focusViewport: () -> Void = {}
+    @ObservationIgnored var autosaveWork: DispatchWorkItem?
+    /// Set when the user chose "Nicht sichern" (so quitting does not keep the unsaved state).
+    @ObservationIgnored var discardedChanges = false
     @ObservationIgnored var pickProvider: (CGPoint, CGFloat) -> [UInt32] = { _, _ in [] }
     @ObservationIgnored var pickTable: [Pick] = []
     @ObservationIgnored var pickIds: [Pick: UInt32] = [:]
@@ -212,6 +215,7 @@ final class Editor {
     init() {
         camera.orthographic = AppSettings.shared.defaultOrthographic
         rebuild()
+        restoreSession()
     }
 
     // MARK: - Document & undo
@@ -223,6 +227,7 @@ final class Editor {
         assignBodyNames()
         sceneVersion &+= 1
         requestRedraw()
+        scheduleAutosave()
     }
 
     private func assignBodyNames() {
@@ -247,6 +252,7 @@ final class Editor {
         if undoStack.count > 200 { undoStack.removeFirst() }
         redoStack.removeAll()
         isDirty = true
+        discardedChanges = false
         updateUndoFlags()
     }
 
@@ -312,7 +318,9 @@ final class Editor {
         alert.addButton(withTitle: "Nicht sichern")
         switch alert.runModal() {
         case .alertFirstButtonReturn: return save()
-        case .alertThirdButtonReturn: return true
+        case .alertThirdButtonReturn:
+            discardedChanges = true
+            return true
         default: return false
         }
     }
@@ -347,7 +355,9 @@ final class Editor {
         do {
             try doc.encoded().write(to: url, options: .atomic)
             isDirty = false
+            discardedChanges = false
             NSDocumentController.shared.noteNewRecentDocumentURL(url)
+            autosaveNow()
             return true
         } catch {
             showToast("Sichern fehlgeschlagen: \(error.localizedDescription)")

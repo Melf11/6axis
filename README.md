@@ -1,4 +1,6 @@
-# 6axis
+<p align="center"><img src="Resources/Logo.png" width="160" alt="6axis Logo"></p>
+
+<h1 align="center">6axis</h1>
 
 **Freies, natives Mac-CAD für Konstruktion und 3D-Druck – vollständig offline.**
 
@@ -20,6 +22,7 @@
 - **Export**: STL (3D-Druck), STEP; **Import**: STEP; **„Im Slicer öffnen“** (PrusaSlicer, Bambu Studio, OrcaSlicer, Cura …)
 - Volumen und geschätztes PLA-Gewicht der Auswahl
 - Fusion-artige Bedienung: Ribbon, Browser, ViewCube, Radialmenü per Rechtsklick, Befehlssuche mit **S**, Tastenkürzel (L, R, C, A, D, E, F, X …)
+- Automatisches Sichern: Das letzte Design (auch ungesichert) und die Ansicht werden beim nächsten Start wiederhergestellt
 - Unbegrenztes Rückgängig/Wiederholen, Dark Mode, Retina, 120 Hz
 
 ## Bedienung
@@ -51,6 +54,8 @@ swift test                      # Kern-Tests (Solver, Kernel, Parametrik)
 scripts/build-app.sh            # erzeugt build/6axis.app
 open build/6axis.app
 ```
+
+Logo und App-Icon werden aus `Resources/Logo.svg` erzeugt: `python3 scripts/make-logo.py && scripts/make-icon.sh`.
 
 Zum Entwickeln einfach `Package.swift` in Xcode öffnen und das Schema **SixAxis** starten. OpenCASCADE an anderem Ort: `OCCT_PREFIX=/pfad/zu/occt swift build`.
 

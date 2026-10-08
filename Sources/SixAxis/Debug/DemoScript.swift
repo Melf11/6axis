@@ -11,6 +11,30 @@ import SixAxisCore
 enum DemoScript {
     static func runIfRequested(_ editor: Editor) {
         let env = ProcessInfo.processInfo.environment
+        // Session round-trip check: "write" builds a part and is killed, "check" reports what was restored.
+        if let mode = env["SIXAXIS_SESSION_TEST"] {
+            Task { @MainActor in
+                try? await Task.sleep(nanoseconds: 800_000_000)
+                if mode == "write" {
+                    var sk = Sketch(plane: .xy)
+                    let p = [sk.addPoint(Vec2(0, 0)), sk.addPoint(Vec2(30, 0)), sk.addPoint(Vec2(30, 30)), sk.addPoint(Vec2(0, 30))]
+                    for i in 0..<4 { sk.addLine(p[i], p[(i + 1) % 4]) }
+                    let sketch = Feature(name: "Skizze1", kind: .sketch(sk))
+                    var ex = ExtrudeFeature()
+                    ex.profiles = [ProfileRef(sketch: sketch.id, sample: Vec2(5, 5))]
+                    ex.distance = "12"
+                    editor.commit { $0.features = [sketch, Feature(name: "Extrusion1", kind: .extrude(ex))] }
+                    try? await Task.sleep(nanoseconds: 1_600_000_000)   // let the debounced autosave run
+                    FileHandle.standardError.write(Data("SESSION written bodies=\(editor.state.bodyOrder.count)\n".utf8))
+                    kill(getpid(), SIGKILL)                               // simulate a crash / hard kill
+                } else {
+                    let vol = editor.state.orderedBodies.first.map { String(format: "%.1f", $0.shape.volume) } ?? "-"
+                    FileHandle.standardError.write(Data("SESSION restored features=\(editor.doc.features.count) volume=\(vol) dirty=\(editor.isDirty)\n".utf8))
+                    exit(0)
+                }
+            }
+            return
+        }
         guard env["SIXAXIS_DEMO"] != nil else { return }
         let dir = URL(fileURLWithPath: env["SIXAXIS_SNAPSHOTS"] ?? NSTemporaryDirectory())
         try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)

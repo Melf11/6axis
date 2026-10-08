@@ -10,12 +10,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         NSApp.setActivationPolicy(.regular)
         NSApp.activate(ignoringOtherApps: true)
         AppSettings.shared.applyAppearance()
+        Branding.installAppIconIfNeeded()
     }
 
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool { true }
 
     func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
         (editor?.confirmDiscard() ?? true) ? .terminateNow : .terminateCancel
+    }
+
+    func applicationWillTerminate(_ notification: Notification) {
+        editor?.finishSession(discardChanges: editor?.discardedChanges ?? false)
     }
 
     func application(_ application: NSApplication, open urls: [URL]) {
@@ -53,6 +58,9 @@ struct AppCommands: Commands {
     let editor: Editor
 
     var body: some Commands {
+        CommandGroup(replacing: .appInfo) {
+            Button("Über 6axis") { Branding.showAboutPanel() }
+        }
         CommandGroup(replacing: .newItem) {
             Button("Neues Design") { editor.newDocument() }.keyboardShortcut("n")
             Button("Öffnen …") { editor.open() }.keyboardShortcut("o")

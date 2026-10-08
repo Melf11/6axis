@@ -36,6 +36,11 @@ struct MainView: View {
             .animation(.snappy(duration: 0.22), value: editor.command?.kind)
             .animation(.snappy(duration: 0.22), value: editor.browserVisible)
 
+            if editor.doc.features.isEmpty && editor.sketchId == nil && editor.command == nil {
+                WelcomeCard(editor: editor)
+                    .transition(.opacity.combined(with: .scale(scale: 0.96)))
+            }
+
             if let toast = editor.toast {
                 VStack {
                     Spacer()
@@ -66,6 +71,7 @@ struct MainView: View {
         }
         .ignoresSafeArea()
         .animation(.snappy(duration: 0.2), value: editor.toast)
+        .animation(.snappy(duration: 0.25), value: editor.doc.features.isEmpty)
         .animation(.snappy(duration: 0.15), value: editor.showCommandPalette)
         .animation(.snappy(duration: 0.15), value: editor.markingMenu)
         .sheet(isPresented: $editor.showParameters) { ParametersSheet(editor: editor) }
@@ -80,8 +86,9 @@ private struct TopBar: View {
         VStack(spacing: 8) {
             HStack(spacing: 10) {
                 Color.clear.frame(width: 70, height: 1)   // traffic lights
-                Image(systemName: "cube.transparent.fill")
-                    .foregroundStyle(LinearGradient(colors: [.accentColor, .purple], startPoint: .topLeading, endPoint: .bottomTrailing))
+                LogoImage(size: 20)
+                    .help("Über 6axis")
+                    .onTapGesture { Branding.showAboutPanel() }
                 Text(editor.fileURL?.deletingPathExtension().lastPathComponent ?? "Unbenannt")
                     .font(.system(size: 13, weight: .semibold))
                 if editor.isDirty {
