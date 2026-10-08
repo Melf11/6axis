@@ -28,6 +28,14 @@ struct DrawU {
     uint pad;
 };
 
+// Depth bias in world space: moves a point towards the viewer by a fraction of its view distance.
+// (A constant offset in clip-space depth is wildly non-linear under perspective and lets hidden
+// edges poke through at corners.) Negative values push geometry behind coplanar surfaces.
+static float3 biased(float3 p, constant Globals &g, float k) {
+    float3 toEye = g.orthographic != 0 ? -g.forward.xyz : normalize(g.eye.xyz - p);
+    return p + toEye * (k * length(g.eye.xyz - p));
+}
+
 static bool isSelected(uint id, constant uint *sel, uint n) {
     if (id == 0) return false;
     for (uint i = 0; i < n; i++) if (sel[i] == id) return true;
@@ -51,8 +59,7 @@ vertex MeshOut mesh_vs(uint vid [[vertex_id]],
     MeshV in = v[vid];
     MeshOut o;
     float3 p = float3(in.pos);
-    o.position = g.viewProj * float4(p, 1);
-    o.position.z += d.depthBias * o.position.w;
+    o.position = g.viewProj * float4(biased(p, g, d.depthBias), 1);
     o.world = p;
     o.normal = float3(in.nrm);
     o.id = in.id;
@@ -100,10 +107,22 @@ vertex LineOut line_vs(uint vid [[vertex_id]], uint iid [[instance_id]],
                        constant Globals &g [[buffer(1)]],
                        constant DrawU &d [[buffer(2)]]) {
     LineI l = lines[iid];
-    float4 c0 = g.viewProj * float4(float3(l.p0), 1);
-    float4 c1 = g.viewProj * float4(float3(l.p1), 1);
-    c0.w = max(c0.w, 1e-4);
-    c1.w = max(c1.w, 1e-4);
+    float4 c0 = g.viewProj * float4(biased(float3(l.p0), g, d.depthBias), 1);
+    float4 c1 = g.viewProj * float4(biased(float3(l.p1), g, d.depthBias), 1);
+    LineOut o;
+    // Clip against the near plane (clip z = 0) so segments reaching behind the camera project correctly.
+    if (c0.z < 0 && c1.z < 0) {
+        o.position = float4(2, 2, 2, 1);   // fully behind: emit off-screen
+        o.color = float4(0);
+        o.along = 0;
+        o.id = 0;
+        o.flags = 0;
+        return o;
+    }
+    if (c0.z < 0) c0 = mix(c0, c1, c0.z / (c0.z - c1.z));
+    if (c1.z < 0) c1 = mix(c1, c0, c1.z / (c1.z - c0.z));
+    c0.w = max(c0.w, 1e-6);
+    c1.w = max(c1.w, 1e-6);
     float2 half_vp = g.viewport * 0.5;
     float2 s0 = c0.xy / c0.w * half_vp;
     float2 s1 = c1.xy / c1.w * half_vp;
@@ -118,8 +137,6 @@ vertex LineOut line_vs(uint vid [[vertex_id]], uint iid [[instance_id]],
     float4 c = t < 0.5 ? c0 : c1;
     float2 off = nrm * side * w * 0.5 + dir * (t < 0.5 ? -1.0 : 1.0) * w * 0.35;
     c.xy += off / half_vp * c.w;
-    c.z -= d.depthBias * c.w;
-    LineOut o;
     o.position = c;
     o.color = l.color == 0 ? d.color : unpack_unorm4x8_to_float(l.color);
     o.along = t * len;
@@ -157,10 +174,9 @@ vertex PointOut point_vs(uint vid [[vertex_id]], uint iid [[instance_id]],
     PointI p = pts[iid];
     float2 corners[6] = { float2(-1,-1), float2(1,-1), float2(-1,1), float2(1,-1), float2(1,1), float2(-1,1) };
     float2 uv = corners[vid];
-    float4 c = g.viewProj * float4(float3(p.p), 1);
+    float4 c = g.viewProj * float4(biased(float3(p.p), g, d.depthBias), 1);
     float size = p.size * (g.pickMode != 0 ? 1.8 : 1.0);
     c.xy += uv * size * 0.5 / (g.viewport * 0.5) * c.w;
-    c.z -= d.depthBias * c.w;
     PointOut o;
     o.position = c;
     o.uv = uv;
@@ -205,8 +221,7 @@ vertex FillOut fill_vs(uint vid [[vertex_id]],
                        constant DrawU &d [[buffer(2)]]) {
     FillV f = v[vid];
     FillOut o;
-    o.position = g.viewProj * float4(float3(f.p), 1);
-    o.position.z -= d.depthBias * o.position.w;
+    o.position = g.viewProj * float4(biased(float3(f.p), g, d.depthBias), 1);
     o.color = unpack_unorm4x8_to_float(f.color);
     o.id = f.id;
     return o;

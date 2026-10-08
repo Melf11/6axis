@@ -99,7 +99,7 @@ struct SceneBuilder {
                 edgeLines.append(LineInstance(seg.0, seg.1, id: eid))
             }
         }
-        scene.lines.append(LineBatch(instances: edgeLines, width: 1.4 * scale, color: style.edge, depthBias: 0.00025))
+        scene.lines.append(LineBatch(instances: edgeLines, width: 1.4 * scale, color: style.edge, depthBias: 0.0015))
         scene.meshes.append(contentsOf: translucent)
 
         addCommandHighlights()
@@ -141,7 +141,7 @@ struct SceneBuilder {
                     fills.append(FillVertex(x: p.x, y: p.y, z: p.z, id: rid, color: color))
                 }
             }
-            scene.fills.append(FillBatch(vertices: fills, depthBias: 0.0003, pickable: !active))
+            scene.fills.append(FillBatch(vertices: fills, depthBias: 0.001, pickable: !active))
         }
 
         var lines: [LineInstance] = []
@@ -165,7 +165,7 @@ struct SceneBuilder {
                 lines.append(LineInstance(plane.point(poly[i]).float, plane.point(poly[i + 1]).float, id: cid, color: packed, flags: flags))
             }
         }
-        scene.lines.append(LineBatch(instances: lines, width: (active ? 2.0 : 1.5) * scale, depthBias: 0.0012))
+        scene.lines.append(LineBatch(instances: lines, width: (active ? 2.0 : 1.5) * scale, depthBias: 0.003))
 
         guard active else { return }
         var pts: [PointInstance] = []
@@ -182,7 +182,7 @@ struct SceneBuilder {
             let size: Float = (centers.contains(p.id) ? 6 : 8) * scale
             pts.append(PointInstance(x: w.x, y: w.y, z: w.z, id: id(.sketchPoint(sid, p.id)), color: packColor(color), size: size))
         }
-        scene.points.append(PointBatch(instances: pts, depthBias: 0.002, depth: .always))
+        scene.points.append(PointBatch(instances: pts, depthBias: 0.004, depth: .always))
     }
 
     // MARK: Command highlights (selected inputs on the pre-feature geometry)
@@ -208,7 +208,7 @@ struct SceneBuilder {
                     }
                 }
             }
-            scene.fills.append(FillBatch(vertices: fills, depthBias: 0.0005, depth: .always, pickable: false))
+            scene.fills.append(FillBatch(vertices: fills, depthBias: 0.002, depth: .always, pickable: false))
         default:
             break
         }
@@ -222,7 +222,7 @@ struct SceneBuilder {
                 lines.append(LineInstance(seg.0, seg.1, id: 0, color: color, flags: LineInstance.emphasized))
             }
         }
-        scene.lines.append(LineBatch(instances: lines, width: 2.2 * scale, depthBias: 0.002, depth: .always, pickable: false))
+        scene.lines.append(LineBatch(instances: lines, width: 2.2 * scale, depthBias: 0.003, depth: .always, pickable: false))
     }
 
     // MARK: Grid, axes, origin planes
@@ -247,24 +247,36 @@ struct SceneBuilder {
             if isMajor { majorLines.append(LineInstance(a, b, color: majorColor)) } else { minor.append(LineInstance(a, b, color: minorColor)) }
             if isMajorY { majorLines.append(LineInstance(a2, b2, color: majorColor)) } else { minor.append(LineInstance(a2, b2, color: minorColor)) }
         }
-        scene.lines.append(LineBatch(instances: minor, width: 1 * scale, depthBias: 0, depth: .readOnly, pickable: false))
-        scene.lines.append(LineBatch(instances: majorLines, width: 1 * scale, depthBias: 0, depth: .readOnly, pickable: false))
+        scene.lines.append(LineBatch(instances: minor, width: 1 * scale, depthBias: -0.002, depth: .readOnly, pickable: false))
+        scene.lines.append(LineBatch(instances: majorLines, width: 1 * scale, depthBias: -0.002, depth: .readOnly, pickable: false))
     }
 
+    /// Origin axes as long lines through the grid, drawn *behind* geometry (negative depth bias),
+    /// so body edges lying on an axis always win and no axis stubs show through.
     private mutating func addAxes() {
-        let len = editor.camera.distance * 0.35
-        let axes: [(SIMD3<Float>, SIMD4<Float>, AxisRef)] = [
-            (SIMD3(1, 0, 0), SIMD4(0.90, 0.25, 0.25, 0.9), .x),
-            (SIMD3(0, 1, 0), SIMD4(0.25, 0.72, 0.30, 0.9), .y),
-            (SIMD3(0, 0, 1), SIMD4(0.25, 0.45, 0.95, 0.9), .z),
-        ]
+        let half = 80 * editor.gridSpacing.minor
+        let t = editor.camera.target
+        let c = (editor.activePlane ?? .xy).project(Vec3(Double(t.x), Double(t.y), Double(t.z)))
+        let red = SIMD4<Float>(0.90, 0.25, 0.25, 0.75), green = SIMD4<Float>(0.25, 0.70, 0.30, 0.75), blue = SIMD4<Float>(0.25, 0.45, 0.95, 0.75)
         let pickable = editor.command?.kind == .revolve && editor.command?.activeInput == 1
         var lines: [LineInstance] = []
-        for (dir, color, ref) in axes {
-            if editor.sketchId != nil, let plane = editor.activePlane, abs(simd_dot(plane.normal.float, dir)) > 0.99 { continue }
-            lines.append(LineInstance(.zero, dir * len, id: pickable ? id(.originAxis(ref)) : 0, color: packColor(color)))
+
+        if let plane = editor.activePlane {
+            // Sketch: the sketch's own X/Y directions through its origin.
+            lines.append(LineInstance(plane.point(Vec2(c.x - half, 0)).float, plane.point(Vec2(c.x + half, 0)).float, color: packColor(red)))
+            lines.append(LineInstance(plane.point(Vec2(0, c.y - half)).float, plane.point(Vec2(0, c.y + half)).float, color: packColor(green)))
+        } else {
+            let showZ = pickable || editor.showOriginPlanes || editor.command?.kind == .sketchPlane
+            let axes: [(Vec3, Double, SIMD4<Float>, AxisRef)] = [
+                (Vec3(1, 0, 0), c.x, red, .x),
+                (Vec3(0, 1, 0), c.y, green, .y),
+            ] + (showZ ? [(Vec3(0, 0, 1), 0, blue, .z)] : [])
+            for (dir, center, color, ref) in axes {
+                let a = (dir * (center - half)).float, b = (dir * (center + half)).float
+                lines.append(LineInstance(a, b, id: pickable ? id(.originAxis(ref)) : 0, color: packColor(color)))
+            }
         }
-        scene.lines.append(LineBatch(instances: lines, width: 1.6 * scale, depthBias: 0.0002, pickable: pickable))
+        scene.lines.append(LineBatch(instances: lines, width: (pickable ? 2 : 1.3) * scale, depthBias: -0.003, pickable: pickable))
     }
 
     private mutating func addOriginPlanes() {
@@ -280,8 +292,8 @@ struct SceneBuilder {
             for i in [0, 1, 2, 0, 2, 3] { fills.append(FillVertex(x: c[i].x, y: c[i].y, z: c[i].z, id: pid, color: fc)) }
             for i in 0..<4 { outlines.append(LineInstance(c[i], c[(i + 1) % 4], id: pid, color: oc)) }
         }
-        scene.fills.append(FillBatch(vertices: fills, depthBias: 0, depth: .readOnly))
-        scene.lines.append(LineBatch(instances: outlines, width: 1.2 * scale, depthBias: 0.0002))
+        scene.fills.append(FillBatch(vertices: fills, depthBias: 0.0005, depth: .readOnly))
+        scene.lines.append(LineBatch(instances: outlines, width: 1.2 * scale, depthBias: 0.001))
     }
 
     // MARK: Highlight ids

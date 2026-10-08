@@ -90,20 +90,20 @@ struct LineBatch {
     var instances: [LineInstance]
     var width: Float
     var color: SIMD4<Float> = SIMD4(0, 0, 0, 1)
-    var depthBias: Float = 0.0004
+    var depthBias: Float = 0.0015
     var depth: DepthMode = .readOnly
     var pickable = true
 }
 
 struct PointBatch {
     var instances: [PointInstance]
-    var depthBias: Float = 0.001
+    var depthBias: Float = 0.004
     var depth: DepthMode = .readOnly
 }
 
 struct FillBatch {
     var vertices: [FillVertex]
-    var depthBias: Float = 0.0002
+    var depthBias: Float = 0.001
     var depth: DepthMode = .readOnly
     var pickable = true
 }
@@ -353,7 +353,7 @@ final class Renderer: NSObject, MTKViewDelegate {
             enc.setRenderPipelineState(pick ? meshPickPipeline : meshPipeline)
             enc.setDepthStencilState(depthStates[translucent ? .readOnly : .normal])
             for m in gpuMeshes where m.translucent == translucent {
-                var u = DrawUniforms(color: m.color, depthBias: 0.00002)
+                var u = DrawUniforms(color: m.color, depthBias: 0)
                 enc.setVertexBuffer(m.vb, offset: 0, index: 0)
                 enc.setVertexBytes(&u, length: MemoryLayout<DrawUniforms>.stride, index: 2)
                 enc.setFragmentBytes(&u, length: MemoryLayout<DrawUniforms>.stride, index: 2)
