@@ -279,6 +279,9 @@ public struct DrawingPage: Sendable {
     public var views: [PlacedView] = []
     public var snapPoints: [DrawingSnapPoint] = []
     public var isEmpty = true
+    /// Areas taken by leader labels (paper mm), used to keep callouts from overlapping.
+    var leaderAreas: [(min: Vec2, max: Vec2)] = []
+    var leaderLines: [(Vec2, Vec2)] = []
 
     public init(sheet: Sheet, scale: DrawingScale) {
         self.sheet = sheet
