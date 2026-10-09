@@ -1,6 +1,6 @@
 # Roadmap
 
-Stand: Oktober 2026 · Aktuelles Release: [1.0.0](https://github.com/Melf11/6axis/releases/tag/v1.0.0) · als Nächstes: 1.1
+Stand: Oktober 2026 · Aktuelles Release: [1.1.0](https://github.com/Melf11/6axis/releases/tag/v1.1.0) · als Nächstes: 1.2
 
 **Leitlinien** (verbindlich, auch für KI-Assistenten): siehe [AGENTS.md](../AGENTS.md#leitlinien-verbindlich) – schlank und nativ, Bedienbarkeit und Einfachheit zuerst, ein Arbeitsablauf statt vieler Werkbänke, Komplexität über Parameter und Bezüge statt über mehr Oberfläche.
 
@@ -96,17 +96,20 @@ Inhalt:
 - [x] Flüssiges Verschieben (3D und Zeichnung), Zoomen mit ⌘ + Scrollen in der Zeichnung (1.0.1)
 - [x] **Updates in der App** (1.0.2): tägliche Suche (abschaltbar), Hinweis in der Kopfleiste, Versionshinweise, Installation mit einem Klick und Neustart; nur mit gültiger Ed25519-Signatur, sonst Verweis auf die Release-Seite
 
-## 1.1 – Skizze vervollständigen
-- **Rückmeldungen der Tester** einarbeiten (Bedienung von Zeichnungsfenster, Radialmenü, Navigation, DXF in CAM-/Lasersoftware)
-- Trimmen und Verlängern
-- Versatz (z. B. Wandstärke als Kontur)
-- Spiegeln an einer Linie
-- Rechteck- und Kreismuster in der Skizze
-- Skizzen-Abrundung und -Fase
-- Kanten und Flächen von Körpern in die Skizze projizieren
-- Maßeingabe auch für Bögen
-- Text (zum Gravieren bzw. für den 3D-Druck)
-- Splines
+## 1.1 – Skizze vervollständigen ✅ (Release 1.1.0)
+- [ ] **Rückmeldungen der Tester** einarbeiten (Bedienung von Zeichnungsfenster, Radialmenü, Navigation, DXF in CAM-/Lasersoftware)
+- [x] Punkte und Ecken mit jedem Werkzeug ziehen (z. B. Rechteck-Ecken direkt nach dem Zeichnen)
+- [x] **Splines** durch Stützpunkte, die an vorhandene Punkte anschließen (offen oder geschlossen) – Profile, Extrusion und Zeichnung exakt wie auf dem Bildschirm
+- [x] **Abrundung und Fase** von Ecken; die Ecke bleibt als virtuelle Ecke erhalten, Gesamtmaße steuern weiter
+- [x] **Trimmen** (T) und **Verlängern**, mit Vorschau des entfernten Stücks
+- [x] **Versatz** (O) einer ganzen Kontur, ein Maß steuert alle Seiten
+- [x] **Spiegeln** an einer Linie, Kopien bleiben symmetrisch
+- [x] **Rechteck- und Kreismuster** (z. B. Lochreihe 32 mm, Lochkreis), Abstand bzw. Winkel nachträglich änderbar
+- [x] **Kanten und Flächen projizieren** (P) als feste Bezugsgeometrie
+- [x] **Maßeingabe für Bögen**: Sehnenlänge/Winkel, dann Radius
+- [x] **Text** zum Gravieren oder Beschriften (Versalhöhe, Schriften des Mac), nachträglich bearbeitbar
+- Geänderte Tastenkürzel wie in Fusion: **T** Trimmen, **P** Projizieren, **O** Versatz (in Skizzen); Tangential und Senkrecht bleiben in der Werkzeugleiste
+- Dateiformat 3 (ältere Versionen lehnen Dateien mit Splines/Text mit klarer Meldung ab)
 
 ## 1.2 – Modellieren
 - Konstruktionsebenen (versetzt, unter Winkel, mittig zwischen zwei Flächen) und -achsen

@@ -209,3 +209,52 @@ EN.update({
 "Update": "Update", "Update %@": "Update %@", "Update fehlgeschlagen: %@": "Update failed: %@",
 "Update konnte nicht entpackt werden": "Could not unpack the update", "Updates": "Updates", "Zuletzt gesucht": "Last checked", "noch nie": "never",
 })
+
+# 1.1 sketch
+EN.update({
+"Spline": "Spline",
+"Ersten Punkt klicken – auch an vorhandene Ecken": "Click the first point – existing corners work too",
+"Weitere Punkte klicken · Startpunkt schließt · Doppelklick, ↩ oder Esc beendet": "Click more points · start point closes · double-click, ↩ or Esc finishes",
+})
+EN.update({
+"Ecke abrunden": "Fillet corner", "Ecke fasen": "Chamfer corner", "Abrunden": "Fillet",
+"Klicke auf eine Ecke zwischen zwei Linien": "Click a corner between two lines",
+"Diese Ecke lässt sich nicht bearbeiten (zu kurze Linien oder keine Ecke)": "This corner can't be changed (lines too short or not a corner)",
+"Ecke anklicken, dann Radius eintippen": "Click a corner, then type the radius",
+"Ecke anklicken, dann Fasenlänge eintippen": "Click a corner, then type the chamfer length",
+})
+EN.update({
+"Trimmen": "Trim", "Verlängern": "Extend",
+"Nur Linien lassen sich verlängern": "Only lines can be extended",
+"Keine Kurve in Verlängerungsrichtung": "No curve in the extension direction",
+"Splines lassen sich noch nicht trimmen": "Splines can't be trimmed yet",
+"Ein Kreis braucht zwei Schnittpunkte zum Trimmen": "A circle needs two intersections to be trimmed",
+"Stück einer Kurve anklicken, um es bis zu den Schnittpunkten zu entfernen": "Click a piece of a curve to remove it up to the intersections",
+"Linie nahe dem Ende anklicken, um sie bis zur nächsten Kurve zu verlängern": "Click a line near its end to extend it to the next curve",
+})
+EN.update({
+"Anzahl und Abstand im Feld rechts eingeben": "Enter count and spacing in the panel on the right",
+"Anzahl und Winkel im Feld rechts eingeben": "Enter count and angle in the panel on the right",
+"Gesamtwinkel": "Total angle", "Klicke auf den Mittelpunkt des Musters": "Click the centre of the pattern",
+"Klicke auf eine Linie als Spiegelachse": "Click a line as mirror axis", "Kreismuster": "Circular pattern",
+"Kurve überfahren – die Seite des Mauszeigers bestimmt die Richtung, Klick übernimmt": "Hover a curve – the pointer's side sets the direction, click to apply",
+"Linie als Spiegelachse anklicken": "Click a line as mirror axis", "Mittelpunkt des Kreismusters anklicken": "Click the centre of the circular pattern",
+"Muster": "Pattern", "Muster nicht möglich – Anzahl und Abstand prüfen": "Pattern not possible – check count and spacing",
+"Rechteckmuster": "Rectangular pattern", "Reihen": "Rows", "Reihenabstand": "Row spacing", "Spiegeln": "Mirror",
+"Splines lassen sich noch nicht versetzen": "Splines can't be offset yet", "Versatz": "Offset",
+"Versatz nicht möglich (Abstand zu groß?)": "Offset not possible (distance too large?)", "Verschiebung": "Translation",
+"Waagerecht": "Horizontal", "Wähle zuerst die Kurven aus, die kopiert werden sollen": "First select the curves to copy",
+})
+EN.update({
+"Projizieren": "Project", "Klicke auf eine Kante oder Fläche eines Körpers": "Click an edge or face of a body",
+"%lld Kurven projiziert": "%lld curves projected",
+"Kante oder Fläche eines Körpers anklicken – sie wird in die Skizze übernommen": "Click an edge or face of a body – it is copied into the sketch",
+})
+EN.update({
+"Text": "Text", "Text bearbeiten": "Edit text", "Höhe": "Height", "Schrift": "Font",
+"Text und Höhe angeben": "Enter text and height",
+"Die Höhe ist die Höhe der Großbuchstaben.": "The height is the height of capital letters.",
+"Klicke, wo der Text beginnen soll (Grundlinie) · Doppelklick auf einen Text bearbeitet ihn": "Click where the text should start (baseline) · double-click a text to edit it",
+"Helvetica fett": "Helvetica bold", "Georgia fett": "Georgia bold", "Menlo (Schreibmaschine)": "Menlo (monospace)",
+})
+

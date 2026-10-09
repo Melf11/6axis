@@ -40,6 +40,17 @@ enum SketchTool: Equatable {
     case centerRectangle
     case circle
     case arc
+    case spline
+    case sketchFillet
+    case sketchChamfer
+    case trim
+    case extend
+    case offset
+    case mirror
+    case rectPattern
+    case circularPattern
+    case project
+    case text
     case dimension
     case constraint(ConstraintTool)
 
@@ -51,6 +62,17 @@ enum SketchTool: Equatable {
         case .centerRectangle: return String(localized: "Mittelpunkt-Rechteck")
         case .circle: return String(localized: "Kreis")
         case .arc: return String(localized: "Bogen")
+        case .spline: return String(localized: "Spline")
+        case .sketchFillet: return String(localized: "Ecke abrunden")
+        case .sketchChamfer: return String(localized: "Ecke fasen")
+        case .trim: return String(localized: "Trimmen")
+        case .extend: return String(localized: "Verlängern")
+        case .offset: return String(localized: "Versatz")
+        case .mirror: return String(localized: "Spiegeln")
+        case .rectPattern: return String(localized: "Rechteckmuster")
+        case .circularPattern: return String(localized: "Kreismuster")
+        case .project: return String(localized: "Projizieren")
+        case .text: return String(localized: "Text")
         case .dimension: return String(localized: "Bemaßung")
         case let .constraint(c): return c.name
         }
@@ -191,6 +213,12 @@ final class Editor {
     @ObservationIgnored var chainStart: Int?
     @ObservationIgnored var sketchRollbackBefore: Int?
     var constraintPicks: [Pick] = []
+    /// Curves chosen before starting mirror/pattern.
+    var copySource: [Int] = []
+    /// Open pattern dialog (values as typed text).
+    var patternRequest: PatternRequest?
+    /// Open text dialog (new text at a point, or editing an existing one).
+    var textRequest: TextRequest?
     var timelineSelection: UUID?
 
     // Chrome
@@ -626,4 +654,33 @@ private final class LatestGeneration: @unchecked Sendable {
     private let lock = NSLock()
     func set(_ v: Int) { lock.lock(); value = v; lock.unlock() }
     func get() -> Int { lock.lock(); defer { lock.unlock() }; return value }
+}
+
+/// Settings of the sketch pattern dialog (strings, so expressions like "32 mm" or "breite / 4" work).
+struct PatternRequest: Equatable {
+    enum Kind { case rectangular, circular }
+    var kind: Kind
+    var curves: [Int]
+    var center: Int?
+    var count = "3"
+    var spacing = "20 mm"
+    var horizontal = true
+    var count2 = "1"
+    var spacing2 = "20 mm"
+    var angle = "360 deg"
+}
+
+/// Settings of the sketch text dialog.
+struct TextRequest: Equatable {
+    var anchor: SnapTarget
+    var editing: Int?
+    var text = ""
+    var height = "10 mm"
+    var font = TextOutline.defaultFont
+
+    /// Fonts that ship with every Mac and suit labels, engraving and 3D printing.
+    static var fonts: [(name: String, title: String)] { [
+        ("Helvetica-Bold", String(localized: "Helvetica fett")), ("Helvetica", "Helvetica"), ("AvenirNext-DemiBold", "Avenir Next"),
+        ("Futura-Medium", "Futura"), ("Georgia-Bold", String(localized: "Georgia fett")), ("Menlo-Bold", String(localized: "Menlo (Schreibmaschine)")),
+    ] }
 }

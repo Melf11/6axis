@@ -19,12 +19,18 @@ public enum CurveGeometry: Codable, Hashable, Sendable {
     case circle(center: Int, radius: Double)
     /// Counter-clockwise from `start` to `end`. Radius is |start - center|.
     case arc(center: Int, start: Int, end: Int)
+    /// Smooth curve through the given points (fit points), optionally closed.
+    case spline(points: [Int], closed: Bool)
+    /// A line of text; `anchor` is the start of the baseline, `height` the cap height.
+    case text(anchor: Int, text: String, height: Double, font: String?)
 
     public var pointIds: [Int] {
         switch self {
         case let .line(a, b): return [a, b]
         case let .circle(c, _): return [c]
         case let .arc(c, a, b): return [c, a, b]
+        case let .spline(pts, _): return pts
+        case let .text(a, _, _, _): return [a]
         }
     }
 }
@@ -41,7 +47,10 @@ public struct SketchCurve: Codable, Hashable, Identifiable, Sendable {
     }
 
     public var isLine: Bool { if case .line = geometry { return true } else { return false } }
-    public var isRound: Bool { !isLine }
+    public var isSpline: Bool { if case .spline = geometry { return true } else { return false } }
+    public var isText: Bool { if case .text = geometry { return true } else { return false } }
+    /// Circles and arcs.
+    public var isRound: Bool { !isLine && !isSpline && !isText }
 }
 
 public enum ConstraintKind: Codable, Hashable, Sendable {
@@ -69,6 +78,13 @@ public enum ConstraintKind: Codable, Hashable, Sendable {
     case radius(curve: Int, value: String)
     case diameter(curve: Int, value: String)
     case angle(Int, Int, value: String)               // line, line (degrees)
+    // Copies (offset, patterns) – parametric: the copy follows the original and the value.
+    /// `curve` runs parallel (lines) or concentric (arcs/circles) to `source` at distance `value`.
+    case offset(curve: Int, source: Int, value: String)
+    /// `copy` = `original` + unit `direction` · `value`.
+    case translated(original: Int, copy: Int, direction: Vec2, value: String)
+    /// `copy` = `original` rotated about `center` by `value` degrees (counter-clockwise).
+    case rotated(center: Int, original: Int, copy: Int, value: String)
 
     public var isDimension: Bool { dimensionValue != nil }
 
@@ -76,7 +92,7 @@ public enum ConstraintKind: Codable, Hashable, Sendable {
         switch self {
         case let .distance(_, _, v), let .horizontalDistance(_, _, v), let .verticalDistance(_, _, v),
              let .pointLineDistance(_, _, v), let .length(_, v), let .radius(_, v), let .diameter(_, v),
-             let .angle(_, _, v):
+             let .angle(_, _, v), let .offset(_, _, v), let .translated(_, _, _, v), let .rotated(_, _, _, v):
             return v
         default:
             return nil
@@ -85,6 +101,7 @@ public enum ConstraintKind: Codable, Hashable, Sendable {
 
     public var valueKind: ValueKind {
         if case .angle = self { return .angle }
+        if case .rotated = self { return .angle }
         return .length
     }
 
@@ -98,6 +115,9 @@ public enum ConstraintKind: Codable, Hashable, Sendable {
         case let .radius(c, _): return .radius(curve: c, value: v)
         case let .diameter(c, _): return .diameter(curve: c, value: v)
         case let .angle(a, b, _): return .angle(a, b, value: v)
+        case let .offset(c, s, _): return .offset(curve: c, source: s, value: v)
+        case let .translated(o, c, d, _): return .translated(original: o, copy: c, direction: d, value: v)
+        case let .rotated(m, o, c, _): return .rotated(center: m, original: o, copy: c, value: v)
         default: return self
         }
     }
@@ -110,6 +130,8 @@ public enum ConstraintKind: Codable, Hashable, Sendable {
             return [a, b]
         case let .pointOnCurve(p, _), let .midpoint(p, _), let .pointLineDistance(p, _, _): return [p]
         case let .symmetric(a, b, _): return [a, b]
+        case let .translated(a, b, _, _): return [a, b]
+        case let .rotated(m, a, b, _): return [m, a, b]
         default: return []
         }
     }
@@ -124,6 +146,8 @@ public enum ConstraintKind: Codable, Hashable, Sendable {
             return [a, b]
         case let .pointOnCurve(_, c), let .midpoint(_, c), let .pointLineDistance(_, c, _), let .symmetric(_, _, c):
             return [c]
+        case let .offset(a, b, _):
+            return [a, b]
         default: return []
         }
     }
@@ -147,6 +171,9 @@ public enum ConstraintKind: Codable, Hashable, Sendable {
         case .radius: return String(localized: "Radius")
         case .diameter: return String(localized: "Durchmesser")
         case .angle: return String(localized: "Winkel")
+        case .offset: return String(localized: "Versatz")
+        case .translated: return String(localized: "Verschiebung")
+        case .rotated: return String(localized: "Drehung")
         }
     }
 }
@@ -156,12 +183,20 @@ public struct SketchConstraint: Codable, Hashable, Identifiable, Sendable {
     public var kind: ConstraintKind
     /// Offset of the dimension label from its anchor, in sketch units.
     public var labelOffset: Vec2
+    /// Linked dimensions (offset chains, patterns) share a group: editing the leader's value updates all
+    /// members as `factor × (value)`. Only the leader (factor 1) shows a label.
+    public var group: Int?
+    public var factor: Double?
 
-    public init(id: Int, kind: ConstraintKind, labelOffset: Vec2 = .zero) {
+    public init(id: Int, kind: ConstraintKind, labelOffset: Vec2 = .zero, group: Int? = nil, factor: Double? = nil) {
         self.id = id
         self.kind = kind
         self.labelOffset = labelOffset
+        self.group = group
+        self.factor = factor
     }
+
+
 }
 
 /// A 2D sketch: points, curves referencing points, and constraints.
@@ -227,17 +262,53 @@ public struct Sketch: Codable, Hashable, Sendable {
     }
 
     @discardableResult
-    public mutating func addConstraint(_ kind: ConstraintKind, labelOffset: Vec2 = .zero) -> Int {
+    public mutating func addSpline(_ points: [Int], closed: Bool = false, construction: Bool = false) -> Int {
         let id = newId()
-        constraints.append(SketchConstraint(id: id, kind: kind, labelOffset: labelOffset))
+        curves.append(SketchCurve(id: id, geometry: .spline(points: points, closed: closed), construction: construction))
         return id
+    }
+
+    @discardableResult
+    public mutating func addText(_ text: String, at anchor: Int, height: Double, font: String? = nil, construction: Bool = false) -> Int {
+        let id = newId()
+        curves.append(SketchCurve(id: id, geometry: .text(anchor: anchor, text: text, height: height, font: font), construction: construction))
+        return id
+    }
+
+    @discardableResult
+    public mutating func addConstraint(_ kind: ConstraintKind, labelOffset: Vec2 = .zero, group: Int? = nil, factor: Double? = nil) -> Int {
+        let id = newId()
+        constraints.append(SketchConstraint(id: id, kind: kind, labelOffset: labelOffset, group: group, factor: factor))
+        return id
+    }
+
+    /// Sets a dimension's value; members of its group follow as factor × (value).
+    public mutating func setValue(_ text: String, of constraintId: Int) {
+        guard let i = constraints.firstIndex(where: { $0.id == constraintId }) else { return }
+        let k = constraints[i].factor ?? 1
+        constraints[i].kind = constraints[i].kind.withValue(text)
+        guard let g = constraints[i].group else { return }
+        for j in constraints.indices where j != i && constraints[j].group == g {
+            let f = (constraints[j].factor ?? 1) / k
+            constraints[j].kind = constraints[j].kind.withValue(f == 1 ? text : "\(Self.number(f)) * (\(text))")
+        }
+    }
+
+    /// Linked groups show one label: the oldest member's. The others follow its value.
+    public func isGroupFollower(_ c: SketchConstraint) -> Bool {
+        guard let g = c.group else { return false }
+        return constraints.contains { $0.group == g && $0.id < c.id && $0.kind.isDimension }
+    }
+
+    static func number(_ v: Double) -> String {
+        v == v.rounded() ? String(Int(v)) : String(v)
     }
 
     public func radius(of curve: SketchCurve) -> Double {
         switch curve.geometry {
         case let .circle(_, r): return r
         case let .arc(c, s, _): return simd_distance(point(c) ?? .zero, point(s) ?? .zero)
-        case .line: return 0
+        case .line, .spline, .text: return 0
         }
     }
 
@@ -245,6 +316,10 @@ public struct Sketch: Codable, Hashable, Sendable {
         switch curve.geometry {
         case let .circle(c, _), let .arc(c, _, _): return point(c)
         case let .line(a, b): return ((point(a) ?? .zero) + (point(b) ?? .zero)) / 2
+        case let .spline(pts, _):
+            let ps = pts.compactMap { point($0) }
+            return ps.isEmpty ? nil : ps.reduce(.zero, +) / Double(ps.count)
+        case let .text(a, _, _, _): return point(a)
         }
     }
 
@@ -277,6 +352,13 @@ public struct Sketch: Codable, Hashable, Sendable {
             case let .line(s, e): curves[i].geometry = .line(start: r(s), end: r(e))
             case let .circle(c, rad): curves[i].geometry = .circle(center: r(c), radius: rad)
             case let .arc(c, s, e): curves[i].geometry = .arc(center: r(c), start: r(s), end: r(e))
+            case let .spline(pts, closed):
+                var ids = pts.map(r)
+                // Merging the last fit point into the first closes the spline.
+                var isClosed = closed
+                if ids.count > 2, ids.first == ids.last { ids.removeLast(); isClosed = true }
+                curves[i].geometry = .spline(points: ids, closed: isClosed)
+            case let .text(a, t, h, f): curves[i].geometry = .text(anchor: r(a), text: t, height: h, font: f)
             }
         }
         for i in constraints.indices {
@@ -293,6 +375,8 @@ public struct Sketch: Codable, Hashable, Sendable {
             case let .midpoint(p, l): nk = .midpoint(point: r(p), line: l)
             case let .pointLineDistance(p, l, v): nk = .pointLineDistance(point: r(p), line: l, value: v)
             case let .symmetric(x, y, l): nk = .symmetric(r(x), r(y), line: l)
+            case let .translated(x, y, d, v): nk = .translated(original: r(x), copy: r(y), direction: d, value: v)
+            case let .rotated(m, x, y, v): nk = .rotated(center: r(m), original: r(x), copy: r(y), value: v)
             default: nk = k
             }
             constraints[i].kind = nk
@@ -306,6 +390,7 @@ public struct Sketch: Codable, Hashable, Sendable {
         }
         curves.removeAll { c in
             if case let .line(s, e) = c.geometry { return s == e }
+            if case let .spline(pts, _) = c.geometry { return Set(pts).count < 2 }
             return false
         }
     }
@@ -324,8 +409,24 @@ public struct Sketch: Codable, Hashable, Sendable {
             case let .arc(ci, s, e):
                 guard let pc = point(ci), let ps = point(s), let pe = point(e) else { return nil }
                 return .arc(center: pc, radius: simd_distance(pc, ps), start: ps, end: pe)
+            case .spline, .text:
+                return nil   // expanded below
             }
+        } + curves.filter { !$0.construction && $0.isSpline }.flatMap { c -> [Segment2D] in
+            guard case let .spline(ids, closed) = c.geometry else { return [] }
+            return Spline.beziers(ids.compactMap { point($0) }, closed: closed).map { .bezier($0.0, $0.1, $0.2, $0.3) }
+        } + curves.filter { !$0.construction && $0.isText }.flatMap { c -> [Segment2D] in
+            guard case let .text(a, t, h, f) = c.geometry, let o = point(a) else { return [] }
+            return TextOutline.contours(t, height: h, font: f, origin: o).flatMap { $0 }
         }
+    }
+
+    /// All polylines of a curve: one for ordinary curves, one per glyph contour for text.
+    public func polylines(_ curve: SketchCurve, segments n: Int = 64) -> [[Vec2]] {
+        if case let .text(a, t, h, f) = curve.geometry, let o = point(a) {
+            return TextOutline.polylines(TextOutline.contours(t, height: h, font: f, origin: o)).map { $0 + ($0.first.map { [$0] } ?? []) }
+        }
+        return [polyline(curve, segments: n)]
     }
 
     /// Polyline approximation of a curve in sketch coordinates (for drawing/picking).
@@ -339,6 +440,10 @@ public struct Sketch: Codable, Hashable, Sendable {
                 let t = Double(i) / Double(n) * 2 * .pi
                 return pc + r * Vec2(cos(t), sin(t))
             }
+        case let .spline(ids, closed):
+            return Spline.polyline(ids.compactMap { point($0) }, closed: closed, perSegment: max(8, n / 4))
+        case .text:
+            return polylines(curve).first ?? []
         case let .arc(c, s, e):
             let pc = point(c) ?? .zero, ps = point(s) ?? .zero, pe = point(e) ?? .zero
             let r = simd_distance(pc, ps)
@@ -351,5 +456,50 @@ public struct Sketch: Codable, Hashable, Sendable {
                 return pc + r * Vec2(cos(t), sin(t))
             }
         }
+    }
+}
+
+/// Interpolating spline through fit points: piecewise cubic Bézier with tangents from neighbouring chords
+/// (Catmull-Rom style, scaled by chord length so uneven spacing doesn't overshoot). The same pieces are
+/// drawn on screen and handed to OpenCASCADE, so display and solid always agree.
+public enum Spline {
+    public typealias Piece = (Vec2, Vec2, Vec2, Vec2)
+
+    public static func beziers(_ pts: [Vec2], closed: Bool) -> [Piece] {
+        let n = pts.count
+        guard n >= 2 else { return [] }
+        if n == 2 && !closed {
+            let d = (pts[1] - pts[0]) / 3
+            return [(pts[0], pts[0] + d, pts[1] - d, pts[1])]
+        }
+        func unit(_ v: Vec2) -> Vec2 { let l = simd_length(v); return l > 1e-12 ? v / l : .zero }
+        func at(_ i: Int) -> Vec2 { pts[(i % n + n) % n] }
+        // Unit tangent at each fit point.
+        let tangents: [Vec2] = (0..<n).map { i in
+            if !closed && i == 0 { return unit(pts[1] - pts[0]) }
+            if !closed && i == n - 1 { return unit(pts[n - 1] - pts[n - 2]) }
+            let t = unit(at(i + 1) - at(i)) + unit(at(i) - at(i - 1))
+            let l = simd_length(t)
+            return l > 1e-12 ? t / l : unit(at(i + 1) - at(i - 1))
+        }
+        let count = closed ? n : n - 1
+        return (0..<count).map { i in
+            let a = at(i), b = at(i + 1)
+            let h = simd_distance(a, b) / 3
+            return (a, a + tangents[i] * h, b - tangents[(i + 1) % n] * h, b)
+        }
+    }
+
+    public static func point(_ p: Piece, _ t: Double) -> Vec2 {
+        let u = 1 - t
+        return u * u * u * p.0 + 3 * u * u * t * p.1 + 3 * u * t * t * p.2 + t * t * t * p.3
+    }
+
+    public static func polyline(_ pts: [Vec2], closed: Bool, perSegment k: Int = 24) -> [Vec2] {
+        let pieces = beziers(pts, closed: closed)
+        guard let first = pieces.first else { return pts }
+        var out = [first.0]
+        for p in pieces { for j in 1...k { out.append(point(p, Double(j) / Double(k))) } }
+        return out
     }
 }

@@ -332,7 +332,8 @@ public struct CADDocument: Codable, Hashable, Sendable {
     /// File format version written by this build. History:
     /// 1 – 0.9 and earlier
     /// 2 – 1.0: profile anchors, topology counts on face/edge references (all optional, so 1 reads as 2)
-    public static let currentFormatVersion = 2
+    /// 3 – 1.1: new sketch curve types (spline); older apps must refuse such files
+    public static let currentFormatVersion = 3
 
     public var formatVersion = CADDocument.currentFormatVersion
     public var features: [Feature] = []
@@ -401,6 +402,7 @@ public struct CADDocument: Codable, Hashable, Sendable {
     /// optional fields can't cover (renames, restructured values).
     static let migrations: [Int: ([String: Any]) -> [String: Any]] = [
         1: { $0 },   // 1 → 2: new fields are optional; nothing to rewrite
+        2: { $0 },   // 2 → 3: only additions
     ]
 }
 

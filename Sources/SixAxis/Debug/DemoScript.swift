@@ -37,6 +37,15 @@ enum DemoScript {
             }
             return
         }
+        // Sketch interaction checks: SIXAXIS_SKETCH_TEST=1 – draws like a user and prints CHECK lines.
+        if env["SIXAXIS_SKETCH_TEST"] != nil {
+            Task { @MainActor in
+                await pause(1.0)
+                await SketchChecks.run(editor)
+                exit(0)
+            }
+            return
+        }
         // Mouse drag performance: SIXAXIS_DRAG_TEST=1 – orbit (right button) and pan (middle button) on the
         // cabinet; reports per-event latency until the next frame plus CPU/GPU frame times.
         if env["SIXAXIS_DRAG_TEST"] != nil {
@@ -82,9 +91,7 @@ enum DemoScript {
                     }
                     if let e = event(up, button, p) { if button == .right { vp.rightMouseUp(with: e) } else { vp.otherMouseUp(with: e) } }
                     try? await Task.sleep(nanoseconds: 200_000_000)
-                    renderer.stats.lock.lock()
-                    let cpu = renderer.stats.cpu, gpu = renderer.stats.gpu, frames = renderer.stats.frames
-                    renderer.stats.lock.unlock()
+                    let (cpu, gpu, frames) = renderer.stats.lock.withLock { (renderer.stats.cpu, renderer.stats.gpu, renderer.stats.frames) }
                     func avg(_ a: [Double]) -> String { String(format: "%.1f", a.isEmpty ? 0 : a.reduce(0, +) / Double(a.count)) }
                     func mx(_ a: [Double]) -> String { String(format: "%.1f", a.max() ?? 0) }
                     print("DRAG \(name): \(frames) frames for 120 events in \(String(format: "%.2f", Date().timeIntervalSince(start))) s · latency avg \(avg(latencies)) max \(mx(latencies)) ms · cpu avg \(avg(cpu)) max \(mx(cpu)) · gpu avg \(avg(gpu)) max \(mx(gpu)) ms")

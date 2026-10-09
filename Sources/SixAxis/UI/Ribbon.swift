@@ -81,6 +81,8 @@ struct Ribbon: View {
                 tool(.centerRectangle, String(localized: "Mittig"), "rectangle.center.inset.filled")
                 tool(.circle, String(localized: "Kreis"), "circle", "C")
                 tool(.arc, String(localized: "Bogen"), "point.topleft.down.to.point.bottomright.curvepath", "A")
+                tool(.spline, String(localized: "Spline"), "scribble.variable")
+                tool(.text, String(localized: "Text"), "textformat")
             }
             RibbonDivider()
             group(String(localized: "Bemaßung")) {
@@ -99,6 +101,15 @@ struct Ribbon: View {
             }
             RibbonDivider()
             group(String(localized: "Ändern")) {
+                tool(.trim, String(localized: "Trimmen"), "scissors", "T")
+                tool(.extend, String(localized: "Verlängern"), "arrow.right.to.line")
+                tool(.project, String(localized: "Projizieren"), "square.3.layers.3d.down.backward", "P")
+                tool(.offset, String(localized: "Versatz"), "square.on.square.dashed", "O")
+                tool(.mirror, String(localized: "Spiegeln"), "arrow.left.and.right.righttriangle.left.righttriangle.right")
+                tool(.rectPattern, String(localized: "Muster"), "square.grid.3x1.below.line.grid.1x2")
+                tool(.circularPattern, String(localized: "Kreismuster"), "circle.hexagongrid")
+                tool(.sketchFillet, String(localized: "Abrunden"), "button.roundedtop.horizontal")
+                tool(.sketchChamfer, String(localized: "Fase"), "triangle.bottomhalf.filled")
                 ToolButton(title: String(localized: "Hilfslinie"), symbol: "line.diagonal.arrow", shortcut: "X") { editor.toggleConstruction() }
                 ToolButton(title: String(localized: "Löschen"), symbol: "trash", shortcut: "⌫") { editor.deleteSketchSelection() }
             }

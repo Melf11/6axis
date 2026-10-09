@@ -160,7 +160,7 @@ struct SceneBuilder {
 
         var lines: [LineInstance] = []
         for c in sk.curves {
-            let poly = sk.polyline(c, segments: 96)
+            let polys = sk.polylines(c, segments: 96)
             let color: SIMD4<Float>
             var flags: UInt32 = 0
             if c.construction {
@@ -175,8 +175,10 @@ struct SceneBuilder {
             }
             let cid = id(.sketchCurve(sid, c.id))
             let packed = packColor(color)
-            for i in 0..<max(0, poly.count - 1) {
-                lines.append(LineInstance(plane.point(poly[i]).float, plane.point(poly[i + 1]).float, id: cid, color: packed, flags: flags))
+            for poly in polys {
+                for i in 0..<max(0, poly.count - 1) {
+                    lines.append(LineInstance(plane.point(poly[i]).float, plane.point(poly[i + 1]).float, id: cid, color: packed, flags: flags))
+                }
             }
         }
         scene.lines.append(LineBatch(instances: lines, width: (active ? 2.0 : 1.5) * scale, depthBias: 0.003))
@@ -186,7 +188,7 @@ struct SceneBuilder {
         let centers = Set(sk.curves.compactMap { c -> Int? in
             switch c.geometry {
             case let .circle(ci, _), let .arc(ci, _, _): return ci
-            case .line: return nil
+            case .line, .spline, .text: return nil
             }
         })
         for p in sk.points {

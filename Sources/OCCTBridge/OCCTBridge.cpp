@@ -6,6 +6,8 @@
 #include <BRepAdaptor_Curve.hxx>
 #include <BRepAdaptor_Surface.hxx>
 #include <BRepAlgoAPI_Common.hxx>
+#include <Geom_BezierCurve.hxx>
+#include <TColgp_Array1OfPnt.hxx>
 #include <BRepAlgoAPI_Cut.hxx>
 #include <BRepAlgoAPI_Fuse.hxx>
 #include <BRepAlgoAPI_Splitter.hxx>
@@ -184,7 +186,17 @@ OBShape *ob_sketch_regions(const OBPlane *plane, const OBSegment *segs, int32_t 
         for (int32_t i = 0; i < count; i++) {
             const OBSegment &sg = segs[i];
             try {
-                if (sg.kind == OB_SEG_LINE) {
+                if (sg.kind == OB_SEG_BEZIER) {
+                    TColgp_Array1OfPnt poles(1, 4);
+                    poles(1) = planePoint(ax, sg.a);
+                    poles(2) = planePoint(ax, sg.c);
+                    poles(3) = planePoint(ax, sg.d);
+                    poles(4) = planePoint(ax, sg.b);
+                    if (poles(1).Distance(poles(4)) < 1e-7) continue;
+                    Handle(Geom_BezierCurve) bz = new Geom_BezierCurve(poles);
+                    tools.Append(BRepBuilderAPI_MakeEdge(bz).Edge());
+                    for (const double *q : {sg.a, sg.b, sg.c, sg.d}) grow(q[0], q[1], 0);
+                } else if (sg.kind == OB_SEG_LINE) {
                     gp_Pnt a = planePoint(ax, sg.a), b = planePoint(ax, sg.b);
                     if (a.Distance(b) < 1e-7) continue;
                     tools.Append(BRepBuilderAPI_MakeEdge(a, b).Edge());

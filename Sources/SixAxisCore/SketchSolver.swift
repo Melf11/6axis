@@ -186,9 +186,16 @@ public struct SketchSolver {
             case let .arc(ci, s, _):
                 guard let pc = P(ci), let ps = P(s) else { return nil }
                 return (pc.0, { x in simd_distance(pc.0(x), ps.0(x)) }, pc.1 + ps.1)
-            case .line:
+            case .line, .spline, .text:
                 return nil
             }
+        }
+        /// Fit points of a spline (positions from the variable vector).
+        func splinePoints(_ id: Int) -> ((UnsafeBufferPointer<Double>) -> [Vec2], Bool, [Int])? {
+            guard let c = curve(id), case let .spline(ids, closed) = c.geometry else { return nil }
+            let ps = ids.compactMap { P($0) }
+            guard ps.count == ids.count, ps.count >= 2 else { return nil }
+            return ({ x in ps.map { $0.0(x) } }, closed, ps.flatMap { $0.1 })
         }
         let xInit = x0
         func initial<T>(_ f: (UnsafeBufferPointer<Double>) -> T) -> T { xInit.withUnsafeBufferPointer { f($0) } }
@@ -264,7 +271,18 @@ public struct SketchSolver {
                     failed.insert(cid)
                 }
             case let .tangent(c1, c2):
-                if let (a, b, vl) = lineEnds(c1) ?? lineEnds(c2), let r = (lineEnds(c1) != nil ? round(c2) : round(c1)) {
+                if let lineId = [c1, c2].first(where: { lineEnds($0) != nil }), let arcId = [c1, c2].first(where: { $0 != lineId }),
+                   let line = curve(lineId), let arc = curve(arcId), case let .line(la, lb) = line.geometry,
+                   case let .arc(ci, s, e) = arc.geometry, let shared = [s, e].first(where: { $0 == la || $0 == lb }),
+                   let pc = P(ci), let pt = P(shared), let (a, b, vl) = lineEnds(lineId) {
+                    // Arc and line meet at a common endpoint: the radius there is perpendicular to the line.
+                    // Equivalent to "distance = radius", but well-conditioned (that form has zero slope along
+                    // the line at the touching point, which made the point look free).
+                    add(cid, vl + pc.1 + pt.1, 1) { x, o in
+                        let d = b(x) - a(x)
+                        o[0] = simd_dot(pt.0(x) - pc.0(x), d) / max(simd_length(d), 1e-12)
+                    }
+                } else if let (a, b, vl) = lineEnds(c1) ?? lineEnds(c2), let r = (lineEnds(c1) != nil ? round(c2) : round(c1)) {
                     let side = initial { x in sgn(crossN(b(x) - a(x), r.0(x) - a(x))) }
                     add(cid, vl + r.2, 1) { x, o in o[0] = side * crossN(b(x) - a(x), r.0(x) - a(x)) - r.1(x) }
                 } else if let r1 = round(c1), let r2 = round(c2) {
@@ -286,6 +304,20 @@ public struct SketchSolver {
                     add(cid, pp.1 + v, 1) { x, o in o[0] = crossN(b(x) - a(x), pp.0(x) - a(x)) }
                 } else if let r = round(c) {
                     add(cid, pp.1 + r.2, 1) { x, o in o[0] = simd_distance(pp.0(x), r.0(x)) - r.1(x) }
+                } else if let (fit, closed, v) = splinePoints(c) {
+                    // Signed distance to the nearest piece of the sampled spline.
+                    add(cid, pp.1 + v, 1) { x, o in
+                        let poly = Spline.polyline(fit(x), closed: closed, perSegment: 16)
+                        let p = pp.0(x)
+                        var best = Double.infinity, signed = 0.0
+                        for k in 0..<(poly.count - 1) {
+                            let a = poly[k], d = poly[k + 1] - a
+                            let t = max(0, min(1, simd_dot(p - a, d) / max(simd_length_squared(d), 1e-18)))
+                            let dist = simd_distance(p, a + t * d)
+                            if dist < best { best = dist; signed = crossN(d, p - a) }
+                        }
+                        o[0] = signed
+                    }
                 } else {
                     failed.insert(cid)
                 }
@@ -333,6 +365,43 @@ public struct SketchSolver {
             case let .diameter(c, _):
                 guard let r = round(c) else { failed.insert(cid); continue }
                 add(cid, r.2, 1) { x, o in o[0] = 2 * r.1(x) - value }
+            case let .offset(copyId, sourceId, _):
+                if let (a, b, vs) = lineEnds(sourceId), let (c, d, vc) = lineEnds(copyId) {
+                    // Both copy endpoints at the signed distance from the source line (also makes it parallel).
+                    let side = initial { x in sgn(crossN(b(x) - a(x), (c(x) + d(x)) / 2 - a(x))) }
+                    add(cid, vs + vc, 2) { x, o in
+                        let dir = b(x) - a(x)
+                        o[0] = side * crossN(dir, c(x) - a(x)) - value
+                        o[1] = side * crossN(dir, d(x) - a(x)) - value
+                    }
+                } else if let r1 = round(sourceId), let r2 = round(copyId) {
+                    // Concentric, radius differs by the offset (outside or inside, as created).
+                    let side = initial { x in sgn(r2.1(x) - r1.1(x)) }
+                    add(cid, r1.2 + r2.2, 3) { x, o in
+                        let d = r2.0(x) - r1.0(x)
+                        o[0] = d.x; o[1] = d.y
+                        o[2] = side * (r2.1(x) - r1.1(x)) - value
+                    }
+                } else {
+                    failed.insert(cid)
+                }
+            case let .translated(orig, copy, dir, _):
+                guard let a = P(orig), let b = P(copy), simd_length(dir) > 1e-12 else { failed.insert(cid); continue }
+                let u = simd_normalize(dir)
+                add(cid, a.1 + b.1, 2) { x, o in
+                    let d = b.0(x) - a.0(x) - u * value
+                    o[0] = d.x; o[1] = d.y
+                }
+            case let .rotated(center, orig, copy, _):
+                guard let c = P(center), let a = P(orig), let b = P(copy) else { failed.insert(cid); continue }
+                let t = value * .pi / 180
+                let cs = cos(t), sn = sin(t)
+                add(cid, c.1 + a.1 + b.1, 2) { x, o in
+                    let v = a.0(x) - c.0(x)
+                    let target = c.0(x) + Vec2(cs * v.x - sn * v.y, sn * v.x + cs * v.y)
+                    let d = b.0(x) - target
+                    o[0] = d.x; o[1] = d.y
+                }
             case let .angle(l1, l2, _):
                 guard let (a1, b1, v1) = lineEnds(l1), let (a2, b2, v2) = lineEnds(l2) else { failed.insert(cid); continue }
                 let target = value * .pi / 180

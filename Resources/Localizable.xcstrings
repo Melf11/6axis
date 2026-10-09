@@ -128,6 +128,16 @@
         }
       }
     },
+    "%lld Kurven projiziert": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld curves projected"
+          }
+        }
+      }
+    },
     "%lld Körper": {
       "localizations": {
         "en": {
@@ -287,6 +297,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Constraints"
+          }
+        }
+      }
+    },
+    "Abrunden": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fillet"
           }
         }
       }
@@ -549,6 +569,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Qty"
+          }
+        }
+      }
+    },
+    "Anzahl und Abstand im Feld rechts eingeben": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enter count and spacing in the panel on the right"
+          }
+        }
+      }
+    },
+    "Anzahl und Winkel im Feld rechts eingeben": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enter count and angle in the panel on the right"
           }
         }
       }
@@ -1221,6 +1261,16 @@
         }
       }
     },
+    "Die Höhe ist die Höhe der Großbuchstaben.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The height is the height of capital letters."
+          }
+        }
+      }
+    },
     "Die Signatur des Updates ist ungültig – es wurde nichts installiert.": {
       "localizations": {
         "en": {
@@ -1237,6 +1287,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "The version in the update does not match the release"
+          }
+        }
+      }
+    },
+    "Diese Ecke lässt sich nicht bearbeiten (zu kurze Linien oder keine Ecke)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This corner can't be changed (lines too short or not a corner)"
           }
         }
       }
@@ -1472,6 +1532,46 @@
         }
       }
     },
+    "Ecke abrunden": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fillet corner"
+          }
+        }
+      }
+    },
+    "Ecke anklicken, dann Fasenlänge eintippen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Click a corner, then type the chamfer length"
+          }
+        }
+      }
+    },
+    "Ecke anklicken, dann Radius eintippen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Click a corner, then type the radius"
+          }
+        }
+      }
+    },
+    "Ecke fasen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chamfer corner"
+          }
+        }
+      }
+    },
     "Ecke klicken": {
       "localizations": {
         "en": {
@@ -1548,6 +1648,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Custom dimension %@"
+          }
+        }
+      }
+    },
+    "Ein Kreis braucht zwei Schnittpunkte zum Trimmen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A circle needs two intersections to be trimmed"
           }
         }
       }
@@ -1768,6 +1878,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Drawn by"
+          }
+        }
+      }
+    },
+    "Ersten Punkt klicken – auch an vorhandene Ecken": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Click the first point – existing corners work too"
           }
         }
       }
@@ -2065,6 +2185,16 @@
         }
       }
     },
+    "Georgia fett": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Georgia bold"
+          }
+        }
+      }
+    },
     "Gesamtansicht": {
       "localizations": {
         "en": {
@@ -2081,6 +2211,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Export assembly as DXF …"
+          }
+        }
+      }
+    },
+    "Gesamtwinkel": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Total angle"
           }
         }
       }
@@ -2161,6 +2301,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Light"
+          }
+        }
+      }
+    },
+    "Helvetica fett": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Helvetica bold"
           }
         }
       }
@@ -2331,6 +2481,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Edge"
+          }
+        }
+      }
+    },
+    "Kante oder Fläche eines Körpers anklicken – sie wird in die Skizze übernommen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Click an edge or face of a body – it is copied into the sketch"
           }
         }
       }
@@ -2507,6 +2667,16 @@
         }
       }
     },
+    "Keine Kurve in Verlängerungsrichtung": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No curve in the extension direction"
+          }
+        }
+      }
+    },
     "Keine Schreibrechte für „%@“. Lade das Update bitte von der Release-Seite.": {
       "localizations": {
         "en": {
@@ -2553,6 +2723,56 @@
           "stringUnit": {
             "state": "translated",
             "value": "Click the faces that should be open."
+          }
+        }
+      }
+    },
+    "Klicke auf den Mittelpunkt des Musters": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Click the centre of the pattern"
+          }
+        }
+      }
+    },
+    "Klicke auf eine Ecke zwischen zwei Linien": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Click a corner between two lines"
+          }
+        }
+      }
+    },
+    "Klicke auf eine Kante oder Fläche eines Körpers": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Click an edge or face of a body"
+          }
+        }
+      }
+    },
+    "Klicke auf eine Linie als Spiegelachse": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Click a line as mirror axis"
+          }
+        }
+      }
+    },
+    "Klicke, wo der Text beginnen soll (Grundlinie) · Doppelklick auf einen Text bearbeitet ihn": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Click where the text should start (baseline) · double-click a text to edit it"
           }
         }
       }
@@ -2623,6 +2843,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Circle"
+          }
+        }
+      }
+    },
+    "Kreismuster": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Circular pattern"
+          }
+        }
+      }
+    },
+    "Kurve überfahren – die Seite des Mauszeigers bestimmt die Richtung, Klick übernimmt": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hover a curve – the pointer's side sets the direction, click to apply"
           }
         }
       }
@@ -2704,6 +2944,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Line"
+          }
+        }
+      }
+    },
+    "Linie als Spiegelachse anklicken": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Click a line as mirror axis"
+          }
+        }
+      }
+    },
+    "Linie nahe dem Ende anklicken, um sie bis zur nächsten Kurve zu verlängern": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Click a line near its end to extend it to the next curve"
           }
         }
       }
@@ -2908,6 +3168,16 @@
         }
       }
     },
+    "Menlo (Schreibmaschine)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Menlo (monospace)"
+          }
+        }
+      }
+    },
     "Mit gedrückter ⌘-Taste setzt du Punkte jederzeit frei. Vorhandene Punkte und Linien haben immer Vorrang.": {
       "localizations": {
         "en": {
@@ -2934,6 +3204,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Midpoint"
+          }
+        }
+      }
+    },
+    "Mittelpunkt des Kreismusters anklicken": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Click the centre of the circular pattern"
           }
         }
       }
@@ -2984,6 +3264,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Middle button drag"
+          }
+        }
+      }
+    },
+    "Muster": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pattern"
+          }
+        }
+      }
+    },
+    "Muster nicht möglich – Anzahl und Abstand prüfen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pattern not possible – check count and spacing"
           }
         }
       }
@@ -3106,6 +3406,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Normal"
+          }
+        }
+      }
+    },
+    "Nur Linien lassen sich verlängern": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Only lines can be extended"
           }
         }
       }
@@ -3570,6 +3880,16 @@
         }
       }
     },
+    "Projizieren": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Project"
+          }
+        }
+      }
+    },
     "Prüfe Signatur und installiere …": {
       "localizations": {
         "en": {
@@ -3728,6 +4048,36 @@
           "stringUnit": {
             "state": "translated",
             "value": "Rectangle"
+          }
+        }
+      }
+    },
+    "Rechteckmuster": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rectangular pattern"
+          }
+        }
+      }
+    },
+    "Reihen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rows"
+          }
+        }
+      }
+    },
+    "Reihenabstand": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Row spacing"
           }
         }
       }
@@ -4003,6 +4353,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Section plane failed"
+          }
+        }
+      }
+    },
+    "Schrift": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Font"
           }
         }
       }
@@ -4347,6 +4707,46 @@
         }
       }
     },
+    "Spiegeln": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mirror"
+          }
+        }
+      }
+    },
+    "Spline": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Spline"
+          }
+        }
+      }
+    },
+    "Splines lassen sich noch nicht trimmen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Splines can't be trimmed yet"
+          }
+        }
+      }
+    },
+    "Splines lassen sich noch nicht versetzen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Splines can't be offset yet"
+          }
+        }
+      }
+    },
     "Später": {
       "localizations": {
         "en": {
@@ -4423,6 +4823,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Back panel thickness"
+          }
+        }
+      }
+    },
+    "Stück einer Kurve anklicken, um es bis zu den Schnittpunkten zu entfernen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Click a piece of a curve to remove it up to the intersections"
           }
         }
       }
@@ -4517,6 +4927,36 @@
         }
       }
     },
+    "Text": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Text"
+          }
+        }
+      }
+    },
+    "Text bearbeiten": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Edit text"
+          }
+        }
+      }
+    },
+    "Text und Höhe angeben": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enter text and height"
+          }
+        }
+      }
+    },
     "Tischlerplatte": {
       "localizations": {
         "en": {
@@ -4554,6 +4994,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Transform failed"
+          }
+        }
+      }
+    },
+    "Trimmen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Trim"
           }
         }
       }
@@ -4901,12 +5351,42 @@
         }
       }
     },
+    "Verlängern": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Extend"
+          }
+        }
+      }
+    },
     "Vernetzung fehlgeschlagen": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Meshing failed"
+          }
+        }
+      }
+    },
+    "Versatz": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Offset"
+          }
+        }
+      }
+    },
+    "Versatz nicht möglich (Abstand zu groß?)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Offset not possible (distance too large?)"
           }
         }
       }
@@ -4947,6 +5427,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Reverse pan direction"
+          }
+        }
+      }
+    },
+    "Verschiebung": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Translation"
           }
         }
       }
@@ -4997,6 +5487,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Operation"
+          }
+        }
+      }
+    },
+    "Waagerecht": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Horizontal"
           }
         }
       }
@@ -5059,6 +5559,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Wall thickness, multiple of the nozzle (0.4)"
+          }
+        }
+      }
+    },
+    "Weitere Punkte klicken · Startpunkt schließt · Doppelklick, ↩ oder Esc beendet": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Click more points · start point closes · double-click, ↩ or Esc finishes"
           }
         }
       }
@@ -5209,6 +5719,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Choose an origin plane or a planar face in the viewport."
+          }
+        }
+      }
+    },
+    "Wähle zuerst die Kurven aus, die kopiert werden sollen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "First select the curves to copy"
           }
         }
       }

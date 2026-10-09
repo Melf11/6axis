@@ -62,6 +62,14 @@ PY
 then echo "✓ navigation: ⌘-scroll zooms, two-finger scroll moves the camera (3D)"; else echo "✗ navigation: 3D zoom/pan"; echo "::error::ui-check navigation: 3D zoom/pan"; fail=1; fi
 expect navigation "NAV drawing snapshots written" "drawing window scroll pan and zoom"
 
+run sketch 120 SIXAXIS_FAST_SNAPSHOTS=1 SIXAXIS_SKETCH_TEST=1 SIXAXIS_SNAPSHOTS="$OUT/sketch"
+if grep -q "^CHECK FAIL" "$OUT/sketch.log" || ! grep -q "^CHECK ok" "$OUT/sketch.log"; then
+    grep "^CHECK FAIL" "$OUT/sketch.log" | sed 's/^/✗ sketch: /'
+    echo "::error::ui-check sketch: $(grep -c '^CHECK FAIL' "$OUT/sketch.log") failing checks"
+    fail=1
+else
+    echo "✓ sketch: $(grep -c '^CHECK ok' "$OUT/sketch.log") interaction checks"
+fi
 run drag 120 SIXAXIS_FAST_SNAPSHOTS=1 SIXAXIS_DRAG_TEST=1
 if python3 - "$OUT/drag.log" <<'PY'
 import re, sys
@@ -82,7 +90,7 @@ then echo "✓ drag: mouse/swipe events stay responsive"; else echo "✗ drag: n
 if [ $fail -ne 0 ] && [ -n "${GITHUB_ACTIONS:-}" ]; then
     # Surface details as annotations (readable without access to the job log).
     for f in "$OUT"/*.log; do
-        echo "::error title=ui-check $(basename "$f")::$(grep -E 'NAV|DEMO: errors|SHEETS|EXAMPLE|REBUILD|rror|atal' "$f" | tail -6 | tr '\n' '|' | cut -c1-900)"
+        echo "::error title=ui-check $(basename "$f")::$(grep -E 'NAV|DEMO: errors|SHEETS|EXAMPLE|REBUILD|CHECK FAIL|rror|atal' "$f" | tail -6 | tr '\n' '|' | cut -c1-900)"
     done
 fi
 exit $fail

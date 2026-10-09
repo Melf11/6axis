@@ -209,6 +209,7 @@ extension Editor {
         if let sid = sketchId {
             switch p {
             case let .sketchPoint(s, _), let .sketchCurve(s, _), let .constraint(s, _): return s == sid
+            case .edge, .face: return sketchTool == .project
             default: return false
             }
         }
