@@ -151,23 +151,22 @@ struct DrawingWindow: View {
     private func sheetCanvas(_ page: DrawingPage) -> some View {
         GeometryReader { geo in
             let t = transform(page, geo.size)
-            let shown = previewPage(page) ?? page
-            Canvas { ctx, _ in
-                let rect = CGRect(x: t.origin.x, y: t.origin.y, width: page.sheet.width * t.k, height: t.height)
-                var shadow = ctx
-                shadow.addFilter(.shadow(color: .black.opacity(0.25), radius: 10, y: 4))
-                shadow.fill(Path(rect), with: .color(.white))
-                var highlight: [String: CGColor] = [:]
-                if let hover { highlight[hover] = NSColor.systemBlue.withAlphaComponent(0.65).cgColor }
-                if let selected { highlight[selected] = NSColor.systemBlue.cgColor }
-                ctx.withCGContext { cg in
-                    cg.translateBy(x: t.origin.x, y: t.origin.y + t.height)
-                    cg.scaleBy(x: 1, y: -1)
-                    DrawingRenderer.draw(shown, in: cg, pointsPerMM: t.k, highlight: highlight)
-                }
-                drawOverlays(ctx, page, t)
+            let preview = previewPage(page)
+            ZStack(alignment: .topLeading) {
+                // The sheet only redraws when its content, zoom or highlight changes; panning just moves it.
+                SheetLayer(page: preview ?? page,
+                           key: SheetLayer.Key(generation: controller.generation, page: pageIndex,
+                                               preview: preview == nil ? nil : mouse.map { [$0.x, $0.y] },
+                                               k: t.k, hover: hover, selected: selected))
+                    .equatable()
+                    .offset(x: t.origin.x, y: t.origin.y)
+                    .allowsHitTesting(false)
+                Canvas { ctx, _ in drawOverlays(ctx, page, t) }
+                    .allowsHitTesting(false)
             }
+            .frame(width: geo.size.width, height: geo.size.height, alignment: .topLeading)
             .contentShape(Rectangle())
+            .background(ScrollCatcher { event, point in scrolled(event, at: point, page: page, size: geo.size) })
             .onContinuousHover { phase in
                 switch phase {
                 case let .active(p): updateHover(page, t, p)
@@ -187,6 +186,29 @@ struct DrawingWindow: View {
             .onTapGesture(count: 2) { if tool == .select { resetView() } }
             .onTapGesture { p in click(page, t, p) }
         }
+    }
+
+    /// Two-finger scroll pans; ⌘ + scroll and the mouse wheel zoom around the pointer.
+    private func scrolled(_ event: NSEvent, at c: CGPoint, page: DrawingPage, size: CGSize) {
+        let precise = event.hasPreciseScrollingDeltas
+        if precise && !event.modifierFlags.contains(.command) {
+            pan.width += event.scrollingDeltaX
+            pan.height += event.scrollingDeltaY
+            return
+        }
+        let sign: CGFloat = AppSettings.shared.invertWheelZoom ? -1 : 1
+        let dy = sign * (precise ? event.scrollingDeltaY * 0.01 : event.scrollingDeltaY * 0.1)
+        let factor = max(0.5, min(2, 1 + dy))
+        let t = transform(page, size)
+        let paper = CGPoint(x: (c.x - t.origin.x) / t.k, y: (c.y - t.origin.y) / t.k)
+        let newZoom = max(0.3, min(12, zoom * factor))
+        guard newZoom != zoom else { return }
+        zoom = newZoom
+        zoomStart = newZoom
+        // Keep the paper point under the pointer in place.
+        let t2 = transform(page, size)
+        pan.width += c.x - (t2.origin.x + paper.x * t2.k)
+        pan.height += c.y - (t2.origin.y + paper.y * t2.k)
     }
 
     /// While placing a user dimension, show it live.
@@ -640,4 +662,79 @@ private struct TitleBlockEditor: View {
             $0.material = material
         }
     }
+}
+
+/// The drawing sheet as its own view: it redraws only when its key changes, so panning is just a move.
+private struct SheetLayer: View, Equatable {
+    struct Key: Equatable {
+        var generation: Int
+        var page: Int
+        var preview: [Double]?
+        var k: CGFloat
+        var hover: String?
+        var selected: String?
+    }
+    let page: DrawingPage
+    let key: Key
+
+    static func == (a: SheetLayer, b: SheetLayer) -> Bool { a.key == b.key }
+
+    var body: some View {
+        let k = key.k
+        let size = CGSize(width: page.sheet.width * k, height: page.sheet.height * k)
+        Canvas { ctx, _ in
+            var highlight: [String: CGColor] = [:]
+            if let h = key.hover { highlight[h] = NSColor.systemBlue.withAlphaComponent(0.65).cgColor }
+            if let s = key.selected { highlight[s] = NSColor.systemBlue.cgColor }
+            ctx.withCGContext { cg in
+                cg.translateBy(x: 0, y: size.height)
+                cg.scaleBy(x: 1, y: -1)
+                DrawingRenderer.draw(page, in: cg, pointsPerMM: k, highlight: highlight)
+            }
+        }
+        .frame(width: size.width, height: size.height)
+        .background(Color.white.shadow(.drop(color: .black.opacity(0.25), radius: 10, y: 4)))
+    }
+}
+
+/// Receives scroll-wheel events for the area behind the SwiftUI content.
+private struct ScrollCatcher: NSViewRepresentable {
+    /// Event plus pointer position in top-left based view coordinates.
+    let onScroll: (NSEvent, CGPoint) -> Void
+
+    final class CatcherView: NSView {
+        var onScroll: ((NSEvent, CGPoint) -> Void)?
+        private var monitor: Any?
+        override func viewDidMoveToWindow() {
+            super.viewDidMoveToWindow()
+            if let monitor { NSEvent.removeMonitor(monitor); self.monitor = nil }
+            guard window != nil else { return }
+            // SwiftUI views above don't forward scroll events, so watch them for this window.
+            monitor = NSEvent.addLocalMonitorForEvents(matching: .scrollWheel) { [weak self] event in
+                guard let self, let window = self.window else { return event }
+                // Events without a window (e.g. synthesized) carry screen coordinates.
+                let inWindow: NSPoint
+                if let w = event.window {
+                    guard w === window else { return event }
+                    inWindow = event.locationInWindow
+                } else {
+                    guard window.frame.contains(event.locationInWindow) else { return event }
+                    inWindow = window.convertPoint(fromScreen: event.locationInWindow)
+                }
+                let p = self.convert(inWindow, from: nil)
+                guard self.bounds.contains(p) else { return event }
+                self.onScroll?(event, CGPoint(x: p.x, y: self.isFlipped ? p.y : self.bounds.height - p.y))
+                return nil
+            }
+        }
+        deinit { if let monitor { NSEvent.removeMonitor(monitor) } }
+    }
+
+    func makeNSView(context: Context) -> CatcherView {
+        let v = CatcherView()
+        v.onScroll = onScroll
+        return v
+    }
+
+    func updateNSView(_ v: CatcherView, context: Context) { v.onScroll = onScroll }
 }

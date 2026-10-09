@@ -47,4 +47,15 @@ count "$OUT/examples" 3 "examples"
 run rebuild 240 SIXAXIS_FAST_SNAPSHOTS=1 SIXAXIS_REBUILD_TEST="$OUT/rebuild"
 expect rebuild "REBUILD done .* bodies=1 errors=0" "background rebuild of a heavy model"
 
+run navigation 120 SIXAXIS_FAST_SNAPSHOTS=1 SIXAXIS_NAV_TEST="$OUT/navigation"
+if python3 - "$OUT/navigation.log" <<'PY'
+import re, sys
+log = open(sys.argv[1]).read()
+m = re.search(r"NAV zoom with cmd: distance ([\d.]+) -> ([\d.]+)", log)
+p = re.search(r"NAV pan: target moved ([\d.]+)", log)
+sys.exit(0 if m and float(m.group(2)) < float(m.group(1)) * 0.9 and p and float(p.group(1)) > 1 else 1)
+PY
+then echo "✓ navigation: ⌘-scroll zooms, two-finger scroll pans (3D)"; else echo "✗ navigation: 3D zoom/pan"; fail=1; fi
+expect navigation "NAV drawing snapshots written" "drawing window scroll pan and zoom"
+
 exit $fail

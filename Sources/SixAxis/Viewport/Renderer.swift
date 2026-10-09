@@ -169,6 +169,7 @@ final class Renderer: NSObject, MTKViewDelegate {
     private var gpuMeshes: [GPUMesh] = []
     private var gpuFills: [GPUInstances] = []
     private var gpuLines: [GPUInstances] = []
+    private var gpuGridLines: [GPUInstances] = []
     private var gpuPoints: [GPUInstances] = []
 
     private var pickTexture: MTLTexture?
@@ -248,6 +249,16 @@ final class Renderer: NSObject, MTKViewDelegate {
     }
 
     // MARK: Scene upload
+
+    /// Replaces only the grid/axes layer (camera-following, rebuilt while panning and zooming).
+    func uploadGrid(_ lines: [LineBatch]) {
+        gpuGridLines = lines.compactMap { l in
+            guard !l.instances.isEmpty else { return nil }
+            let b = l.instances.withUnsafeBytes { device.makeBuffer(bytes: $0.baseAddress!, length: $0.count, options: .storageModeShared) }
+            guard let b else { return nil }
+            return GPUInstances(buffer: b, count: l.instances.count, u: DrawUniforms(color: l.color, width: l.width, depthBias: l.depthBias), depth: l.depth, pickable: l.pickable)
+        }
+    }
 
     func upload(_ scene: RenderScene) {
         func buffer<T>(_ a: [T]) -> MTLBuffer? {
@@ -467,6 +478,7 @@ final class Renderer: NSObject, MTKViewDelegate {
             }
         }
         instances(gpuFills, pipeline: pick ? fillPickPipeline : fillPipeline, vertexCount: 0, instanced: false)
+        instances(gpuGridLines, pipeline: pick ? linePickPipeline : linePipeline, vertexCount: 6, instanced: true)
         instances(gpuLines, pipeline: pick ? linePickPipeline : linePipeline, vertexCount: 6, instanced: true)
         instances(gpuPoints, pipeline: pick ? pointPickPipeline : pointPipeline, vertexCount: 6, instanced: true)
         if !pick { meshes(translucent: true) }

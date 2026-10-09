@@ -35,6 +35,88 @@ enum DemoScript {
             }
             return
         }
+        // Navigation check: SIXAXIS_NAV_TEST=1 posts real scroll events (trackpad-style pixel deltas)
+        // with and without ⌘ and reports zoom/pan results and the event handling time.
+        if env["SIXAXIS_NAV_TEST"] != nil {
+            Task { @MainActor in
+                await pause(1.0)
+                editor.openExample(Examples.all[0])
+                await pause(1.0)
+                func findViewport(_ v: NSView?) -> ViewportNSView? {
+                    guard let v else { return nil }
+                    if let vp = v as? ViewportNSView { return vp }
+                    for sub in v.subviews { if let f = findViewport(sub) { return f } }
+                    return nil
+                }
+                guard let vp = NSApp.windows.lazy.compactMap({ findViewport($0.contentView) }).first else { print("NAV no viewport"); exit(1) }
+                var handling: TimeInterval = 0
+                func post(_ dy: Int32, dx: Int32 = 0, command: Bool) {
+                    guard let e = CGEvent(scrollWheelEvent2Source: nil, units: .pixel, wheelCount: 2, wheel1: dy, wheel2: dx, wheel3: 0) else { return }
+                    e.setIntegerValueField(.scrollWheelEventIsContinuous, value: 1)
+                    e.flags = command ? .maskCommand : []
+                    guard let win = vp.window else { return }
+                    let center = win.convertPoint(toScreen: vp.convert(NSPoint(x: vp.bounds.midX, y: vp.bounds.midY), to: nil))
+                    e.location = CGPoint(x: center.x, y: (NSScreen.screens.first?.frame.height ?? 0) - center.y)
+                    guard let ns = NSEvent(cgEvent: e) else { return }
+                    let t = Date()
+                    vp.scrollWheel(with: ns)
+                    vp.display()   // include the frame it causes
+                    handling += Date().timeIntervalSince(t)
+                }
+                let d0 = editor.camera.distance
+                for _ in 0..<20 { post(-6, command: true); await pause(0.008) }
+                await pause(0.5)
+                print("NAV zoom with cmd: distance \(d0) -> \(editor.camera.distance)")
+                let t0 = editor.camera.target
+                handling = 0
+                let start = Date()
+                for _ in 0..<240 { post(0, dx: 4, command: false); await pause(1.0 / 120) }
+                await pause(0.3)
+                let elapsed = Date().timeIntervalSince(start)
+                print("NAV pan: target moved \(simd_distance(t0, editor.camera.target)) in \(String(format: "%.2f", elapsed)) s; handling+draw \(String(format: "%.1f", handling / 240 * 1000)) ms per event")
+
+                // Drawing window: cost of one full sheet redraw, then scroll pan/zoom through the event queue.
+                if let dir = env["SIXAXIS_NAV_TEST"].flatMap({ $0 == "1" ? nil : URL(fileURLWithPath: $0) }) {
+                    try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+                    editor.openDrawingWindow()
+                    while editor.drawing.pages.isEmpty { await pause(0.1) }
+                    await pause(1.0)
+                    if let page = editor.drawing.pages.first, let cg = CGContext(data: nil, width: 2400, height: 1700, bitsPerComponent: 8, bytesPerRow: 0, space: CGColorSpaceCreateDeviceRGB(), bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue) {
+                        let t = Date()
+                        for _ in 0..<10 { DrawingRenderer.draw(page, in: cg, pointsPerMM: 4, highlight: [:]) }
+                        print("NAV sheet redraw: \(String(format: "%.1f", Date().timeIntervalSince(t) / 10 * 1000)) ms")
+                    }
+                    guard let win = NSApp.windows.first(where: { $0.identifier?.rawValue.contains("drawing") == true }) else { print("NAV no drawing window"); exit(1) }
+                    func shot(_ name: String) {
+                        guard let v = win.contentView, let rep = v.bitmapImageRepForCachingDisplay(in: v.bounds) else { return }
+                        v.cacheDisplay(in: v.bounds, to: rep)
+                        try? rep.representation(using: .png, properties: [:])?.write(to: dir.appendingPathComponent(name + ".png"))
+                    }
+                    func scroll(_ dx: Int32, _ dy: Int32, command: Bool) {
+                        guard let e = CGEvent(scrollWheelEvent2Source: nil, units: .pixel, wheelCount: 2, wheel1: dy, wheel2: dx, wheel3: 0) else { return }
+                        e.setIntegerValueField(.scrollWheelEventIsContinuous, value: 1)
+                        e.flags = command ? .maskCommand : []
+                        let c = win.convertPoint(toScreen: NSPoint(x: win.frame.width * 0.3, y: win.frame.height * 0.5))
+                        e.location = CGPoint(x: c.x, y: (NSScreen.screens.first?.frame.height ?? 0) - c.y)
+                        e.setIntegerValueField(.mouseEventWindowUnderMousePointer, value: Int64(win.windowNumber))
+                        e.setIntegerValueField(.mouseEventWindowUnderMousePointerThatCanHandleThisEvent, value: Int64(win.windowNumber))
+                        guard let cgns = NSEvent(cgEvent: e),
+                              let ns = NSEvent(cgEvent: cgns.cgEvent!) else { return }
+                        NSApp.postEvent(ns, atStart: false)
+                    }
+                    shot("drawing-0")
+                    for _ in 0..<30 { scroll(8, 4, command: false); await pause(1.0 / 60) }
+                    await pause(0.5)
+                    shot("drawing-1-panned")
+                    for _ in 0..<20 { scroll(0, 6, command: true); await pause(1.0 / 60) }
+                    await pause(0.5)
+                    shot("drawing-2-zoomed")
+                    print("NAV drawing snapshots written")
+                }
+                exit(0)
+            }
+            return
+        }
         // Slow rebuild stays responsive: SIXAXIS_REBUILD_TEST=dir (plate with many holes)
         if let out = env["SIXAXIS_REBUILD_TEST"] {
             Task { @MainActor in
