@@ -2,6 +2,8 @@
 
 Stand: Oktober 2026 · Aktuelles Release: [1.0.0](https://github.com/Melf11/6axis/releases/tag/v1.0.0) · als Nächstes: 1.1
 
+**Leitlinien** (verbindlich, auch für KI-Assistenten): siehe [AGENTS.md](../AGENTS.md#leitlinien-verbindlich) – schlank und nativ, Bedienbarkeit und Einfachheit zuerst, ein Arbeitsablauf statt vieler Werkbänke, Komplexität über Parameter und Bezüge statt über mehr Oberfläche.
+
 Reihenfolge nach Absprache: **zuerst ein weitergebbares Release**, damit Freunde 6axis testen können – danach die Funktionen. Holz-Werkzeuge und Plattenzuschnitt werden in der [Feature-Sammlung](#feature-sammlung) gesammelt und kommen am Ende.
 
 | Version | Ziel | Kern |
@@ -12,6 +14,7 @@ Reihenfolge nach Absprache: **zuerst ein weitergebbares Release**, damit Freunde
 | 1.2 | Modellieren | Konstruktionsebenen, Bohrung, Muster/Spiegeln, Körper verschieben/kombinieren |
 | 1.3 | Prüfen & Ausgabe | Messen, Schnittansicht im 3D-Fenster, 3MF |
 | 1.4 | Baugruppen | Komponenten, Gelenke, Explosionsansicht |
+| 2.0 | Fräsen (CAM) | 2,5D für Platten: Kontur, Tasche, Bohren, Nut, G-Code (GRBL, LinuxCNC, Mach3) – [Konzept](cam.md) |
 | später | Feature-Sammlung | Holz-Werkzeuge, Plattenzuschnittplan, … |
 
 ---
@@ -120,6 +123,12 @@ Inhalt:
 - Gelenke: starr, Drehung, Schieben
 - Explosionsansicht, auch in der technischen Zeichnung
 - Stückliste aus Komponenten
+
+## 2.0 – Fräsen (CAM)
+Ausführlich: [docs/cam.md](cam.md). Zuerst die Fragen dort klären (Fräse/Steuerung, typische Arbeiten).
+- Stufe 1 – 2,5D für Platten: Einrichtung (Rohteil, Nullpunkt), Werkzeugbibliothek, Kontur mit Haltestegen, Tasche, Bohren (auch aus System-32-Reihen), Nut; Bahnen mit Clipper2; Vorschau und Laufzeit; Postprozessoren GRBL, LinuxCNC, Mach3; Verschachtelung mehrerer Teile (mit dem Plattenzuschnittplan)
+- Stufe 2 – Simulation des Materialabtrags, Warnungen, adaptives Ausräumen, Wendebearbeitung, weitere Steuerungen
+- Stufe 3 – 3D-Schruppen/-Schlichten mit OpenCAMLib
 
 ---
 

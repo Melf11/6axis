@@ -2,6 +2,10 @@
 
 Danke, dass du helfen willst! Issues und Pull Requests auf Deutsch oder Englisch sind willkommen.
 
+## Leitlinien
+
+6axis soll **schlank, nativ und einfach zu bedienen** bleiben – und trotzdem komplexe Bauteile ermöglichen. Die verbindlichen Leitlinien (nativ statt mitgeliefert, ein Arbeitsablauf statt vieler Werkbänke, Komplexität über Parameter statt Oberfläche, gute Voreinstellungen, flüssig bleiben, offline) stehen in [AGENTS.md](AGENTS.md). Bitte prüfe jede Änderung dagegen – KI-Assistenten lesen diese Datei automatisch.
+
 ## Grundsätze
 
 1. **Offline zuerst.** Keine Netzwerkzugriffe, keine Telemetrie, keine Konten.
