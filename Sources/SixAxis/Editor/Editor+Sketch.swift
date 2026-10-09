@@ -400,19 +400,30 @@ extension Editor {
     }
 
     private func arcClick(_ pt: CGPoint) {
-        guard let s = snap(at: pt) else { return }
+        guard let raw = snap(at: pt) else { return }
+        let s = toolPoints.isEmpty ? raw : lockedSnap(raw)
         if toolPoints.count < 2 {
             if let last = toolPoints.last, simd_distance(last.position, s.position) < 1e-6 { return }
             toolPoints.append(s)
             return
         }
+        createArc(through: s)
+    }
+
+    /// Third arc point: creates the arc; a typed radius becomes its driving dimension.
+    func createArc(through s: SnapTarget) {
+        guard toolPoints.count >= 2 else { return }
         let a = toolPoints[0], b = toolPoints[1]
-        guard let (center, _) = circleThrough(a.position, s.position, b.position) else { return }
+        guard let (center, r) = circleThrough(a.position, s.position, b.position) else { return }
         let ccw = arcIsCCW(center: center, start: a.position, end: b.position, through: s.position)
+        let radiusText = lockedInputText(0)
         mutateSketch { sk in
             let pa = resolvePoint(a, &sk), pb = resolvePoint(b, &sk)
             let pc = sk.addPoint(center)
-            if ccw { sk.addArc(center: pc, start: pa, end: pb) } else { sk.addArc(center: pc, start: pb, end: pa) }
+            let arc = ccw ? sk.addArc(center: pc, start: pa, end: pb) : sk.addArc(center: pc, start: pb, end: pa)
+            if let radiusText {
+                sk.addConstraint(.radius(curve: arc, value: radiusText), labelOffset: simd_normalize(s.position - center) * r * 1.3)
+            }
         }
         toolPoints.removeAll()
     }

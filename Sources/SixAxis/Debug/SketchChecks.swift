@@ -42,7 +42,11 @@ enum SketchChecks {
     static func view(_ editor: Editor, center: Vec2 = Vec2(40, 25)) async {
         editor.cameraAnimation = nil
         editor.camera.distance = 200
-        if let plane = editor.activePlane { editor.camera.target = plane.point(center).float }
+        if let plane = editor.activePlane {
+            // Straight onto the sketch plane (an interrupted camera animation may leave it tilted).
+            editor.camera.orientation = Camera.lookOrientation(direction: -plane.normal.float, up: plane.yDir.float)
+            editor.camera.target = plane.point(center).float
+        }
         await pause(0.3)
     }
 
@@ -50,9 +54,7 @@ enum SketchChecks {
         editor.newDocument()
         editor.beginSketch(on: .xy)
         await pause(0.8)
-        editor.camera.distance = 200
-        editor.camera.target = SIMD3(40, 25, 0)
-        await pause(0.3)
+        await view(editor)
 
         // 1. Rectangle 0,0 – 60,40, then drag its corner while the rectangle tool is still active.
         editor.setSketchTool(.rectangle)
@@ -110,6 +112,7 @@ enum SketchChecks {
         // 4. Corner fillet and chamfer: click a corner, type the size.
         editor.beginSketch(on: .xy)
         await pause(0.8)
+        await view(editor)
         editor.setSketchTool(.rectangle)
         click(editor, Vec2(0, 0))
         click(editor, Vec2(60, 40))
@@ -144,6 +147,7 @@ enum SketchChecks {
         // 5. Trim: divider line across a rectangle, cut off both overhangs.
         editor.beginSketch(on: .xy)
         await pause(0.8)
+        await view(editor)
         editor.setSketchTool(.rectangle)
         click(editor, Vec2(0, 0)); click(editor, Vec2(60, 40))
         editor.setSketchTool(.line)
@@ -220,6 +224,31 @@ enum SketchChecks {
             editor.fitAll()
             await pause(0.6)
             await DemoScript.snap(editor, "sketch-pattern", URL(fileURLWithPath: dir))
+        }
+        editor.finishSketch()
+        await pause()
+
+        // 9. Arc with typed chord and radius.
+        editor.beginSketch(on: .xy)
+        await pause(0.8)
+        await view(editor)
+        editor.setSketchTool(.arc)
+        click(editor, Vec2(0, 0))
+        editor.toolInputs = ["40", "0"]
+        editor.commitToolInputs()
+        if let pt = screen(editor, Vec2(20, 10)) { editor.updateHover(at: pt) }
+        editor.toolInputs = ["25", ""]
+        editor.commitToolInputs()
+        await pause(0.4)
+        if let sk = editor.activeSketch, let arc = sk.curves.first(where: { if case .arc = $0.geometry { return true }; return false }),
+           case let .arc(_, s, e) = arc.geometry {
+            let ends = [sk.point(s)!, sk.point(e)!].sorted { $0.x < $1.x }
+            check("arc chord from typed length", simd_distance(ends[0], Vec2(0, 0)) < 1e-6 && simd_distance(ends[1], Vec2(40, 0)) < 1e-6, "\(ends)")
+            check("arc radius from typed value", abs(sk.radius(of: arc) - 25) < 1e-6, "\(sk.radius(of: arc))")
+            check("arc bulges to the cursor side", (sk.polyline(arc, segments: 16).map(\.y).max() ?? 0) > 1)
+            check("arc radius dimension", sk.constraints.contains { if case .radius(arc.id, "25") = $0.kind { return true }; return false })
+        } else {
+            check("arc created from typed values", false)
         }
         editor.finishSketch()
         await pause()

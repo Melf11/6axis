@@ -17,8 +17,26 @@ extension Editor {
         case .line: return [ToolInputSpec(label: String(localized: "Länge"), kind: .length), ToolInputSpec(label: String(localized: "Winkel"), kind: .angle)]
         case .rectangle, .centerRectangle: return [ToolInputSpec(label: String(localized: "Breite"), kind: .length), ToolInputSpec(label: String(localized: "Höhe"), kind: .length)]
         case .circle: return [ToolInputSpec(label: "⌀", kind: .length)]
+        case .arc:
+            // First the chord (like a line), then the radius.
+            return toolPoints.count == 1
+                ? [ToolInputSpec(label: String(localized: "Länge"), kind: .length), ToolInputSpec(label: String(localized: "Winkel"), kind: .angle)]
+                : [ToolInputSpec(label: "R", kind: .length)]
         default: return []
         }
+    }
+
+    /// Point on a 3-point arc through the chord ends with radius `r`, bulging to the cursor's side
+    /// (the shorter arc). Nil if the radius is smaller than half the chord.
+    func arcThroughPoint(radius r: Double, cursor: Vec2) -> Vec2? {
+        guard toolPoints.count >= 2 else { return nil }
+        let a = toolPoints[0].position, b = toolPoints[1].position
+        let chord = b - a, half = simd_length(chord) / 2
+        guard half > 1e-9, r >= half - 1e-9 else { return nil }
+        var n = Vec2(-chord.y, chord.x) / (2 * half)
+        if simd_dot(cursor - (a + b) / 2, n) < 0 { n = -n }
+        let sagitta = r - sqrt(max(0, r * r - half * half))
+        return (a + b) / 2 + n * sagitta
     }
 
     /// Parsed value of a field, or nil if empty/invalid (then the mouse decides).
@@ -49,7 +67,10 @@ extension Editor {
         let d = cursor - p0
         func sign(_ v: Double) -> Double { v < 0 ? -1 : 1 }
         switch sketchTool {
-        case .line:
+        case .arc where toolPoints.count >= 2:
+            guard let r = toolInputValue(0) else { return cursor }
+            return arcThroughPoint(radius: r, cursor: cursor) ?? cursor
+        case .line, .arc:
             var dir = simd_length(d) > 1e-12 ? simd_normalize(d) : Vec2(1, 0)
             if let a = toolInputValue(1) { dir = Vec2(cos(a * .pi / 180), sin(a * .pi / 180)) }
             let len = toolInputValue(0) ?? (toolInputValue(1) != nil ? max(simd_dot(d, dir), 0) : simd_length(d))
@@ -80,7 +101,10 @@ extension Editor {
         let e = effectiveToolEnd(c)
         let d = e - p0
         switch sketchTool {
-        case .line:
+        case .arc where toolPoints.count >= 2:
+            guard let (_, r) = circleThrough(toolPoints[0].position, e, toolPoints[1].position) else { return [] }
+            return [r]
+        case .line, .arc:
             var a = atan2(d.y, d.x) * 180 / .pi
             if a < 0 { a += 360 }
             return [simd_length(d), a]
@@ -129,6 +153,8 @@ extension Editor {
         case .line: createLine(to: end)
         case .rectangle, .centerRectangle: createRectangle(to: end)
         case .circle: createCircle(to: end)
+        case .arc:
+            if toolPoints.count == 1 { toolPoints.append(end) } else { createArc(through: end) }
         default: return
         }
         if toolPoints != before { resetToolInputs() }

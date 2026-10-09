@@ -97,10 +97,10 @@ struct ViewportOverlay: View {
             ctx.stroke(radius, with: .color(accent.opacity(0.6)), style: StrokeStyle(lineWidth: 1, dash: [3, 3]))
         case .arc:
             if editor.toolPoints.count == 1 {
-                ctx.stroke(path([p0, c]), with: .color(accent), style: style)
-            } else if editor.toolPoints.count == 2, let (center, r) = circleThrough(p0, c, editor.toolPoints[1].position) {
+                ctx.stroke(path([p0, e]), with: .color(accent), style: style)
+            } else if editor.toolPoints.count == 2, let (center, r) = circleThrough(p0, e, editor.toolPoints[1].position) {
                 let p1 = editor.toolPoints[1].position
-                let ccw = editor.arcIsCCW(center: center, start: p0, end: p1, through: c)
+                let ccw = editor.arcIsCCW(center: center, start: p0, end: p1, through: e)
                 let (s, e) = ccw ? (p0, p1) : (p1, p0)
                 let a0 = atan2(s.y - center.y, s.x - center.x)
                 var sweep = normalizedAngle(atan2(e.y - center.y, e.x - center.x) - a0)
@@ -110,7 +110,7 @@ struct ViewportOverlay: View {
                     return center + r * Vec2(cos(t), sin(t))
                 }
                 ctx.stroke(path(pts), with: .color(accent), style: style)
-                label(ctx, "R " + formatValue(r), near: c)
+                label(ctx, "R " + formatValue(r), near: e)
             }
         case .spline:
             let fit = editor.toolPoints.map(\.position) + [c]
