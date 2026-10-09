@@ -52,10 +52,12 @@ if python3 - "$OUT/navigation.log" <<'PY'
 import re, sys
 log = open(sys.argv[1]).read()
 m = re.search(r"NAV zoom with cmd: distance ([\d.]+) -> ([\d.]+)", log)
-p = re.search(r"NAV pan: target moved ([\d.]+)", log)
-sys.exit(0 if m and float(m.group(2)) < float(m.group(1)) * 0.9 and p and float(p.group(1)) > 1 else 1)
+p = re.search(r"NAV swipe: camera moved ([\d.]+)", log)
+# Direction depends on settings; ⌘-scroll must change the distance clearly, a swipe must move the camera.
+ratio = float(m.group(2)) / float(m.group(1)) if m else 1
+sys.exit(0 if (ratio < 0.9 or ratio > 1.1) and p and float(p.group(1)) > 1 else 1)
 PY
-then echo "✓ navigation: ⌘-scroll zooms, two-finger scroll pans (3D)"; else echo "✗ navigation: 3D zoom/pan"; echo "::error::ui-check navigation: 3D zoom/pan"; fail=1; fi
+then echo "✓ navigation: ⌘-scroll zooms, two-finger scroll moves the camera (3D)"; else echo "✗ navigation: 3D zoom/pan"; echo "::error::ui-check navigation: 3D zoom/pan"; fail=1; fi
 expect navigation "NAV drawing snapshots written" "drawing window scroll pan and zoom"
 
 if [ $fail -ne 0 ] && [ -n "${GITHUB_ACTIONS:-}" ]; then

@@ -67,13 +67,13 @@ enum DemoScript {
                 for _ in 0..<20 { post(-6, command: true); await pause(0.008) }
                 await pause(0.5)
                 print("NAV zoom with cmd: distance \(d0) -> \(editor.camera.distance)")
-                let t0 = editor.camera.target
+                let t0 = editor.camera.target, o0 = editor.camera.orientation
                 handling = 0
                 let start = Date()
                 for _ in 0..<240 { post(0, dx: 4, command: false); await pause(1.0 / 120) }
                 await pause(0.3)
                 let elapsed = Date().timeIntervalSince(start)
-                print("NAV pan: target moved \(simd_distance(t0, editor.camera.target)) in \(String(format: "%.2f", elapsed)) s; handling+draw \(String(format: "%.1f", handling / 240 * 1000)) ms per event")
+                print("NAV swipe: camera moved \(simd_distance(t0, editor.camera.target) + simd_length(o0.vector - editor.camera.orientation.vector) * 1000) in \(String(format: "%.2f", elapsed)) s; handling+draw \(String(format: "%.1f", handling / 240 * 1000)) ms per event")
 
                 // Drawing window: cost of one full sheet redraw, then scroll pan/zoom through the event queue.
                 if let dir = env["SIXAXIS_NAV_TEST"].flatMap({ $0 == "1" ? nil : URL(fileURLWithPath: $0) }) {
