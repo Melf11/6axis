@@ -21,6 +21,8 @@ public enum CurveGeometry: Codable, Hashable, Sendable {
     case arc(center: Int, start: Int, end: Int)
     /// Smooth curve through the given points (fit points), optionally closed.
     case spline(points: [Int], closed: Bool)
+    /// A line of text; `anchor` is the start of the baseline, `height` the cap height.
+    case text(anchor: Int, text: String, height: Double, font: String?)
 
     public var pointIds: [Int] {
         switch self {
@@ -28,6 +30,7 @@ public enum CurveGeometry: Codable, Hashable, Sendable {
         case let .circle(c, _): return [c]
         case let .arc(c, a, b): return [c, a, b]
         case let .spline(pts, _): return pts
+        case let .text(a, _, _, _): return [a]
         }
     }
 }
@@ -45,8 +48,9 @@ public struct SketchCurve: Codable, Hashable, Identifiable, Sendable {
 
     public var isLine: Bool { if case .line = geometry { return true } else { return false } }
     public var isSpline: Bool { if case .spline = geometry { return true } else { return false } }
+    public var isText: Bool { if case .text = geometry { return true } else { return false } }
     /// Circles and arcs.
-    public var isRound: Bool { !isLine && !isSpline }
+    public var isRound: Bool { !isLine && !isSpline && !isText }
 }
 
 public enum ConstraintKind: Codable, Hashable, Sendable {
@@ -265,6 +269,13 @@ public struct Sketch: Codable, Hashable, Sendable {
     }
 
     @discardableResult
+    public mutating func addText(_ text: String, at anchor: Int, height: Double, font: String? = nil, construction: Bool = false) -> Int {
+        let id = newId()
+        curves.append(SketchCurve(id: id, geometry: .text(anchor: anchor, text: text, height: height, font: font), construction: construction))
+        return id
+    }
+
+    @discardableResult
     public mutating func addConstraint(_ kind: ConstraintKind, labelOffset: Vec2 = .zero, group: Int? = nil, factor: Double? = nil) -> Int {
         let id = newId()
         constraints.append(SketchConstraint(id: id, kind: kind, labelOffset: labelOffset, group: group, factor: factor))
@@ -297,7 +308,7 @@ public struct Sketch: Codable, Hashable, Sendable {
         switch curve.geometry {
         case let .circle(_, r): return r
         case let .arc(c, s, _): return simd_distance(point(c) ?? .zero, point(s) ?? .zero)
-        case .line, .spline: return 0
+        case .line, .spline, .text: return 0
         }
     }
 
@@ -308,6 +319,7 @@ public struct Sketch: Codable, Hashable, Sendable {
         case let .spline(pts, _):
             let ps = pts.compactMap { point($0) }
             return ps.isEmpty ? nil : ps.reduce(.zero, +) / Double(ps.count)
+        case let .text(a, _, _, _): return point(a)
         }
     }
 
@@ -346,6 +358,7 @@ public struct Sketch: Codable, Hashable, Sendable {
                 var isClosed = closed
                 if ids.count > 2, ids.first == ids.last { ids.removeLast(); isClosed = true }
                 curves[i].geometry = .spline(points: ids, closed: isClosed)
+            case let .text(a, t, h, f): curves[i].geometry = .text(anchor: r(a), text: t, height: h, font: f)
             }
         }
         for i in constraints.indices {
@@ -396,13 +409,24 @@ public struct Sketch: Codable, Hashable, Sendable {
             case let .arc(ci, s, e):
                 guard let pc = point(ci), let ps = point(s), let pe = point(e) else { return nil }
                 return .arc(center: pc, radius: simd_distance(pc, ps), start: ps, end: pe)
-            case .spline:
+            case .spline, .text:
                 return nil   // expanded below
             }
         } + curves.filter { !$0.construction && $0.isSpline }.flatMap { c -> [Segment2D] in
             guard case let .spline(ids, closed) = c.geometry else { return [] }
             return Spline.beziers(ids.compactMap { point($0) }, closed: closed).map { .bezier($0.0, $0.1, $0.2, $0.3) }
+        } + curves.filter { !$0.construction && $0.isText }.flatMap { c -> [Segment2D] in
+            guard case let .text(a, t, h, f) = c.geometry, let o = point(a) else { return [] }
+            return TextOutline.contours(t, height: h, font: f, origin: o).flatMap { $0 }
         }
+    }
+
+    /// All polylines of a curve: one for ordinary curves, one per glyph contour for text.
+    public func polylines(_ curve: SketchCurve, segments n: Int = 64) -> [[Vec2]] {
+        if case let .text(a, t, h, f) = curve.geometry, let o = point(a) {
+            return TextOutline.polylines(TextOutline.contours(t, height: h, font: f, origin: o)).map { $0 + ($0.first.map { [$0] } ?? []) }
+        }
+        return [polyline(curve, segments: n)]
     }
 
     /// Polyline approximation of a curve in sketch coordinates (for drawing/picking).
@@ -418,6 +442,8 @@ public struct Sketch: Codable, Hashable, Sendable {
             }
         case let .spline(ids, closed):
             return Spline.polyline(ids.compactMap { point($0) }, closed: closed, perSegment: max(8, n / 4))
+        case .text:
+            return polylines(curve).first ?? []
         case let .arc(c, s, e):
             let pc = point(c) ?? .zero, ps = point(s) ?? .zero, pe = point(e) ?? .zero
             let r = simd_distance(pc, ps)

@@ -1261,6 +1261,16 @@
         }
       }
     },
+    "Die Höhe ist die Höhe der Großbuchstaben.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The height is the height of capital letters."
+          }
+        }
+      }
+    },
     "Die Signatur des Updates ist ungültig – es wurde nichts installiert.": {
       "localizations": {
         "en": {
@@ -2175,6 +2185,16 @@
         }
       }
     },
+    "Georgia fett": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Georgia bold"
+          }
+        }
+      }
+    },
     "Gesamtansicht": {
       "localizations": {
         "en": {
@@ -2281,6 +2301,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Light"
+          }
+        }
+      }
+    },
+    "Helvetica fett": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Helvetica bold"
           }
         }
       }
@@ -2737,6 +2767,16 @@
         }
       }
     },
+    "Klicke, wo der Text beginnen soll (Grundlinie) · Doppelklick auf einen Text bearbeitet ihn": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Click where the text should start (baseline) · double-click a text to edit it"
+          }
+        }
+      }
+    },
     "Kollinear": {
       "localizations": {
         "en": {
@@ -3124,6 +3164,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Automatic scale"
+          }
+        }
+      }
+    },
+    "Menlo (Schreibmaschine)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Menlo (monospace)"
           }
         }
       }
@@ -4307,6 +4357,16 @@
         }
       }
     },
+    "Schrift": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Font"
+          }
+        }
+      }
+    },
     "Schriftfeld": {
       "localizations": {
         "en": {
@@ -4863,6 +4923,36 @@
           "stringUnit": {
             "state": "translated",
             "value": "Part %lld"
+          }
+        }
+      }
+    },
+    "Text": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Text"
+          }
+        }
+      }
+    },
+    "Text bearbeiten": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Edit text"
+          }
+        }
+      }
+    },
+    "Text und Höhe angeben": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enter text and height"
           }
         }
       }

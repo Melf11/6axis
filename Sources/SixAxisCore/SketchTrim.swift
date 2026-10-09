@@ -18,7 +18,7 @@ extension SketchEdit {
         case let .circle(ci, _):
             guard let pc = sk.point(ci) else { return nil }
             return normalizedAngle(atan2(p.y - pc.y, p.x - pc.x))
-        case .spline:
+        case .spline, .text:
             return nil
         }
     }
@@ -33,7 +33,7 @@ extension SketchEdit {
             if sweep < 1e-12 { sweep = 2 * .pi }
             return 0...sweep
         case .circle: return 0...(2 * .pi)
-        case .spline: return nil
+        case .spline, .text: return nil
         }
     }
 
@@ -54,6 +54,8 @@ extension SketchEdit {
             case .spline:
                 let poly = sk.polyline(c, segments: 160)
                 return zip(poly, poly.dropFirst()).map { .seg($0, $1) }
+            case .text:
+                return []
             }
         }
         func onCurve(_ c: SketchCurve, _ p: Vec2) -> Bool {
@@ -272,7 +274,7 @@ extension SketchEdit {
         case let .circle(ci, r):
             guard let pc = sk.point(ci) else { return nil }
             return pc + r * Vec2(cos(t), sin(t))
-        case .spline:
+        case .spline, .text:
             return nil
         }
     }

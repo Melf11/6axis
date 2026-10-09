@@ -253,6 +253,34 @@ enum SketchChecks {
         editor.finishSketch()
         await pause()
 
+        // 10. Text: place, type, edit.
+        editor.beginSketch(on: .xy)
+        await pause(0.8)
+        await view(editor, center: Vec2(30, 5))
+        editor.setSketchTool(.text)
+        click(editor, Vec2(10, 0))
+        check("text dialog opens", editor.textRequest != nil)
+        editor.textRequest?.text = "6axis"
+        editor.textRequest?.height = "12 mm"
+        editor.commitText()
+        await pause(0.6)
+        let textCurve = editor.activeSketch?.curves.first { $0.isText }
+        check("text created", textCurve != nil)
+        let textRegions = editor.activeSketchBuild?.regions.count ?? 0
+        check("text gives profiles", textRegions >= 5, "\(textRegions) regions")
+        if let c = textCurve, let sk = editor.activeSketch, case let .text(a, _, _, _) = c.geometry {
+            editor.textRequest = TextRequest(anchor: SnapTarget(position: sk.point(a)!, point: a), editing: c.id, text: "Eiche", height: "12 mm")
+            editor.commitText()
+            let edited = editor.activeSketch?.curve(c.id).map { if case let .text(_, t, _, _) = $0.geometry { return t }; return "" }
+            check("text edited in place", edited == "Eiche" && (editor.activeSketch?.curves.filter(\.isText).count ?? 0) == 1)
+        }
+        if let dir = ProcessInfo.processInfo.environment["SIXAXIS_SNAPSHOTS"] {
+            editor.setSketchTool(.select)
+            await DemoScript.snap(editor, "sketch-text", URL(fileURLWithPath: dir))
+        }
+        editor.finishSketch()
+        await pause()
+
         // 8. Project the top face of a body into a new sketch.
         editor.newDocument()
         editor.commit { $0 = Examples.storageBox().withoutShell() }

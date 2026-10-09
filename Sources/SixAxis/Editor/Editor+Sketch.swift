@@ -191,14 +191,15 @@ extension Editor {
             let r = sk.radius(of: curve)
             let v = p - c
             return simd_length(v) < 1e-12 ? c + Vec2(r, 0) : c + simd_normalize(v) * r
-        case .spline:
-            let poly = sk.polyline(curve, segments: 96)
+        case .spline, .text:
             var best = p, bestD = Double.infinity
-            for k in 0..<max(0, poly.count - 1) {
+            for poly in sk.polylines(curve, segments: 96) where poly.count >= 2 {
+            for k in 0..<(poly.count - 1) {
                 let a = poly[k], d = poly[k + 1] - a
                 let t = max(0, min(1, simd_dot(p - a, d) / max(simd_length_squared(d), 1e-18)))
                 let q = a + t * d
                 if simd_distance(p, q) < bestD { bestD = simd_distance(p, q); best = q }
+            }
             }
             return best
         }
@@ -275,6 +276,12 @@ extension Editor {
                 if clickCount == 2, case let .constraint(_, cid) = h, activeSketch?.constraints.first(where: { $0.id == cid })?.kind.isDimension == true {
                     editingDimension = cid
                 }
+                // Double-click a text to edit it.
+                if clickCount == 2, case let .sketchCurve(_, cid) = h, let sk = activeSketch, let c = sk.curve(cid),
+                   case let .text(a, t, height, font) = c.geometry, let pos = sk.point(a) {
+                    textRequest = TextRequest(anchor: SnapTarget(position: pos, point: a), editing: cid, text: t,
+                                              height: plainNumber(height) + " mm", font: font ?? TextOutline.defaultFont)
+                }
             } else {
                 selection.removeAll()
             }
@@ -290,6 +297,8 @@ extension Editor {
         case .circularPattern: patternCenterClick()
         case .rectPattern: break
         case .project: projectClick()
+        case .text:
+            if let s = snap(at: pt) { textRequest = TextRequest(anchor: s) }
         case .dimension: dimensionClick(pt)
         case let .constraint(ct): constraintClick(ct)
         }
@@ -526,6 +535,29 @@ extension Editor {
         sketchTool = .select
     }
 
+    // MARK: Text
+
+    var textRequestHeight: Double? {
+        guard let r = textRequest, let h = try? evaluator.value(r.height, kind: .length), h > 0 else { return nil }
+        return h
+    }
+
+    func commitText() {
+        guard let r = textRequest else { return }
+        let text = r.text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !text.isEmpty, let h = textRequestHeight else { showToast(String(localized: "Text und Höhe angeben")); return }
+        mutateSketch { sk in
+            if let cid = r.editing, let i = sk.curveIndex(cid), case let .text(a, _, _, _) = sk.curves[i].geometry {
+                sk.curves[i].geometry = .text(anchor: a, text: text, height: h, font: r.font)
+            } else {
+                sk.addText(text, at: resolvePoint(r.anchor, &sk), height: h, font: r.font)
+            }
+        }
+        textRequest = nil
+    }
+
+    func cancelText() { textRequest = nil }
+
     // MARK: Project
 
     /// Copies a body edge or all edges of a face onto the sketch plane as fixed reference geometry.
@@ -684,7 +716,7 @@ extension Editor {
                     editingDimension = id
                 }
                 return
-            case .line, .spline:
+            case .line, .spline, .text:
                 break
             }
         }

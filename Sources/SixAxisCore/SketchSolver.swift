@@ -186,7 +186,7 @@ public struct SketchSolver {
             case let .arc(ci, s, _):
                 guard let pc = P(ci), let ps = P(s) else { return nil }
                 return (pc.0, { x in simd_distance(pc.0(x), ps.0(x)) }, pc.1 + ps.1)
-            case .line, .spline:
+            case .line, .spline, .text:
                 return nil
             }
         }

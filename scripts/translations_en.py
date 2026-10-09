@@ -250,4 +250,11 @@ EN.update({
 "%lld Kurven projiziert": "%lld curves projected",
 "Kante oder Fläche eines Körpers anklicken – sie wird in die Skizze übernommen": "Click an edge or face of a body – it is copied into the sketch",
 })
+EN.update({
+"Text": "Text", "Text bearbeiten": "Edit text", "Höhe": "Height", "Schrift": "Font",
+"Text und Höhe angeben": "Enter text and height",
+"Die Höhe ist die Höhe der Großbuchstaben.": "The height is the height of capital letters.",
+"Klicke, wo der Text beginnen soll (Grundlinie) · Doppelklick auf einen Text bearbeitet ihn": "Click where the text should start (baseline) · double-click a text to edit it",
+"Helvetica fett": "Helvetica bold", "Georgia fett": "Georgia bold", "Menlo (Schreibmaschine)": "Menlo (monospace)",
+})
 

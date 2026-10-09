@@ -173,6 +173,7 @@ extension SketchEdit {
                 new = flipArcs ? sk.addArc(center: mapped(ci), start: mapped(e), end: mapped(s), construction: c.construction)
                                : sk.addArc(center: mapped(ci), start: mapped(s), end: mapped(e), construction: c.construction)
             case let .spline(pts, closed): new = sk.addSpline(pts.map(mapped), closed: closed, construction: c.construction)
+            case let .text(a, t, h, f): new = sk.addText(t, at: mapped(a), height: h, font: f, construction: c.construction)
             }
             out.append((cid, new))
             if c.geometry.isCircle { sk.addConstraint(.equal(cid, new), group: group, factor: 1) }

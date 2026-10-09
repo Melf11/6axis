@@ -50,6 +50,7 @@ enum SketchTool: Equatable {
     case rectPattern
     case circularPattern
     case project
+    case text
     case dimension
     case constraint(ConstraintTool)
 
@@ -71,6 +72,7 @@ enum SketchTool: Equatable {
         case .rectPattern: return String(localized: "Rechteckmuster")
         case .circularPattern: return String(localized: "Kreismuster")
         case .project: return String(localized: "Projizieren")
+        case .text: return String(localized: "Text")
         case .dimension: return String(localized: "Bemaßung")
         case let .constraint(c): return c.name
         }
@@ -215,6 +217,8 @@ final class Editor {
     var copySource: [Int] = []
     /// Open pattern dialog (values as typed text).
     var patternRequest: PatternRequest?
+    /// Open text dialog (new text at a point, or editing an existing one).
+    var textRequest: TextRequest?
     var timelineSelection: UUID?
 
     // Chrome
@@ -664,4 +668,19 @@ struct PatternRequest: Equatable {
     var count2 = "1"
     var spacing2 = "20 mm"
     var angle = "360 deg"
+}
+
+/// Settings of the sketch text dialog.
+struct TextRequest: Equatable {
+    var anchor: SnapTarget
+    var editing: Int?
+    var text = ""
+    var height = "10 mm"
+    var font = TextOutline.defaultFont
+
+    /// Fonts that ship with every Mac and suit labels, engraving and 3D printing.
+    static var fonts: [(name: String, title: String)] { [
+        ("Helvetica-Bold", String(localized: "Helvetica fett")), ("Helvetica", "Helvetica"), ("AvenirNext-DemiBold", "Avenir Next"),
+        ("Futura-Medium", "Futura"), ("Georgia-Bold", String(localized: "Georgia fett")), ("Menlo-Bold", String(localized: "Menlo (Schreibmaschine)")),
+    ] }
 }

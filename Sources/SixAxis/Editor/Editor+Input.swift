@@ -184,6 +184,7 @@ extension Editor {
         if editingDimension != nil { editingDimension = nil; return }
         if command != nil { cancelCommand(); return }
         if patternRequest != nil { cancelPattern(); return }
+        if textRequest != nil { cancelText(); return }
         if sketchId != nil {
             cancelSketchTool()
             return

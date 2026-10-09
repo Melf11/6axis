@@ -82,6 +82,7 @@ struct Ribbon: View {
                 tool(.circle, String(localized: "Kreis"), "circle", "C")
                 tool(.arc, String(localized: "Bogen"), "point.topleft.down.to.point.bottomright.curvepath", "A")
                 tool(.spline, String(localized: "Spline"), "scribble.variable")
+                tool(.text, String(localized: "Text"), "textformat")
             }
             RibbonDivider()
             group(String(localized: "Bemaßung")) {

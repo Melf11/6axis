@@ -37,6 +37,7 @@ extension Editor {
             EditorCommand(id: "extend", title: String(localized: "Verlängern"), symbol: "arrow.right.to.line", shortcut: nil, keywords: "extend verlängern", available: sketchId != nil) { self.setSketchTool(.extend) },
             EditorCommand(id: "sketchFillet", title: String(localized: "Ecke abrunden"), symbol: "button.roundedtop.horizontal", shortcut: nil, keywords: "skizze abrundung radius fillet corner", available: sketchId != nil) { self.setSketchTool(.sketchFillet) },
             EditorCommand(id: "sketchChamfer", title: String(localized: "Ecke fasen"), symbol: "triangle.bottomhalf.filled", shortcut: nil, keywords: "skizze fase chamfer corner", available: sketchId != nil) { self.setSketchTool(.sketchChamfer) },
+            EditorCommand(id: "text", title: String(localized: "Text"), symbol: "textformat", shortcut: nil, keywords: "text schrift gravur beschriftung", available: true) { self.setSketchTool(.text) },
             EditorCommand(id: "spline", title: String(localized: "Spline"), symbol: "scribble.variable", shortcut: nil, keywords: "spline kurve curve freiform", available: true) { self.setSketchTool(.spline) },
             EditorCommand(id: "arc", title: String(localized: "Bogen (3 Punkte)"), symbol: "point.topleft.down.to.point.bottomright.curvepath", shortcut: "A", keywords: "arc", available: true) { self.setSketchTool(.arc) },
             EditorCommand(id: "dim", title: String(localized: "Bemaßung"), symbol: "ruler", shortcut: "D", keywords: "dimension maß", available: inSketch) { self.setSketchTool(.dimension) },

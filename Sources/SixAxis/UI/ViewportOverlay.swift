@@ -58,6 +58,10 @@ struct ViewportOverlay: View {
                 ctx.stroke(path(preview.polyline(c, segments: 64)), with: .color(accent), style: StrokeStyle(lineWidth: 1.6, dash: [5, 3]))
             }
         }
+        if let r = editor.textRequest, let h = editor.textRequestHeight, !r.text.isEmpty {
+            let polys = TextOutline.polylines(TextOutline.contours(r.text, height: h, font: r.font, origin: r.anchor.position))
+            for p in polys { ctx.stroke(path(p + (p.first.map { [$0] } ?? [])), with: .color(accent), style: StrokeStyle(lineWidth: 1.2, dash: [4, 2])) }
+        }
         if editor.sketchTool == .trim, case let .sketchCurve(_, cid)? = editor.hover, let sk = editor.activeSketch,
            let piece = SketchEdit.trimPreview(sk, curve: cid, at: cur.position) {
             ctx.stroke(path(piece), with: .color(.red.opacity(0.85)), style: StrokeStyle(lineWidth: 3, lineCap: .round))
