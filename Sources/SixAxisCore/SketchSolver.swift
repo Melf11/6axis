@@ -186,9 +186,16 @@ public struct SketchSolver {
             case let .arc(ci, s, _):
                 guard let pc = P(ci), let ps = P(s) else { return nil }
                 return (pc.0, { x in simd_distance(pc.0(x), ps.0(x)) }, pc.1 + ps.1)
-            case .line:
+            case .line, .spline:
                 return nil
             }
+        }
+        /// Fit points of a spline (positions from the variable vector).
+        func splinePoints(_ id: Int) -> ((UnsafeBufferPointer<Double>) -> [Vec2], Bool, [Int])? {
+            guard let c = curve(id), case let .spline(ids, closed) = c.geometry else { return nil }
+            let ps = ids.compactMap { P($0) }
+            guard ps.count == ids.count, ps.count >= 2 else { return nil }
+            return ({ x in ps.map { $0.0(x) } }, closed, ps.flatMap { $0.1 })
         }
         let xInit = x0
         func initial<T>(_ f: (UnsafeBufferPointer<Double>) -> T) -> T { xInit.withUnsafeBufferPointer { f($0) } }
@@ -286,6 +293,20 @@ public struct SketchSolver {
                     add(cid, pp.1 + v, 1) { x, o in o[0] = crossN(b(x) - a(x), pp.0(x) - a(x)) }
                 } else if let r = round(c) {
                     add(cid, pp.1 + r.2, 1) { x, o in o[0] = simd_distance(pp.0(x), r.0(x)) - r.1(x) }
+                } else if let (fit, closed, v) = splinePoints(c) {
+                    // Signed distance to the nearest piece of the sampled spline.
+                    add(cid, pp.1 + v, 1) { x, o in
+                        let poly = Spline.polyline(fit(x), closed: closed, perSegment: 16)
+                        let p = pp.0(x)
+                        var best = Double.infinity, signed = 0.0
+                        for k in 0..<(poly.count - 1) {
+                            let a = poly[k], d = poly[k + 1] - a
+                            let t = max(0, min(1, simd_dot(p - a, d) / max(simd_length_squared(d), 1e-18)))
+                            let dist = simd_distance(p, a + t * d)
+                            if dist < best { best = dist; signed = crossN(d, p - a) }
+                        }
+                        o[0] = signed
+                    }
                 } else {
                     failed.insert(cid)
                 }

@@ -186,7 +186,7 @@ struct SceneBuilder {
         let centers = Set(sk.curves.compactMap { c -> Int? in
             switch c.geometry {
             case let .circle(ci, _), let .arc(ci, _, _): return ci
-            case .line: return nil
+            case .line, .spline: return nil
             }
         })
         for p in sk.points {

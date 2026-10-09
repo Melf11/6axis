@@ -209,3 +209,11 @@ EN.update({
 "Update": "Update", "Update %@": "Update %@", "Update fehlgeschlagen: %@": "Update failed: %@",
 "Update konnte nicht entpackt werden": "Could not unpack the update", "Updates": "Updates", "Zuletzt gesucht": "Last checked", "noch nie": "never",
 })
+
+# 1.1 sketch
+EN.update({
+"Spline": "Spline",
+"Ersten Punkt klicken – auch an vorhandene Ecken": "Click the first point – existing corners work too",
+"Weitere Punkte klicken · Startpunkt schließt · Doppelklick, ↩ oder Esc beendet": "Click more points · start point closes · double-click, ↩ or Esc finishes",
+})
+

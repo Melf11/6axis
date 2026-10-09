@@ -1772,6 +1772,16 @@
         }
       }
     },
+    "Ersten Punkt klicken – auch an vorhandene Ecken": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Click the first point – existing corners work too"
+          }
+        }
+      }
+    },
     "Ersten Punkt wählen (Ecke oder Bohrungsmitte)": {
       "localizations": {
         "en": {
@@ -4347,6 +4357,16 @@
         }
       }
     },
+    "Spline": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Spline"
+          }
+        }
+      }
+    },
     "Später": {
       "localizations": {
         "en": {
@@ -5059,6 +5079,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Wall thickness, multiple of the nozzle (0.4)"
+          }
+        }
+      }
+    },
+    "Weitere Punkte klicken · Startpunkt schließt · Doppelklick, ↩ oder Esc beendet": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Click more points · start point closes · double-click, ↩ or Esc finishes"
           }
         }
       }

@@ -174,6 +174,9 @@ public final class Shape: @unchecked Sendable {
             case let .circle(c, r):
                 o.kind = Int32(OB_SEG_CIRCLE)
                 o.c = (c.x, c.y); o.radius = r
+            case let .bezier(p0, p1, p2, p3):
+                o.kind = Int32(OB_SEG_BEZIER)
+                o.a = (p0.x, p0.y); o.b = (p3.x, p3.y); o.c = (p1.x, p1.y); o.d = (p2.x, p2.y)
             }
             return o
         }
@@ -261,6 +264,8 @@ public enum Segment2D: Sendable {
     /// Counter-clockwise arc from `start` to `end`.
     case arc(center: SIMD2<Double>, radius: Double, start: SIMD2<Double>, end: SIMD2<Double>)
     case circle(center: SIMD2<Double>, radius: Double)
+    /// Cubic Bézier from `p0` to `p3` with control points `p1`, `p2` (spline pieces).
+    case bezier(SIMD2<Double>, SIMD2<Double>, SIMD2<Double>, SIMD2<Double>)
 }
 
 public struct TriangleMesh: Sendable {

@@ -191,6 +191,16 @@ extension Editor {
             let r = sk.radius(of: curve)
             let v = p - c
             return simd_length(v) < 1e-12 ? c + Vec2(r, 0) : c + simd_normalize(v) * r
+        case .spline:
+            let poly = sk.polyline(curve, segments: 96)
+            var best = p, bestD = Double.infinity
+            for k in 0..<max(0, poly.count - 1) {
+                let a = poly[k], d = poly[k + 1] - a
+                let t = max(0, min(1, simd_dot(p - a, d) / max(simd_length_squared(d), 1e-18)))
+                let q = a + t * d
+                if simd_distance(p, q) < bestD { bestD = simd_distance(p, q); best = q }
+            }
+            return best
         }
     }
 
@@ -226,6 +236,7 @@ extension Editor {
     }
 
     func cancelSketchTool() {
+        if finishSpline() { requestRedraw(); return }
         if !toolPoints.isEmpty || dimensionFirst != nil || !constraintPicks.isEmpty {
             toolPoints.removeAll()
             resetToolInputs()
@@ -261,6 +272,7 @@ extension Editor {
         case .rectangle, .centerRectangle: rectangleClick(pt)
         case .circle: circleClick(pt)
         case .arc: arcClick(pt)
+        case .spline: splineClick(pt, clickCount: clickCount)
         case .dimension: dimensionClick(pt)
         case let .constraint(ct): constraintClick(ct)
         }
@@ -388,6 +400,44 @@ extension Editor {
         toolPoints.removeAll()
     }
 
+    // MARK: Spline
+
+    /// Each click adds a fit point (existing points are reused, so splines connect to other geometry).
+    /// Clicking the first point closes the spline; double-click, ↩ or Esc finishes it.
+    private func splineClick(_ pt: CGPoint, clickCount: Int) {
+        guard let s = snap(at: pt) else { return }
+        if clickCount == 2 { finishSpline(); return }
+        if let first = toolPoints.first, toolPoints.count >= 2,
+           (s.point != nil && s.point == first.point) || simd_distance(s.position, first.position) < 1e-9 {
+            createSpline(toolPoints, closed: true)
+            return
+        }
+        if let last = toolPoints.last, simd_distance(last.position, s.position) < 1e-9 { return }
+        toolPoints.append(s)
+    }
+
+    /// Commits the spline being drawn (needs at least two points). Returns true if one was created.
+    @discardableResult
+    func finishSpline() -> Bool {
+        guard sketchTool == .spline, toolPoints.count >= 2 else { return false }
+        createSpline(toolPoints, closed: false)
+        return true
+    }
+
+    func createSpline(_ fit: [SnapTarget], closed: Bool) {
+        mutateSketch { sk in
+            var ids: [Int] = []
+            for f in fit {
+                let id = resolvePoint(f, &sk)
+                if ids.last != id { ids.append(id) }
+            }
+            if closed, ids.count > 2, ids.first == ids.last { ids.removeLast() }
+            guard Set(ids).count >= 2 else { return }
+            sk.addSpline(ids, closed: closed)
+        }
+        toolPoints.removeAll()
+    }
+
     func arcIsCCW(center: Vec2, start: Vec2, end: Vec2, through: Vec2) -> Bool {
         func ang(_ p: Vec2) -> Double { atan2(p.y - center.y, p.x - center.x) }
         let a0 = ang(start)
@@ -439,7 +489,7 @@ extension Editor {
                     editingDimension = id
                 }
                 return
-            case .line:
+            case .line, .spline:
                 break
             }
         }

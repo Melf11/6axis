@@ -19,14 +19,16 @@ typedef struct {
     double normal[3];
 } OBPlane;
 
-enum { OB_SEG_LINE = 0, OB_SEG_ARC = 1, OB_SEG_CIRCLE = 2 };
+enum { OB_SEG_LINE = 0, OB_SEG_ARC = 1, OB_SEG_CIRCLE = 2, OB_SEG_BEZIER = 3 };
 
 /// A 2D sketch curve in plane coordinates. Arcs run counter-clockwise from `a` to `b` around `c`.
+/// Cubic Bézier: from `a` to `b` with control points `c` and `d`.
 typedef struct {
     int32_t kind;
     double a[2];
     double b[2];
     double c[2];
+    double d[2];
     double radius;
 } OBSegment;
 

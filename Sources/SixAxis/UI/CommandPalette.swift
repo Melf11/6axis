@@ -28,6 +28,7 @@ extension Editor {
             EditorCommand(id: "rect", title: String(localized: "Rechteck"), symbol: "rectangle", shortcut: "R", keywords: "rectangle", available: true) { self.setSketchTool(.rectangle) },
             EditorCommand(id: "crect", title: String(localized: "Mittelpunkt-Rechteck"), symbol: "rectangle.center.inset.filled", keywords: "center rectangle", available: true) { self.setSketchTool(.centerRectangle) },
             EditorCommand(id: "circle", title: String(localized: "Kreis"), symbol: "circle", shortcut: "C", keywords: "circle", available: true) { self.setSketchTool(.circle) },
+            EditorCommand(id: "spline", title: String(localized: "Spline"), symbol: "scribble.variable", shortcut: nil, keywords: "spline kurve curve freiform", available: true) { self.setSketchTool(.spline) },
             EditorCommand(id: "arc", title: String(localized: "Bogen (3 Punkte)"), symbol: "point.topleft.down.to.point.bottomright.curvepath", shortcut: "A", keywords: "arc", available: true) { self.setSketchTool(.arc) },
             EditorCommand(id: "dim", title: String(localized: "Bemaßung"), symbol: "ruler", shortcut: "D", keywords: "dimension maß", available: inSketch) { self.setSketchTool(.dimension) },
             EditorCommand(id: "finish", title: String(localized: "Skizze fertigstellen"), symbol: "checkmark.circle", keywords: "finish", available: inSketch) { self.finishSketch() },

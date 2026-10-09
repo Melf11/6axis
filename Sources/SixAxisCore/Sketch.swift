@@ -19,12 +19,15 @@ public enum CurveGeometry: Codable, Hashable, Sendable {
     case circle(center: Int, radius: Double)
     /// Counter-clockwise from `start` to `end`. Radius is |start - center|.
     case arc(center: Int, start: Int, end: Int)
+    /// Smooth curve through the given points (fit points), optionally closed.
+    case spline(points: [Int], closed: Bool)
 
     public var pointIds: [Int] {
         switch self {
         case let .line(a, b): return [a, b]
         case let .circle(c, _): return [c]
         case let .arc(c, a, b): return [c, a, b]
+        case let .spline(pts, _): return pts
         }
     }
 }
@@ -41,7 +44,9 @@ public struct SketchCurve: Codable, Hashable, Identifiable, Sendable {
     }
 
     public var isLine: Bool { if case .line = geometry { return true } else { return false } }
-    public var isRound: Bool { !isLine }
+    public var isSpline: Bool { if case .spline = geometry { return true } else { return false } }
+    /// Circles and arcs.
+    public var isRound: Bool { !isLine && !isSpline }
 }
 
 public enum ConstraintKind: Codable, Hashable, Sendable {
@@ -227,6 +232,13 @@ public struct Sketch: Codable, Hashable, Sendable {
     }
 
     @discardableResult
+    public mutating func addSpline(_ points: [Int], closed: Bool = false, construction: Bool = false) -> Int {
+        let id = newId()
+        curves.append(SketchCurve(id: id, geometry: .spline(points: points, closed: closed), construction: construction))
+        return id
+    }
+
+    @discardableResult
     public mutating func addConstraint(_ kind: ConstraintKind, labelOffset: Vec2 = .zero) -> Int {
         let id = newId()
         constraints.append(SketchConstraint(id: id, kind: kind, labelOffset: labelOffset))
@@ -237,7 +249,7 @@ public struct Sketch: Codable, Hashable, Sendable {
         switch curve.geometry {
         case let .circle(_, r): return r
         case let .arc(c, s, _): return simd_distance(point(c) ?? .zero, point(s) ?? .zero)
-        case .line: return 0
+        case .line, .spline: return 0
         }
     }
 
@@ -245,6 +257,9 @@ public struct Sketch: Codable, Hashable, Sendable {
         switch curve.geometry {
         case let .circle(c, _), let .arc(c, _, _): return point(c)
         case let .line(a, b): return ((point(a) ?? .zero) + (point(b) ?? .zero)) / 2
+        case let .spline(pts, _):
+            let ps = pts.compactMap { point($0) }
+            return ps.isEmpty ? nil : ps.reduce(.zero, +) / Double(ps.count)
         }
     }
 
@@ -277,6 +292,12 @@ public struct Sketch: Codable, Hashable, Sendable {
             case let .line(s, e): curves[i].geometry = .line(start: r(s), end: r(e))
             case let .circle(c, rad): curves[i].geometry = .circle(center: r(c), radius: rad)
             case let .arc(c, s, e): curves[i].geometry = .arc(center: r(c), start: r(s), end: r(e))
+            case let .spline(pts, closed):
+                var ids = pts.map(r)
+                // Merging the last fit point into the first closes the spline.
+                var isClosed = closed
+                if ids.count > 2, ids.first == ids.last { ids.removeLast(); isClosed = true }
+                curves[i].geometry = .spline(points: ids, closed: isClosed)
             }
         }
         for i in constraints.indices {
@@ -306,6 +327,7 @@ public struct Sketch: Codable, Hashable, Sendable {
         }
         curves.removeAll { c in
             if case let .line(s, e) = c.geometry { return s == e }
+            if case let .spline(pts, _) = c.geometry { return Set(pts).count < 2 }
             return false
         }
     }
@@ -324,7 +346,12 @@ public struct Sketch: Codable, Hashable, Sendable {
             case let .arc(ci, s, e):
                 guard let pc = point(ci), let ps = point(s), let pe = point(e) else { return nil }
                 return .arc(center: pc, radius: simd_distance(pc, ps), start: ps, end: pe)
+            case .spline:
+                return nil   // expanded below
             }
+        } + curves.filter { !$0.construction && $0.isSpline }.flatMap { c -> [Segment2D] in
+            guard case let .spline(ids, closed) = c.geometry else { return [] }
+            return Spline.beziers(ids.compactMap { point($0) }, closed: closed).map { .bezier($0.0, $0.1, $0.2, $0.3) }
         }
     }
 
@@ -339,6 +366,8 @@ public struct Sketch: Codable, Hashable, Sendable {
                 let t = Double(i) / Double(n) * 2 * .pi
                 return pc + r * Vec2(cos(t), sin(t))
             }
+        case let .spline(ids, closed):
+            return Spline.polyline(ids.compactMap { point($0) }, closed: closed, perSegment: max(8, n / 4))
         case let .arc(c, s, e):
             let pc = point(c) ?? .zero, ps = point(s) ?? .zero, pe = point(e) ?? .zero
             let r = simd_distance(pc, ps)
@@ -351,5 +380,50 @@ public struct Sketch: Codable, Hashable, Sendable {
                 return pc + r * Vec2(cos(t), sin(t))
             }
         }
+    }
+}
+
+/// Interpolating spline through fit points: piecewise cubic Bézier with tangents from neighbouring chords
+/// (Catmull-Rom style, scaled by chord length so uneven spacing doesn't overshoot). The same pieces are
+/// drawn on screen and handed to OpenCASCADE, so display and solid always agree.
+public enum Spline {
+    public typealias Piece = (Vec2, Vec2, Vec2, Vec2)
+
+    public static func beziers(_ pts: [Vec2], closed: Bool) -> [Piece] {
+        let n = pts.count
+        guard n >= 2 else { return [] }
+        if n == 2 && !closed {
+            let d = (pts[1] - pts[0]) / 3
+            return [(pts[0], pts[0] + d, pts[1] - d, pts[1])]
+        }
+        func unit(_ v: Vec2) -> Vec2 { let l = simd_length(v); return l > 1e-12 ? v / l : .zero }
+        func at(_ i: Int) -> Vec2 { pts[(i % n + n) % n] }
+        // Unit tangent at each fit point.
+        let tangents: [Vec2] = (0..<n).map { i in
+            if !closed && i == 0 { return unit(pts[1] - pts[0]) }
+            if !closed && i == n - 1 { return unit(pts[n - 1] - pts[n - 2]) }
+            let t = unit(at(i + 1) - at(i)) + unit(at(i) - at(i - 1))
+            let l = simd_length(t)
+            return l > 1e-12 ? t / l : unit(at(i + 1) - at(i - 1))
+        }
+        let count = closed ? n : n - 1
+        return (0..<count).map { i in
+            let a = at(i), b = at(i + 1)
+            let h = simd_distance(a, b) / 3
+            return (a, a + tangents[i] * h, b - tangents[(i + 1) % n] * h, b)
+        }
+    }
+
+    public static func point(_ p: Piece, _ t: Double) -> Vec2 {
+        let u = 1 - t
+        return u * u * u * p.0 + 3 * u * u * t * p.1 + 3 * u * t * t * p.2 + t * t * t * p.3
+    }
+
+    public static func polyline(_ pts: [Vec2], closed: Bool, perSegment k: Int = 24) -> [Vec2] {
+        let pieces = beziers(pts, closed: closed)
+        guard let first = pieces.first else { return pts }
+        var out = [first.0]
+        for p in pieces { for j in 1...k { out.append(point(p, Double(j) / Double(k))) } }
+        return out
     }
 }

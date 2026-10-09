@@ -101,6 +101,12 @@ struct ViewportOverlay: View {
                 ctx.stroke(path(pts), with: .color(accent), style: style)
                 label(ctx, "R " + formatValue(r), near: c)
             }
+        case .spline:
+            let fit = editor.toolPoints.map(\.position) + [c]
+            ctx.stroke(path(Spline.polyline(fit, closed: false, perSegment: 24)), with: .color(accent), style: style)
+            for p in editor.toolPoints {
+                if let s = screen(p.position) { ctx.fill(Path(ellipseIn: CGRect(x: s.x - 3, y: s.y - 3, width: 6, height: 6)), with: .color(accent)) }
+            }
         default:
             break
         }
@@ -108,7 +114,7 @@ struct ViewportOverlay: View {
 
     private var isDrawingTool: Bool {
         switch editor.sketchTool {
-        case .line, .rectangle, .centerRectangle, .circle, .arc: return true
+        case .line, .rectangle, .centerRectangle, .circle, .arc, .spline: return true
         default: return false
         }
     }

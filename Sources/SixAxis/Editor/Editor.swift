@@ -40,6 +40,7 @@ enum SketchTool: Equatable {
     case centerRectangle
     case circle
     case arc
+    case spline
     case dimension
     case constraint(ConstraintTool)
 
@@ -51,6 +52,7 @@ enum SketchTool: Equatable {
         case .centerRectangle: return String(localized: "Mittelpunkt-Rechteck")
         case .circle: return String(localized: "Kreis")
         case .arc: return String(localized: "Bogen")
+        case .spline: return String(localized: "Spline")
         case .dimension: return String(localized: "Bemaßung")
         case let .constraint(c): return c.name
         }

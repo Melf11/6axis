@@ -40,7 +40,9 @@ extension Editor {
         guard var ds = dragState else { return false }
         let dist = hypot(pt.x - ds.start.x, pt.y - ds.start.y)
         if !ds.moved && dist < 3 { return true }
-        if sketchId != nil, sketchTool == .select, let p = ds.pick {
+        // Existing points and curves can be dragged with any sketch tool, as long as the tool isn't in the
+        // middle of creating something (a plain click still draws).
+        if sketchId != nil, toolPoints.isEmpty, dimensionFirst == nil, constraintPicks.isEmpty, let p = ds.pick {
             switch p {
             case .sketchPoint, .sketchCurve:
                 if !ds.moved { ds.moved = true; dragState = ds }
@@ -148,6 +150,7 @@ extension Editor {
         case 36, 76: // Return
             if command != nil { commitCommand(); return true }
             if sketchId != nil, sketchTool == .line { toolPoints.removeAll(); requestRedraw(); return true }
+            if sketchId != nil, finishSpline() { requestRedraw(); return true }
             return false
         default:
             break

@@ -217,6 +217,7 @@ private struct BottomBar: View {
             case .centerRectangle: return n == 0 ? String(localized: "Mittelpunkt klicken") : String(localized: "Ecke klicken")
             case .circle: return n == 0 ? String(localized: "Mittelpunkt klicken · ⌘ = frei setzen") : String(localized: "Radius klicken oder Durchmesser eintippen")
             case .arc: return n == 0 ? String(localized: "Startpunkt klicken") : (n == 1 ? String(localized: "Endpunkt klicken") : String(localized: "Punkt auf dem Bogen klicken"))
+            case .spline: return n == 0 ? String(localized: "Ersten Punkt klicken – auch an vorhandene Ecken") : String(localized: "Weitere Punkte klicken · Startpunkt schließt · Doppelklick, ↩ oder Esc beendet")
             case .dimension:
                 if editor.dimensionSecond != nil { return String(localized: "Bemaßung platzieren") }
                 return editor.dimensionFirst == nil ? String(localized: "Linie, Kreis oder Punkt wählen") : String(localized: "Zweites Objekt wählen oder Bemaßung platzieren")
