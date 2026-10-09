@@ -274,6 +274,7 @@ extension Editor {
         case .arc: arcClick(pt)
         case .spline: splineClick(pt, clickCount: clickCount)
         case .sketchFillet, .sketchChamfer: cornerClick()
+        case .trim, .extend: trimClick(pt)
         case .dimension: dimensionClick(pt)
         case let .constraint(ct): constraintClick(ct)
         }
@@ -399,6 +400,22 @@ extension Editor {
             if ccw { sk.addArc(center: pc, start: pa, end: pb) } else { sk.addArc(center: pc, start: pb, end: pa) }
         }
         toolPoints.removeAll()
+    }
+
+    // MARK: Trim / extend
+
+    private func trimClick(_ pt: CGPoint) {
+        guard case let .sketchCurve(_, cid)? = hover, let pos = sketchPosition(at: pt) else { return }
+        if sketchTool == .extend {
+            guard activeSketch?.curve(cid)?.isLine == true else { showToast(String(localized: "Nur Linien lassen sich verlängern")); return }
+            let ok = mutateSketch { SketchEdit.extend(&$0, line: cid, near: pos) } ?? false
+            if !ok { showToast(String(localized: "Keine Kurve in Verlängerungsrichtung")) }
+            return
+        }
+        if activeSketch?.curve(cid)?.isSpline == true { showToast(String(localized: "Splines lassen sich noch nicht trimmen")); return }
+        let result = mutateSketch { SketchEdit.trim(&$0, curve: cid, at: pos) } ?? nil
+        if result == nil { showToast(String(localized: "Ein Kreis braucht zwei Schnittpunkte zum Trimmen")) }
+        hover = nil
     }
 
     // MARK: Corner fillet / chamfer

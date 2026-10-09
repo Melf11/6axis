@@ -100,6 +100,8 @@ struct Ribbon: View {
             }
             RibbonDivider()
             group(String(localized: "Ändern")) {
+                tool(.trim, String(localized: "Trimmen"), "scissors", "T")
+                tool(.extend, String(localized: "Verlängern"), "arrow.right.to.line")
                 tool(.sketchFillet, String(localized: "Abrunden"), "button.roundedtop.horizontal")
                 tool(.sketchChamfer, String(localized: "Fase"), "triangle.bottomhalf.filled")
                 ToolButton(title: String(localized: "Hilfslinie"), symbol: "line.diagonal.arrow", shortcut: "X") { editor.toggleConstruction() }

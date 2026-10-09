@@ -52,6 +52,11 @@ struct ViewportOverlay: View {
 
     private func drawToolPreview(_ ctx: GraphicsContext) {
         guard editor.sketchId != nil, let cur = editor.cursor else { return }
+        if editor.sketchTool == .trim, case let .sketchCurve(_, cid)? = editor.hover, let sk = editor.activeSketch,
+           let piece = SketchEdit.trimPreview(sk, curve: cid, at: cur.position) {
+            ctx.stroke(path(piece), with: .color(.red.opacity(0.85)), style: StrokeStyle(lineWidth: 3, lineCap: .round))
+            return
+        }
         let style = StrokeStyle(lineWidth: 1.6, dash: [5, 3])
         let c = cur.position
 

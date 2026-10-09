@@ -223,4 +223,13 @@ EN.update({
 "Ecke anklicken, dann Radius eintippen": "Click a corner, then type the radius",
 "Ecke anklicken, dann Fasenlänge eintippen": "Click a corner, then type the chamfer length",
 })
+EN.update({
+"Trimmen": "Trim", "Verlängern": "Extend",
+"Nur Linien lassen sich verlängern": "Only lines can be extended",
+"Keine Kurve in Verlängerungsrichtung": "No curve in the extension direction",
+"Splines lassen sich noch nicht trimmen": "Splines can't be trimmed yet",
+"Ein Kreis braucht zwei Schnittpunkte zum Trimmen": "A circle needs two intersections to be trimmed",
+"Stück einer Kurve anklicken, um es bis zu den Schnittpunkten zu entfernen": "Click a piece of a curve to remove it up to the intersections",
+"Linie nahe dem Ende anklicken, um sie bis zur nächsten Kurve zu verlängern": "Click a line near its end to extend it to the next curve",
+})
 

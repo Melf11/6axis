@@ -132,5 +132,27 @@ enum SketchChecks {
         }
         editor.finishSketch()
         await pause()
+
+        // 5. Trim: divider line across a rectangle, cut off both overhangs.
+        editor.beginSketch(on: .xy)
+        await pause(0.8)
+        editor.setSketchTool(.rectangle)
+        click(editor, Vec2(0, 0)); click(editor, Vec2(60, 40))
+        editor.setSketchTool(.line)
+        click(editor, Vec2(20, -10)); click(editor, Vec2(20, 50))
+        editor.escape()
+        editor.setSketchTool(.trim)
+        click(editor, Vec2(20, -5))
+        click(editor, Vec2(20, 45))
+        await pause(0.6)
+        let trimmedRegions = editor.activeSketchBuild?.regions.count ?? 0
+        check("trim divides rectangle", trimmedRegions == 2, "\(trimmedRegions) regions")
+        let lineEnds = editor.activeSketch.map { sk in sk.curves.filter { c in
+            if case let .line(a, b) = c.geometry, let pa = sk.point(a), let pb = sk.point(b) { return abs(pa.x - 20) < 1e-6 && abs(pb.x - 20) < 1e-6 }
+            return false
+        }.count } ?? 0
+        check("trimmed divider kept", lineEnds == 1)
+        editor.finishSketch()
+        await pause()
     }
 }

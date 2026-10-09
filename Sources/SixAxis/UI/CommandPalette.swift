@@ -28,6 +28,8 @@ extension Editor {
             EditorCommand(id: "rect", title: String(localized: "Rechteck"), symbol: "rectangle", shortcut: "R", keywords: "rectangle", available: true) { self.setSketchTool(.rectangle) },
             EditorCommand(id: "crect", title: String(localized: "Mittelpunkt-Rechteck"), symbol: "rectangle.center.inset.filled", keywords: "center rectangle", available: true) { self.setSketchTool(.centerRectangle) },
             EditorCommand(id: "circle", title: String(localized: "Kreis"), symbol: "circle", shortcut: "C", keywords: "circle", available: true) { self.setSketchTool(.circle) },
+            EditorCommand(id: "trim", title: String(localized: "Trimmen"), symbol: "scissors", shortcut: "T", keywords: "trim schneiden kürzen", available: sketchId != nil) { self.setSketchTool(.trim) },
+            EditorCommand(id: "extend", title: String(localized: "Verlängern"), symbol: "arrow.right.to.line", shortcut: nil, keywords: "extend verlängern", available: sketchId != nil) { self.setSketchTool(.extend) },
             EditorCommand(id: "sketchFillet", title: String(localized: "Ecke abrunden"), symbol: "button.roundedtop.horizontal", shortcut: nil, keywords: "skizze abrundung radius fillet corner", available: sketchId != nil) { self.setSketchTool(.sketchFillet) },
             EditorCommand(id: "sketchChamfer", title: String(localized: "Ecke fasen"), symbol: "triangle.bottomhalf.filled", shortcut: nil, keywords: "skizze fase chamfer corner", available: sketchId != nil) { self.setSketchTool(.sketchChamfer) },
             EditorCommand(id: "spline", title: String(localized: "Spline"), symbol: "scribble.variable", shortcut: nil, keywords: "spline kurve curve freiform", available: true) { self.setSketchTool(.spline) },

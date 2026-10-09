@@ -1612,6 +1612,16 @@
         }
       }
     },
+    "Ein Kreis braucht zwei Schnittpunkte zum Trimmen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A circle needs two intersections to be trimmed"
+          }
+        }
+      }
+    },
     "Einblenden": {
       "localizations": {
         "en": {
@@ -2577,6 +2587,16 @@
         }
       }
     },
+    "Keine Kurve in Verlängerungsrichtung": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No curve in the extension direction"
+          }
+        }
+      }
+    },
     "Keine Schreibrechte für „%@“. Lade das Update bitte von der Release-Seite.": {
       "localizations": {
         "en": {
@@ -2784,6 +2804,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Line"
+          }
+        }
+      }
+    },
+    "Linie nahe dem Ende anklicken, um sie bis zur nächsten Kurve zu verlängern": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Click a line near its end to extend it to the next curve"
           }
         }
       }
@@ -3186,6 +3216,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Normal"
+          }
+        }
+      }
+    },
+    "Nur Linien lassen sich verlängern": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Only lines can be extended"
           }
         }
       }
@@ -4437,6 +4477,16 @@
         }
       }
     },
+    "Splines lassen sich noch nicht trimmen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Splines can't be trimmed yet"
+          }
+        }
+      }
+    },
     "Später": {
       "localizations": {
         "en": {
@@ -4513,6 +4563,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Back panel thickness"
+          }
+        }
+      }
+    },
+    "Stück einer Kurve anklicken, um es bis zu den Schnittpunkten zu entfernen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Click a piece of a curve to remove it up to the intersections"
           }
         }
       }
@@ -4644,6 +4704,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Transform failed"
+          }
+        }
+      }
+    },
+    "Trimmen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Trim"
           }
         }
       }
@@ -4987,6 +5057,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Zoom out"
+          }
+        }
+      }
+    },
+    "Verlängern": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Extend"
           }
         }
       }
