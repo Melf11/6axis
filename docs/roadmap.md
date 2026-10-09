@@ -1,6 +1,6 @@
 # Roadmap
 
-Stand: Oktober 2026 · Version im Repository: 0.9 (in Arbeit)
+Stand: Oktober 2026 · Aktuelles Release: [1.0.0](https://github.com/Melf11/6axis/releases/tag/v1.0.0) · als Nächstes: 1.1
 
 Reihenfolge nach Absprache: **zuerst ein weitergebbares Release**, damit Freunde 6axis testen können – danach die Funktionen. Holz-Werkzeuge und Plattenzuschnitt werden in der [Feature-Sammlung](#feature-sammlung) gesammelt und kommen am Ende.
 
@@ -38,8 +38,8 @@ Ziel: Ein Freund lädt eine Datei von GitHub, öffnet sie und kann konstruieren 
   - **DMG** mit Anleitung „Erster Start“ und Verknüpfung zu „Programme“ (`hdiutil`), zusätzlich ZIP
   - SHA-256-Prüfsummen
   - GitHub Release mit Versionshinweisen (aus den Commits seit dem letzten Tag) und Installationsanleitung
-- [ ] Homebrew-Cache im Workflow, damit Builds schnell bleiben
-- [ ] Ablauf zum Veröffentlichen in `CONTRIBUTING.md`: `git tag v0.9.0 && git push --tags`
+- [x] ~~Homebrew-Cache~~ nicht nötig: OpenCASCADE installiert sich im Workflow in 12 s
+- [x] Ablauf zum Veröffentlichen in `CONTRIBUTING.md`: `git tag v0.9.0 && git push --tags`
 
 ### 3. Installation ohne Apple-Entwicklerkonto
 Ohne Notarisierung zeigt macOS beim ersten Start eine Warnung. Die Anleitung (Release-Text, Produktseite, README) erklärt die Schritte für macOS 15:
@@ -51,7 +51,8 @@ Ohne Notarisierung zeigt macOS beim ersten Start eine Warnung. Die Anleitung (Re
 ### 4. Für Tester
 - [x] Menü **Hilfe → „Fehler melden …“ / „Idee vorschlagen …“**: öffnet ein vorausgefülltes GitHub-Issue (Version, macOS-Version) im Browser – nur auf Klick, keine Telemetrie
 - [x] Issue-Vorlagen „Fehler melden“ und „Idee“ im Repository
-- [ ] Version in „Über 6axis“ und im Fenstertitel der Zeichnung
+- [x] Version in „Über 6axis“
+- [ ] Version im Fenstertitel der Zeichnung
 
 ### 5. Produktseite (GitHub Pages)
 Einfache, schnelle Seite unter `https://melf11.github.io/6axis/`, eigener Ordner `website/`, veröffentlicht per GitHub Actions (`actions/deploy-pages`), nur HTML/CSS, keine Tracker, keine externen Schriften.
@@ -64,6 +65,11 @@ Inhalt:
 - **Open Source:** MIT, GitHub-Link, Mitmachen
 - Hell/Dunkel automatisch, mobilfreundlich; Sprache Deutsch (Englisch mit 1.0)
 
+### Zusätzlich umgesetzt
+- [x] Beispiele (Korpus, Schneidebrett, Aufbewahrungsbox) in `Examples/` und unter **Ablage → Beispiele**
+- [x] Gewicht in der Statusleiste nach Körpermaterial (Holz, Kunststoffe, Metalle)
+- [x] Produktseite online: https://melf11.github.io/6axis/
+
 ### Fertig, wenn
 - Ein Tag `v0.9.0` erzeugt automatisch ein GitHub Release mit DMG
 - Das DMG startet auf einem Mac ohne Homebrew
@@ -71,18 +77,20 @@ Inhalt:
 
 ---
 
-## 1.0 – Stabil
+## 1.0 – Stabil ✅ (Release 1.0.0)
 
-- [ ] **Neuberechnung im Hintergrund:** Modell-Neuaufbau nicht mehr auf dem Hauptthread, Oberfläche bleibt bei großen Modellen flüssig; Fortschrittsanzeige bei langen Booleschen Operationen
-- [ ] **Englisch:** alle Texte über String Catalog, Deutsch und Englisch, Sprache folgt dem System; Produktseite zweisprachig
-- [ ] **Dateiformat-Versionierung:** `formatVersion` auswerten, Migrationen für ältere Dateien, Test-Sammlung alter Beispieldateien
-- [ ] **Rückmeldungen der Tester** aus 0.9 einarbeiten (Bedienung von Zeichnungsfenster, Radialmenü, Navigation, DXF in CAM-/Lasersoftware)
-- [ ] **README** aktualisieren (Funktionsliste, Screenshots, Installation)
-- [ ] Mehr Tests: Benutzeroberfläche über die Demo-Läufe im CI, Beispielmodelle als Regressionstests
+- [x] **Parameter verschieben Geometrie zuverlässig:** Profile merken sich ihre Lage relativ zu den Skizzenpunkten, Kanten und Flächen von Abrundung/Fase/Wandstärke bleiben bei gleicher Topologie über ihren Index erhalten. Ändern von z. B. Korpusbreite oder -höhe baut fehlerfrei neu auf; ältere Dateien funktionieren weiter. Alle Beispiele sind vollständig parametrisch.
+- [x] **Neuberechnung im Hintergrund:** Neuaufbau auf einer eigenen Queue; ist er nach 80 ms fertig, wird er sofort übernommen (Vorschau beim Ziehen bleibt direkt), sonst bleibt die Oberfläche bedienbar und zeigt „Berechne Modell …“; veraltete Berechnungen werden übersprungen. Viele Werkzeugkörper (z. B. 400 Bohrungen) werden in einer Operation vereinigt statt nacheinander (13 s → 6 s im Debug-Build, ~2 s im Release-Build)
+- [x] **Englisch:** alle ~530 Texte (Oberfläche, Meldungen, Fehlermeldungen aus Kern und OpenCASCADE-Brücke, technische Zeichnung, Beispiele) im String Catalog `Resources/Localizable.xcstrings`; die Sprache folgt dem System (pro App einstellbar unter Systemeinstellungen → Allgemein → Sprache & Region). `scripts/update-strings.sh` sammelt neue Texte über den Swift-Compiler, das CI bricht bei fehlenden Übersetzungen ab
+- [x] Produktseite zweisprachig (`website/en/`, Screenshots mit englischer Oberfläche über `scripts/screenshots.sh`)
+- [x] **Dateiformat-Versionierung:** Format 2 (1.0); ältere Dateien werden schrittweise migriert, Dateien aus neueren Versionen mit klarer Meldung abgelehnt, fehlende Felder sind erlaubt, verständliche Fehlermeldungen bei beschädigten Dateien. Test-Sammlung `Tests/SixAxisCoreTests/Fixtures` mit den Beispielen aus 0.9.0 – bei jedem Release kommen die Beispiele dazu
+- [x] **README** aktualisiert (Funktionsliste, Screenshots, Installation, Beispiele, Englisch)
+- [x] Mehr Tests: `scripts/ui-check.sh` prüft im CI und vor jedem Release die Oberfläche über die Demo-Läufe (Deutsch und Englisch, Zeichnung, Beispiele, Neuberechnung im Hintergrund) – Screenshots als Download; Beispielmodelle, Parameteränderungen und Dateien aus 0.9.0 als Regressionstests
 
 ---
 
 ## 1.1 – Skizze vervollständigen
+- **Rückmeldungen der Tester** einarbeiten (Bedienung von Zeichnungsfenster, Radialmenü, Navigation, DXF in CAM-/Lasersoftware)
 - Trimmen und Verlängern
 - Versatz (z. B. Wandstärke als Kontur)
 - Spiegeln an einer Linie

@@ -122,8 +122,8 @@ struct ViewportOverlay: View {
         ctx.fill(dot, with: .color(accent))
         ctx.stroke(dot, with: .color(.white), lineWidth: 1.5)
         guard editor.toolPoints.isEmpty else { return }
-        var text = "X \(editor.plainNumber(pos.x))  Y \(editor.plainNumber(pos.y))"
-        if cur.point == nil && cur.curve == nil && !cur.onGrid && AppSettings.shared.snapToGrid { text += "  · frei" }
+        var text = String(localized: "X \(editor.plainNumber(pos.x))  Y \(editor.plainNumber(pos.y))")
+        if cur.point == nil && cur.curve == nil && !cur.onGrid && AppSettings.shared.snapToGrid { text += String(localized: "  · frei") }
         let t = ctx.resolve(Text(text).font(.system(size: 10.5, weight: .medium, design: .rounded)).foregroundStyle(Color.primary.opacity(0.8)))
         let size = t.measure(in: CGSize(width: 300, height: 40))
         let rect = CGRect(x: s.x + 12, y: s.y + 10, width: size.width + 12, height: size.height + 5)
@@ -384,7 +384,7 @@ struct ViewportOverlay: View {
                         editor.selection = selected ? [] : [pick]
                         editor.requestRedraw()
                     }
-                    .help(g.constraint < 0 ? "Fixiert" : (sketch?.constraints.first { $0.id == g.constraint }?.kind.displayName ?? ""))
+                    .help(g.constraint < 0 ? String(localized: "Fixiert") : (sketch?.constraints.first { $0.id == g.constraint }?.kind.displayName ?? ""))
                     .position(g.position)
             }
         }
@@ -428,7 +428,7 @@ private struct ExtrudeHandle: View {
                 .font(.system(size: 11, weight: .semibold, design: .rounded))
                 .padding(.horizontal, 7)
                 .padding(.vertical, 3)
-                .background(Capsule().fill(.regularMaterial))
+                .background(Capsule().fill(PanelStyle.fill))
                 .fixedSize()
                 .offset(x: 50, y: -16)
                 .allowsHitTesting(false)
@@ -524,7 +524,7 @@ private struct DimensionLabel: View {
                                 editor.moveDimensionLabel(constraint.id, to: pos - anchor, undoable: false)
                             }
                     )
-                    .help(isExpr ? "\(expr) – Doppelklick zum Bearbeiten" : "Doppelklick zum Bearbeiten")
+                    .help(isExpr ? String(localized: "\(expr) – Doppelklick zum Bearbeiten") : String(localized: "Doppelklick zum Bearbeiten"))
             }
         }
     }

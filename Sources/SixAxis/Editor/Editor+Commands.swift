@@ -116,7 +116,7 @@ extension Editor {
         command = nil
         pushUndo(cmd.snapshot)
         rebuild()
-        if let err = state.errors[id] { showToast("\(f.name): \(err)") }
+        if let err = state.errors[id] { showToast(String(localized: "\(f.name): \(err)")) }
     }
 
     func cancelCommand() {
@@ -151,7 +151,7 @@ extension Editor {
     func selectedProfiles() -> [ProfileRef] {
         selection.compactMap { p in
             guard case let .profile(sid, idx) = p, let sb = state.sketches[sid], idx < sb.regions.count else { return nil }
-            return ProfileRef(sketch: sid, sample: sb.regions[idx].sample)
+            return sb.profileRef(sb.regions[idx])
         }
     }
 
@@ -173,7 +173,7 @@ extension Editor {
     func singleProfileOfLatestSketch() -> ProfileRef? {
         for f in doc.features.prefix(doc.activeCount).reversed() {
             if case .sketch = f.kind, let sb = state.sketches[f.id] {
-                return sb.regions.count == 1 ? ProfileRef(sketch: f.id, sample: sb.regions[0].sample) : nil
+                return sb.regions.count == 1 ? sb.profileRef(sb.regions[0]) : nil
             }
         }
         return nil
@@ -304,10 +304,10 @@ extension Editor {
     private func toggleProfile(_ p: Pick, in profiles: inout [ProfileRef]) {
         guard case let .profile(sid, idx) = p, let sb = stateBeforeCommand.sketches[sid] ?? state.sketches[sid], idx < sb.regions.count else { return }
         let region = sb.regions[idx]
-        if let j = profiles.firstIndex(where: { $0.sketch == sid && sb.region(containing: $0.sample) === region }) {
+        if let j = profiles.firstIndex(where: { $0.sketch == sid && sb.resolve($0) === region }) {
             profiles.remove(at: j)
         } else {
-            profiles.append(ProfileRef(sketch: sid, sample: region.sample))
+            profiles.append(sb.profileRef(region))
         }
     }
 
@@ -320,7 +320,7 @@ extension Editor {
         var origin: Vec3?
         var normal: Vec3?
         if let p = e.profiles.first, let sb = pre.sketches[p.sketch] {
-            origin = sb.plane.point(sb.region(containing: p.sample)?.center ?? p.sample)
+            origin = sb.plane.point(sb.resolve(p)?.center ?? p.sample)
             normal = sb.plane.normal
         } else if let f = e.faces.first, let body = pre.bodies[f.body], let idx = body.resolve(f.face), let info = body.faceInfos[idx] {
             origin = info.centroid

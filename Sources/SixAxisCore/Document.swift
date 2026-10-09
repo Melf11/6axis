@@ -9,6 +9,9 @@ public struct FaceRef: Codable, Hashable, Sendable {
     public var index: Int
     public var centroid: Vec3
     public var normal: Vec3
+    /// Face count of the body when the reference was made. If the body still has the same topology,
+    /// `index` stays valid even when parameters moved the face (see BuiltBody.resolve).
+    public var count: Int? = nil
 
     public init(index: Int, centroid: Vec3, normal: Vec3) {
         self.index = index
@@ -20,6 +23,10 @@ public struct FaceRef: Codable, Hashable, Sendable {
 public struct EdgeRef: Codable, Hashable, Sendable {
     public var index: Int
     public var midpoint: Vec3
+    /// Edge count of the body and the edge's kind/direction when the reference was made (topology check).
+    public var count: Int? = nil
+    public var kind: Int? = nil
+    public var direction: Vec3? = nil
 
     public init(index: Int, midpoint: Vec3) {
         self.index = index
@@ -43,7 +50,71 @@ public struct BodyEdgeRef: Codable, Hashable, Sendable {
 public struct ProfileRef: Codable, Hashable, Sendable {
     public var sketch: UUID
     public var sample: Vec2
-    public init(sketch: UUID, sample: Vec2) { self.sketch = sketch; self.sample = sample }
+    /// The sample expressed relative to sketch points, so it follows the geometry when parameters
+    /// or dimensions change. Nil in files from 0.9 and earlier (then only `sample` is used).
+    public var anchor: ProfileAnchor? = nil
+    public init(sketch: UUID, sample: Vec2, anchor: ProfileAnchor? = nil) {
+        self.sketch = sketch
+        self.sample = sample
+        self.anchor = anchor
+    }
+}
+
+/// sample = Σ weights[i] · position(points[i]) + offset
+public struct ProfileAnchor: Codable, Hashable, Sendable {
+    public var points: [Int]
+    public var weights: [Double]
+    public var offset: Vec2
+    public init(points: [Int], weights: [Double], offset: Vec2 = .zero) {
+        self.points = points
+        self.weights = weights
+        self.offset = offset
+    }
+
+    /// Current position of the anchored point, nil if a point no longer exists.
+    public func position(in sketch: Sketch) -> Vec2? {
+        var p = offset
+        for (id, w) in zip(points, weights) {
+            guard let q = sketch.point(id) else { return nil }
+            p += q * w
+        }
+        return p
+    }
+
+    /// Anchor for `p`: the barycentric weights of every non-degenerate triangle of nearby sketch points
+    /// that contains `p`, averaged (a rectangle's center becomes ¼ of each corner). Without such a
+    /// triangle (e.g. a lone circle): the nearest point plus an offset.
+    public static func make(for p: Vec2, in sketch: Sketch) -> ProfileAnchor? {
+        let pts = Array(sketch.points.sorted { simd_distance($0.position, p) < simd_distance($1.position, p) }.prefix(12))
+        guard let nearest = pts.first else { return nil }
+        var sum: [Int: Double] = [:]
+        var count = 0
+        for i in 0..<pts.count {
+            for j in (i + 1)..<max(i + 1, pts.count) {
+                for k in (j + 1)..<max(j + 1, pts.count) {
+                    let p0 = pts[i].position, p1 = pts[j].position, p2 = pts[k].position
+                    let det = (p1.x - p0.x) * (p2.y - p0.y) - (p2.x - p0.x) * (p1.y - p0.y)
+                    let scale = max(simd_length_squared(p1 - p0), simd_length_squared(p2 - p0), 1e-12)
+                    guard abs(det) > 1e-3 * scale else { continue }      // skip slivers and coincident points
+                    let w1 = ((p.x - p0.x) * (p2.y - p0.y) - (p2.x - p0.x) * (p.y - p0.y)) / det
+                    let w2 = ((p1.x - p0.x) * (p.y - p0.y) - (p.x - p0.x) * (p1.y - p0.y)) / det
+                    let w0 = 1 - w1 - w2
+                    guard min(w0, w1, w2) >= -1e-9 else { continue }
+                    sum[pts[i].id, default: 0] += w0
+                    sum[pts[j].id, default: 0] += w1
+                    sum[pts[k].id, default: 0] += w2
+                    count += 1
+                }
+            }
+        }
+        guard count > 0 else { return ProfileAnchor(points: [nearest.id], weights: [1], offset: p - nearest.position) }
+        let ids = sum.keys.sorted()
+        let weights = ids.map { sum[$0]! / Double(count) }
+        // Rounding residue goes into the offset so the anchor reproduces p exactly.
+        var q = Vec2.zero
+        for (id, w) in zip(ids, weights) { q += sketch.point(id)! * w }
+        return ProfileAnchor(points: ids, weights: weights, offset: p - q)
+    }
 }
 
 public enum PlaneRef: Codable, Hashable, Sendable {
@@ -52,10 +123,10 @@ public enum PlaneRef: Codable, Hashable, Sendable {
 
     public var displayName: String {
         switch self {
-        case .xy: return "XY-Ebene"
-        case .xz: return "XZ-Ebene"
-        case .yz: return "YZ-Ebene"
-        case .face: return "Fläche"
+        case .xy: return String(localized: "XY-Ebene")
+        case .xz: return String(localized: "XZ-Ebene")
+        case .yz: return String(localized: "YZ-Ebene")
+        case .face: return String(localized: "Fläche")
         }
     }
 }
@@ -67,11 +138,11 @@ public enum AxisRef: Codable, Hashable, Sendable {
 
     public var displayName: String {
         switch self {
-        case .x: return "X-Achse"
-        case .y: return "Y-Achse"
-        case .z: return "Z-Achse"
-        case .sketchLine: return "Skizzenlinie"
-        case .edge: return "Kante"
+        case .x: return String(localized: "X-Achse")
+        case .y: return String(localized: "Y-Achse")
+        case .z: return String(localized: "Z-Achse")
+        case .sketchLine: return String(localized: "Skizzenlinie")
+        case .edge: return String(localized: "Kante")
         }
     }
 }
@@ -83,10 +154,10 @@ public enum BodyOperation: String, Codable, CaseIterable, Hashable, Sendable {
 
     public var displayName: String {
         switch self {
-        case .join: return "Verbinden"
-        case .cut: return "Ausschneiden"
-        case .intersect: return "Schneiden"
-        case .newBody: return "Neuer Körper"
+        case .join: return String(localized: "Verbinden")
+        case .cut: return String(localized: "Ausschneiden")
+        case .intersect: return String(localized: "Schneiden")
+        case .newBody: return String(localized: "Neuer Körper")
         }
     }
 
@@ -105,9 +176,9 @@ public enum ExtrudeExtent: String, Codable, CaseIterable, Hashable, Sendable {
 
     public var displayName: String {
         switch self {
-        case .oneSide: return "Eine Seite"
-        case .symmetric: return "Symmetrisch"
-        case .twoSides: return "Zwei Seiten"
+        case .oneSide: return String(localized: "Eine Seite")
+        case .symmetric: return String(localized: "Symmetrisch")
+        case .twoSides: return String(localized: "Zwei Seiten")
         }
     }
 }
@@ -173,13 +244,13 @@ public enum FeatureKind: Codable, Hashable, Sendable {
 
     public var typeName: String {
         switch self {
-        case .sketch: return "Skizze"
-        case .extrude: return "Extrusion"
-        case .revolve: return "Drehung"
-        case .fillet: return "Abrundung"
-        case .chamfer: return "Fase"
-        case .shell: return "Wandstärke"
-        case .importStep: return "Import"
+        case .sketch: return String(localized: "Skizze")
+        case .extrude: return String(localized: "Extrusion")
+        case .revolve: return String(localized: "Drehung")
+        case .fillet: return String(localized: "Abrundung")
+        case .chamfer: return String(localized: "Fase")
+        case .shell: return String(localized: "Wandstärke")
+        case .importStep: return String(localized: "Import")
         }
     }
 
@@ -221,9 +292,9 @@ public enum GrainDirection: String, Codable, CaseIterable, Hashable, Sendable {
 
     public var title: String {
         switch self {
-        case .none: return "Ohne"
-        case .length: return "Längs"
-        case .width: return "Quer"
+        case .none: return String(localized: "Ohne")
+        case .length: return String(localized: "Längs")
+        case .width: return String(localized: "Quer")
         }
     }
 }
@@ -258,7 +329,12 @@ public struct BodyMeta: Codable, Hashable, Sendable {
 
 /// The complete persistent state of a design. Pure value type: snapshots make undo trivial.
 public struct CADDocument: Codable, Hashable, Sendable {
-    public var formatVersion = 1
+    /// File format version written by this build. History:
+    /// 1 – 0.9 and earlier
+    /// 2 – 1.0: profile anchors, topology counts on face/edge references (all optional, so 1 reads as 2)
+    public static let currentFormatVersion = 2
+
+    public var formatVersion = CADDocument.currentFormatVersion
     public var features: [Feature] = []
     public var parameters: [UserParameter] = []
     /// Number of active timeline entries (marker position). nil = all.
@@ -288,16 +364,60 @@ public struct CADDocument: Codable, Hashable, Sendable {
         return "\(base)\(n)"
     }
 
-    public func bodyName(_ id: UUID) -> String { bodies[id]?.name ?? "Körper" }
+    public func bodyName(_ id: UUID) -> String { bodies[id]?.name ?? String(localized: "Körper") }
     public func isBodyVisible(_ id: UUID) -> Bool { bodies[id]?.visible ?? true }
 
     public func encoded() throws -> Data {
+        var doc = self
+        doc.formatVersion = Self.currentFormatVersion
         let enc = JSONEncoder()
         enc.outputFormatting = [.prettyPrinted, .sortedKeys]
-        return try enc.encode(self)
+        return try enc.encode(doc)
     }
 
+    /// Reads a document of any known format version: older files are migrated step by step,
+    /// files from a newer 6axis are refused with a clear message instead of losing data.
     public static func decode(_ data: Data) throws -> CADDocument {
-        try JSONDecoder().decode(CADDocument.self, from: data)
+        guard var json = try JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+            throw KernelError("Keine 6axis-Datei")
+        }
+        let version = json["formatVersion"] as? Int ?? 1
+        if version > currentFormatVersion {
+            throw KernelError("Die Datei wurde mit einer neueren 6axis-Version gesichert (Dateiformat \(version)). Bitte 6axis aktualisieren.")
+        }
+        for v in version..<currentFormatVersion { json = migrations[v]?(json) ?? json }
+        json["formatVersion"] = currentFormatVersion
+        let migrated = try JSONSerialization.data(withJSONObject: json)
+        do {
+            return try JSONDecoder().decode(CADDocument.self, from: migrated)
+        } catch let DecodingError.keyNotFound(key, ctx) {
+            throw KernelError("Datei unvollständig: „\(key.stringValue)“ fehlt (\(ctx.codingPath.map(\.stringValue).joined(separator: ".")))")
+        } catch let DecodingError.typeMismatch(_, ctx), let DecodingError.valueNotFound(_, ctx), let DecodingError.dataCorrupted(ctx) {
+            throw KernelError("Datei beschädigt bei „\(ctx.codingPath.map(\.stringValue).joined(separator: "."))“")
+        }
+    }
+
+    /// JSON-level migration from version n to n + 1. Add an entry whenever the format changes in a way
+    /// optional fields can't cover (renames, restructured values).
+    static let migrations: [Int: ([String: Any]) -> [String: Any]] = [
+        1: { $0 },   // 1 → 2: new fields are optional; nothing to rewrite
+    ]
+}
+
+extension CADDocument {
+    enum CodingKeys: String, CodingKey {
+        case formatVersion, features, parameters, rollback, bodies, hiddenSketches, drawing
+    }
+
+    /// Lenient: every field may be missing (older or hand-written files).
+    public init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        formatVersion = try c.decodeIfPresent(Int.self, forKey: .formatVersion) ?? 1
+        features = try c.decodeIfPresent([Feature].self, forKey: .features) ?? []
+        parameters = try c.decodeIfPresent([UserParameter].self, forKey: .parameters) ?? []
+        rollback = try c.decodeIfPresent(Int.self, forKey: .rollback)
+        bodies = try c.decodeIfPresent([UUID: BodyMeta].self, forKey: .bodies) ?? [:]
+        hiddenSketches = try c.decodeIfPresent(Set<UUID>.self, forKey: .hiddenSketches) ?? []
+        drawing = try c.decodeIfPresent(DrawingSettings.self, forKey: .drawing)
     }
 }

@@ -15,7 +15,7 @@ struct BrowserPanel: View {
             HStack {
                 Text("BROWSER").font(.system(size: 10, weight: .bold)).tracking(0.6).foregroundStyle(.secondary)
                 Spacer()
-                IconButton(symbol: "sidebar.left", help: "Browser ausblenden", size: 22) { editor.browserVisible = false }
+                IconButton(symbol: "sidebar.left", help: String(localized: "Browser ausblenden"), size: 22) { editor.browserVisible = false }
             }
             .padding(.horizontal, 10)
             .padding(.top, 8)
@@ -23,19 +23,19 @@ struct BrowserPanel: View {
 
             ScrollView {
                 VStack(alignment: .leading, spacing: 1) {
-                    row(symbol: "doc", title: editor.fileURL?.deletingPathExtension().lastPathComponent ?? "Unbenannt", bold: true)
-                    row(symbol: "move.3d", title: "Ursprung", indent: 1,
+                    row(symbol: "doc", title: editor.fileURL?.deletingPathExtension().lastPathComponent ?? String(localized: "Unbenannt"), bold: true)
+                    row(symbol: "move.3d", title: String(localized: "Ursprung"), indent: 1,
                         eye: editor.showOriginPlanes, onEye: {
                             editor.showOriginPlanes.toggle()
                             editor.sceneVersion &+= 1
                         })
-                    section("Körper", count: editor.state.bodyOrder.count, open: $bodiesOpen)
+                    section(String(localized: "Körper"), count: editor.state.bodyOrder.count, open: $bodiesOpen)
                     if bodiesOpen {
                         ForEach(editor.state.bodyOrder, id: \.self) { id in
                             bodyRow(id)
                         }
                     }
-                    section("Skizzen", count: sketches.count, open: $sketchesOpen)
+                    section(String(localized: "Skizzen"), count: sketches.count, open: $sketchesOpen)
                     if sketchesOpen {
                         ForEach(sketches) { f in
                             sketchRow(f)
@@ -117,7 +117,7 @@ struct BrowserPanel: View {
         .contextMenu {
             Button("Umbenennen") { renameText = editor.doc.bodyName(id); renaming = id }
             Button("Material & Faserrichtung …") { materialFor = id }
-            Button(editor.doc.isBodyVisible(id) ? "Ausblenden" : "Einblenden") { editor.toggleBodyVisibility(id) }
+            Button(editor.doc.isBodyVisible(id) ? String(localized: "Ausblenden") : String(localized: "Einblenden")) { editor.toggleBodyVisibility(id) }
             Divider()
             Button("Als STL exportieren …") { editor.selection = [.body(id)]; editor.exportSTL() }
             Button("Als STEP exportieren …") { editor.selection = [.body(id)]; editor.exportSTEP() }
@@ -145,7 +145,7 @@ struct BrowserPanel: View {
         .onTapGesture(count: 2) { editor.editFeature(f.id) }
         .contextMenu {
             Button("Skizze bearbeiten") { editor.editFeature(f.id) }
-            Button(visible ? "Ausblenden" : "Einblenden") { editor.toggleSketchVisibility(f.id) }
+            Button(visible ? String(localized: "Ausblenden") : String(localized: "Einblenden")) { editor.toggleSketchVisibility(f.id) }
             Divider()
             Button("Löschen", role: .destructive) { editor.deleteFeature(f.id) }
         }
@@ -172,7 +172,7 @@ struct BrowserPanel: View {
                 .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .help(visible ? "Ausblenden" : "Einblenden")
+        .help(visible ? String(localized: "Ausblenden") : String(localized: "Einblenden"))
     }
 }
 
@@ -187,8 +187,8 @@ struct BodyMaterialSheet: View {
     @Environment(\.dismiss) private var dismiss
 
     static let presets = [
-        "Eiche massiv", "Buche massiv", "Ahorn massiv", "Nussbaum massiv", "Kiefer massiv", "Fichte massiv", "Lärche massiv",
-        "Birke Multiplex", "Buche Multiplex", "Sperrholz", "Tischlerplatte", "MDF", "MDF lackiert", "Spanplatte", "Spanplatte melaminbeschichtet", "OSB", "HPL",
+        String(localized: "Eiche massiv"), String(localized: "Buche massiv"), String(localized: "Ahorn massiv"), String(localized: "Nussbaum massiv"), String(localized: "Kiefer massiv"), String(localized: "Fichte massiv"), String(localized: "Lärche massiv"),
+        String(localized: "Birke Multiplex"), String(localized: "Buche Multiplex"), String(localized: "Sperrholz"), String(localized: "Tischlerplatte"), String(localized: "MDF"), String(localized: "MDF lackiert"), String(localized: "Spanplatte"), String(localized: "Spanplatte melaminbeschichtet"), String(localized: "OSB"), String(localized: "HPL"),
     ]
 
     var body: some View {

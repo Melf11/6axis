@@ -339,7 +339,7 @@ struct SceneBuilder {
 
     private func profileIds(_ profiles: [ProfileRef]) -> [UInt32] {
         profiles.compactMap { p in
-            guard let sb = editor.state.sketches[p.sketch], let r = sb.region(containing: p.sample) else { return nil }
+            guard let sb = editor.state.sketches[p.sketch], let r = sb.resolve(p) else { return nil }
             return ids[.profile(p.sketch, r.index)]
         }
     }

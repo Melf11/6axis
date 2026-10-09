@@ -353,6 +353,29 @@ OBShape *ob_boolean(const OBShape *a, const OBShape *b, int32_t op) {
     });
 }
 
+OBShape *ob_fuse_all(const OBShape *const *shapes, int32_t count) {
+    return guarded("Vereinigen", [&]() -> OBShape * {
+        if (count <= 0) {
+            setError("Keine Geometrie");
+            return nullptr;
+        }
+        if (count == 1) return wrap(shapes[0]->shape, "Vereinigen ergab nichts");
+        TopTools_ListOfShape args, tools;
+        args.Append(shapes[0]->shape);
+        for (int32_t i = 1; i < count; i++) tools.Append(shapes[i]->shape);
+        BRepAlgoAPI_Fuse f;
+        f.SetArguments(args);
+        f.SetTools(tools);
+        f.SetRunParallel(Standard_True);
+        f.Build();
+        if (f.HasErrors()) {
+            setError("Vereinigen fehlgeschlagen");
+            return nullptr;
+        }
+        return wrap(unify(f.Shape()), "Vereinigen ergab nichts");
+    });
+}
+
 OBShape *ob_unify(const OBShape *s) {
     return guarded("Vereinfachen", [&]() -> OBShape * { return wrap(unify(s->shape), "Vereinfachen ergab nichts"); });
 }

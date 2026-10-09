@@ -58,7 +58,7 @@ final class DrawingController {
                                              material: meta?.material ?? "", grain: meta?.grain ?? .none)
             }
         return DrawingGenerator.Input(parts: parts, settings: editor.doc.drawing ?? DrawingSettings(),
-                                      fallbackTitle: editor.fileURL?.deletingPathExtension().lastPathComponent ?? "Unbenannt")
+                                      fallbackTitle: editor.fileURL?.deletingPathExtension().lastPathComponent ?? String(localized: "Unbenannt"))
     }
 
     /// Live preview of a user dimension being placed on page `index`.
@@ -102,19 +102,19 @@ extension Editor {
         let pages = drawing.generateAllNow(self)
         let panel = NSSavePanel()
         panel.allowedContentTypes = [.pdf]
-        let base = drawingSettings.title.isEmpty ? (fileURL?.deletingPathExtension().lastPathComponent ?? "Zeichnung") : drawingSettings.title
+        let base = drawingSettings.title.isEmpty ? (fileURL?.deletingPathExtension().lastPathComponent ?? String(localized: "Zeichnung")) : drawingSettings.title
         panel.nameFieldStringValue = base + ".pdf"
         guard panel.runModal() == .OK, let url = panel.url else { return }
         do {
             try DrawingRenderer.writePDF(pages, to: url, title: base)
-            showToast(pages.count == 1 ? "PDF exportiert: \(url.lastPathComponent)" : "PDF mit \(pages.count) Blättern exportiert")
+            showToast(pages.count == 1 ? String(localized: "PDF exportiert: \(url.lastPathComponent)") : String(localized: "PDF mit \(pages.count) Blättern exportiert"))
         } catch {
             showToast(error.localizedDescription)
         }
     }
 
     private var drawingBaseName: String {
-        drawingSettings.title.isEmpty ? (fileURL?.deletingPathExtension().lastPathComponent ?? "Zeichnung") : drawingSettings.title
+        drawingSettings.title.isEmpty ? (fileURL?.deletingPathExtension().lastPathComponent ?? String(localized: "Zeichnung")) : drawingSettings.title
     }
 
     private func saveText(_ text: String, suggested: String, ext: String, done: String) {
@@ -136,13 +136,13 @@ extension Editor {
         guard !pages.isEmpty else { return }
         let i = min(index, pages.count - 1)
         let suffix = pages.count > 1 ? " – \(pages[i].name)" : ""
-        saveText(pages[i].dxf(), suggested: drawingBaseName + suffix, ext: "dxf", done: "DXF exportiert")
+        saveText(pages[i].dxf(), suggested: drawingBaseName + suffix, ext: "dxf", done: String(localized: "DXF exportiert"))
     }
 
     /// Part outlines 1:1 for CNC/laser.
     func exportPartsDXF() {
         let dxf = drawing.partsDXF(self)
-        saveText(dxf, suggested: drawingBaseName + " – Einzelteile 1zu1", ext: "dxf", done: "Einzelteile als DXF exportiert")
+        saveText(dxf, suggested: drawingBaseName + String(localized: " – Einzelteile 1zu1"), ext: "dxf", done: String(localized: "Einzelteile als DXF exportiert"))
     }
 
     func printDrawing() {
@@ -158,7 +158,7 @@ extension Editor {
         info.isHorizontallyCentered = true
         info.isVerticallyCentered = true
         let op = NSPrintOperation(view: DrawingPrintView(pages: pages), printInfo: info)
-        op.jobTitle = drawingSettings.title.isEmpty ? "Zeichnung" : drawingSettings.title
+        op.jobTitle = drawingSettings.title.isEmpty ? String(localized: "Zeichnung") : drawingSettings.title
         op.run()
     }
 }

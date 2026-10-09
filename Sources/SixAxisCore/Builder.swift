@@ -25,18 +25,39 @@ public final class BuiltBody: @unchecked Sendable {
 
     public func faceRef(_ index: Int) -> FaceRef? {
         guard index < faceInfos.count, let f = faceInfos[index] else { return nil }
-        return FaceRef(index: index, centroid: f.centroid, normal: f.normal)
+        var ref = FaceRef(index: index, centroid: f.centroid, normal: f.normal)
+        ref.count = faceInfos.count
+        return ref
     }
 
     public func edgeRef(_ index: Int) -> EdgeRef? {
         guard index < edgeInfos.count, let e = edgeInfos[index] else { return nil }
-        return EdgeRef(index: index, midpoint: e.midpoint)
+        var ref = EdgeRef(index: index, midpoint: e.midpoint)
+        ref.count = edgeInfos.count
+        ref.kind = e.kind.rawValue
+        ref.direction = Self.direction(e)
+        return ref
+    }
+
+    static func direction(_ e: EdgeInfo) -> Vec3? {
+        guard e.kind == .line, simd_distance(e.start, e.end) > 1e-9 else { return nil }
+        return simd_normalize(e.end - e.start)
+    }
+
+    static func sameDirection(_ a: Vec3?, _ b: Vec3?) -> Bool {
+        guard let a, let b else { return a == nil && b == nil }
+        return abs(simd_dot(a, b)) > 0.999
     }
 
     public func resolve(_ ref: FaceRef) -> Int? {
         let infos = faceInfos
         if ref.index >= 0, ref.index < infos.count, let f = infos[ref.index],
            simd_distance(f.centroid, ref.centroid) < 1e-6, simd_dot(f.normal, ref.normal) > 0.999 {
+            return ref.index
+        }
+        // Same topology (parameters changed sizes only): the index still names the same face.
+        if ref.count == infos.count, ref.index >= 0, ref.index < infos.count, let f = infos[ref.index],
+           simd_dot(f.normal, ref.normal) > 0.999 {
             return ref.index
         }
         var best: (Int, Double)?
@@ -52,6 +73,10 @@ public final class BuiltBody: @unchecked Sendable {
     public func resolve(_ ref: EdgeRef) -> Int? {
         let infos = edgeInfos
         if ref.index >= 0, ref.index < infos.count, let e = infos[ref.index], simd_distance(e.midpoint, ref.midpoint) < 1e-6 {
+            return ref.index
+        }
+        if ref.count == infos.count, ref.index >= 0, ref.index < infos.count, let e = infos[ref.index],
+           ref.kind == e.kind.rawValue, Self.sameDirection(ref.direction, Self.direction(e)) {
             return ref.index
         }
         var best: (Int, Double)?
@@ -110,6 +135,20 @@ public struct SketchBuild: @unchecked Sendable {
     public var solve: SolveResult
     public var regions: [SketchRegion]
 
+    /// The region a profile reference names: the anchored point first (follows parameter changes),
+    /// then the stored sample.
+    public func resolve(_ ref: ProfileRef) -> SketchRegion? {
+        if let a = ref.anchor?.position(in: sketch), let r = region(containing: a) { return r }
+        return region(containing: ref.sample)
+    }
+
+    /// Reference to a region, anchored to the sketch points around it.
+    public func profileRef(_ region: SketchRegion) -> ProfileRef {
+        // Prefer the visual center when it is inside (more robust than the largest-triangle sample).
+        let sample = self.region(containing: region.center) === region ? region.center : region.sample
+        return ProfileRef(sketch: featureId, sample: sample, anchor: ProfileAnchor.make(for: sample, in: sketch))
+    }
+
     public func region(containing p: Vec2) -> SketchRegion? {
         // Smallest region containing the point (nested profiles).
         regions.filter { $0.face.contains(plane.point(p)) }.min { $0.area < $1.area }
@@ -126,6 +165,16 @@ public struct ModelState: @unchecked Sendable {
     public init() {}
 
     public var orderedBodies: [BuiltBody] { bodyOrder.compactMap { bodies[$0] } }
+
+    /// Computes tessellation and topology info of every body up front (call off the main thread),
+    /// so the UI never triggers OpenCASCADE work or races on the lazy caches.
+    public func prepareForDisplay() {
+        for body in bodies.values {
+            _ = body.mesh
+            _ = body.faceInfos
+            _ = body.edgeInfos
+        }
+    }
 
     mutating func setBody(_ b: BuiltBody) {
         if bodies[b.id] == nil { bodyOrder.append(b.id) }
@@ -191,7 +240,7 @@ public final class ModelBuilder: @unchecked Sendable {
             case let .sketch(sk):
                 state.sketches[f.id] = try buildSketch(f.id, sk, state: state, evaluator: evaluator)
                 if let sb = state.sketches[f.id], !sb.solve.converged {
-                    state.errors[f.id] = "Skizze ist überbestimmt oder widersprüchlich"
+                    state.errors[f.id] = String(localized: "Skizze ist überbestimmt oder widersprüchlich")
                 }
             case let .extrude(e):
                 try applyExtrude(f, e, &state, &evaluator)
@@ -249,7 +298,7 @@ public final class ModelBuilder: @unchecked Sendable {
         var out: [(Shape, Vec3)] = []
         for p in profiles {
             guard let sb = state.sketches[p.sketch] else { throw KernelError("Skizze für Profil fehlt") }
-            guard let region = sb.region(containing: p.sample) else { throw KernelError("Profil nicht mehr gefunden") }
+            guard let region = sb.resolve(p) else { throw KernelError("Profil nicht mehr gefunden") }
             out.append((region.face, sb.plane.normal))
         }
         for fr in faces {
@@ -309,8 +358,7 @@ public final class ModelBuilder: @unchecked Sendable {
 
     func combine(_ tools: [Shape], op: BodyOperation, targets: [UUID], feature: UUID, _ state: inout ModelState) throws {
         guard !tools.isEmpty else { throw KernelError("Keine Geometrie erzeugt") }
-        var tool = tools[0]
-        for t in tools.dropFirst() { tool = try tool.boolean(.fuse, t) }
+        let tool = tools.count == 1 ? tools[0] : try Shape.fuseAll(tools)
 
         func overlapping() -> [UUID] {
             guard let tb = tool.boundingBox else { return [] }

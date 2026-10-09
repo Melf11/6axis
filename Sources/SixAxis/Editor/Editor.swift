@@ -45,13 +45,13 @@ enum SketchTool: Equatable {
 
     var name: String {
         switch self {
-        case .select: return "Auswählen"
-        case .line: return "Linie"
-        case .rectangle: return "Rechteck"
-        case .centerRectangle: return "Mittelpunkt-Rechteck"
-        case .circle: return "Kreis"
-        case .arc: return "Bogen"
-        case .dimension: return "Bemaßung"
+        case .select: return String(localized: "Auswählen")
+        case .line: return String(localized: "Linie")
+        case .rectangle: return String(localized: "Rechteck")
+        case .centerRectangle: return String(localized: "Mittelpunkt-Rechteck")
+        case .circle: return String(localized: "Kreis")
+        case .arc: return String(localized: "Bogen")
+        case .dimension: return String(localized: "Bemaßung")
         case let .constraint(c): return c.name
         }
     }
@@ -64,18 +64,18 @@ enum ConstraintTool: String, CaseIterable, Identifiable {
 
     var name: String {
         switch self {
-        case .horizontal: return "Horizontal"
-        case .vertical: return "Vertikal"
-        case .coincident: return "Deckungsgleich"
-        case .tangent: return "Tangential"
-        case .equal: return "Gleich"
-        case .parallel: return "Parallel"
-        case .perpendicular: return "Senkrecht"
-        case .concentric: return "Konzentrisch"
-        case .midpoint: return "Mittelpunkt"
-        case .collinear: return "Kollinear"
-        case .symmetric: return "Symmetrisch"
-        case .fix: return "Fixieren"
+        case .horizontal: return String(localized: "Horizontal")
+        case .vertical: return String(localized: "Vertikal")
+        case .coincident: return String(localized: "Deckungsgleich")
+        case .tangent: return String(localized: "Tangential")
+        case .equal: return String(localized: "Gleich")
+        case .parallel: return String(localized: "Parallel")
+        case .perpendicular: return String(localized: "Senkrecht")
+        case .concentric: return String(localized: "Konzentrisch")
+        case .midpoint: return String(localized: "Mittelpunkt")
+        case .collinear: return String(localized: "Kollinear")
+        case .symmetric: return String(localized: "Symmetrisch")
+        case .fix: return String(localized: "Fixieren")
         }
     }
 
@@ -102,12 +102,12 @@ enum CommandKind: String {
 
     var title: String {
         switch self {
-        case .extrude: return "Extrusion"
-        case .revolve: return "Drehung"
-        case .fillet: return "Abrundung"
-        case .chamfer: return "Fase"
-        case .shell: return "Wandstärke"
-        case .sketchPlane: return "Skizze erstellen"
+        case .extrude: return String(localized: "Extrusion")
+        case .revolve: return String(localized: "Drehung")
+        case .fillet: return String(localized: "Abrundung")
+        case .chamfer: return String(localized: "Fase")
+        case .shell: return String(localized: "Wandstärke")
+        case .sketchPlane: return String(localized: "Skizze erstellen")
         }
     }
 }
@@ -141,6 +141,12 @@ final class Editor {
     var isDirty = false
     private(set) var state = ModelState()
     @ObservationIgnored let builder = ModelBuilder()
+    /// True while a slow rebuild runs in the background (the UI shows "Berechne …").
+    private(set) var isRebuilding = false
+    @ObservationIgnored private let rebuildQueue = DispatchQueue(label: "app.6axis.rebuild", qos: .userInitiated)
+    @ObservationIgnored private var rebuildGeneration = 0
+    @ObservationIgnored private var appliedGeneration = 0
+    @ObservationIgnored private let latestRequested = LatestGeneration()
     @ObservationIgnored private var undoStack: [CADDocument] = []
     @ObservationIgnored private var redoStack: [CADDocument] = []
     var canUndo = false
@@ -226,8 +232,42 @@ final class Editor {
 
     var evaluator: Evaluator { Evaluator(parameters: doc.parameters) }
 
+    /// Rebuilds the model on a background queue. Results that arrive within a short budget are applied
+    /// immediately (small models behave synchronously, e.g. live previews while dragging); slower
+    /// rebuilds keep the UI responsive and are applied when done. Superseded rebuilds are skipped.
     func rebuild() {
-        state = builder.build(doc)
+        rebuildGeneration &+= 1
+        let generation = rebuildGeneration
+        let snapshot = doc
+        let builder = self.builder
+        let latest = latestRequested
+        latest.set(generation)
+        let result = RebuildResult()
+        rebuildQueue.async {
+            if latest.get() == generation {
+                let state = builder.build(snapshot)
+                state.prepareForDisplay()
+                result.state = state
+            }
+            result.done.signal()
+            DispatchQueue.main.async { [weak self] in
+                guard let self, let state = result.state else { return }
+                self.apply(state, generation: generation)
+            }
+        }
+        if result.done.wait(timeout: .now() + .milliseconds(80)) == .success, let state = result.state {
+            apply(state, generation: generation)
+        } else {
+            isRebuilding = true
+        }
+    }
+
+    private func apply(_ newState: ModelState, generation: Int) {
+        // Only the newest request counts; each generation is applied once.
+        guard generation == rebuildGeneration, generation != appliedGeneration else { return }
+        appliedGeneration = generation
+        isRebuilding = false
+        state = newState
         assignBodyNames()
         sceneVersion &+= 1
         modelRevision &+= 1
@@ -239,7 +279,7 @@ final class Editor {
         var n = doc.bodies.count
         for id in state.bodyOrder where doc.bodies[id] == nil {
             n += 1
-            doc.bodies[id] = BodyMeta(name: "Körper\(n)")
+            doc.bodies[id] = BodyMeta(name: String(localized: "Körper\(n)"))
         }
     }
 
@@ -306,7 +346,7 @@ final class Editor {
         fileURL = nil
         resetSession()
         homeView()
-        showToast("Beispiel „\(example.title)“ geöffnet – Parameter unter Ändern → Parameter")
+        showToast(String(localized: "Beispiel „\(example.title)“ geöffnet – Parameter unter Ändern → Parameter"))
     }
 
     private func resetSession() {
@@ -326,11 +366,11 @@ final class Editor {
     func confirmDiscard() -> Bool {
         guard isDirty else { return true }
         let alert = NSAlert()
-        alert.messageText = "Änderungen sichern?"
-        alert.informativeText = "Das aktuelle Design hat ungesicherte Änderungen."
-        alert.addButton(withTitle: "Sichern")
-        alert.addButton(withTitle: "Abbrechen")
-        alert.addButton(withTitle: "Nicht sichern")
+        alert.messageText = String(localized: "Änderungen sichern?")
+        alert.informativeText = String(localized: "Das aktuelle Design hat ungesicherte Änderungen.")
+        alert.addButton(withTitle: String(localized: "Sichern"))
+        alert.addButton(withTitle: String(localized: "Abbrechen"))
+        alert.addButton(withTitle: String(localized: "Nicht sichern"))
         switch alert.runModal() {
         case .alertFirstButtonReturn: return save()
         case .alertThirdButtonReturn:
@@ -359,7 +399,7 @@ final class Editor {
             resetSession()
             NSDocumentController.shared.noteNewRecentDocumentURL(url)
         } catch {
-            showToast("Datei konnte nicht geöffnet werden: \(error.localizedDescription)")
+            showToast(String(localized: "Datei konnte nicht geöffnet werden: \(error.localizedDescription)"))
         }
     }
 
@@ -375,7 +415,7 @@ final class Editor {
             autosaveNow()
             return true
         } catch {
-            showToast("Sichern fehlgeschlagen: \(error.localizedDescription)")
+            showToast(String(localized: "Sichern fehlgeschlagen: \(error.localizedDescription)"))
             return false
         }
     }
@@ -391,7 +431,7 @@ final class Editor {
     }
 
     var documentTitle: String {
-        (fileURL?.deletingPathExtension().lastPathComponent ?? "Unbenannt") + (isDirty ? " — bearbeitet" : "")
+        (fileURL?.deletingPathExtension().lastPathComponent ?? String(localized: "Unbenannt")) + (isDirty ? String(localized: " — bearbeitet") : "")
     }
 
     // MARK: - Toasts
@@ -477,7 +517,7 @@ final class Editor {
     // MARK: - Body & sketch visibility
 
     func toggleBodyVisibility(_ id: UUID) {
-        commit { $0.bodies[id, default: BodyMeta(name: "Körper")].visible.toggle() }
+        commit { $0.bodies[id, default: BodyMeta(name: String(localized: "Körper"))].visible.toggle() }
     }
 
     func renameBody(_ id: UUID, to name: String) {
@@ -531,7 +571,7 @@ final class Editor {
         case .fillet: beginCommand(.fillet, editing: id)
         case .chamfer: beginCommand(.chamfer, editing: id)
         case .shell: beginCommand(.shell, editing: id)
-        case .importStep: showToast("Importierte Körper haben keine Parameter")
+        case .importStep: showToast(String(localized: "Importierte Körper haben keine Parameter"))
         }
     }
 
@@ -546,7 +586,7 @@ final class Editor {
             selectedBodies.isEmpty ? doc.isBodyVisible($0.id) : selectedBodies.contains($0.id)
         }
         guard !bodies.isEmpty else { return nil }
-        let title = bodies.count == 1 ? doc.bodyName(bodies[0].id) : "\(bodies.count) Körper"
+        let title = bodies.count == 1 ? doc.bodyName(bodies[0].id) : String(localized: "\(bodies.count) Körper")
         let materials = bodies.map { doc.bodies[$0.id]?.material ?? "" }
         let densities = materials.map { MaterialDensity.lookup($0) }
         var mass: Double?
@@ -563,4 +603,18 @@ import UniformTypeIdentifiers
 
 extension UTType {
     static let sixAxisDocument = UTType(filenameExtension: "6axis", conformingTo: .json) ?? .json
+}
+
+/// Hand-over box between the rebuild queue and the main thread (the semaphore orders the accesses).
+private final class RebuildResult: @unchecked Sendable {
+    var state: ModelState?
+    let done = DispatchSemaphore(value: 0)
+}
+
+/// Newest requested rebuild, read by the queue to skip superseded work.
+private final class LatestGeneration: @unchecked Sendable {
+    private var value = 0
+    private let lock = NSLock()
+    func set(_ v: Int) { lock.lock(); value = v; lock.unlock() }
+    func get() -> Int { lock.lock(); defer { lock.unlock() }; return value }
 }

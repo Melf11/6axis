@@ -89,6 +89,8 @@ OBShape *ob_translate(const OBShape *s, const double v[3]);
 OBShape *ob_transform(const OBShape *s, const double m[12]);
 OBShape *ob_revolve(const OBShape *profile, const double axisOrigin[3], const double axisDir[3], double angleRad);
 OBShape *ob_boolean(const OBShape *a, const OBShape *b, int32_t op);
+/// Fuses all shapes in one general-fuse operation (much faster than pairwise fusing many tools).
+OBShape *ob_fuse_all(const OBShape *const *shapes, int32_t count);
 OBShape *ob_unify(const OBShape *s);
 OBShape *ob_fillet(const OBShape *s, const int32_t *edges, int32_t count, double radius);
 OBShape *ob_chamfer(const OBShape *s, const int32_t *edges, int32_t count, double distance);

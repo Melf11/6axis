@@ -48,6 +48,7 @@ let package = Package(
             name: "SixAxisCoreTests",
             dependencies: ["SixAxisCore"],
             path: "Tests/SixAxisCoreTests",
+            exclude: ["Fixtures"],
             swiftSettings: [.swiftLanguageMode(.v5)]
         ),
     ],

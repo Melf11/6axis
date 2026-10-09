@@ -18,36 +18,36 @@ extension Editor {
         let inSketch = sketchId != nil
         let hasBodies = !state.bodyOrder.isEmpty
         var c: [EditorCommand] = [
-            EditorCommand(id: "sketch", title: "Skizze erstellen", symbol: "pencil.and.outline", keywords: "sketch zeichnen", available: !inSketch) { self.beginCommand(.sketchPlane) },
-            EditorCommand(id: "extrude", title: "Extrusion", symbol: "square.stack.3d.up.fill", shortcut: "E", keywords: "extrude ziehen press pull", available: true) { self.beginCommand(.extrude) },
-            EditorCommand(id: "revolve", title: "Drehung", symbol: "arrow.trianglehead.2.clockwise.rotate.90", keywords: "revolve rotation", available: true) { self.beginCommand(.revolve) },
-            EditorCommand(id: "fillet", title: "Abrundung", symbol: "button.roundedtop.horizontal", shortcut: "F", keywords: "fillet radius runden", available: hasBodies) { self.beginCommand(.fillet) },
-            EditorCommand(id: "chamfer", title: "Fase", symbol: "triangle.bottomhalf.filled", keywords: "chamfer", available: hasBodies) { self.beginCommand(.chamfer) },
-            EditorCommand(id: "shell", title: "Wandstärke", symbol: "shippingbox", keywords: "shell aushöhlen hohl", available: hasBodies) { self.beginCommand(.shell) },
-            EditorCommand(id: "line", title: "Linie", symbol: "line.diagonal", shortcut: "L", keywords: "line", available: true) { self.setSketchTool(.line) },
-            EditorCommand(id: "rect", title: "Rechteck", symbol: "rectangle", shortcut: "R", keywords: "rectangle", available: true) { self.setSketchTool(.rectangle) },
-            EditorCommand(id: "crect", title: "Mittelpunkt-Rechteck", symbol: "rectangle.center.inset.filled", keywords: "center rectangle", available: true) { self.setSketchTool(.centerRectangle) },
-            EditorCommand(id: "circle", title: "Kreis", symbol: "circle", shortcut: "C", keywords: "circle", available: true) { self.setSketchTool(.circle) },
-            EditorCommand(id: "arc", title: "Bogen (3 Punkte)", symbol: "point.topleft.down.to.point.bottomright.curvepath", shortcut: "A", keywords: "arc", available: true) { self.setSketchTool(.arc) },
-            EditorCommand(id: "dim", title: "Bemaßung", symbol: "ruler", shortcut: "D", keywords: "dimension maß", available: inSketch) { self.setSketchTool(.dimension) },
-            EditorCommand(id: "finish", title: "Skizze fertigstellen", symbol: "checkmark.circle", keywords: "finish", available: inSketch) { self.finishSketch() },
-            EditorCommand(id: "settings", title: "Einstellungen", symbol: "gearshape", shortcut: "⌘,", keywords: "settings preferences maus scroll invertieren", available: true) {
+            EditorCommand(id: "sketch", title: String(localized: "Skizze erstellen"), symbol: "pencil.and.outline", keywords: "sketch zeichnen", available: !inSketch) { self.beginCommand(.sketchPlane) },
+            EditorCommand(id: "extrude", title: String(localized: "Extrusion"), symbol: "square.stack.3d.up.fill", shortcut: "E", keywords: "extrude ziehen press pull", available: true) { self.beginCommand(.extrude) },
+            EditorCommand(id: "revolve", title: String(localized: "Drehung"), symbol: "arrow.trianglehead.2.clockwise.rotate.90", keywords: "revolve rotation", available: true) { self.beginCommand(.revolve) },
+            EditorCommand(id: "fillet", title: String(localized: "Abrundung"), symbol: "button.roundedtop.horizontal", shortcut: "F", keywords: "fillet radius runden", available: hasBodies) { self.beginCommand(.fillet) },
+            EditorCommand(id: "chamfer", title: String(localized: "Fase"), symbol: "triangle.bottomhalf.filled", keywords: "chamfer", available: hasBodies) { self.beginCommand(.chamfer) },
+            EditorCommand(id: "shell", title: String(localized: "Wandstärke"), symbol: "shippingbox", keywords: "shell aushöhlen hohl", available: hasBodies) { self.beginCommand(.shell) },
+            EditorCommand(id: "line", title: String(localized: "Linie"), symbol: "line.diagonal", shortcut: "L", keywords: "line", available: true) { self.setSketchTool(.line) },
+            EditorCommand(id: "rect", title: String(localized: "Rechteck"), symbol: "rectangle", shortcut: "R", keywords: "rectangle", available: true) { self.setSketchTool(.rectangle) },
+            EditorCommand(id: "crect", title: String(localized: "Mittelpunkt-Rechteck"), symbol: "rectangle.center.inset.filled", keywords: "center rectangle", available: true) { self.setSketchTool(.centerRectangle) },
+            EditorCommand(id: "circle", title: String(localized: "Kreis"), symbol: "circle", shortcut: "C", keywords: "circle", available: true) { self.setSketchTool(.circle) },
+            EditorCommand(id: "arc", title: String(localized: "Bogen (3 Punkte)"), symbol: "point.topleft.down.to.point.bottomright.curvepath", shortcut: "A", keywords: "arc", available: true) { self.setSketchTool(.arc) },
+            EditorCommand(id: "dim", title: String(localized: "Bemaßung"), symbol: "ruler", shortcut: "D", keywords: "dimension maß", available: inSketch) { self.setSketchTool(.dimension) },
+            EditorCommand(id: "finish", title: String(localized: "Skizze fertigstellen"), symbol: "checkmark.circle", keywords: "finish", available: inSketch) { self.finishSketch() },
+            EditorCommand(id: "settings", title: String(localized: "Einstellungen"), symbol: "gearshape", shortcut: "⌘,", keywords: "settings preferences maus scroll invertieren", available: true) {
                 NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
             },
-            EditorCommand(id: "params", title: "Parameter ändern", symbol: "function", keywords: "parameters variablen", available: true) { self.showParameters = true },
-            EditorCommand(id: "drawing", title: "Technische Zeichnung", symbol: "doc.richtext", shortcut: "⇧⌘D", keywords: "zeichnung drawing 3-tafel ansicht bemaßung pdf", available: hasBodies) { self.openDrawingWindow() },
-            EditorCommand(id: "stl", title: "Als STL exportieren", symbol: "square.and.arrow.up", keywords: "export 3d druck print", available: hasBodies) { self.exportSTL() },
-            EditorCommand(id: "step", title: "Als STEP exportieren", symbol: "square.and.arrow.up.on.square", keywords: "export cad", available: hasBodies) { self.exportSTEP() },
-            EditorCommand(id: "slicer", title: "Im Slicer öffnen", symbol: "printer.fill", keywords: "print druck prusa bambu orca cura", available: hasBodies) { self.openInSlicer() },
+            EditorCommand(id: "params", title: String(localized: "Parameter ändern"), symbol: "function", keywords: "parameters variablen", available: true) { self.showParameters = true },
+            EditorCommand(id: "drawing", title: String(localized: "Technische Zeichnung"), symbol: "doc.richtext", shortcut: "⇧⌘D", keywords: "zeichnung drawing 3-tafel ansicht bemaßung pdf", available: hasBodies) { self.openDrawingWindow() },
+            EditorCommand(id: "stl", title: String(localized: "Als STL exportieren"), symbol: "square.and.arrow.up", keywords: "export 3d druck print", available: hasBodies) { self.exportSTL() },
+            EditorCommand(id: "step", title: String(localized: "Als STEP exportieren"), symbol: "square.and.arrow.up.on.square", keywords: "export cad", available: hasBodies) { self.exportSTEP() },
+            EditorCommand(id: "slicer", title: String(localized: "Im Slicer öffnen"), symbol: "printer.fill", keywords: "print druck prusa bambu orca cura", available: hasBodies) { self.openInSlicer() },
             EditorCommand(id: "import", title: "STEP importieren", symbol: "square.and.arrow.down", keywords: "import", available: true) { self.importSTEP() },
-            EditorCommand(id: "fit", title: "Alles einpassen", symbol: "arrow.up.left.and.arrow.down.right", keywords: "zoom fit", available: true) { self.fitAll() },
-            EditorCommand(id: "home", title: "Ausgangsansicht", symbol: "house", keywords: "home view", available: true) { self.homeView() },
-            EditorCommand(id: "ortho", title: "Orthografisch / Perspektive", symbol: "perspective", shortcut: "O", keywords: "projection", available: true) { self.toggleProjection() },
-            EditorCommand(id: "undo", title: "Widerrufen", symbol: "arrow.uturn.backward", shortcut: "⌘Z", keywords: "undo", available: canUndo) { self.undo() },
-            EditorCommand(id: "redo", title: "Wiederholen", symbol: "arrow.uturn.forward", shortcut: "⇧⌘Z", keywords: "redo", available: canRedo) { self.redo() },
+            EditorCommand(id: "fit", title: String(localized: "Alles einpassen"), symbol: "arrow.up.left.and.arrow.down.right", keywords: "zoom fit", available: true) { self.fitAll() },
+            EditorCommand(id: "home", title: String(localized: "Ausgangsansicht"), symbol: "house", keywords: "home view", available: true) { self.homeView() },
+            EditorCommand(id: "ortho", title: String(localized: "Orthografisch / Perspektive"), symbol: "perspective", shortcut: "O", keywords: "projection", available: true) { self.toggleProjection() },
+            EditorCommand(id: "undo", title: String(localized: "Widerrufen"), symbol: "arrow.uturn.backward", shortcut: "⌘Z", keywords: "undo", available: canUndo) { self.undo() },
+            EditorCommand(id: "redo", title: String(localized: "Wiederholen"), symbol: "arrow.uturn.forward", shortcut: "⇧⌘Z", keywords: "redo", available: canRedo) { self.redo() },
         ]
         for ct in ConstraintTool.allCases {
-            c.append(EditorCommand(id: "c-\(ct.rawValue)", title: "Abhängigkeit: \(ct.name)", symbol: ct.symbol, keywords: "constraint", available: inSketch) {
+            c.append(EditorCommand(id: "c-\(ct.rawValue)", title: String(localized: "Abhängigkeit: \(ct.name)"), symbol: ct.symbol, keywords: "constraint", available: inSketch) {
                 self.setSketchTool(.constraint(ct))
             })
         }
@@ -188,7 +188,7 @@ struct MarkingMenu: View {
     }
 
     private func itemView(_ cmd: EditorCommand, isActive: Bool) -> some View {
-        let fill: AnyShapeStyle = isActive ? AnyShapeStyle(Color.accentColor) : AnyShapeStyle(.regularMaterial)
+        let fill: AnyShapeStyle = isActive ? AnyShapeStyle(Color.accentColor) : PanelStyle.fill
         return HStack(spacing: 6) {
             Image(systemName: cmd.symbol)
                 .foregroundStyle(isActive ? Color.white : Color.accentColor)

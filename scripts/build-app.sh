@@ -27,6 +27,8 @@ cat > "$APP/Contents/Info.plist" <<PLIST
 <plist version="1.0">
 <dict>
     <key>CFBundleName</key><string>6axis</string>
+    <key>CFBundleDevelopmentRegion</key><string>de</string>
+    <key>CFBundleLocalizations</key><array><string>de</string><string>en</string></array>
     <key>CFBundleDisplayName</key><string>6axis</string>
     <key>CFBundleIdentifier</key><string>app.6axis</string>
     <key>CFBundleExecutable</key><string>SixAxis</string>
@@ -61,6 +63,9 @@ cat > "$APP/Contents/Info.plist" <<PLIST
 </dict>
 </plist>
 PLIST
+
+# Translations: the string catalog compiles to de.lproj / en.lproj in the app bundle.
+xcrun xcstringstool compile "$ROOT/Resources/Localizable.xcstrings" --output-directory "$APP/Contents/Resources" >/dev/null
 
 mkdir -p "$APP/Contents/Resources/Licenses"
 cp "$ROOT/LICENSE" "$APP/Contents/Resources/Licenses/6axis-LICENSE.txt"

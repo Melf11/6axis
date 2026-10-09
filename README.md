@@ -6,7 +6,14 @@
 
 6axis ist ein parametrisches 3D-CAD-Programm für macOS, mit einem klaren, modernen Arbeitsablauf: Skizze mit Abhängigkeiten → Extrusion/Drehung → Abrundung, Fase, Wandstärke – alles in einer Zeitleiste, die sich jederzeit nachträglich ändern lässt. Gebaut mit Swift, SwiftUI und Metal auf dem Open-Source-Geometriekernel OpenCASCADE.
 
-*English:* 6axis is a free, open-source, fully offline parametric CAD app for macOS, with a sketch → feature → timeline workflow, focused on mechanical design, woodworking and 3D printing. The UI is currently German; contributions (including localization) are welcome.
+*English:* 6axis is a free, open-source, fully offline parametric CAD app for macOS, with a sketch → feature → timeline workflow, focused on mechanical design, woodworking and 3D printing. The app is available in German and English (it follows the system language); contributions, including further translations, are welcome.
+
+<p align="center">
+  <img src="website/assets/model.png" width="49%" alt="Modell mit Werkzeugleiste, Browser und Zeitleiste">
+  <img src="website/assets/drawing.png" width="49%" alt="Technische Zeichnung eines Korpus mit Stückliste">
+</p>
+
+**Produktseite:** https://melf11.github.io/6axis/ · **Download:** [neuestes Release](https://github.com/Melf11/6axis/releases/latest)
 
 ## Installation
 
@@ -14,7 +21,7 @@ Die fertige App gibt es unter [Releases](https://github.com/Melf11/6axis/release
 
 ## Beispiele
 
-Im Ordner [`Examples/`](Examples) und in der App unter **Ablage → Beispiele**: Korpus mit Fachboden und Dübellöchern (inkl. Zeichnung), Schneidebrett mit Abrundungen und Fase, Aufbewahrungsbox für den 3D-Druck. Die Maße hängen an Parametern (*Ändern → Parameter*), z. B. `tiefe`, `dicke` oder `wand`.
+Im Ordner [`Examples/`](Examples) und in der App unter **Ablage → Beispiele**: Korpus mit Fachboden und Dübellöchern (inkl. Zeichnung), Schneidebrett mit Abrundungen und Fase, Aufbewahrungsbox für den 3D-Druck. Die Maße hängen an Parametern (*Ändern → Parameter*), z. B. `breite`, `hoehe`, `tiefe`, `staerke` beim Korpus.
 
 ## Funktionen
 

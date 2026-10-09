@@ -9,6 +9,7 @@ public enum ValueKind: Sendable {
 
 public struct ExpressionError: Error, LocalizedError, Sendable {
     public let message: String
+    public init(message: LocalizedStringResource) { self.message = String(localized: message) }
     public var errorDescription: String? { message }
 }
 

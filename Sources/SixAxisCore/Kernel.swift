@@ -4,13 +4,22 @@ import simd
 
 public struct KernelError: Error, LocalizedError, CustomStringConvertible {
     public let message: String
-    public init(_ message: String) { self.message = message }
+    /// Literal messages are extracted into the string catalog and shown in the user's language.
+    public init(_ message: LocalizedStringResource) { self.message = String(localized: message) }
+    public init(verbatim message: String) { self.message = message }
     public var errorDescription: String? { message }
     public var description: String { message }
 
-    static func last(_ fallback: String) -> KernelError {
+    static func last(_ fallback: LocalizedStringResource) -> KernelError {
         let msg = String(cString: ob_last_error())
-        return KernelError(msg.isEmpty ? fallback : msg)
+        // Messages from the C++ bridge are German keys, translated via the catalog (added manually there).
+        guard !msg.isEmpty else { return KernelError(fallback) }
+        // "Vorgang: Detail" from guarded(): translate both parts.
+        let tr = { (s: String) in Bundle.main.localizedString(forKey: s, value: s, table: nil) }
+        if let r = msg.range(of: ": ") {
+            return KernelError(verbatim: tr(String(msg[..<r.lowerBound])) + ": " + tr(String(msg[r.upperBound...])))
+        }
+        return KernelError(verbatim: tr(msg))
     }
 }
 
@@ -20,7 +29,7 @@ public final class Shape: @unchecked Sendable {
 
     init(_ handle: OpaquePointer) { self.handle = handle }
 
-    static func wrap(_ ptr: OpaquePointer?, _ fallback: String) throws -> Shape {
+    static func wrap(_ ptr: OpaquePointer?, _ fallback: LocalizedStringResource) throws -> Shape {
         guard let ptr else { throw KernelError.last(fallback) }
         return Shape(ptr)
     }
@@ -105,6 +114,14 @@ public final class Shape: @unchecked Sendable {
     }
 
     public enum BooleanOp: Int32 { case fuse = 0, cut = 1, common = 2 }
+
+    /// Union of many shapes in one operation.
+    public static func fuseAll(_ shapes: [Shape]) throws -> Shape {
+        let handles: [OpaquePointer?] = shapes.map { $0.handle }
+        return try handles.withUnsafeBufferPointer { buf in
+            try Shape.wrap(ob_fuse_all(buf.baseAddress, Int32(buf.count)), "Vereinigen fehlgeschlagen")
+        }
+    }
 
     public func boolean(_ op: BooleanOp, _ other: Shape) throws -> Shape {
         try Shape.wrap(ob_boolean(handle, other.handle, op.rawValue), "Boolesche Operation fehlgeschlagen")
