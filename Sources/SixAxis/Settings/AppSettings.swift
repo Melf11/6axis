@@ -5,7 +5,13 @@ import Observation
 /// User preferences, persisted in UserDefaults. Read anywhere via `AppSettings.shared`.
 @Observable
 final class AppSettings {
-    static let shared = AppSettings()
+    /// Automated runs (SIXAXIS_* variables) use fresh, isolated defaults: reproducible results that
+    /// don't depend on – and never change – the user's preferences.
+    static let shared: AppSettings = {
+        guard Editor.isAutomatedRun, let suite = UserDefaults(suiteName: "app.6axis.automated") else { return AppSettings() }
+        suite.removePersistentDomain(forName: "app.6axis.automated")
+        return AppSettings(defaults: suite)
+    }()
 
     enum SwipeAction: String, CaseIterable, Identifiable {
         case orbit, pan
