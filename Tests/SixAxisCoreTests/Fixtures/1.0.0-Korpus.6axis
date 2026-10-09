@@ -1,0 +1,1859 @@
+{
+  "bodies" : [
+    "C1CE6307-F5E6-46F2-8586-968BEB1480F5",
+    {
+      "grain" : "length",
+      "material" : "Eiche massiv",
+      "name" : "Seite links",
+      "visible" : true
+    },
+    "C48BBD04-4B5E-4745-8F4F-BFAC3928B154",
+    {
+      "grain" : "length",
+      "material" : "Eiche massiv",
+      "name" : "Seite rechts",
+      "visible" : true
+    },
+    "E3F3FB95-3F71-4E88-BC76-9703E95628B9",
+    {
+      "grain" : "length",
+      "material" : "Eiche massiv",
+      "name" : "Boden",
+      "visible" : true
+    },
+    "F15A64DF-87F5-4A97-9E93-7AA55889051E",
+    {
+      "grain" : "length",
+      "material" : "Eiche massiv",
+      "name" : "Deckel",
+      "visible" : true
+    },
+    "91573D55-96BB-4D09-9EBC-3DAB5783E275",
+    {
+      "grain" : "length",
+      "material" : "Eiche massiv",
+      "name" : "Fachboden",
+      "visible" : true
+    },
+    "DFA72BDD-AE1F-4927-BE2E-2705BCA089B8",
+    {
+      "grain" : "none",
+      "material" : "Birke Multiplex",
+      "name" : "Rückwand",
+      "visible" : true
+    }
+  ],
+  "drawing" : {
+    "author" : "",
+    "customDimensions" : [
+
+    ],
+    "details" : [
+
+    ],
+    "dimensionOffsets" : {
+
+    },
+    "drawingNumber" : "",
+    "hiddenDimensions" : [
+
+    ],
+    "material" : "Eiche 19 mm",
+    "sectionLeft" : false,
+    "sheet" : "auto",
+    "showBalloons" : true,
+    "showDimensions" : true,
+    "showHidden" : true,
+    "showIso" : true,
+    "showPartSheets" : true,
+    "showPartsList" : true,
+    "title" : "Korpus",
+    "viewOffsets" : {
+
+    }
+  },
+  "features" : [
+    {
+      "id" : "21153F24-A9D6-4ED0-B2C1-1DEE95661EB1",
+      "kind" : {
+        "sketch" : {
+          "_0" : {
+            "constraints" : [
+              {
+                "id" : 9,
+                "kind" : {
+                  "horizontal" : {
+                    "line" : 5
+                  }
+                },
+                "labelOffset" : [
+                  0,
+                  0
+                ]
+              },
+              {
+                "id" : 10,
+                "kind" : {
+                  "vertical" : {
+                    "line" : 6
+                  }
+                },
+                "labelOffset" : [
+                  0,
+                  0
+                ]
+              },
+              {
+                "id" : 11,
+                "kind" : {
+                  "horizontal" : {
+                    "line" : 7
+                  }
+                },
+                "labelOffset" : [
+                  0,
+                  0
+                ]
+              },
+              {
+                "id" : 12,
+                "kind" : {
+                  "vertical" : {
+                    "line" : 8
+                  }
+                },
+                "labelOffset" : [
+                  0,
+                  0
+                ]
+              },
+              {
+                "id" : 13,
+                "kind" : {
+                  "length" : {
+                    "line" : 5,
+                    "value" : "staerke"
+                  }
+                },
+                "labelOffset" : [
+                  0,
+                  -12
+                ]
+              },
+              {
+                "id" : 14,
+                "kind" : {
+                  "length" : {
+                    "line" : 6,
+                    "value" : "hoehe"
+                  }
+                },
+                "labelOffset" : [
+                  12,
+                  0
+                ]
+              },
+              {
+                "id" : 15,
+                "kind" : {
+                  "horizontalDistance" : {
+                    "_0" : 0,
+                    "_1" : 1,
+                    "value" : "0 mm"
+                  }
+                },
+                "labelOffset" : [
+                  0,
+                  0
+                ]
+              },
+              {
+                "id" : 16,
+                "kind" : {
+                  "verticalDistance" : {
+                    "_0" : 0,
+                    "_1" : 1,
+                    "value" : "0 mm"
+                  }
+                },
+                "labelOffset" : [
+                  0,
+                  0
+                ]
+              }
+            ],
+            "curves" : [
+              {
+                "construction" : false,
+                "geometry" : {
+                  "line" : {
+                    "end" : 2,
+                    "start" : 1
+                  }
+                },
+                "id" : 5
+              },
+              {
+                "construction" : false,
+                "geometry" : {
+                  "line" : {
+                    "end" : 3,
+                    "start" : 2
+                  }
+                },
+                "id" : 6
+              },
+              {
+                "construction" : false,
+                "geometry" : {
+                  "line" : {
+                    "end" : 4,
+                    "start" : 3
+                  }
+                },
+                "id" : 7
+              },
+              {
+                "construction" : false,
+                "geometry" : {
+                  "line" : {
+                    "end" : 1,
+                    "start" : 4
+                  }
+                },
+                "id" : 8
+              }
+            ],
+            "nextId" : 17,
+            "plane" : {
+              "xz" : {
+
+              }
+            },
+            "points" : [
+              {
+                "fixed" : true,
+                "id" : 0,
+                "position" : [
+                  0,
+                  0
+                ]
+              },
+              {
+                "fixed" : false,
+                "id" : 1,
+                "position" : [
+                  0,
+                  0
+                ]
+              },
+              {
+                "fixed" : false,
+                "id" : 2,
+                "position" : [
+                  19,
+                  0
+                ]
+              },
+              {
+                "fixed" : false,
+                "id" : 3,
+                "position" : [
+                  19,
+                  600
+                ]
+              },
+              {
+                "fixed" : false,
+                "id" : 4,
+                "position" : [
+                  0,
+                  600
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "name" : "Skizze Seite links",
+      "suppressed" : false
+    },
+    {
+      "id" : "C1CE6307-F5E6-46F2-8586-968BEB1480F5",
+      "kind" : {
+        "extrude" : {
+          "_0" : {
+            "distance" : "tiefe",
+            "distance2" : "10 mm",
+            "extent" : "oneSide",
+            "faces" : [
+
+            ],
+            "operation" : "newBody",
+            "profiles" : [
+              {
+                "anchor" : {
+                  "offset" : [
+                    0,
+                    0
+                  ],
+                  "points" : [
+                    1,
+                    2,
+                    3,
+                    4
+                  ],
+                  "weights" : [
+                    0.25,
+                    0.25,
+                    0.25,
+                    0.25
+                  ]
+                },
+                "sample" : [
+                  9.5,
+                  300
+                ],
+                "sketch" : "21153F24-A9D6-4ED0-B2C1-1DEE95661EB1"
+              }
+            ],
+            "targets" : [
+
+            ]
+          }
+        }
+      },
+      "name" : "Seite links",
+      "suppressed" : false
+    },
+    {
+      "id" : "DBD77AE5-9C17-4C54-AE2A-36C43F97D485",
+      "kind" : {
+        "sketch" : {
+          "_0" : {
+            "constraints" : [
+              {
+                "id" : 9,
+                "kind" : {
+                  "horizontal" : {
+                    "line" : 5
+                  }
+                },
+                "labelOffset" : [
+                  0,
+                  0
+                ]
+              },
+              {
+                "id" : 10,
+                "kind" : {
+                  "vertical" : {
+                    "line" : 6
+                  }
+                },
+                "labelOffset" : [
+                  0,
+                  0
+                ]
+              },
+              {
+                "id" : 11,
+                "kind" : {
+                  "horizontal" : {
+                    "line" : 7
+                  }
+                },
+                "labelOffset" : [
+                  0,
+                  0
+                ]
+              },
+              {
+                "id" : 12,
+                "kind" : {
+                  "vertical" : {
+                    "line" : 8
+                  }
+                },
+                "labelOffset" : [
+                  0,
+                  0
+                ]
+              },
+              {
+                "id" : 13,
+                "kind" : {
+                  "length" : {
+                    "line" : 5,
+                    "value" : "staerke"
+                  }
+                },
+                "labelOffset" : [
+                  0,
+                  -12
+                ]
+              },
+              {
+                "id" : 14,
+                "kind" : {
+                  "length" : {
+                    "line" : 6,
+                    "value" : "hoehe"
+                  }
+                },
+                "labelOffset" : [
+                  12,
+                  0
+                ]
+              },
+              {
+                "id" : 15,
+                "kind" : {
+                  "horizontalDistance" : {
+                    "_0" : 0,
+                    "_1" : 1,
+                    "value" : "breite - staerke"
+                  }
+                },
+                "labelOffset" : [
+                  0,
+                  0
+                ]
+              },
+              {
+                "id" : 16,
+                "kind" : {
+                  "verticalDistance" : {
+                    "_0" : 0,
+                    "_1" : 1,
+                    "value" : "0 mm"
+                  }
+                },
+                "labelOffset" : [
+                  0,
+                  0
+                ]
+              }
+            ],
+            "curves" : [
+              {
+                "construction" : false,
+                "geometry" : {
+                  "line" : {
+                    "end" : 2,
+                    "start" : 1
+                  }
+                },
+                "id" : 5
+              },
+              {
+                "construction" : false,
+                "geometry" : {
+                  "line" : {
+                    "end" : 3,
+                    "start" : 2
+                  }
+                },
+                "id" : 6
+              },
+              {
+                "construction" : false,
+                "geometry" : {
+                  "line" : {
+                    "end" : 4,
+                    "start" : 3
+                  }
+                },
+                "id" : 7
+              },
+              {
+                "construction" : false,
+                "geometry" : {
+                  "line" : {
+                    "end" : 1,
+                    "start" : 4
+                  }
+                },
+                "id" : 8
+              }
+            ],
+            "nextId" : 17,
+            "plane" : {
+              "xz" : {
+
+              }
+            },
+            "points" : [
+              {
+                "fixed" : true,
+                "id" : 0,
+                "position" : [
+                  0,
+                  0
+                ]
+              },
+              {
+                "fixed" : false,
+                "id" : 1,
+                "position" : [
+                  481,
+                  0
+                ]
+              },
+              {
+                "fixed" : false,
+                "id" : 2,
+                "position" : [
+                  500,
+                  0
+                ]
+              },
+              {
+                "fixed" : false,
+                "id" : 3,
+                "position" : [
+                  500,
+                  600
+                ]
+              },
+              {
+                "fixed" : false,
+                "id" : 4,
+                "position" : [
+                  481,
+                  600
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "name" : "Skizze Seite rechts",
+      "suppressed" : false
+    },
+    {
+      "id" : "C48BBD04-4B5E-4745-8F4F-BFAC3928B154",
+      "kind" : {
+        "extrude" : {
+          "_0" : {
+            "distance" : "tiefe",
+            "distance2" : "10 mm",
+            "extent" : "oneSide",
+            "faces" : [
+
+            ],
+            "operation" : "newBody",
+            "profiles" : [
+              {
+                "anchor" : {
+                  "offset" : [
+                    0,
+                    0
+                  ],
+                  "points" : [
+                    1,
+                    2,
+                    3,
+                    4
+                  ],
+                  "weights" : [
+                    0.25,
+                    0.25,
+                    0.25,
+                    0.25
+                  ]
+                },
+                "sample" : [
+                  490.5,
+                  300
+                ],
+                "sketch" : "DBD77AE5-9C17-4C54-AE2A-36C43F97D485"
+              }
+            ],
+            "targets" : [
+
+            ]
+          }
+        }
+      },
+      "name" : "Seite rechts",
+      "suppressed" : false
+    },
+    {
+      "id" : "762D063B-8ECE-4CE7-88D4-62830CEEA303",
+      "kind" : {
+        "sketch" : {
+          "_0" : {
+            "constraints" : [
+              {
+                "id" : 9,
+                "kind" : {
+                  "horizontal" : {
+                    "line" : 5
+                  }
+                },
+                "labelOffset" : [
+                  0,
+                  0
+                ]
+              },
+              {
+                "id" : 10,
+                "kind" : {
+                  "vertical" : {
+                    "line" : 6
+                  }
+                },
+                "labelOffset" : [
+                  0,
+                  0
+                ]
+              },
+              {
+                "id" : 11,
+                "kind" : {
+                  "horizontal" : {
+                    "line" : 7
+                  }
+                },
+                "labelOffset" : [
+                  0,
+                  0
+                ]
+              },
+              {
+                "id" : 12,
+                "kind" : {
+                  "vertical" : {
+                    "line" : 8
+                  }
+                },
+                "labelOffset" : [
+                  0,
+                  0
+                ]
+              },
+              {
+                "id" : 13,
+                "kind" : {
+                  "length" : {
+                    "line" : 5,
+                    "value" : "breite - 2 * staerke"
+                  }
+                },
+                "labelOffset" : [
+                  0,
+                  -12
+                ]
+              },
+              {
+                "id" : 14,
+                "kind" : {
+                  "length" : {
+                    "line" : 6,
+                    "value" : "staerke"
+                  }
+                },
+                "labelOffset" : [
+                  12,
+                  0
+                ]
+              },
+              {
+                "id" : 15,
+                "kind" : {
+                  "horizontalDistance" : {
+                    "_0" : 0,
+                    "_1" : 1,
+                    "value" : "staerke"
+                  }
+                },
+                "labelOffset" : [
+                  0,
+                  0
+                ]
+              },
+              {
+                "id" : 16,
+                "kind" : {
+                  "verticalDistance" : {
+                    "_0" : 0,
+                    "_1" : 1,
+                    "value" : "0 mm"
+                  }
+                },
+                "labelOffset" : [
+                  0,
+                  0
+                ]
+              }
+            ],
+            "curves" : [
+              {
+                "construction" : false,
+                "geometry" : {
+                  "line" : {
+                    "end" : 2,
+                    "start" : 1
+                  }
+                },
+                "id" : 5
+              },
+              {
+                "construction" : false,
+                "geometry" : {
+                  "line" : {
+                    "end" : 3,
+                    "start" : 2
+                  }
+                },
+                "id" : 6
+              },
+              {
+                "construction" : false,
+                "geometry" : {
+                  "line" : {
+                    "end" : 4,
+                    "start" : 3
+                  }
+                },
+                "id" : 7
+              },
+              {
+                "construction" : false,
+                "geometry" : {
+                  "line" : {
+                    "end" : 1,
+                    "start" : 4
+                  }
+                },
+                "id" : 8
+              }
+            ],
+            "nextId" : 17,
+            "plane" : {
+              "xz" : {
+
+              }
+            },
+            "points" : [
+              {
+                "fixed" : true,
+                "id" : 0,
+                "position" : [
+                  0,
+                  0
+                ]
+              },
+              {
+                "fixed" : false,
+                "id" : 1,
+                "position" : [
+                  19,
+                  0
+                ]
+              },
+              {
+                "fixed" : false,
+                "id" : 2,
+                "position" : [
+                  481,
+                  0
+                ]
+              },
+              {
+                "fixed" : false,
+                "id" : 3,
+                "position" : [
+                  481,
+                  19
+                ]
+              },
+              {
+                "fixed" : false,
+                "id" : 4,
+                "position" : [
+                  19,
+                  19
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "name" : "Skizze Boden",
+      "suppressed" : false
+    },
+    {
+      "id" : "E3F3FB95-3F71-4E88-BC76-9703E95628B9",
+      "kind" : {
+        "extrude" : {
+          "_0" : {
+            "distance" : "tiefe",
+            "distance2" : "10 mm",
+            "extent" : "oneSide",
+            "faces" : [
+
+            ],
+            "operation" : "newBody",
+            "profiles" : [
+              {
+                "anchor" : {
+                  "offset" : [
+                    0,
+                    0
+                  ],
+                  "points" : [
+                    1,
+                    2,
+                    3,
+                    4
+                  ],
+                  "weights" : [
+                    0.25,
+                    0.25,
+                    0.25,
+                    0.25
+                  ]
+                },
+                "sample" : [
+                  250,
+                  9.5
+                ],
+                "sketch" : "762D063B-8ECE-4CE7-88D4-62830CEEA303"
+              }
+            ],
+            "targets" : [
+
+            ]
+          }
+        }
+      },
+      "name" : "Boden",
+      "suppressed" : false
+    },
+    {
+      "id" : "AC4AFD23-CF43-440B-BEA6-BD30486405B6",
+      "kind" : {
+        "sketch" : {
+          "_0" : {
+            "constraints" : [
+              {
+                "id" : 9,
+                "kind" : {
+                  "horizontal" : {
+                    "line" : 5
+                  }
+                },
+                "labelOffset" : [
+                  0,
+                  0
+                ]
+              },
+              {
+                "id" : 10,
+                "kind" : {
+                  "vertical" : {
+                    "line" : 6
+                  }
+                },
+                "labelOffset" : [
+                  0,
+                  0
+                ]
+              },
+              {
+                "id" : 11,
+                "kind" : {
+                  "horizontal" : {
+                    "line" : 7
+                  }
+                },
+                "labelOffset" : [
+                  0,
+                  0
+                ]
+              },
+              {
+                "id" : 12,
+                "kind" : {
+                  "vertical" : {
+                    "line" : 8
+                  }
+                },
+                "labelOffset" : [
+                  0,
+                  0
+                ]
+              },
+              {
+                "id" : 13,
+                "kind" : {
+                  "length" : {
+                    "line" : 5,
+                    "value" : "breite - 2 * staerke"
+                  }
+                },
+                "labelOffset" : [
+                  0,
+                  -12
+                ]
+              },
+              {
+                "id" : 14,
+                "kind" : {
+                  "length" : {
+                    "line" : 6,
+                    "value" : "staerke"
+                  }
+                },
+                "labelOffset" : [
+                  12,
+                  0
+                ]
+              },
+              {
+                "id" : 15,
+                "kind" : {
+                  "horizontalDistance" : {
+                    "_0" : 0,
+                    "_1" : 1,
+                    "value" : "staerke"
+                  }
+                },
+                "labelOffset" : [
+                  0,
+                  0
+                ]
+              },
+              {
+                "id" : 16,
+                "kind" : {
+                  "verticalDistance" : {
+                    "_0" : 0,
+                    "_1" : 1,
+                    "value" : "hoehe - staerke"
+                  }
+                },
+                "labelOffset" : [
+                  0,
+                  0
+                ]
+              }
+            ],
+            "curves" : [
+              {
+                "construction" : false,
+                "geometry" : {
+                  "line" : {
+                    "end" : 2,
+                    "start" : 1
+                  }
+                },
+                "id" : 5
+              },
+              {
+                "construction" : false,
+                "geometry" : {
+                  "line" : {
+                    "end" : 3,
+                    "start" : 2
+                  }
+                },
+                "id" : 6
+              },
+              {
+                "construction" : false,
+                "geometry" : {
+                  "line" : {
+                    "end" : 4,
+                    "start" : 3
+                  }
+                },
+                "id" : 7
+              },
+              {
+                "construction" : false,
+                "geometry" : {
+                  "line" : {
+                    "end" : 1,
+                    "start" : 4
+                  }
+                },
+                "id" : 8
+              }
+            ],
+            "nextId" : 17,
+            "plane" : {
+              "xz" : {
+
+              }
+            },
+            "points" : [
+              {
+                "fixed" : true,
+                "id" : 0,
+                "position" : [
+                  0,
+                  0
+                ]
+              },
+              {
+                "fixed" : false,
+                "id" : 1,
+                "position" : [
+                  19,
+                  581
+                ]
+              },
+              {
+                "fixed" : false,
+                "id" : 2,
+                "position" : [
+                  481,
+                  581
+                ]
+              },
+              {
+                "fixed" : false,
+                "id" : 3,
+                "position" : [
+                  481,
+                  600
+                ]
+              },
+              {
+                "fixed" : false,
+                "id" : 4,
+                "position" : [
+                  19,
+                  600
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "name" : "Skizze Deckel",
+      "suppressed" : false
+    },
+    {
+      "id" : "F15A64DF-87F5-4A97-9E93-7AA55889051E",
+      "kind" : {
+        "extrude" : {
+          "_0" : {
+            "distance" : "tiefe",
+            "distance2" : "10 mm",
+            "extent" : "oneSide",
+            "faces" : [
+
+            ],
+            "operation" : "newBody",
+            "profiles" : [
+              {
+                "anchor" : {
+                  "offset" : [
+                    0,
+                    0
+                  ],
+                  "points" : [
+                    1,
+                    2,
+                    3,
+                    4
+                  ],
+                  "weights" : [
+                    0.25,
+                    0.25,
+                    0.25,
+                    0.25
+                  ]
+                },
+                "sample" : [
+                  250,
+                  590.5
+                ],
+                "sketch" : "AC4AFD23-CF43-440B-BEA6-BD30486405B6"
+              }
+            ],
+            "targets" : [
+
+            ]
+          }
+        }
+      },
+      "name" : "Deckel",
+      "suppressed" : false
+    },
+    {
+      "id" : "C453EAC6-058A-42DB-9669-75B208AC07F5",
+      "kind" : {
+        "sketch" : {
+          "_0" : {
+            "constraints" : [
+              {
+                "id" : 9,
+                "kind" : {
+                  "horizontal" : {
+                    "line" : 5
+                  }
+                },
+                "labelOffset" : [
+                  0,
+                  0
+                ]
+              },
+              {
+                "id" : 10,
+                "kind" : {
+                  "vertical" : {
+                    "line" : 6
+                  }
+                },
+                "labelOffset" : [
+                  0,
+                  0
+                ]
+              },
+              {
+                "id" : 11,
+                "kind" : {
+                  "horizontal" : {
+                    "line" : 7
+                  }
+                },
+                "labelOffset" : [
+                  0,
+                  0
+                ]
+              },
+              {
+                "id" : 12,
+                "kind" : {
+                  "vertical" : {
+                    "line" : 8
+                  }
+                },
+                "labelOffset" : [
+                  0,
+                  0
+                ]
+              },
+              {
+                "id" : 13,
+                "kind" : {
+                  "length" : {
+                    "line" : 5,
+                    "value" : "breite - 2 * staerke"
+                  }
+                },
+                "labelOffset" : [
+                  0,
+                  -12
+                ]
+              },
+              {
+                "id" : 14,
+                "kind" : {
+                  "length" : {
+                    "line" : 6,
+                    "value" : "staerke"
+                  }
+                },
+                "labelOffset" : [
+                  12,
+                  0
+                ]
+              },
+              {
+                "id" : 15,
+                "kind" : {
+                  "horizontalDistance" : {
+                    "_0" : 0,
+                    "_1" : 1,
+                    "value" : "staerke"
+                  }
+                },
+                "labelOffset" : [
+                  0,
+                  0
+                ]
+              },
+              {
+                "id" : 16,
+                "kind" : {
+                  "verticalDistance" : {
+                    "_0" : 0,
+                    "_1" : 1,
+                    "value" : "fachhoehe"
+                  }
+                },
+                "labelOffset" : [
+                  0,
+                  0
+                ]
+              }
+            ],
+            "curves" : [
+              {
+                "construction" : false,
+                "geometry" : {
+                  "line" : {
+                    "end" : 2,
+                    "start" : 1
+                  }
+                },
+                "id" : 5
+              },
+              {
+                "construction" : false,
+                "geometry" : {
+                  "line" : {
+                    "end" : 3,
+                    "start" : 2
+                  }
+                },
+                "id" : 6
+              },
+              {
+                "construction" : false,
+                "geometry" : {
+                  "line" : {
+                    "end" : 4,
+                    "start" : 3
+                  }
+                },
+                "id" : 7
+              },
+              {
+                "construction" : false,
+                "geometry" : {
+                  "line" : {
+                    "end" : 1,
+                    "start" : 4
+                  }
+                },
+                "id" : 8
+              }
+            ],
+            "nextId" : 17,
+            "plane" : {
+              "xz" : {
+
+              }
+            },
+            "points" : [
+              {
+                "fixed" : true,
+                "id" : 0,
+                "position" : [
+                  0,
+                  0
+                ]
+              },
+              {
+                "fixed" : false,
+                "id" : 1,
+                "position" : [
+                  19,
+                  290
+                ]
+              },
+              {
+                "fixed" : false,
+                "id" : 2,
+                "position" : [
+                  481,
+                  290
+                ]
+              },
+              {
+                "fixed" : false,
+                "id" : 3,
+                "position" : [
+                  481,
+                  309
+                ]
+              },
+              {
+                "fixed" : false,
+                "id" : 4,
+                "position" : [
+                  19,
+                  309
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "name" : "Skizze Fachboden",
+      "suppressed" : false
+    },
+    {
+      "id" : "91573D55-96BB-4D09-9EBC-3DAB5783E275",
+      "kind" : {
+        "extrude" : {
+          "_0" : {
+            "distance" : "tiefe - rueckversatz",
+            "distance2" : "10 mm",
+            "extent" : "oneSide",
+            "faces" : [
+
+            ],
+            "operation" : "newBody",
+            "profiles" : [
+              {
+                "anchor" : {
+                  "offset" : [
+                    0,
+                    0
+                  ],
+                  "points" : [
+                    1,
+                    2,
+                    3,
+                    4
+                  ],
+                  "weights" : [
+                    0.25,
+                    0.25,
+                    0.25,
+                    0.25
+                  ]
+                },
+                "sample" : [
+                  250,
+                  299.5
+                ],
+                "sketch" : "C453EAC6-058A-42DB-9669-75B208AC07F5"
+              }
+            ],
+            "targets" : [
+
+            ]
+          }
+        }
+      },
+      "name" : "Fachboden",
+      "suppressed" : false
+    },
+    {
+      "id" : "0D648D81-3C4B-48D2-AE45-56A481911D99",
+      "kind" : {
+        "sketch" : {
+          "_0" : {
+            "constraints" : [
+              {
+                "id" : 9,
+                "kind" : {
+                  "horizontal" : {
+                    "line" : 5
+                  }
+                },
+                "labelOffset" : [
+                  0,
+                  0
+                ]
+              },
+              {
+                "id" : 10,
+                "kind" : {
+                  "vertical" : {
+                    "line" : 6
+                  }
+                },
+                "labelOffset" : [
+                  0,
+                  0
+                ]
+              },
+              {
+                "id" : 11,
+                "kind" : {
+                  "horizontal" : {
+                    "line" : 7
+                  }
+                },
+                "labelOffset" : [
+                  0,
+                  0
+                ]
+              },
+              {
+                "id" : 12,
+                "kind" : {
+                  "vertical" : {
+                    "line" : 8
+                  }
+                },
+                "labelOffset" : [
+                  0,
+                  0
+                ]
+              },
+              {
+                "id" : 13,
+                "kind" : {
+                  "length" : {
+                    "line" : 5,
+                    "value" : "breite"
+                  }
+                },
+                "labelOffset" : [
+                  0,
+                  -12
+                ]
+              },
+              {
+                "id" : 14,
+                "kind" : {
+                  "length" : {
+                    "line" : 6,
+                    "value" : "hoehe"
+                  }
+                },
+                "labelOffset" : [
+                  12,
+                  0
+                ]
+              },
+              {
+                "id" : 15,
+                "kind" : {
+                  "horizontalDistance" : {
+                    "_0" : 0,
+                    "_1" : 1,
+                    "value" : "0 mm"
+                  }
+                },
+                "labelOffset" : [
+                  0,
+                  0
+                ]
+              },
+              {
+                "id" : 16,
+                "kind" : {
+                  "verticalDistance" : {
+                    "_0" : 0,
+                    "_1" : 1,
+                    "value" : "0 mm"
+                  }
+                },
+                "labelOffset" : [
+                  0,
+                  0
+                ]
+              }
+            ],
+            "curves" : [
+              {
+                "construction" : false,
+                "geometry" : {
+                  "line" : {
+                    "end" : 2,
+                    "start" : 1
+                  }
+                },
+                "id" : 5
+              },
+              {
+                "construction" : false,
+                "geometry" : {
+                  "line" : {
+                    "end" : 3,
+                    "start" : 2
+                  }
+                },
+                "id" : 6
+              },
+              {
+                "construction" : false,
+                "geometry" : {
+                  "line" : {
+                    "end" : 4,
+                    "start" : 3
+                  }
+                },
+                "id" : 7
+              },
+              {
+                "construction" : false,
+                "geometry" : {
+                  "line" : {
+                    "end" : 1,
+                    "start" : 4
+                  }
+                },
+                "id" : 8
+              }
+            ],
+            "nextId" : 17,
+            "plane" : {
+              "xz" : {
+
+              }
+            },
+            "points" : [
+              {
+                "fixed" : true,
+                "id" : 0,
+                "position" : [
+                  0,
+                  0
+                ]
+              },
+              {
+                "fixed" : false,
+                "id" : 1,
+                "position" : [
+                  0,
+                  0
+                ]
+              },
+              {
+                "fixed" : false,
+                "id" : 2,
+                "position" : [
+                  500,
+                  0
+                ]
+              },
+              {
+                "fixed" : false,
+                "id" : 3,
+                "position" : [
+                  500,
+                  600
+                ]
+              },
+              {
+                "fixed" : false,
+                "id" : 4,
+                "position" : [
+                  0,
+                  600
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "name" : "Skizze Rückwand",
+      "suppressed" : false
+    },
+    {
+      "id" : "DFA72BDD-AE1F-4927-BE2E-2705BCA089B8",
+      "kind" : {
+        "extrude" : {
+          "_0" : {
+            "distance" : "-rueckwand",
+            "distance2" : "10 mm",
+            "extent" : "oneSide",
+            "faces" : [
+
+            ],
+            "operation" : "newBody",
+            "profiles" : [
+              {
+                "anchor" : {
+                  "offset" : [
+                    0,
+                    0
+                  ],
+                  "points" : [
+                    1,
+                    2,
+                    3,
+                    4
+                  ],
+                  "weights" : [
+                    0.25,
+                    0.25,
+                    0.25,
+                    0.25
+                  ]
+                },
+                "sample" : [
+                  250,
+                  300
+                ],
+                "sketch" : "0D648D81-3C4B-48D2-AE45-56A481911D99"
+              }
+            ],
+            "targets" : [
+
+            ]
+          }
+        }
+      },
+      "name" : "Rückwand",
+      "suppressed" : false
+    },
+    {
+      "id" : "FB1F00E2-47D8-4FD7-AAB2-BE58D15562F0",
+      "kind" : {
+        "sketch" : {
+          "_0" : {
+            "constraints" : [
+              {
+                "id" : 3,
+                "kind" : {
+                  "horizontalDistance" : {
+                    "_0" : 0,
+                    "_1" : 1,
+                    "value" : "100 mm"
+                  }
+                },
+                "labelOffset" : [
+                  0,
+                  0
+                ]
+              },
+              {
+                "id" : 4,
+                "kind" : {
+                  "verticalDistance" : {
+                    "_0" : 0,
+                    "_1" : 1,
+                    "value" : "tiefe \/ 2"
+                  }
+                },
+                "labelOffset" : [
+                  0,
+                  0
+                ]
+              },
+              {
+                "id" : 5,
+                "kind" : {
+                  "diameter" : {
+                    "curve" : 2,
+                    "value" : "8 mm"
+                  }
+                },
+                "labelOffset" : [
+                  0,
+                  0
+                ]
+              },
+              {
+                "id" : 8,
+                "kind" : {
+                  "horizontalDistance" : {
+                    "_0" : 0,
+                    "_1" : 6,
+                    "value" : "breite - 100 mm"
+                  }
+                },
+                "labelOffset" : [
+                  0,
+                  0
+                ]
+              },
+              {
+                "id" : 9,
+                "kind" : {
+                  "verticalDistance" : {
+                    "_0" : 0,
+                    "_1" : 6,
+                    "value" : "tiefe \/ 2"
+                  }
+                },
+                "labelOffset" : [
+                  0,
+                  0
+                ]
+              },
+              {
+                "id" : 10,
+                "kind" : {
+                  "diameter" : {
+                    "curve" : 7,
+                    "value" : "8 mm"
+                  }
+                },
+                "labelOffset" : [
+                  0,
+                  0
+                ]
+              }
+            ],
+            "curves" : [
+              {
+                "construction" : false,
+                "geometry" : {
+                  "circle" : {
+                    "center" : 1,
+                    "radius" : 4
+                  }
+                },
+                "id" : 2
+              },
+              {
+                "construction" : false,
+                "geometry" : {
+                  "circle" : {
+                    "center" : 6,
+                    "radius" : 4
+                  }
+                },
+                "id" : 7
+              }
+            ],
+            "nextId" : 11,
+            "plane" : {
+              "xy" : {
+
+              }
+            },
+            "points" : [
+              {
+                "fixed" : true,
+                "id" : 0,
+                "position" : [
+                  0,
+                  0
+                ]
+              },
+              {
+                "fixed" : false,
+                "id" : 1,
+                "position" : [
+                  100,
+                  -150
+                ]
+              },
+              {
+                "fixed" : false,
+                "id" : 6,
+                "position" : [
+                  400,
+                  -150
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "name" : "Skizze Dübellöcher",
+      "suppressed" : false
+    },
+    {
+      "id" : "BAA901CB-23D5-45D4-829D-D5B13D90F115",
+      "kind" : {
+        "extrude" : {
+          "_0" : {
+            "distance" : "hoehe + 100 mm",
+            "distance2" : "10 mm",
+            "extent" : "oneSide",
+            "faces" : [
+
+            ],
+            "operation" : "cut",
+            "profiles" : [
+              {
+                "anchor" : {
+                  "offset" : [
+                    0,
+                    0
+                  ],
+                  "points" : [
+                    1
+                  ],
+                  "weights" : [
+                    1
+                  ]
+                },
+                "sample" : [
+                  100,
+                  -150
+                ],
+                "sketch" : "FB1F00E2-47D8-4FD7-AAB2-BE58D15562F0"
+              },
+              {
+                "anchor" : {
+                  "offset" : [
+                    0,
+                    0
+                  ],
+                  "points" : [
+                    6
+                  ],
+                  "weights" : [
+                    1
+                  ]
+                },
+                "sample" : [
+                  400,
+                  -150
+                ],
+                "sketch" : "FB1F00E2-47D8-4FD7-AAB2-BE58D15562F0"
+              }
+            ],
+            "targets" : [
+
+            ]
+          }
+        }
+      },
+      "name" : "Dübellöcher Ø8",
+      "suppressed" : false
+    }
+  ],
+  "formatVersion" : 1,
+  "hiddenSketches" : [
+    "FB1F00E2-47D8-4FD7-AAB2-BE58D15562F0",
+    "C453EAC6-058A-42DB-9669-75B208AC07F5",
+    "0D648D81-3C4B-48D2-AE45-56A481911D99",
+    "AC4AFD23-CF43-440B-BEA6-BD30486405B6",
+    "DBD77AE5-9C17-4C54-AE2A-36C43F97D485",
+    "21153F24-A9D6-4ED0-B2C1-1DEE95661EB1",
+    "762D063B-8ECE-4CE7-88D4-62830CEEA303"
+  ],
+  "parameters" : [
+    {
+      "comment" : "Außenmaß",
+      "expression" : "500 mm",
+      "id" : "D9082E88-5BDA-4EED-9B67-B2EFD6D6EDEF",
+      "name" : "breite"
+    },
+    {
+      "comment" : "Außenmaß",
+      "expression" : "600 mm",
+      "id" : "1743C054-45E2-47DE-B7A6-73EB38F36C8B",
+      "name" : "hoehe"
+    },
+    {
+      "comment" : "ohne Rückwand",
+      "expression" : "300 mm",
+      "id" : "BC213E0A-DD18-44E4-87CF-35C7246D006B",
+      "name" : "tiefe"
+    },
+    {
+      "comment" : "Plattenstärke",
+      "expression" : "19 mm",
+      "id" : "914E8163-989D-4420-93DC-20802A5625A1",
+      "name" : "staerke"
+    },
+    {
+      "comment" : "Unterkante Fachboden",
+      "expression" : "290 mm",
+      "id" : "1E70DBFF-0E9C-43F3-B45C-D53A8C79E689",
+      "name" : "fachhoehe"
+    },
+    {
+      "comment" : "Fachboden hinten zurückgesetzt",
+      "expression" : "20 mm",
+      "id" : "46A839AB-DA9E-420D-8923-78EC9E10D6A0",
+      "name" : "rueckversatz"
+    },
+    {
+      "comment" : "Stärke Rückwand",
+      "expression" : "8 mm",
+      "id" : "604B12E3-3948-4C64-94AC-1AF69761EF8E",
+      "name" : "rueckwand"
+    }
+  ]
+}

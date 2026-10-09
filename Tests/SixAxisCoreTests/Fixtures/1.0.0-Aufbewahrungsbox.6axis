@@ -1,0 +1,419 @@
+{
+  "bodies" : [
+    "9E504BA1-586B-4647-A003-C91517283347",
+    {
+      "grain" : "none",
+      "material" : "PLA",
+      "name" : "Box",
+      "visible" : true
+    }
+  ],
+  "features" : [
+    {
+      "id" : "7B086AAE-F7C8-424F-BFFE-C8A7FA536BE8",
+      "kind" : {
+        "sketch" : {
+          "_0" : {
+            "constraints" : [
+              {
+                "id" : 9,
+                "kind" : {
+                  "horizontal" : {
+                    "line" : 5
+                  }
+                },
+                "labelOffset" : [
+                  0,
+                  0
+                ]
+              },
+              {
+                "id" : 10,
+                "kind" : {
+                  "vertical" : {
+                    "line" : 6
+                  }
+                },
+                "labelOffset" : [
+                  0,
+                  0
+                ]
+              },
+              {
+                "id" : 11,
+                "kind" : {
+                  "horizontal" : {
+                    "line" : 7
+                  }
+                },
+                "labelOffset" : [
+                  0,
+                  0
+                ]
+              },
+              {
+                "id" : 12,
+                "kind" : {
+                  "vertical" : {
+                    "line" : 8
+                  }
+                },
+                "labelOffset" : [
+                  0,
+                  0
+                ]
+              },
+              {
+                "id" : 13,
+                "kind" : {
+                  "length" : {
+                    "line" : 5,
+                    "value" : "laenge"
+                  }
+                },
+                "labelOffset" : [
+                  0,
+                  -12
+                ]
+              },
+              {
+                "id" : 14,
+                "kind" : {
+                  "length" : {
+                    "line" : 6,
+                    "value" : "breite"
+                  }
+                },
+                "labelOffset" : [
+                  12,
+                  0
+                ]
+              },
+              {
+                "id" : 15,
+                "kind" : {
+                  "horizontalDistance" : {
+                    "_0" : 0,
+                    "_1" : 1,
+                    "value" : "laenge \/ 2"
+                  }
+                },
+                "labelOffset" : [
+                  0,
+                  0
+                ]
+              },
+              {
+                "id" : 16,
+                "kind" : {
+                  "verticalDistance" : {
+                    "_0" : 0,
+                    "_1" : 1,
+                    "value" : "breite \/ 2"
+                  }
+                },
+                "labelOffset" : [
+                  0,
+                  0
+                ]
+              }
+            ],
+            "curves" : [
+              {
+                "construction" : false,
+                "geometry" : {
+                  "line" : {
+                    "end" : 2,
+                    "start" : 1
+                  }
+                },
+                "id" : 5
+              },
+              {
+                "construction" : false,
+                "geometry" : {
+                  "line" : {
+                    "end" : 3,
+                    "start" : 2
+                  }
+                },
+                "id" : 6
+              },
+              {
+                "construction" : false,
+                "geometry" : {
+                  "line" : {
+                    "end" : 4,
+                    "start" : 3
+                  }
+                },
+                "id" : 7
+              },
+              {
+                "construction" : false,
+                "geometry" : {
+                  "line" : {
+                    "end" : 1,
+                    "start" : 4
+                  }
+                },
+                "id" : 8
+              }
+            ],
+            "nextId" : 17,
+            "plane" : {
+              "xy" : {
+
+              }
+            },
+            "points" : [
+              {
+                "fixed" : true,
+                "id" : 0,
+                "position" : [
+                  0,
+                  0
+                ]
+              },
+              {
+                "fixed" : false,
+                "id" : 1,
+                "position" : [
+                  -60,
+                  -40
+                ]
+              },
+              {
+                "fixed" : false,
+                "id" : 2,
+                "position" : [
+                  60,
+                  -40
+                ]
+              },
+              {
+                "fixed" : false,
+                "id" : 3,
+                "position" : [
+                  60,
+                  40
+                ]
+              },
+              {
+                "fixed" : false,
+                "id" : 4,
+                "position" : [
+                  -60,
+                  40
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "name" : "Skizze Box",
+      "suppressed" : false
+    },
+    {
+      "id" : "9E504BA1-586B-4647-A003-C91517283347",
+      "kind" : {
+        "extrude" : {
+          "_0" : {
+            "distance" : "hoehe",
+            "distance2" : "10 mm",
+            "extent" : "oneSide",
+            "faces" : [
+
+            ],
+            "operation" : "newBody",
+            "profiles" : [
+              {
+                "anchor" : {
+                  "offset" : [
+                    0,
+                    0
+                  ],
+                  "points" : [
+                    1,
+                    2,
+                    3,
+                    4
+                  ],
+                  "weights" : [
+                    0.25,
+                    0.25,
+                    0.25,
+                    0.25
+                  ]
+                },
+                "sample" : [
+                  0,
+                  0
+                ],
+                "sketch" : "7B086AAE-F7C8-424F-BFFE-C8A7FA536BE8"
+              }
+            ],
+            "targets" : [
+
+            ]
+          }
+        }
+      },
+      "name" : "Box",
+      "suppressed" : false
+    },
+    {
+      "id" : "F8B4AE7F-44D4-4780-AEC4-7D55A4101E91",
+      "kind" : {
+        "fillet" : {
+          "_0" : {
+            "edges" : [
+              {
+                "body" : "9E504BA1-586B-4647-A003-C91517283347",
+                "edge" : {
+                  "count" : 12,
+                  "direction" : [
+                    0,
+                    0,
+                    1
+                  ],
+                  "index" : 0,
+                  "kind" : 0,
+                  "midpoint" : [
+                    -60,
+                    40,
+                    25
+                  ]
+                }
+              },
+              {
+                "body" : "9E504BA1-586B-4647-A003-C91517283347",
+                "edge" : {
+                  "count" : 12,
+                  "direction" : [
+                    0,
+                    0,
+                    1
+                  ],
+                  "index" : 1,
+                  "kind" : 0,
+                  "midpoint" : [
+                    -60,
+                    -40,
+                    25
+                  ]
+                }
+              },
+              {
+                "body" : "9E504BA1-586B-4647-A003-C91517283347",
+                "edge" : {
+                  "count" : 12,
+                  "direction" : [
+                    0,
+                    0,
+                    1
+                  ],
+                  "index" : 4,
+                  "kind" : 0,
+                  "midpoint" : [
+                    60,
+                    40,
+                    25
+                  ]
+                }
+              },
+              {
+                "body" : "9E504BA1-586B-4647-A003-C91517283347",
+                "edge" : {
+                  "count" : 12,
+                  "direction" : [
+                    0,
+                    0,
+                    1
+                  ],
+                  "index" : 7,
+                  "kind" : 0,
+                  "midpoint" : [
+                    60,
+                    -40,
+                    25
+                  ]
+                }
+              }
+            ],
+            "radius" : "radius"
+          }
+        }
+      },
+      "name" : "Abrundung",
+      "suppressed" : false
+    },
+    {
+      "id" : "9959A7F5-5AA3-4F18-AFB7-B29843876BAD",
+      "kind" : {
+        "shell" : {
+          "_0" : {
+            "faces" : [
+              {
+                "body" : "9E504BA1-586B-4647-A003-C91517283347",
+                "face" : {
+                  "centroid" : [
+                    -4.027262520753871e-16,
+                    1.7087392948511557e-15,
+                    50
+                  ],
+                  "count" : 10,
+                  "index" : 4,
+                  "normal" : [
+                    0,
+                    0,
+                    1
+                  ]
+                }
+              }
+            ],
+            "thickness" : "wand"
+          }
+        }
+      },
+      "name" : "Wandstärke",
+      "suppressed" : false
+    }
+  ],
+  "formatVersion" : 1,
+  "hiddenSketches" : [
+    "7B086AAE-F7C8-424F-BFFE-C8A7FA536BE8"
+  ],
+  "parameters" : [
+    {
+      "comment" : "",
+      "expression" : "120 mm",
+      "id" : "E7D71331-2C45-40A5-8A86-6786208AFEDC",
+      "name" : "laenge"
+    },
+    {
+      "comment" : "",
+      "expression" : "80 mm",
+      "id" : "7C6A6956-6CE9-4741-90DF-C330DA53C738",
+      "name" : "breite"
+    },
+    {
+      "comment" : "",
+      "expression" : "50 mm",
+      "id" : "5D280D2C-1619-451E-A95D-E2BDECCC24E3",
+      "name" : "hoehe"
+    },
+    {
+      "comment" : "Wandstärke, Vielfaches der Düse (0,4)",
+      "expression" : "2 mm",
+      "id" : "500A478A-E18B-49B4-B0DF-735A706E5C57",
+      "name" : "wand"
+    },
+    {
+      "comment" : "Eckradius außen",
+      "expression" : "10 mm",
+      "id" : "E05BD7BD-A5EE-43C8-8A2B-3BB5E4B95CAC",
+      "name" : "radius"
+    }
+  ]
+}
