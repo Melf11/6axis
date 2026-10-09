@@ -18,6 +18,10 @@ final class ViewportNSView: MTKView {
     private var sceneBuilder: SceneBuilder?
     private var lastDrag: CGPoint?
     private var rightDragged = false
+    private var builtGridVersion = -1
+    /// Hover picking renders the ID buffer and waits for the GPU – too slow for every scroll event,
+    /// so it runs once the gesture pauses.
+    private var hoverWork: DispatchWorkItem?
     private var trackingArea: NSTrackingArea?
 
     init(editor: Editor) {
@@ -91,7 +95,14 @@ final class ViewportNSView: MTKView {
     private func syncScene() {
         let scale = window?.backingScaleFactor ?? 2
         let rev = AppSettings.shared.revision
-        guard editor.sceneVersion != builtVersion || editor.darkMode != builtDark || scale != builtScale || rev != builtSettings else { return }
+        let full = editor.sceneVersion != builtVersion || editor.darkMode != builtDark || scale != builtScale || rev != builtSettings
+        if full || editor.gridVersion != builtGridVersion {
+            var g = SceneBuilder(editor: editor, scale: scale)
+            g.buildGrid()
+            renderer?.uploadGrid(g.scene.lines)
+            builtGridVersion = editor.gridVersion
+        }
+        guard full else { return }
         builtSettings = rev
         var b = SceneBuilder(editor: editor, scale: scale)
         b.build()
@@ -241,12 +252,20 @@ final class ViewportNSView: MTKView {
             let sign: CGFloat = settings.invertWheelZoom ? -1 : 1
             editor.zoom(factor: pow(1.12, -dy * sign * settings.zoomSpeed), at: p)
         }
-        editor.updateHover(at: p)
+        scheduleHover(at: p)
+    }
+
+    private func scheduleHover(at p: CGPoint) {
+        hoverWork?.cancel()
+        let work = DispatchWorkItem { [weak self] in self?.editor.updateHover(at: p) }
+        hoverWork = work
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.12, execute: work)
     }
 
     override func magnify(with event: NSEvent) {
         let m = event.magnification * AppSettings.shared.zoomSpeed
         editor.zoom(factor: 1 / (1 + m), at: point(event))
+        scheduleHover(at: point(event))
     }
 
     override func smartMagnify(with event: NSEvent) {

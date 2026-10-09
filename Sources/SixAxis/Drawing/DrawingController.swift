@@ -8,7 +8,9 @@ import SixAxisCore
 /// debounced, and only while the drawing window is open.
 @Observable
 final class DrawingController {
-    private(set) var pages: [DrawingPage] = []
+    private(set) var pages: [DrawingPage] = [] { didSet { generation &+= 1 } }
+    /// Changes whenever the pages are replaced (cheap identity for redraw decisions).
+    @ObservationIgnored private(set) var generation = 0
     private(set) var isUpdating = false
 
     var page: DrawingPage? { pages.first }

@@ -212,6 +212,8 @@ final class Editor {
     @ObservationIgnored var lastMouse: CGPoint = .zero
     /// Sketch-plane point the rendered grid is centered on (to recenter after long pans).
     @ObservationIgnored var gridCenter: Vec2 = .zero
+    /// Increments when only the grid/axes layer must follow the camera (cheap; no body re-upload).
+    @ObservationIgnored var gridVersion = 0
 
     struct DragState {
         var start: CGPoint

@@ -67,8 +67,8 @@ struct SceneBuilder {
         let cmd = editor.command
         let translucentSource = (cmd?.kind == .extrude || cmd?.kind == .revolve) ? cmd?.featureId : nil
 
-        if AppSettings.shared.showGrid { addGrid() }
-        addAxes()
+        // Grid and plain axes live in their own layer (buildGrid); only pickable axes belong to the scene.
+        if axesPickable { addAxes() }
         if cmd?.kind == .sketchPlane || editor.showOriginPlanes { addOriginPlanes() }
 
         // Bodies
@@ -241,6 +241,14 @@ struct SceneBuilder {
 
     // MARK: Grid, axes, origin planes
 
+    private var axesPickable: Bool { editor.command?.kind == .revolve && editor.command?.activeInput == 1 }
+
+    /// The camera-following layer: grid and (non-pickable) origin axes.
+    mutating func buildGrid() {
+        if AppSettings.shared.showGrid { addGrid() }
+        if !axesPickable { addAxes() }
+    }
+
     private mutating func addGrid() {
         let cam = editor.camera
         let plane = editor.activePlane ?? .xy
@@ -272,7 +280,7 @@ struct SceneBuilder {
         let t = editor.camera.target
         let c = (editor.activePlane ?? .xy).project(Vec3(Double(t.x), Double(t.y), Double(t.z)))
         let red = SIMD4<Float>(0.90, 0.25, 0.25, 0.75), green = SIMD4<Float>(0.25, 0.70, 0.30, 0.75), blue = SIMD4<Float>(0.25, 0.45, 0.95, 0.75)
-        let pickable = editor.command?.kind == .revolve && editor.command?.activeInput == 1
+        let pickable = axesPickable
         var lines: [LineInstance] = []
 
         if let plane = editor.activePlane {
