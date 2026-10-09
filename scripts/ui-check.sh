@@ -60,6 +60,18 @@ PY
 then echo "✓ navigation: ⌘-scroll zooms, two-finger scroll moves the camera (3D)"; else echo "✗ navigation: 3D zoom/pan"; echo "::error::ui-check navigation: 3D zoom/pan"; fail=1; fi
 expect navigation "NAV drawing snapshots written" "drawing window scroll pan and zoom"
 
+run drag 120 SIXAXIS_FAST_SNAPSHOTS=1 SIXAXIS_DRAG_TEST=1
+if python3 - "$OUT/drag.log" <<'PY'
+import re, sys
+log = open(sys.argv[1]).read()
+burst = re.search(r"DRAG burst: (\d+) queued events consumed in (\d+) ms", log)
+lat = [float(x) for x in re.findall(r"latency avg [\d.]+ max ([\d.]+) ms", log)]
+ok = burst and int(burst.group(1)) == 480 and int(burst.group(2)) < 1000 and lat and max(lat) < 120
+print(f"burst {burst.group(2) if burst else '?'} ms, max latency {max(lat) if lat else '?'} ms")
+sys.exit(0 if ok else 1)
+PY
+then echo "✓ drag: mouse/swipe events stay responsive"; else echo "✗ drag: navigation too slow"; echo "::error::ui-check drag: navigation too slow"; fail=1; fi
+
 if [ $fail -ne 0 ] && [ -n "${GITHUB_ACTIONS:-}" ]; then
     # Surface details as annotations (readable without access to the job log).
     for f in "$OUT"/*.log; do

@@ -65,8 +65,8 @@ struct ViewCube: View {
             HStack(spacing: 2) {
                 IconButton(symbol: "house", help: String(localized: "Ausgangsansicht"), size: 24) { editor.homeView() }
                 IconButton(symbol: "arrow.up.left.and.arrow.down.right", help: String(localized: "Alles einpassen (⌘0)"), size: 24) { editor.fitAll() }
-                IconButton(symbol: editor.camera.orthographic ? "cube" : "perspective", help: editor.camera.orthographic ? String(localized: "Orthografisch (O)") : String(localized: "Perspektive (O)"),
-                           active: editor.camera.orthographic, size: 24) { editor.toggleProjection() }
+                IconButton(symbol: editor.isOrthographic ? "cube" : "perspective", help: editor.isOrthographic ? String(localized: "Orthografisch (O)") : String(localized: "Perspektive (O)"),
+                           active: editor.isOrthographic, size: 24) { editor.toggleProjection() }
             }
             .padding(3)
             .floatingPanel(radius: 9)

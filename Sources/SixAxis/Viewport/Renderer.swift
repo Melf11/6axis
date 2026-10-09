@@ -177,6 +177,10 @@ final class Renderer: NSObject, MTKViewDelegate {
 
     /// Called each frame before drawing to fetch camera/highlight state and advance animations.
     var frameProvider: (() -> FrameState)?
+    /// Called once per display refresh: true if something changed since the last frame.
+    var needsFrame: (() -> Bool)?
+    /// Camera animations keep rendering until they finish.
+    private var animating = false
 
     struct FrameState {
         var camera: Camera
@@ -366,9 +370,22 @@ final class Renderer: NSObject, MTKViewDelegate {
         return g
     }
 
+    /// Frame timing for performance checks (SIXAXIS_DRAG_TEST).
+    final class Stats: @unchecked Sendable {
+        let lock = NSLock()
+        var frames = 0
+        var cpu: [Double] = []
+        var gpu: [Double] = []
+        func reset() { lock.lock(); frames = 0; cpu = []; gpu = []; lock.unlock() }
+    }
+    let stats = Stats()
+
     func draw(in view: MTKView) {
+        let cpuStart = CACurrentMediaTime()
+        let changed = needsFrame?() ?? true
+        guard changed || animating else { return }   // idle frames cost nothing
         guard let frame = frameProvider?() else { return }
-        view.isPaused = !frame.animating
+        animating = frame.animating
         guard let rpd = view.currentRenderPassDescriptor, let drawable = view.currentDrawable,
               let cmd = queue.makeCommandBuffer(), let enc = cmd.makeRenderCommandEncoder(descriptor: rpd) else { return }
         let size = view.drawableSize
@@ -385,7 +402,12 @@ final class Renderer: NSObject, MTKViewDelegate {
         encodeScene(enc, globals: &g, selection: &sel, pick: false)
         enc.endEncoding()
         cmd.present(drawable)
+        let stats = self.stats
+        cmd.addCompletedHandler { cb in
+            stats.lock.lock(); stats.gpu.append((cb.gpuEndTime - cb.gpuStartTime) * 1000); stats.lock.unlock()
+        }
         cmd.commit()
+        stats.lock.lock(); stats.frames += 1; stats.cpu.append((CACurrentMediaTime() - cpuStart) * 1000); stats.lock.unlock()
     }
 
     /// Renders the current frame offscreen (debug snapshots, thumbnails).

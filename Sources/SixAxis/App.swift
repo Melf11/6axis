@@ -113,7 +113,7 @@ struct AppCommands: Commands {
             Button("Ansicht von oben") { editor.setView(direction: SIMD3(0, 0, -1), up: SIMD3(0, 1, 0)) }.keyboardShortcut("2")
             Button("Ansicht von rechts") { editor.setView(direction: SIMD3(-1, 0, 0), up: SIMD3(0, 0, 1)) }.keyboardShortcut("3")
             Divider()
-            Toggle("Orthografisch", isOn: Binding(get: { editor.camera.orthographic }, set: { _ in editor.toggleProjection() }))
+            Toggle("Orthografisch", isOn: Binding(get: { editor.isOrthographic }, set: { _ in editor.toggleProjection() }))
             Toggle("Ursprungsebenen", isOn: Binding(get: { editor.showOriginPlanes }, set: { editor.showOriginPlanes = $0; editor.sceneVersion &+= 1 }))
             Toggle("Browser", isOn: Binding(get: { editor.browserVisible }, set: { editor.browserVisible = $0 }))
                 .keyboardShortcut("b", modifiers: [.command, .option])
