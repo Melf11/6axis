@@ -29,7 +29,8 @@ Im Ordner [`Examples/`](Examples) und in der App unter **Ablage → Beispiele**:
 
 ## Funktionen
 
-- **Skizzen** auf Ursprungsebenen oder ebenen Körperflächen: Linie, Rechteck, Mittelpunkt-Rechteck, Kreis, 3-Punkt-Bogen – mit Rasterfang (⌘ = frei) und Maßeingabe direkt beim Zeichnen (Tab wechselt zwischen Länge, Breite, Winkel …)
+- **Skizzen** auf Ursprungsebenen oder ebenen Körperflächen: Linie, Rechteck, Mittelpunkt-Rechteck, Kreis, 3-Punkt-Bogen, Spline, Text – mit Rasterfang (⌘ = frei) und Maßeingabe direkt beim Zeichnen (Tab wechselt zwischen Länge, Breite, Winkel, Radius …)
+- **Skizzen bearbeiten:** Ecken abrunden und fasen, Trimmen und Verlängern, Versatz, Spiegeln, Rechteck- und Kreismuster (z. B. Lochreihen), Körperkanten projizieren – alles parametrisch
 - **Abhängigkeiten**: horizontal, vertikal, deckungsgleich, tangential, gleich, parallel, senkrecht, konzentrisch, Mittelpunkt, kollinear, symmetrisch, fixieren – mit automatischer H/V-Erkennung beim Zeichnen
 - **Bemaßungen** (Länge, Abstand horizontal/vertikal, Punkt–Linie, Radius, Durchmesser, Winkel) mit Ausdrücken und **Benutzerparametern** (`breite / 2 + wand`)
 - Anzeige der **Freiheitsgrade**; vollständig bestimmte Geometrie wird schwarz dargestellt
@@ -41,7 +42,7 @@ Im Ordner [`Examples/`](Examples) und in der App unter **Ablage → Beispiele**:
 - **Technische Zeichnung** (⇧⌘D): normgerechte 3-Tafel-Projektion (Methode 1) mit Isometrie, automatischer Bezugsbemaßung in ganzen Millimetern, Bohrungen mit Ø und Mittellinien, Radien, Fasen und Winkeln, Schriftfeld, automatischem Blatt/Maßstab, Positionsnummern, Stück-/Zuschnittliste, Einzelteilblättern, Schnitt A–A und Einzelheiten – live synchron mit dem Modell, als PDF, DXF (auch Einzelteile 1:1 für CNC/Laser) oder direkt drucken ([Plan](docs/technical-drawing.md))
 - **Export**: STL (3D-Druck), STEP; **Import**: STEP; **„Im Slicer öffnen“** (PrusaSlicer, Bambu Studio, OrcaSlicer, Cura …)
 - **Material und Faserrichtung** je Körper; Volumen und geschätztes Gewicht (PLA, PETG, Holz …)
-- Bedienung: Ribbon, Browser, ViewCube, Radialmenü per Rechtsklick, Befehlssuche mit **S**, Tastenkürzel (L, R, C, A, D, E, F, X …)
+- Bedienung: Ribbon, Browser, ViewCube, Radialmenü per Rechtsklick, Befehlssuche mit **S**, Tastenkürzel (L, R, C, A, D, T, P, O, E, F, X …)
 - Automatisches Sichern: Das letzte Design (auch ungesichert) und die Ansicht werden beim nächsten Start wiederhergestellt
 - **Einstellungen**: Scrollrichtung (natürliches Scrollen), Navigation, Kantenstärke, Studio-Schattierung mit Bodenschatten, Raster, STL-Qualität, Slicer
 - Unbegrenztes Rückgängig/Wiederholen, Dark Mode, Retina, 120 Hz
