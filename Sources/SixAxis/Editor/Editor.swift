@@ -41,6 +41,8 @@ enum SketchTool: Equatable {
     case circle
     case arc
     case spline
+    case sketchFillet
+    case sketchChamfer
     case dimension
     case constraint(ConstraintTool)
 
@@ -53,6 +55,8 @@ enum SketchTool: Equatable {
         case .circle: return String(localized: "Kreis")
         case .arc: return String(localized: "Bogen")
         case .spline: return String(localized: "Spline")
+        case .sketchFillet: return String(localized: "Ecke abrunden")
+        case .sketchChamfer: return String(localized: "Ecke fasen")
         case .dimension: return String(localized: "Bemaßung")
         case let .constraint(c): return c.name
         }

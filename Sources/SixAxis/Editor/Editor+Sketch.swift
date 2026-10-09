@@ -273,6 +273,7 @@ extension Editor {
         case .circle: circleClick(pt)
         case .arc: arcClick(pt)
         case .spline: splineClick(pt, clickCount: clickCount)
+        case .sketchFillet, .sketchChamfer: cornerClick()
         case .dimension: dimensionClick(pt)
         case let .constraint(ct): constraintClick(ct)
         }
@@ -398,6 +399,39 @@ extension Editor {
             if ccw { sk.addArc(center: pc, start: pa, end: pb) } else { sk.addArc(center: pc, start: pb, end: pa) }
         }
         toolPoints.removeAll()
+    }
+
+    // MARK: Corner fillet / chamfer
+
+    /// Click a corner between two lines: rounds or cuts it with a sensible start size and opens the
+    /// dimension for typing the exact value right away.
+    private func cornerClick() {
+        guard case let .sketchPoint(_, p)? = hover, let sk = activeSketch, let P = sk.point(p) else {
+            showToast(String(localized: "Klicke auf eine Ecke zwischen zwei Linien"))
+            return
+        }
+        let lines = sk.curves.filter { !$0.construction && $0.isLine && $0.geometry.pointIds.contains(p) }
+        let lengths = lines.compactMap { c -> Double? in
+            guard case let .line(a, b) = c.geometry, let q = sk.point(a == p ? b : a) else { return nil }
+            return simd_distance(P, q)
+        }
+        guard lines.count == 2, let shortest = lengths.min() else {
+            showToast(String(localized: "Klicke auf eine Ecke zwischen zwei Linien"))
+            return
+        }
+        let size = max(snapLength(shortest * 0.2), 1e-3)
+        let text = plainNumber(min(size, shortest * 0.45))
+        let value = Double(text) ?? size
+        let isFillet = sketchTool == .sketchFillet
+        let dim: Int? = mutateSketch { sk in
+            isFillet ? SketchEdit.fillet(&sk, corner: p, radius: value, radiusText: text)?.dimension
+                     : SketchEdit.chamfer(&sk, corner: p, distance: value, distanceText: text)?.dimension
+        } ?? nil
+        if let dim {
+            editingDimension = dim
+        } else {
+            showToast(String(localized: "Diese Ecke lässt sich nicht bearbeiten (zu kurze Linien oder keine Ecke)"))
+        }
     }
 
     // MARK: Spline

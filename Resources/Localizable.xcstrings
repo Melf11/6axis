@@ -291,6 +291,16 @@
         }
       }
     },
+    "Abrunden": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fillet"
+          }
+        }
+      }
+    },
     "Abrundung": {
       "localizations": {
         "en": {
@@ -1241,6 +1251,16 @@
         }
       }
     },
+    "Diese Ecke lässt sich nicht bearbeiten (zu kurze Linien oder keine Ecke)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This corner can't be changed (lines too short or not a corner)"
+          }
+        }
+      }
+    },
     "Diese Version überspringen": {
       "localizations": {
         "en": {
@@ -1468,6 +1488,46 @@
           "stringUnit": {
             "state": "translated",
             "value": "Select a plane or planar face for the sketch"
+          }
+        }
+      }
+    },
+    "Ecke abrunden": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fillet corner"
+          }
+        }
+      }
+    },
+    "Ecke anklicken, dann Fasenlänge eintippen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Click a corner, then type the chamfer length"
+          }
+        }
+      }
+    },
+    "Ecke anklicken, dann Radius eintippen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Click a corner, then type the radius"
+          }
+        }
+      }
+    },
+    "Ecke fasen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chamfer corner"
           }
         }
       }
@@ -2563,6 +2623,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Click the faces that should be open."
+          }
+        }
+      }
+    },
+    "Klicke auf eine Ecke zwischen zwei Linien": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Click a corner between two lines"
           }
         }
       }

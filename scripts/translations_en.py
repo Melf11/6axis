@@ -216,4 +216,11 @@ EN.update({
 "Ersten Punkt klicken – auch an vorhandene Ecken": "Click the first point – existing corners work too",
 "Weitere Punkte klicken · Startpunkt schließt · Doppelklick, ↩ oder Esc beendet": "Click more points · start point closes · double-click, ↩ or Esc finishes",
 })
+EN.update({
+"Ecke abrunden": "Fillet corner", "Ecke fasen": "Chamfer corner", "Abrunden": "Fillet",
+"Klicke auf eine Ecke zwischen zwei Linien": "Click a corner between two lines",
+"Diese Ecke lässt sich nicht bearbeiten (zu kurze Linien oder keine Ecke)": "This corner can't be changed (lines too short or not a corner)",
+"Ecke anklicken, dann Radius eintippen": "Click a corner, then type the radius",
+"Ecke anklicken, dann Fasenlänge eintippen": "Click a corner, then type the chamfer length",
+})
 

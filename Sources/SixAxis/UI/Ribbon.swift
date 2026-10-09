@@ -100,6 +100,8 @@ struct Ribbon: View {
             }
             RibbonDivider()
             group(String(localized: "Ändern")) {
+                tool(.sketchFillet, String(localized: "Abrunden"), "button.roundedtop.horizontal")
+                tool(.sketchChamfer, String(localized: "Fase"), "triangle.bottomhalf.filled")
                 ToolButton(title: String(localized: "Hilfslinie"), symbol: "line.diagonal.arrow", shortcut: "X") { editor.toggleConstruction() }
                 ToolButton(title: String(localized: "Löschen"), symbol: "trash", shortcut: "⌫") { editor.deleteSketchSelection() }
             }

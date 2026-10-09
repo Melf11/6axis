@@ -98,5 +98,39 @@ enum SketchChecks {
         check("closed spline is a profile", (editor.activeSketchBuild?.regions.count ?? 0) == 3, "\(editor.activeSketchBuild?.regions.count ?? 0) regions")
         editor.finishSketch()
         await pause()
+
+        // 4. Corner fillet and chamfer: click a corner, type the size.
+        editor.beginSketch(on: .xy)
+        await pause(0.8)
+        editor.setSketchTool(.rectangle)
+        click(editor, Vec2(0, 0))
+        click(editor, Vec2(60, 40))
+        editor.setSketchTool(.sketchFillet)
+        click(editor, Vec2(60, 40))
+        if let dim = editor.editingDimension {
+            check("fillet asks for radius", true)
+            editor.setDimensionValue(dim, "10")
+            editor.editingDimension = nil
+        } else {
+            check("fillet asks for radius", false, "no dimension in edit")
+        }
+        editor.setSketchTool(.sketchChamfer)
+        click(editor, Vec2(0, 40))
+        if let dim = editor.editingDimension { editor.setDimensionValue(dim, "8"); editor.editingDimension = nil }
+        await pause(0.6)
+        let area = editor.activeSketchBuild?.regions.first?.area ?? 0
+        // The rectangle has no dimensions, so its free size may shift slightly while solving – use its real size.
+        let xs = editor.activeSketch?.points.map(\.position.x) ?? [], ys = editor.activeSketch?.points.map(\.position.y) ?? []
+        let w = (xs.max() ?? 0) - (xs.min() ?? 0), h = (ys.max() ?? 0) - (ys.min() ?? 0)
+        let expected = w * h - 100 * (1 - .pi / 4) - 32
+        check("fillet + chamfer area", abs(area - expected) < 0.05, "area \(area), expected \(expected)")
+
+        check("sketch stays solvable", editor.lastSolve?.converged == true)
+        if let dir = ProcessInfo.processInfo.environment["SIXAXIS_SNAPSHOTS"] {
+            editor.setSketchTool(.select)
+            await DemoScript.snap(editor, "sketch-fillet", URL(fileURLWithPath: dir))
+        }
+        editor.finishSketch()
+        await pause()
     }
 }

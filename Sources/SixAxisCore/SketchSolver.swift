@@ -271,7 +271,18 @@ public struct SketchSolver {
                     failed.insert(cid)
                 }
             case let .tangent(c1, c2):
-                if let (a, b, vl) = lineEnds(c1) ?? lineEnds(c2), let r = (lineEnds(c1) != nil ? round(c2) : round(c1)) {
+                if let lineId = [c1, c2].first(where: { lineEnds($0) != nil }), let arcId = [c1, c2].first(where: { $0 != lineId }),
+                   let line = curve(lineId), let arc = curve(arcId), case let .line(la, lb) = line.geometry,
+                   case let .arc(ci, s, e) = arc.geometry, let shared = [s, e].first(where: { $0 == la || $0 == lb }),
+                   let pc = P(ci), let pt = P(shared), let (a, b, vl) = lineEnds(lineId) {
+                    // Arc and line meet at a common endpoint: the radius there is perpendicular to the line.
+                    // Equivalent to "distance = radius", but well-conditioned (that form has zero slope along
+                    // the line at the touching point, which made the point look free).
+                    add(cid, vl + pc.1 + pt.1, 1) { x, o in
+                        let d = b(x) - a(x)
+                        o[0] = simd_dot(pt.0(x) - pc.0(x), d) / max(simd_length(d), 1e-12)
+                    }
+                } else if let (a, b, vl) = lineEnds(c1) ?? lineEnds(c2), let r = (lineEnds(c1) != nil ? round(c2) : round(c1)) {
                     let side = initial { x in sgn(crossN(b(x) - a(x), r.0(x) - a(x))) }
                     add(cid, vl + r.2, 1) { x, o in o[0] = side * crossN(b(x) - a(x), r.0(x) - a(x)) - r.1(x) }
                 } else if let r1 = round(c1), let r2 = round(c2) {
