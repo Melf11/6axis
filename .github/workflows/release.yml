@@ -57,6 +57,22 @@ jobs:
         run: scripts/release-notes.sh "$GITHUB_REF_NAME" > "$RUNNER_TEMP/notes.md"
 
       - name: Publish GitHub release
+        id: publish
+        # Uploads occasionally fail with a network error ("other side closed"); one retry below.
+        continue-on-error: true
+        uses: softprops/action-gh-release@v2
+        with:
+          name: 6axis ${{ github.ref_name }}
+          body_path: ${{ runner.temp }}/notes.md
+          prerelease: ${{ contains(github.ref_name, '-') }}
+          files: |
+            build/6axis-*.dmg
+            build/6axis-*.zip
+            build/6axis-*.zip.sig
+            build/6axis-*.sha256
+
+      - name: Publish GitHub release (retry)
+        if: steps.publish.outcome == 'failure'
         uses: softprops/action-gh-release@v2
         with:
           name: 6axis ${{ github.ref_name }}
