@@ -132,10 +132,24 @@ final class Updater {
             guard editor.confirmDiscard() else { phase = .available; try? FileManager.default.removeItem(at: staged.deletingLastPathComponent()); return }
             try launchSwapHelper(newApp: staged, oldApp: appURL)
             isRelaunching = true
-            NSApp.terminate(nil)
+            await quitForUpdate(editor: editor)
         } catch {
             phase = .failed(String(localized: "Update fehlgeschlagen: \(error.localizedDescription)"))
         }
+    }
+
+    /// Quits so the helper can swap the app. AppKit ignores `terminate` while a sheet is attached to a
+    /// window – the update sheet itself – so it is closed first. If the app is still running after a
+    /// few seconds (another sheet or panel), the session is saved and the process ends directly; the
+    /// question about unsaved changes has already been answered at this point.
+    private func quitForUpdate(editor: Editor) async {
+        showSheet = false
+        for window in NSApp.windows { if let sheet = window.attachedSheet { window.endSheet(sheet) } }
+        try? await Task.sleep(nanoseconds: 400_000_000)
+        NSApp.terminate(nil)
+        try? await Task.sleep(nanoseconds: 5_000_000_000)
+        editor.finishSession(discardChanges: editor.discardedChanges)
+        exit(0)
     }
 
     /// Unpacks the ZIP into a temporary folder and checks that it contains the expected app.

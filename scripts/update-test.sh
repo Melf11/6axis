@@ -26,8 +26,12 @@ JSON
 version() { /usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' "$T/apps/6axis.app/Contents/Info.plist"; }
 run_old() {
     rm -rf "$T/apps/6axis.app"; cp -R "$ROOT/build/6axis.app" "$T/apps/"
-    SIXAXIS_UPDATE_TEST=1 SIXAXIS_UPDATE_NO_RELAUNCH=1 SIXAXIS_UPDATE_FEED="file://$T/feed/latest.json" \
-        SIXAXIS_UPDATE_PUBLIC_KEY="$PUB" "$T/apps/6axis.app/Contents/MacOS/SixAxis" 2>&1 | grep UPDATE || true
+    ( SIXAXIS_UPDATE_TEST=1 SIXAXIS_UPDATE_NO_RELAUNCH=1 SIXAXIS_UPDATE_FEED="file://$T/feed/latest.json" \
+        SIXAXIS_UPDATE_PUBLIC_KEY="$PUB" "$T/apps/6axis.app/Contents/MacOS/SixAxis" > "$T/run.log" 2>&1 ) &
+    local pid=$!
+    for i in $(seq 1 60); do kill -0 $pid 2>/dev/null || break; sleep 0.5; done
+    if kill -0 $pid 2>/dev/null; then echo "  app did not quit within 30 s"; kill -9 $pid; fi
+    grep UPDATE "$T/run.log" || true
     for i in $(seq 1 50); do [ -d "$T/apps/previous.app" ] || [ "$(version)" = 9.9.9 ] && break; sleep 0.2; done
     sleep 1
 }
@@ -39,10 +43,17 @@ feed forged.sig
 run_old
 if [ "$(version)" = 1.0.0 ]; then echo "✓ forged update rejected, app unchanged (1.0.0)"; else echo "✗ forged update installed!"; fail=1; fi
 
-echo "2) valid signature:"
+echo "2) valid signature, update sheet open, unsaved changes:"
+feed 6axis-9.9.9.zip.sig
+export SIXAXIS_UPDATE_WITH_SHEET=1
+run_old
+unset SIXAXIS_UPDATE_WITH_SHEET
+if [ "$(version)" = 9.9.9 ] && ! grep -q "did not quit" "$T/run.log"; then echo "✓ installs with the sheet open"; else echo "✗ stuck with the sheet open (version $(version))"; fail=1; fi
+
+echo "3) valid signature:"
 feed 6axis-9.9.9.zip.sig
 run_old
-if [ "$(version)" = 9.9.9 ] && codesign --verify --deep --strict "$T/apps/6axis.app" 2>/dev/null; then
+if [ "$(version)" = 9.9.9 ] && ! grep -q "did not quit" "$T/run.log" && codesign --verify --deep --strict "$T/apps/6axis.app" 2>/dev/null; then
     echo "✓ app replaced by 9.9.9, signature intact"
 else
     echo "✗ update not installed (version $(version))"; fail=1
