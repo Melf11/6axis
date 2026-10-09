@@ -20,13 +20,13 @@ run() {
     local pid=$! waited=0
     while kill -0 $pid 2>/dev/null; do
         sleep 1; waited=$((waited + 1))
-        if [ $waited -ge "$limit" ]; then kill -9 $pid; echo "✗ $name: timeout after ${limit}s"; fail=1; return; fi
+        if [ $waited -ge "$limit" ]; then kill -9 $pid; echo "✗ $name: timeout after ${limit}s"; echo "::error::ui-check $name timeout after ${limit}s"; fail=1; return; fi
     done
     wait $pid; local code=$?
     [ $code -eq 0 ] || { echo "✗ $name: exit code $code"; tail -5 "$OUT/$name.log"; fail=1; }
 }
 expect() {   # name, pattern, description
-    if grep -qE "$2" "$OUT/$1.log"; then echo "✓ $1: $3"; else echo "✗ $1: $3 – not found"; fail=1; fi
+    if grep -qE "$2" "$OUT/$1.log"; then echo "✓ $1: $3"; else echo "✗ $1: $3 – not found"; echo "::error::ui-check $1: $3 – not found"; fail=1; fi
 }
 count() {    # dir, minimum, description
     local n; n=$(ls "$1"/*.png 2>/dev/null | wc -l | tr -d ' ')
@@ -55,7 +55,13 @@ m = re.search(r"NAV zoom with cmd: distance ([\d.]+) -> ([\d.]+)", log)
 p = re.search(r"NAV pan: target moved ([\d.]+)", log)
 sys.exit(0 if m and float(m.group(2)) < float(m.group(1)) * 0.9 and p and float(p.group(1)) > 1 else 1)
 PY
-then echo "✓ navigation: ⌘-scroll zooms, two-finger scroll pans (3D)"; else echo "✗ navigation: 3D zoom/pan"; fail=1; fi
+then echo "✓ navigation: ⌘-scroll zooms, two-finger scroll pans (3D)"; else echo "✗ navigation: 3D zoom/pan"; echo "::error::ui-check navigation: 3D zoom/pan"; fail=1; fi
 expect navigation "NAV drawing snapshots written" "drawing window scroll pan and zoom"
 
+if [ $fail -ne 0 ] && [ -n "${GITHUB_ACTIONS:-}" ]; then
+    # Surface details as annotations (readable without access to the job log).
+    for f in "$OUT"/*.log; do
+        echo "::error title=ui-check $(basename "$f")::$(grep -E 'NAV|DEMO: errors|SHEETS|EXAMPLE|REBUILD|rror|atal' "$f" | tail -6 | tr '\n' '|' | cut -c1-900)"
+    done
+fi
 exit $fail
