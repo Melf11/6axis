@@ -219,6 +219,16 @@ extension Editor {
             beginCommand(.sketchPlane, pendingTool: tool)
             return
         }
+        // Mirror and patterns work on the curves selected beforehand.
+        if [.mirror, .rectPattern, .circularPattern].contains(tool) {
+            let curves = selection.compactMap { p -> Int? in if case let .sketchCurve(_, c) = p { return c }; return nil }
+            guard !curves.isEmpty else {
+                showToast(String(localized: "Wähle zuerst die Kurven aus, die kopiert werden sollen"))
+                return
+            }
+            copySource = curves
+            if tool == .rectPattern { patternRequest = PatternRequest(kind: .rectangular, curves: curves) }
+        }
         sketchTool = tool
         toolPoints.removeAll()
         resetToolInputs()
@@ -275,6 +285,10 @@ extension Editor {
         case .spline: splineClick(pt, clickCount: clickCount)
         case .sketchFillet, .sketchChamfer: cornerClick()
         case .trim, .extend: trimClick(pt)
+        case .offset: offsetClick()
+        case .mirror: mirrorClick()
+        case .circularPattern: patternCenterClick()
+        case .rectPattern: break
         case .dimension: dimensionClick(pt)
         case let .constraint(ct): constraintClick(ct)
         }
@@ -400,6 +414,104 @@ extension Editor {
             if ccw { sk.addArc(center: pc, start: pa, end: pb) } else { sk.addArc(center: pc, start: pb, end: pa) }
         }
         toolPoints.removeAll()
+    }
+
+    // MARK: Offset, mirror, patterns
+
+    /// Chain, distance and side for an offset at the cursor (nil when not over a curve).
+    func offsetParameters() -> (curve: Int, distance: Double, side: Double)? {
+        guard case let .sketchCurve(_, cid)? = hover, let sk = activeSketch, let c = sk.curve(cid),
+              let raw = cursor.flatMap({ _ in sketchPosition(at: lastMouse) }) else { return nil }
+        let near = closestPoint(on: c, sk, to: raw)
+        let d = simd_distance(raw, near)
+        guard d > 1e-9 else { return nil }
+        let side: Double
+        switch c.geometry {
+        case let .line(a, b):
+            guard let pa = sk.point(a), let pb = sk.point(b) else { return nil }
+            let dir = pb - pa, v = raw - pa
+            side = dir.x * v.y - dir.y * v.x >= 0 ? 1 : -1
+        case .arc, .circle:
+            guard let center = sk.center(of: c) else { return nil }
+            side = simd_distance(raw, center) < sk.radius(of: c) ? 1 : -1
+            if case .circle = c.geometry { return (cid, gridSnapActive ? snapLength(d) : d, -side) }
+        default:
+            return nil
+        }
+        return (cid, gridSnapActive ? snapLength(d) : d, side)
+    }
+
+    /// Sketch with the offset the click would create (for the preview).
+    func offsetPreview() -> Sketch? {
+        guard var sk = activeSketch, let (c, d, s) = offsetParameters() else { return nil }
+        return SketchEdit.offset(&sk, chainFrom: c, distance: d, side: s, text: plainNumber(d)) == nil ? nil : sk
+    }
+
+    private func offsetClick() {
+        guard let (c, d, s) = offsetParameters() else { return }
+        if activeSketch?.curve(c)?.isSpline == true { showToast(String(localized: "Splines lassen sich noch nicht versetzen")); return }
+        let leader: Int? = mutateSketch { SketchEdit.offset(&$0, chainFrom: c, distance: d, side: s, text: plainNumber(d)) } ?? nil
+        if let leader { editingDimension = leader } else { showToast(String(localized: "Versatz nicht möglich (Abstand zu groß?)")) }
+    }
+
+    private func mirrorClick() {
+        guard case let .sketchCurve(_, axis)? = hover, activeSketch?.curve(axis)?.isLine == true else {
+            showToast(String(localized: "Klicke auf eine Linie als Spiegelachse"))
+            return
+        }
+        let source = copySource
+        mutateSketch { SketchEdit.mirror(&$0, curves: source, axis: axis) }
+        copySource.removeAll()
+        selection.removeAll()
+        sketchTool = .select
+    }
+
+    private func patternCenterClick() {
+        guard case let .sketchPoint(_, p)? = hover else {
+            showToast(String(localized: "Klicke auf den Mittelpunkt des Musters"))
+            return
+        }
+        patternRequest = PatternRequest(kind: .circular, curves: copySource, center: p, count: "6")
+    }
+
+    /// Applies `request` to a sketch (used for the preview and for committing).
+    func applyPattern(_ r: PatternRequest, to sk: inout Sketch) -> Bool {
+        guard let n = Int(r.count.trimmingCharacters(in: .whitespaces)), n >= 2 else { return false }
+        switch r.kind {
+        case .rectangular:
+            guard let spacing = try? evaluator.value(r.spacing, kind: .length), spacing > 0 else { return false }
+            let n2 = max(1, Int(r.count2.trimmingCharacters(in: .whitespaces)) ?? 1)
+            let spacing2 = (try? evaluator.value(r.spacing2, kind: .length)) ?? 0
+            let dir = r.horizontal ? Vec2(1, 0) : Vec2(0, 1)
+            return !SketchEdit.rectangularPattern(&sk, curves: r.curves, direction: dir, count: n, spacing: spacing, spacingText: r.spacing,
+                                                  direction2: r.horizontal ? Vec2(0, 1) : Vec2(1, 0), count2: n2,
+                                                  spacing2: spacing2, spacingText2: r.spacing2).isEmpty
+        case .circular:
+            guard let c = r.center, let angle = try? evaluator.value(r.angle, kind: .angle) else { return false }
+            return SketchEdit.circularPattern(&sk, curves: r.curves, center: c, count: n, angle: angle) != nil
+        }
+    }
+
+    func patternPreview() -> Sketch? {
+        guard let r = patternRequest, var sk = activeSketch, applyPattern(r, to: &sk) else { return nil }
+        return sk
+    }
+
+    func commitPattern() {
+        guard let r = patternRequest else { return }
+        var ok = false
+        mutateSketch { sk in ok = applyPattern(r, to: &sk) }
+        if !ok { showToast(String(localized: "Muster nicht möglich – Anzahl und Abstand prüfen")); return }
+        patternRequest = nil
+        copySource.removeAll()
+        selection.removeAll()
+        sketchTool = .select
+    }
+
+    func cancelPattern() {
+        patternRequest = nil
+        copySource.removeAll()
+        sketchTool = .select
     }
 
     // MARK: Trim / extend
@@ -625,6 +737,14 @@ extension Editor {
         case let .angle(l1, l2, _):
             guard let m1 = lineMid(l1), let m2 = lineMid(l2) else { return nil }
             return (m1 + m2) / 2
+        case let .offset(copy, source, _):
+            guard let a = sk.curve(source).flatMap({ sk.center(of: $0) }), let b = sk.curve(copy).flatMap({ sk.center(of: $0) }) else { return nil }
+            return sk.curve(source)?.isLine == true ? (a + b) / 2 : b
+        case let .translated(a, b, _, _):
+            guard let pa = sk.point(a), let pb = sk.point(b) else { return nil }
+            return (pa + pb) / 2
+        case let .rotated(_, _, b, _):
+            return sk.point(b)
         default:
             return nil
         }
@@ -657,7 +777,7 @@ extension Editor {
             showToast(error.localizedDescription)
             return false
         }
-        sk.constraints[i].kind = kind.withValue(text)
+        sk.setValue(text, of: cid)   // linked copies (offset chains, patterns) follow
         let r = SketchSolver(evaluator: evaluator).solve(&sk)
         guard r.converged else {
             showToast(String(localized: "Dieser Wert lässt sich nicht erfüllen"))

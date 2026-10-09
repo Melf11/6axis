@@ -52,6 +52,12 @@ struct ViewportOverlay: View {
 
     private func drawToolPreview(_ ctx: GraphicsContext) {
         guard editor.sketchId != nil, let cur = editor.cursor else { return }
+        if let preview = editor.sketchTool == .offset ? editor.offsetPreview() : editor.patternPreview(), let sk = editor.activeSketch {
+            let known = Set(sk.curves.map(\.id))
+            for c in preview.curves where !known.contains(c.id) {
+                ctx.stroke(path(preview.polyline(c, segments: 64)), with: .color(accent), style: StrokeStyle(lineWidth: 1.6, dash: [5, 3]))
+            }
+        }
         if editor.sketchTool == .trim, case let .sketchCurve(_, cid)? = editor.hover, let sk = editor.activeSketch,
            let piece = SketchEdit.trimPreview(sk, curve: cid, at: cur.position) {
             ctx.stroke(path(piece), with: .color(.red.opacity(0.85)), style: StrokeStyle(lineWidth: 3, lineCap: .round))
@@ -275,6 +281,26 @@ struct ViewportOverlay: View {
             var start = a0
             if sweep > .pi { start = atan2(u2.y, u2.x); sweep = 2 * .pi - sweep }
             g.lines = [(0...32).map { i in v + r * Vec2(cos(start + sweep * Double(i) / 32), sin(start + sweep * Double(i) / 32)) }]
+        case let .offset(copyId, sourceId, _):
+            guard let cc = sk.curve(copyId), let sc = sk.curve(sourceId) else { return nil }
+            if sc.isLine {
+                let a = editor.footPoint(L, on: sc, sk), b = editor.footPoint(L, on: cc, sk)
+                g.lines = [[a, b]]
+                g.arrows = [(a, b), (b, a)]
+            } else if let center = sk.center(of: sc) {
+                let dir = simd_length(L - center) > 1e-9 ? simd_normalize(L - center) : Vec2(1, 0)
+                let a = center + dir * sk.radius(of: sc), b = center + dir * sk.radius(of: cc)
+                g.lines = [[a, b]]
+                g.arrows = [(a, b), (b, a)]
+            }
+        case let .translated(p1, p2, _, _):
+            guard let a = sk.point(p1), let b = sk.point(p2) else { return nil }
+            aligned(a, b)
+        case let .rotated(m, p1, p2, _):
+            guard let c0 = sk.point(m), let a = sk.point(p1), let b = sk.point(p2) else { return nil }
+            let r = simd_distance(c0, a)
+            let a0 = atan2(a.y - c0.y, a.x - c0.x), sweep = normalizedAngle(atan2(b.y - c0.y, b.x - c0.x) - a0)
+            g.lines = [(0...32).map { i in c0 + r * Vec2(cos(a0 + sweep * Double(i) / 32), sin(a0 + sweep * Double(i) / 32)) }]
         default:
             return nil
         }
@@ -284,7 +310,7 @@ struct ViewportOverlay: View {
     private func drawDimensions(_ ctx: GraphicsContext) {
         guard editor.sketchId != nil, let sk = sketch else { return }
         let failed = editor.lastSolve?.failedConstraints ?? []
-        for c in sk.constraints where c.kind.isDimension {
+        for c in sk.constraints where c.kind.isDimension && !sk.isGroupFollower(c) {
             guard let g = geometry(c, sk) else { continue }
             let selected = editor.selection.contains(.constraint(editor.sketchId!, c.id))
             let color = failed.contains(c.id) ? Color.red : (selected ? accent : dimColor)
@@ -308,7 +334,7 @@ struct ViewportOverlay: View {
     private var dimensionLabels: some View {
         let sk = sketch
         let sid = editor.sketchId
-        return ForEach(sk?.constraints.filter { $0.kind.isDimension } ?? [], id: \.id) { c in
+        return ForEach(sk?.constraints.filter { $0.kind.isDimension && !(sk?.isGroupFollower($0) ?? false) } ?? [], id: \.id) { c in
             if let sk, let sid, let g = geometry(c, sk), let pos = screen(g.label) {
                 DimensionLabel(editor: editor, sketchId: sid, constraint: c, failed: editor.lastSolve?.failedConstraints.contains(c.id) == true)
                     .position(pos)
@@ -349,7 +375,8 @@ struct ViewportOverlay: View {
             stack[-pid - 1] = k + 1
             out.append(Glyph(id: "\(con)-\(tag)", constraint: con, symbol: symbol, position: CGPoint(x: s.x + 12 + CGFloat(k) * 19, y: s.y - 12)))
         }
-        for c in sk.constraints {
+        // Constraints of copies (patterns, mirror) are shown by their dimension, not one glyph per copy.
+        for c in sk.constraints where c.group == nil {
             switch c.kind {
             case let .horizontal(l): onCurve(l, c.id, "arrow.left.and.right", "h")
             case let .vertical(l): onCurve(l, c.id, "arrow.up.and.down", "v")

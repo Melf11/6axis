@@ -74,6 +74,13 @@ public enum ConstraintKind: Codable, Hashable, Sendable {
     case radius(curve: Int, value: String)
     case diameter(curve: Int, value: String)
     case angle(Int, Int, value: String)               // line, line (degrees)
+    // Copies (offset, patterns) – parametric: the copy follows the original and the value.
+    /// `curve` runs parallel (lines) or concentric (arcs/circles) to `source` at distance `value`.
+    case offset(curve: Int, source: Int, value: String)
+    /// `copy` = `original` + unit `direction` · `value`.
+    case translated(original: Int, copy: Int, direction: Vec2, value: String)
+    /// `copy` = `original` rotated about `center` by `value` degrees (counter-clockwise).
+    case rotated(center: Int, original: Int, copy: Int, value: String)
 
     public var isDimension: Bool { dimensionValue != nil }
 
@@ -81,7 +88,7 @@ public enum ConstraintKind: Codable, Hashable, Sendable {
         switch self {
         case let .distance(_, _, v), let .horizontalDistance(_, _, v), let .verticalDistance(_, _, v),
              let .pointLineDistance(_, _, v), let .length(_, v), let .radius(_, v), let .diameter(_, v),
-             let .angle(_, _, v):
+             let .angle(_, _, v), let .offset(_, _, v), let .translated(_, _, _, v), let .rotated(_, _, _, v):
             return v
         default:
             return nil
@@ -90,6 +97,7 @@ public enum ConstraintKind: Codable, Hashable, Sendable {
 
     public var valueKind: ValueKind {
         if case .angle = self { return .angle }
+        if case .rotated = self { return .angle }
         return .length
     }
 
@@ -103,6 +111,9 @@ public enum ConstraintKind: Codable, Hashable, Sendable {
         case let .radius(c, _): return .radius(curve: c, value: v)
         case let .diameter(c, _): return .diameter(curve: c, value: v)
         case let .angle(a, b, _): return .angle(a, b, value: v)
+        case let .offset(c, s, _): return .offset(curve: c, source: s, value: v)
+        case let .translated(o, c, d, _): return .translated(original: o, copy: c, direction: d, value: v)
+        case let .rotated(m, o, c, _): return .rotated(center: m, original: o, copy: c, value: v)
         default: return self
         }
     }
@@ -115,6 +126,8 @@ public enum ConstraintKind: Codable, Hashable, Sendable {
             return [a, b]
         case let .pointOnCurve(p, _), let .midpoint(p, _), let .pointLineDistance(p, _, _): return [p]
         case let .symmetric(a, b, _): return [a, b]
+        case let .translated(a, b, _, _): return [a, b]
+        case let .rotated(m, a, b, _): return [m, a, b]
         default: return []
         }
     }
@@ -129,6 +142,8 @@ public enum ConstraintKind: Codable, Hashable, Sendable {
             return [a, b]
         case let .pointOnCurve(_, c), let .midpoint(_, c), let .pointLineDistance(_, c, _), let .symmetric(_, _, c):
             return [c]
+        case let .offset(a, b, _):
+            return [a, b]
         default: return []
         }
     }
@@ -152,6 +167,9 @@ public enum ConstraintKind: Codable, Hashable, Sendable {
         case .radius: return String(localized: "Radius")
         case .diameter: return String(localized: "Durchmesser")
         case .angle: return String(localized: "Winkel")
+        case .offset: return String(localized: "Versatz")
+        case .translated: return String(localized: "Verschiebung")
+        case .rotated: return String(localized: "Drehung")
         }
     }
 }
@@ -161,12 +179,20 @@ public struct SketchConstraint: Codable, Hashable, Identifiable, Sendable {
     public var kind: ConstraintKind
     /// Offset of the dimension label from its anchor, in sketch units.
     public var labelOffset: Vec2
+    /// Linked dimensions (offset chains, patterns) share a group: editing the leader's value updates all
+    /// members as `factor × (value)`. Only the leader (factor 1) shows a label.
+    public var group: Int?
+    public var factor: Double?
 
-    public init(id: Int, kind: ConstraintKind, labelOffset: Vec2 = .zero) {
+    public init(id: Int, kind: ConstraintKind, labelOffset: Vec2 = .zero, group: Int? = nil, factor: Double? = nil) {
         self.id = id
         self.kind = kind
         self.labelOffset = labelOffset
+        self.group = group
+        self.factor = factor
     }
+
+
 }
 
 /// A 2D sketch: points, curves referencing points, and constraints.
@@ -239,10 +265,32 @@ public struct Sketch: Codable, Hashable, Sendable {
     }
 
     @discardableResult
-    public mutating func addConstraint(_ kind: ConstraintKind, labelOffset: Vec2 = .zero) -> Int {
+    public mutating func addConstraint(_ kind: ConstraintKind, labelOffset: Vec2 = .zero, group: Int? = nil, factor: Double? = nil) -> Int {
         let id = newId()
-        constraints.append(SketchConstraint(id: id, kind: kind, labelOffset: labelOffset))
+        constraints.append(SketchConstraint(id: id, kind: kind, labelOffset: labelOffset, group: group, factor: factor))
         return id
+    }
+
+    /// Sets a dimension's value; members of its group follow as factor × (value).
+    public mutating func setValue(_ text: String, of constraintId: Int) {
+        guard let i = constraints.firstIndex(where: { $0.id == constraintId }) else { return }
+        let k = constraints[i].factor ?? 1
+        constraints[i].kind = constraints[i].kind.withValue(text)
+        guard let g = constraints[i].group else { return }
+        for j in constraints.indices where j != i && constraints[j].group == g {
+            let f = (constraints[j].factor ?? 1) / k
+            constraints[j].kind = constraints[j].kind.withValue(f == 1 ? text : "\(Self.number(f)) * (\(text))")
+        }
+    }
+
+    /// Linked groups show one label: the oldest member's. The others follow its value.
+    public func isGroupFollower(_ c: SketchConstraint) -> Bool {
+        guard let g = c.group else { return false }
+        return constraints.contains { $0.group == g && $0.id < c.id && $0.kind.isDimension }
+    }
+
+    static func number(_ v: Double) -> String {
+        v == v.rounded() ? String(Int(v)) : String(v)
     }
 
     public func radius(of curve: SketchCurve) -> Double {
@@ -314,6 +362,8 @@ public struct Sketch: Codable, Hashable, Sendable {
             case let .midpoint(p, l): nk = .midpoint(point: r(p), line: l)
             case let .pointLineDistance(p, l, v): nk = .pointLineDistance(point: r(p), line: l, value: v)
             case let .symmetric(x, y, l): nk = .symmetric(r(x), r(y), line: l)
+            case let .translated(x, y, d, v): nk = .translated(original: r(x), copy: r(y), direction: d, value: v)
+            case let .rotated(m, x, y, v): nk = .rotated(center: r(m), original: r(x), copy: r(y), value: v)
             default: nk = k
             }
             constraints[i].kind = nk

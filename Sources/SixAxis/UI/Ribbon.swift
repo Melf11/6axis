@@ -102,6 +102,10 @@ struct Ribbon: View {
             group(String(localized: "Ändern")) {
                 tool(.trim, String(localized: "Trimmen"), "scissors", "T")
                 tool(.extend, String(localized: "Verlängern"), "arrow.right.to.line")
+                tool(.offset, String(localized: "Versatz"), "square.on.square.dashed", "O")
+                tool(.mirror, String(localized: "Spiegeln"), "arrow.left.and.right.righttriangle.left.righttriangle.right")
+                tool(.rectPattern, String(localized: "Muster"), "square.grid.3x1.below.line.grid.1x2")
+                tool(.circularPattern, String(localized: "Kreismuster"), "circle.hexagongrid")
                 tool(.sketchFillet, String(localized: "Abrunden"), "button.roundedtop.horizontal")
                 tool(.sketchChamfer, String(localized: "Fase"), "triangle.bottomhalf.filled")
                 ToolButton(title: String(localized: "Hilfslinie"), symbol: "line.diagonal.arrow", shortcut: "X") { editor.toggleConstruction() }

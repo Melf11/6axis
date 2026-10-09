@@ -563,6 +563,26 @@
         }
       }
     },
+    "Anzahl und Abstand im Feld rechts eingeben": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enter count and spacing in the panel on the right"
+          }
+        }
+      }
+    },
+    "Anzahl und Winkel im Feld rechts eingeben": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enter count and angle in the panel on the right"
+          }
+        }
+      }
+    },
     "Aufbewahrungsbox (3D-Druck)": {
       "localizations": {
         "en": {
@@ -2165,6 +2185,16 @@
         }
       }
     },
+    "Gesamtwinkel": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Total angle"
+          }
+        }
+      }
+    },
     "Geschwindigkeit": {
       "localizations": {
         "en": {
@@ -2647,12 +2677,32 @@
         }
       }
     },
+    "Klicke auf den Mittelpunkt des Musters": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Click the centre of the pattern"
+          }
+        }
+      }
+    },
     "Klicke auf eine Ecke zwischen zwei Linien": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Click a corner between two lines"
+          }
+        }
+      }
+    },
+    "Klicke auf eine Linie als Spiegelachse": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Click a line as mirror axis"
           }
         }
       }
@@ -2723,6 +2773,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Circle"
+          }
+        }
+      }
+    },
+    "Kreismuster": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Circular pattern"
+          }
+        }
+      }
+    },
+    "Kurve überfahren – die Seite des Mauszeigers bestimmt die Richtung, Klick übernimmt": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hover a curve – the pointer's side sets the direction, click to apply"
           }
         }
       }
@@ -2804,6 +2874,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Line"
+          }
+        }
+      }
+    },
+    "Linie als Spiegelachse anklicken": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Click a line as mirror axis"
           }
         }
       }
@@ -3048,6 +3128,16 @@
         }
       }
     },
+    "Mittelpunkt des Kreismusters anklicken": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Click the centre of the circular pattern"
+          }
+        }
+      }
+    },
     "Mittelpunkt klicken": {
       "localizations": {
         "en": {
@@ -3094,6 +3184,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Middle button drag"
+          }
+        }
+      }
+    },
+    "Muster": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pattern"
+          }
+        }
+      }
+    },
+    "Muster nicht möglich – Anzahl und Abstand prüfen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pattern not possible – check count and spacing"
           }
         }
       }
@@ -3852,6 +3962,36 @@
         }
       }
     },
+    "Rechteckmuster": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rectangular pattern"
+          }
+        }
+      }
+    },
+    "Reihen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rows"
+          }
+        }
+      }
+    },
+    "Reihenabstand": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Row spacing"
+          }
+        }
+      }
+    },
     "Release-Seite öffnen": {
       "localizations": {
         "en": {
@@ -4467,6 +4607,16 @@
         }
       }
     },
+    "Spiegeln": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mirror"
+          }
+        }
+      }
+    },
     "Spline": {
       "localizations": {
         "en": {
@@ -4483,6 +4633,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Splines can't be trimmed yet"
+          }
+        }
+      }
+    },
+    "Splines lassen sich noch nicht versetzen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Splines can't be offset yet"
           }
         }
       }
@@ -5081,6 +5241,26 @@
         }
       }
     },
+    "Versatz": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Offset"
+          }
+        }
+      }
+    },
+    "Versatz nicht möglich (Abstand zu groß?)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Offset not possible (distance too large?)"
+          }
+        }
+      }
+    },
     "Verschieben": {
       "localizations": {
         "en": {
@@ -5117,6 +5297,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Reverse pan direction"
+          }
+        }
+      }
+    },
+    "Verschiebung": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Translation"
           }
         }
       }
@@ -5167,6 +5357,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Operation"
+          }
+        }
+      }
+    },
+    "Waagerecht": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Horizontal"
           }
         }
       }
@@ -5389,6 +5589,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Choose an origin plane or a planar face in the viewport."
+          }
+        }
+      }
+    },
+    "Wähle zuerst die Kurven aus, die kopiert werden sollen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "First select the curves to copy"
           }
         }
       }

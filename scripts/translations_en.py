@@ -232,4 +232,17 @@ EN.update({
 "Stück einer Kurve anklicken, um es bis zu den Schnittpunkten zu entfernen": "Click a piece of a curve to remove it up to the intersections",
 "Linie nahe dem Ende anklicken, um sie bis zur nächsten Kurve zu verlängern": "Click a line near its end to extend it to the next curve",
 })
+EN.update({
+"Anzahl und Abstand im Feld rechts eingeben": "Enter count and spacing in the panel on the right",
+"Anzahl und Winkel im Feld rechts eingeben": "Enter count and angle in the panel on the right",
+"Gesamtwinkel": "Total angle", "Klicke auf den Mittelpunkt des Musters": "Click the centre of the pattern",
+"Klicke auf eine Linie als Spiegelachse": "Click a line as mirror axis", "Kreismuster": "Circular pattern",
+"Kurve überfahren – die Seite des Mauszeigers bestimmt die Richtung, Klick übernimmt": "Hover a curve – the pointer's side sets the direction, click to apply",
+"Linie als Spiegelachse anklicken": "Click a line as mirror axis", "Mittelpunkt des Kreismusters anklicken": "Click the centre of the circular pattern",
+"Muster": "Pattern", "Muster nicht möglich – Anzahl und Abstand prüfen": "Pattern not possible – check count and spacing",
+"Rechteckmuster": "Rectangular pattern", "Reihen": "Rows", "Reihenabstand": "Row spacing", "Spiegeln": "Mirror",
+"Splines lassen sich noch nicht versetzen": "Splines can't be offset yet", "Versatz": "Offset",
+"Versatz nicht möglich (Abstand zu groß?)": "Offset not possible (distance too large?)", "Verschiebung": "Translation",
+"Waagerecht": "Horizontal", "Wähle zuerst die Kurven aus, die kopiert werden sollen": "First select the curves to copy",
+})
 

@@ -365,6 +365,43 @@ public struct SketchSolver {
             case let .diameter(c, _):
                 guard let r = round(c) else { failed.insert(cid); continue }
                 add(cid, r.2, 1) { x, o in o[0] = 2 * r.1(x) - value }
+            case let .offset(copyId, sourceId, _):
+                if let (a, b, vs) = lineEnds(sourceId), let (c, d, vc) = lineEnds(copyId) {
+                    // Both copy endpoints at the signed distance from the source line (also makes it parallel).
+                    let side = initial { x in sgn(crossN(b(x) - a(x), (c(x) + d(x)) / 2 - a(x))) }
+                    add(cid, vs + vc, 2) { x, o in
+                        let dir = b(x) - a(x)
+                        o[0] = side * crossN(dir, c(x) - a(x)) - value
+                        o[1] = side * crossN(dir, d(x) - a(x)) - value
+                    }
+                } else if let r1 = round(sourceId), let r2 = round(copyId) {
+                    // Concentric, radius differs by the offset (outside or inside, as created).
+                    let side = initial { x in sgn(r2.1(x) - r1.1(x)) }
+                    add(cid, r1.2 + r2.2, 3) { x, o in
+                        let d = r2.0(x) - r1.0(x)
+                        o[0] = d.x; o[1] = d.y
+                        o[2] = side * (r2.1(x) - r1.1(x)) - value
+                    }
+                } else {
+                    failed.insert(cid)
+                }
+            case let .translated(orig, copy, dir, _):
+                guard let a = P(orig), let b = P(copy), simd_length(dir) > 1e-12 else { failed.insert(cid); continue }
+                let u = simd_normalize(dir)
+                add(cid, a.1 + b.1, 2) { x, o in
+                    let d = b.0(x) - a.0(x) - u * value
+                    o[0] = d.x; o[1] = d.y
+                }
+            case let .rotated(center, orig, copy, _):
+                guard let c = P(center), let a = P(orig), let b = P(copy) else { failed.insert(cid); continue }
+                let t = value * .pi / 180
+                let cs = cos(t), sn = sin(t)
+                add(cid, c.1 + a.1 + b.1, 2) { x, o in
+                    let v = a.0(x) - c.0(x)
+                    let target = c.0(x) + Vec2(cs * v.x - sn * v.y, sn * v.x + cs * v.y)
+                    let d = b.0(x) - target
+                    o[0] = d.x; o[1] = d.y
+                }
             case let .angle(l1, l2, _):
                 guard let (a1, b1, v1) = lineEnds(l1), let (a2, b2, v2) = lineEnds(l2) else { failed.insert(cid); continue }
                 let target = value * .pi / 180

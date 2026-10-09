@@ -38,6 +38,14 @@ enum SketchChecks {
 
     static func pause(_ s: Double = 0.3) async { try? await Task.sleep(nanoseconds: UInt64(s * 1e9)) }
 
+    /// Fixed zoom so pick tolerances (in pixels) map to predictable sketch distances.
+    static func view(_ editor: Editor, center: Vec2 = Vec2(40, 25)) async {
+        editor.cameraAnimation = nil
+        editor.camera.distance = 200
+        if let plane = editor.activePlane { editor.camera.target = plane.point(center).float }
+        await pause(0.3)
+    }
+
     static func run(_ editor: Editor) async {
         editor.newDocument()
         editor.beginSketch(on: .xy)
@@ -152,6 +160,67 @@ enum SketchChecks {
             return false
         }.count } ?? 0
         check("trimmed divider kept", lineEnds == 1)
+        editor.finishSketch()
+        await pause()
+
+        // 6. Offset a rectangle outwards, then type the distance.
+        editor.beginSketch(on: .xy)
+        await pause(0.8)
+        await view(editor)
+        editor.setSketchTool(.rectangle)
+        click(editor, Vec2(0, 0)); click(editor, Vec2(60, 40))
+        editor.setSketchTool(.offset)
+        if let pt = screen(editor, Vec2(30, -0.6)) { editor.updateHover(at: pt) }
+        check("offset preview", editor.offsetPreview() != nil)
+        click(editor, Vec2(30, -0.6))
+        if let dim = editor.editingDimension { editor.setDimensionValue(dim, "4"); editor.editingDimension = nil }
+        await pause(0.6)
+        let offsetRegions = editor.activeSketchBuild?.regions.count ?? 0
+        // Every offset side lies 4 from its source (the undimensioned rectangle itself may shift).
+        let gaps: [Double] = editor.activeSketch.map { sk in sk.constraints.compactMap { con -> Double? in
+            guard case let .offset(copy, source, _) = con.kind, let cc = sk.curve(copy), case let .line(a, _) = cc.geometry,
+                  let pa = sk.point(a), let sc = sk.curve(source) else { return nil }
+            return simd_distance(pa, editor.footPoint(pa, on: sc, sk))
+        } } ?? []
+        check("offset ring", offsetRegions == 2 && gaps.count == 4 && gaps.allSatisfy { abs($0 - 4) < 1e-6 }, "regions \(offsetRegions), gaps \(gaps)")
+        editor.finishSketch()
+        await pause()
+
+        // 7. Pattern: a hole, 4 instances 32 mm apart; then a bolt circle of 6.
+        editor.beginSketch(on: .xy)
+        await pause(0.8)
+        await view(editor)
+        editor.setSketchTool(.circle)
+        click(editor, Vec2(40, 20)); click(editor, Vec2(43, 20))
+        editor.setSketchTool(.select)
+        // The radius snaps to the grid – click the actual rim.
+        let rim = editor.activeSketch?.curves.first.flatMap { c in editor.activeSketch.map { Vec2(40 + $0.radius(of: c), 20) } } ?? Vec2(43, 20)
+        click(editor, rim)
+        check("circle selected", editor.selection.count == 1)
+        editor.setSketchTool(.rectPattern)
+        editor.patternRequest?.count = "4"
+        editor.patternRequest?.spacing = "32 mm"
+        check("pattern preview", (editor.patternPreview()?.curves.count ?? 0) == 4)
+        editor.commitPattern()
+        await pause(0.6)
+        let px = editor.activeSketch?.curves.compactMap { c -> Double? in
+            if case .circle = c.geometry { return editor.activeSketch?.center(of: c)?.x }; return nil
+        }.sorted() ?? []
+        check("rectangular pattern", px.count == 4 && zip(px, px.dropFirst()).allSatisfy { abs($1 - $0 - 32) < 1e-6 }, "\(px)")
+        editor.selection = editor.activeSketch.map { sk in sk.curves.prefix(1).map { .sketchCurve(editor.sketchId!, $0.id) } } ?? []
+        editor.setSketchTool(.circularPattern)
+        click(editor, Vec2(0, 0))
+        editor.patternRequest?.count = "6"
+        editor.commitPattern()
+        await pause(0.6)
+        let circles = editor.activeSketch?.curves.filter { if case .circle = $0.geometry { return true }; return false }.count ?? 0
+        check("circular pattern", circles == 4 + 5, "\(circles) circles")
+        check("patterns solvable", editor.lastSolve?.converged == true)
+        if let dir = ProcessInfo.processInfo.environment["SIXAXIS_SNAPSHOTS"] {
+            editor.fitAll()
+            await pause(0.6)
+            await DemoScript.snap(editor, "sketch-pattern", URL(fileURLWithPath: dir))
+        }
         editor.finishSketch()
         await pause()
     }

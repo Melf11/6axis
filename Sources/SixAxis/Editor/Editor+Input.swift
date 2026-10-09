@@ -149,6 +149,7 @@ extension Editor {
             return true
         case 36, 76: // Return
             if command != nil { commitCommand(); return true }
+            if patternRequest != nil { commitPattern(); return true }
             if sketchId != nil, sketchTool == .line { toolPoints.removeAll(); requestRedraw(); return true }
             if sketchId != nil, finishSpline() { requestRedraw(); return true }
             return false
@@ -169,7 +170,7 @@ extension Editor {
         case "v": setSketchTool(.constraint(.vertical))
         case "t": setSketchTool(.trim)
         case "p": setSketchTool(.constraint(.perpendicular))
-        case "o": toggleProjection()
+        case "o": if sketchId != nil { setSketchTool(.offset) } else { toggleProjection() }
         case "6": homeView()
         case "0": fitAll()
         default: return false
@@ -182,6 +183,7 @@ extension Editor {
         if showCommandPalette { showCommandPalette = false; return }
         if editingDimension != nil { editingDimension = nil; return }
         if command != nil { cancelCommand(); return }
+        if patternRequest != nil { cancelPattern(); return }
         if sketchId != nil {
             cancelSketchTool()
             return

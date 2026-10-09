@@ -27,6 +27,7 @@ struct MainView: View {
                     VStack(alignment: .trailing, spacing: 12) {
                         ViewCube(editor: editor)
                         CommandPanel(editor: editor)
+                        PatternPanel(editor: editor)
                     }
                 }
                 .padding(.horizontal, 12)
@@ -217,6 +218,10 @@ private struct BottomBar: View {
             case .centerRectangle: return n == 0 ? String(localized: "Mittelpunkt klicken") : String(localized: "Ecke klicken")
             case .circle: return n == 0 ? String(localized: "Mittelpunkt klicken · ⌘ = frei setzen") : String(localized: "Radius klicken oder Durchmesser eintippen")
             case .arc: return n == 0 ? String(localized: "Startpunkt klicken") : (n == 1 ? String(localized: "Endpunkt klicken") : String(localized: "Punkt auf dem Bogen klicken"))
+            case .offset: return String(localized: "Kurve überfahren – die Seite des Mauszeigers bestimmt die Richtung, Klick übernimmt")
+            case .mirror: return String(localized: "Linie als Spiegelachse anklicken")
+            case .rectPattern: return String(localized: "Anzahl und Abstand im Feld rechts eingeben")
+            case .circularPattern: return editor.patternRequest == nil ? String(localized: "Mittelpunkt des Kreismusters anklicken") : String(localized: "Anzahl und Winkel im Feld rechts eingeben")
             case .trim: return String(localized: "Stück einer Kurve anklicken, um es bis zu den Schnittpunkten zu entfernen")
             case .extend: return String(localized: "Linie nahe dem Ende anklicken, um sie bis zur nächsten Kurve zu verlängern")
             case .sketchFillet: return String(localized: "Ecke anklicken, dann Radius eintippen")
