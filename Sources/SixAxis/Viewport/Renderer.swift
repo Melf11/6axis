@@ -181,6 +181,11 @@ final class Renderer: NSObject, MTKViewDelegate {
     var needsFrame: (() -> Bool)?
     /// Camera animations keep rendering until they finish.
     private var animating = false
+    /// Frames submitted but not yet on screen. Asking for a drawable while all are in use blocks the main
+    /// thread (up to a second when the display sleeps), so at this limit frames are skipped instead.
+    private var inFlight = 0
+    private var lastSubmit: CFTimeInterval = 0
+    private let maxInFlight = 2
 
     struct FrameState {
         var camera: Camera
@@ -382,6 +387,14 @@ final class Renderer: NSObject, MTKViewDelegate {
 
     func draw(in view: MTKView) {
         let cpuStart = CACurrentMediaTime()
+        // Hidden or minimized windows get no drawables back from the compositor; asking for one would
+        // block the main thread for up to a second per frame. Keep the change pending until visible.
+        guard view.window?.occlusionState.contains(.visible) == true else { return }
+        if inFlight >= maxInFlight {
+            // Watchdog: if no presentation was reported for a second, assume the frames were dropped.
+            guard cpuStart - lastSubmit > 1 else { return }
+            inFlight = 0
+        }
         let changed = needsFrame?() ?? true
         guard changed || animating else { return }   // idle frames cost nothing
         guard let frame = frameProvider?() else { return }
@@ -401,6 +414,11 @@ final class Renderer: NSObject, MTKViewDelegate {
 
         encodeScene(enc, globals: &g, selection: &sel, pick: false)
         enc.endEncoding()
+        inFlight += 1
+        lastSubmit = cpuStart
+        drawable.addPresentedHandler { [weak self] _ in
+            DispatchQueue.main.async { if let self, self.inFlight > 0 { self.inFlight -= 1 } }
+        }
         cmd.present(drawable)
         let stats = self.stats
         cmd.addCompletedHandler { cb in

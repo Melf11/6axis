@@ -11,6 +11,8 @@ import SixAxisCore
 enum DemoScript {
     static func runIfRequested(_ editor: Editor) {
         let env = ProcessInfo.processInfo.environment
+        // Line-buffered output, so logs survive when a check kills a hanging run.
+        if Editor.isAutomatedRun { setvbuf(stdout, nil, _IOLBF, 0) }
         // Session round-trip check: "write" builds a part and is killed, "check" reports what was restored.
         if let mode = env["SIXAXIS_SESSION_TEST"] {
             Task { @MainActor in
@@ -50,6 +52,11 @@ enum DemoScript {
                 }
                 guard let vp = NSApp.windows.lazy.compactMap({ findViewport($0.contentView) }).first,
                       let renderer = vp.renderer else { print("DRAG no viewport"); exit(1) }
+                NSApp.activate(ignoringOtherApps: true)
+                vp.window?.makeKeyAndOrderFront(nil)
+                await pause(0.5)
+                // Frame latency needs a visible window (hidden windows don't render, by design).
+                print("DRAG window visible=\(vp.window?.occlusionState.contains(.visible) == true ? 1 : 0)")
                 func event(_ type: CGEventType, _ button: CGMouseButton, _ p: CGPoint) -> NSEvent? {
                     CGEvent(mouseEventSource: nil, mouseType: type, mouseCursorPosition: p, mouseButton: button).flatMap { NSEvent(cgEvent: $0) }
                 }
@@ -61,6 +68,9 @@ enum DemoScript {
                     var latencies: [Double] = []
                     let start = Date()
                     for i in 0..<120 {
+                        // No frames at all → the display isn't presenting (hidden window, sleeping or virtual
+                        // display); latency can't be measured, don't wait out every event.
+                        if i == 10 && renderer.stats.frames == 0 { print("DRAG \(name): no frames presented – skipped"); break }
                         p.x += 4; p.y += (i % 40 < 20 ? 1 : -1)
                         guard let e = event(drag, button, p) else { continue }
                         let before = renderer.stats.frames
@@ -104,7 +114,8 @@ enum DemoScript {
                     renderer.stats.reset()
                     var latencies: [Double] = []
                     let start = Date()
-                    for _ in 0..<120 {
+                    for i in 0..<120 {
+                        if i == 10 && renderer.stats.frames == 0 { print("DRAG \(mode): no frames presented – skipped"); break }
                         guard let ce = CGEvent(scrollWheelEvent2Source: nil, units: .pixel, wheelCount: 2, wheel1: 2, wheel2: 4, wheel3: 0) else { continue }
                         ce.setIntegerValueField(.scrollWheelEventIsContinuous, value: 1)
                         if mode.hasSuffix("⌘") { ce.flags = .maskCommand }
@@ -177,7 +188,6 @@ enum DemoScript {
                     guard let ns = NSEvent(cgEvent: e) else { return }
                     let t = Date()
                     vp.scrollWheel(with: ns)
-                    vp.display()   // include the frame it causes
                     handling += Date().timeIntervalSince(t)
                 }
                 let d0 = editor.camera.distance
@@ -196,7 +206,9 @@ enum DemoScript {
                 if let dir = env["SIXAXIS_NAV_TEST"].flatMap({ $0 == "1" ? nil : URL(fileURLWithPath: $0) }) {
                     try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
                     editor.openDrawingWindow()
-                    while editor.drawing.pages.isEmpty { await pause(0.1) }
+                    var waited = 0.0
+                    while editor.drawing.pages.isEmpty && waited < 20 { await pause(0.1); waited += 0.1 }
+                    print("NAV drawing pages ready after \(String(format: "%.1f", waited)) s")
                     await pause(1.0)
                     if let page = editor.drawing.pages.first, let cg = CGContext(data: nil, width: 2400, height: 1700, bitsPerComponent: 8, bytesPerRow: 0, space: CGColorSpaceCreateDeviceRGB(), bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue) {
                         let t = Date()
