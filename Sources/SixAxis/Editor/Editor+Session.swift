@@ -31,10 +31,10 @@ extension Editor {
     private static var autosaveURL: URL { supportDirectory.appendingPathComponent("Autosave.6axis") }
     private static var sessionURL: URL { supportDirectory.appendingPathComponent("Session.json") }
 
-    /// Demo/CI runs must never touch the user's session.
+    /// Automated runs neither restore nor save sessions – a restored unsaved document would make the
+    /// next command ask "save changes?" and block a headless check. Only the session test itself does.
     static var sessionEnabled: Bool {
-        let env = ProcessInfo.processInfo.environment
-        return env["SIXAXIS_DEMO"] == nil && env["SIXAXIS_EXAMPLES_DEMO"] == nil
+        !isAutomatedRun || ProcessInfo.processInfo.environment["SIXAXIS_SESSION_TEST"] != nil
     }
 
     /// Debounced: saves one second after the last change.

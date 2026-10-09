@@ -7,6 +7,8 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 OUT="${1:-$ROOT/build/ui-check}"
 BIN="$ROOT/build/6axis.app/Contents/MacOS/SixAxis"
 rm -rf "$OUT"; mkdir -p "$OUT"
+# Fresh state for every check: automated runs keep their data in Application Support/6axis-test.
+rm -rf "$HOME/Library/Application Support/6axis-test"
 fail=0
 
 # Runs the app with a time limit; output goes to $OUT/<name>.log
