@@ -102,6 +102,7 @@ struct Ribbon: View {
             group(String(localized: "Ändern")) {
                 tool(.trim, String(localized: "Trimmen"), "scissors", "T")
                 tool(.extend, String(localized: "Verlängern"), "arrow.right.to.line")
+                tool(.project, String(localized: "Projizieren"), "square.3.layers.3d.down.backward", "P")
                 tool(.offset, String(localized: "Versatz"), "square.on.square.dashed", "O")
                 tool(.mirror, String(localized: "Spiegeln"), "arrow.left.and.right.righttriangle.left.righttriangle.right")
                 tool(.rectPattern, String(localized: "Muster"), "square.grid.3x1.below.line.grid.1x2")

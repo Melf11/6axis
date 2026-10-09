@@ -245,4 +245,9 @@ EN.update({
 "Versatz nicht möglich (Abstand zu groß?)": "Offset not possible (distance too large?)", "Verschiebung": "Translation",
 "Waagerecht": "Horizontal", "Wähle zuerst die Kurven aus, die kopiert werden sollen": "First select the curves to copy",
 })
+EN.update({
+"Projizieren": "Project", "Klicke auf eine Kante oder Fläche eines Körpers": "Click an edge or face of a body",
+"%lld Kurven projiziert": "%lld curves projected",
+"Kante oder Fläche eines Körpers anklicken – sie wird in die Skizze übernommen": "Click an edge or face of a body – it is copied into the sketch",
+})
 

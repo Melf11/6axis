@@ -223,5 +223,26 @@ enum SketchChecks {
         }
         editor.finishSketch()
         await pause()
+
+        // 8. Project the top face of a body into a new sketch.
+        editor.newDocument()
+        editor.commit { $0 = Examples.storageBox().withoutShell() }
+        await pause(1.0)
+        editor.beginSketch(on: .xy)
+        await pause(0.8)
+        await view(editor, center: Vec2(0, 0))
+        editor.camera.distance = 400
+        await pause(0.3)
+        editor.setSketchTool(.project)
+        if let pt = screen(editor, Vec2(25, 15)) { editor.updateHover(at: pt) }
+        let hovered: String = { if case .face? = editor.hover { return "face" }; return String(describing: editor.hover) }()
+        check("project hovers body face", hovered == "face", hovered)
+        click(editor, Vec2(25, 15))
+        await pause(0.6)
+        let projected = editor.activeSketch?.curves.count ?? 0
+        check("projected outline", projected >= 8, "\(projected) curves")
+        check("projected outline is a profile", (editor.activeSketchBuild?.regions.count ?? 0) >= 1)
+        editor.finishSketch()
+        await pause()
     }
 }

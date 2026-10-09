@@ -218,6 +218,7 @@ private struct BottomBar: View {
             case .centerRectangle: return n == 0 ? String(localized: "Mittelpunkt klicken") : String(localized: "Ecke klicken")
             case .circle: return n == 0 ? String(localized: "Mittelpunkt klicken · ⌘ = frei setzen") : String(localized: "Radius klicken oder Durchmesser eintippen")
             case .arc: return n == 0 ? String(localized: "Startpunkt klicken") : (n == 1 ? String(localized: "Endpunkt klicken") : String(localized: "Punkt auf dem Bogen klicken"))
+            case .project: return String(localized: "Kante oder Fläche eines Körpers anklicken – sie wird in die Skizze übernommen")
             case .offset: return String(localized: "Kurve überfahren – die Seite des Mauszeigers bestimmt die Richtung, Klick übernimmt")
             case .mirror: return String(localized: "Linie als Spiegelachse anklicken")
             case .rectPattern: return String(localized: "Anzahl und Abstand im Feld rechts eingeben")

@@ -289,6 +289,7 @@ extension Editor {
         case .mirror: mirrorClick()
         case .circularPattern: patternCenterClick()
         case .rectPattern: break
+        case .project: projectClick()
         case .dimension: dimensionClick(pt)
         case let .constraint(ct): constraintClick(ct)
         }
@@ -512,6 +513,26 @@ extension Editor {
         patternRequest = nil
         copySource.removeAll()
         sketchTool = .select
+    }
+
+    // MARK: Project
+
+    /// Copies a body edge or all edges of a face onto the sketch plane as fixed reference geometry.
+    private func projectClick() {
+        guard let plane = activePlane else { return }
+        var made: [Int] = []
+        switch hover {
+        case let .edge(b, e)?:
+            guard let body = state.bodies[b] else { return }
+            made = mutateSketch { SketchEdit.projectEdge(&$0, body: body, edge: e, plane: plane) } ?? []
+        case let .face(b, f)?:
+            guard let body = state.bodies[b] else { return }
+            made = mutateSketch { SketchEdit.projectFace(&$0, body: body, face: f, plane: plane) } ?? []
+        default:
+            showToast(String(localized: "Klicke auf eine Kante oder Fläche eines Körpers"))
+            return
+        }
+        showToast(made.isEmpty ? String(localized: "Nichts zu projizieren") : String(localized: "\(made.count) Kurven projiziert"))
     }
 
     // MARK: Trim / extend

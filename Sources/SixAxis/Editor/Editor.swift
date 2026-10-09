@@ -49,6 +49,7 @@ enum SketchTool: Equatable {
     case mirror
     case rectPattern
     case circularPattern
+    case project
     case dimension
     case constraint(ConstraintTool)
 
@@ -69,6 +70,7 @@ enum SketchTool: Equatable {
         case .mirror: return String(localized: "Spiegeln")
         case .rectPattern: return String(localized: "Rechteckmuster")
         case .circularPattern: return String(localized: "Kreismuster")
+        case .project: return String(localized: "Projizieren")
         case .dimension: return String(localized: "Bemaßung")
         case let .constraint(c): return c.name
         }

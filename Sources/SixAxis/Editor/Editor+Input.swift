@@ -169,7 +169,7 @@ extension Editor {
         case "h": setSketchTool(.constraint(.horizontal))
         case "v": setSketchTool(.constraint(.vertical))
         case "t": setSketchTool(.trim)
-        case "p": setSketchTool(.constraint(.perpendicular))
+        case "p": setSketchTool(.project)
         case "o": if sketchId != nil { setSketchTool(.offset) } else { toggleProjection() }
         case "6": homeView()
         case "0": fitAll()

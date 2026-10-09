@@ -218,3 +218,13 @@ public enum MaterialDensity {
         return table.sorted { $0.0.count > $1.0.count }.first { n.contains($0.0) }?.1
     }
 }
+
+extension CADDocument {
+    /// The document without shell features (used by checks that need solid faces).
+    public func withoutShell() -> CADDocument {
+        var d = self
+        d.features.removeAll { if case .shell = $0.kind { return true }; return false }
+        return d
+    }
+}
+
