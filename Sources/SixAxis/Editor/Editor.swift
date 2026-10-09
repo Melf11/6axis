@@ -371,6 +371,8 @@ final class Editor {
     }
 
     func confirmDiscard() -> Bool {
+        // Automated runs must never wait for a click on a modal dialog.
+        if Self.isAutomatedRun && ProcessInfo.processInfo.environment["SIXAXIS_SESSION_TEST"] == nil { return true }
         guard isDirty else { return true }
         let alert = NSAlert()
         alert.messageText = String(localized: "Änderungen sichern?")
