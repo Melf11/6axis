@@ -97,6 +97,7 @@ private struct TopBar: View {
                     Circle().fill(.secondary).frame(width: 6, height: 6).help("Ungesicherte Änderungen")
                 }
                 Spacer()
+                UpdateBadge()
                 HStack(spacing: 2) {
                     IconButton(symbol: "arrow.uturn.backward", help: String(localized: "Widerrufen (⌘Z)")) { editor.undo() }
                         .disabled(!editor.canUndo && editor.command == nil)

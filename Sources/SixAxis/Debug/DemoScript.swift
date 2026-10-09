@@ -35,6 +35,33 @@ enum DemoScript {
             }
             return
         }
+        // Update check: SIXAXIS_UPDATE_TEST=1 with SIXAXIS_UPDATE_FEED / SIXAXIS_UPDATE_PUBLIC_KEY – check, install, quit.
+        if env["SIXAXIS_UPDATE_TEST"] != nil {
+            Task { @MainActor in
+                await pause(1.0)
+                let u = Updater.shared
+                await u.check(userInitiated: true)
+                print("UPDATE check: \(u.phase) release=\(u.release?.version.description ?? "-") signed=\(u.canInstallAutomatically)")
+                if let dir = env["SIXAXIS_SNAPSHOTS"] {
+                    let url = URL(fileURLWithPath: dir)
+                    try? FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
+                    u.showSheet = false
+                    await snap(editor, "update-badge", url)
+                    u.showSheet = true
+                    await pause(0.8)
+                    if let sheet = NSApp.windows.first(where: { $0.isSheet }), let v = sheet.contentView,
+                       let rep = v.bitmapImageRepForCachingDisplay(in: v.bounds) {
+                        v.cacheDisplay(in: v.bounds, to: rep)
+                        try? rep.representation(using: .png, properties: [:])?.write(to: url.appendingPathComponent("update-sheet.png"))
+                    }
+                    exit(0)
+                }
+                await u.install(editor: editor)
+                print("UPDATE result: \(u.phase)")   // only reached if installing failed
+                exit(2)
+            }
+            return
+        }
         // Navigation check: SIXAXIS_NAV_TEST=1 posts real scroll events (trackpad-style pixel deltas)
         // with and without ⌘ and reports zoom/pan results and the event handling time.
         if env["SIXAXIS_NAV_TEST"] != nil {

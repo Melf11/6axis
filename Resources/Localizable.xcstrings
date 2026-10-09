@@ -171,6 +171,36 @@
     "6axis": {
       "shouldTranslate": false
     },
+    "6axis %@ ist verfügbar": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "6axis %@ is available"
+          }
+        }
+      }
+    },
+    "6axis fragt höchstens einmal am Tag bei GitHub nach einer neuen Version. Dabei werden keine Daten über dich oder deine Konstruktionen übertragen. Updates werden nur installiert, wenn ihre digitale Signatur stimmt.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "6axis asks GitHub for a new version at most once a day. No data about you or your designs is sent. Updates are only installed if their digital signature is valid."
+          }
+        }
+      }
+    },
+    "6axis ist auf dem neuesten Stand": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "6axis is up to date"
+          }
+        }
+      }
+    },
     "6axis-Webseite": {
       "localizations": {
         "en": {
@@ -633,6 +663,16 @@
         }
       }
     },
+    "Automatisch nach Updates suchen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Check for updates automatically"
+          }
+        }
+      }
+    },
     "Automatische Bemaßung anzeigen": {
       "localizations": {
         "en": {
@@ -780,6 +820,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Birch plywood"
+          }
+        }
+      }
+    },
+    "Bitte ziehe 6axis zuerst in den Programme-Ordner und starte es von dort – dann kann es sich selbst aktualisieren.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Please move 6axis to the Applications folder first and open it from there – then it can update itself."
           }
         }
       }
@@ -1025,6 +1075,16 @@
         }
       }
     },
+    "Das Update gehört nicht zu 6axis": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The update does not belong to 6axis"
+          }
+        }
+      }
+    },
     "Das aktuelle Design hat ungesicherte Änderungen.": {
       "localizations": {
         "en": {
@@ -1161,12 +1221,52 @@
         }
       }
     },
+    "Die Signatur des Updates ist ungültig – es wurde nichts installiert.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The update's signature is invalid – nothing was installed."
+          }
+        }
+      }
+    },
+    "Die Version im Update passt nicht zum Release": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The version in the update does not match the release"
+          }
+        }
+      }
+    },
+    "Diese Version überspringen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Skip this version"
+          }
+        }
+      }
+    },
     "Dieser Wert lässt sich nicht erfüllen": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "This value cannot be satisfied"
+          }
+        }
+      }
+    },
+    "Dieses Release ist nicht signiert und kann nicht automatisch installiert werden. Lade es bitte von der Release-Seite.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This release is not signed and cannot be installed automatically. Please download it from the release page."
           }
         }
       }
@@ -1197,6 +1297,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Double-click to edit"
+          }
+        }
+      }
+    },
+    "Download fehlgeschlagen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Download failed"
+          }
+        }
+      }
+    },
+    "Download fehlgeschlagen (%lld)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Download failed (%lld)"
           }
         }
       }
@@ -1448,6 +1568,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "One side"
+          }
+        }
+      }
+    },
+    "Eine neue Version von 6axis ist verfügbar": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A new version of 6axis is available"
           }
         }
       }
@@ -1975,6 +2105,16 @@
         }
       }
     },
+    "GitHub antwortet mit Fehler %lld": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "GitHub responded with error %lld"
+          }
+        }
+      }
+    },
     "Gleich": {
       "localizations": {
         "en": {
@@ -2075,6 +2215,16 @@
         }
       }
     },
+    "Im Update ist keine App enthalten": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The update contains no app"
+          }
+        }
+      }
+    },
     "Import": {
       "localizations": {
         "en": {
@@ -2105,6 +2255,36 @@
         }
       }
     },
+    "Installieren und neu starten": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Install and relaunch"
+          }
+        }
+      }
+    },
+    "Installiert: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Installed: %@"
+          }
+        }
+      }
+    },
+    "Installierte Version": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Installed version"
+          }
+        }
+      }
+    },
     "Isometrie": {
       "localizations": {
         "en": {
@@ -2121,6 +2301,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Show isometric view"
+          }
+        }
+      }
+    },
+    "Jetzt nach Updates suchen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Check for updates now"
           }
         }
       }
@@ -2317,6 +2507,16 @@
         }
       }
     },
+    "Keine Schreibrechte für „%@“. Lade das Update bitte von der Release-Seite.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No write permission for “%@”. Please download the update from the release page."
+          }
+        }
+      }
+    },
     "Keine sichtbaren Körper": {
       "localizations": {
         "en": {
@@ -2484,6 +2684,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "LEFT"
+          }
+        }
+      }
+    },
+    "Lade Update …": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Downloading update …"
           }
         }
       }
@@ -2774,6 +2984,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Middle button drag"
+          }
+        }
+      }
+    },
+    "Nach Updates suchen …": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Check for Updates …"
           }
         }
       }
@@ -3350,6 +3570,16 @@
         }
       }
     },
+    "Prüfe Signatur und installiere …": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Checking signature and installing …"
+          }
+        }
+      }
+    },
     "Punkt auf Kurve": {
       "localizations": {
         "en": {
@@ -3498,6 +3728,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Rectangle"
+          }
+        }
+      }
+    },
+    "Release-Seite öffnen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open release page"
           }
         }
       }
@@ -4107,6 +4347,16 @@
         }
       }
     },
+    "Später": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Later"
+          }
+        }
+      }
+    },
     "Standardwerte": {
       "localizations": {
         "en": {
@@ -4183,6 +4433,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Parts list / cutting list"
+          }
+        }
+      }
+    },
+    "Suche nach Updates fehlgeschlagen: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Checking for updates failed: %@"
+          }
+        }
+      }
+    },
+    "Suche nach Updates …": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Checking for updates …"
           }
         }
       }
@@ -4389,6 +4659,16 @@
         }
       }
     },
+    "Ungültige Versionsnummer im Release": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Invalid version number in the release"
+          }
+        }
+      }
+    },
     "Ungültige Zahl „%@“": {
       "localizations": {
         "en": {
@@ -4419,6 +4699,16 @@
         }
       }
     },
+    "Ungültiger Signaturschlüssel": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Invalid signing key"
+          }
+        }
+      }
+    },
     "Ungültiger Wert": {
       "localizations": {
         "en": {
@@ -4445,6 +4735,56 @@
           "stringUnit": {
             "state": "translated",
             "value": "Shelf bottom edge"
+          }
+        }
+      }
+    },
+    "Update": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Update"
+          }
+        }
+      }
+    },
+    "Update %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Update %@"
+          }
+        }
+      }
+    },
+    "Update fehlgeschlagen: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Update failed: %@"
+          }
+        }
+      }
+    },
+    "Update konnte nicht entpackt werden": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Could not unpack the update"
+          }
+        }
+      }
+    },
+    "Updates": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Updates"
           }
         }
       }
@@ -5084,6 +5424,16 @@
         }
       }
     },
+    "Zuletzt gesucht": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Last checked"
+          }
+        }
+      }
+    },
     "Zum Anfang": {
       "localizations": {
         "en": {
@@ -5176,6 +5526,16 @@
     },
     "name": {
       "shouldTranslate": false
+    },
+    "noch nie": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "never"
+          }
+        }
+      }
     },
     "ohne Rückwand": {
       "localizations": {
