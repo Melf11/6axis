@@ -14,7 +14,7 @@ Ein **schlankes, natives** parametrisches CAD für macOS – für Konstruktion, 
 4. **Gute Voreinstellungen.** Ein Befehl soll mit einem Klick und einer Zahl funktionieren. Feinheiten sind erreichbar, stehen aber nicht im Weg.
 5. **Jede neue Funktion muss sich fragen lassen: Macht sie die Oberfläche schwerer?** Wenn ja, anders lösen oder hinter eine sinnvolle Voreinstellung legen.
 6. **Flüssig bleiben.** Nichts Teures auf dem Hauptthread oder pro Eingabe-Ereignis (Neuberechnung läuft im Hintergrund, Picking nicht pro Scroll-Ereignis).
-7. **Offline und ohne Konto.** Keine Telemetrie, keine Netzwerkzugriffe außer auf ausdrücklichen Klick (z. B. „Fehler melden“).
+7. **Offline und ohne Konto.** Keine Telemetrie, keine Netzwerkzugriffe außer auf ausdrücklichen Klick (z. B. „Fehler melden“). Einzige Ausnahme: die Update-Suche (höchstens einmal täglich eine Anfrage an die GitHub-Releases, in den Einstellungen abschaltbar, keine Nutzerdaten). Updates werden nur mit gültiger Ed25519-Signatur installiert.
 
 ## Technik in Kürze
 
@@ -30,6 +30,7 @@ swift test                          # Kern-Tests
 scripts/build-app.sh debug          # App bauen → build/6axis.app
 scripts/build-app.sh release && scripts/ui-check.sh   # Oberflächenprüfung (echte Fenster, de + en)
 scripts/update-strings.sh           # neue Texte in den String Catalog übernehmen
+scripts/update-test.sh              # Update-Ablauf Ende-zu-Ende (lokaler Feed, gültige und gefälschte Signatur)
 ```
 
 - **Texte:** auf Deutsch im Code (`Text("…")`, `String(localized: "…")`, `KernelError("…")`), englische Übersetzung in `scripts/translations_en.py`, dann `python3 scripts/apply-translations.py`. Das CI bricht bei fehlenden Übersetzungen ab.
