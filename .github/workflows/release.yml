@@ -42,6 +42,17 @@ jobs:
       - name: Disk image, ZIP, checksums
         run: scripts/make-dmg.sh
 
+      - name: Sign update archive
+        # The app installs updates only with a valid Ed25519 signature (public key in the app).
+        env:
+          UPDATE_SIGNING_KEY: ${{ secrets.UPDATE_SIGNING_KEY }}
+        run: |
+          if [ -z "$UPDATE_SIGNING_KEY" ]; then
+            echo "::warning::UPDATE_SIGNING_KEY is not set – the release cannot be installed by the in-app updater"
+          else
+            swift scripts/update-key.swift sign build/6axis-*.zip
+          fi
+
       - name: Release notes
         run: scripts/release-notes.sh "$GITHUB_REF_NAME" > "$RUNNER_TEMP/notes.md"
 
@@ -54,4 +65,5 @@ jobs:
           files: |
             build/6axis-*.dmg
             build/6axis-*.zip
+            build/6axis-*.zip.sig
             build/6axis-*.sha256

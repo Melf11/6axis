@@ -120,6 +120,13 @@ final class AppSettings {
     /// Bundle identifier of the preferred slicer; empty = automatic.
     var preferredSlicer: String { didSet { save() } }
 
+    // MARK: Updates
+
+    var checkForUpdates: Bool { didSet { save() } }
+    /// Tag of a release the user chose to skip ("v1.2.0").
+    var skippedVersion: String { didSet { save() } }
+    var lastUpdateCheck: Date { didSet { save() } }
+
     /// Bumped on every change so the viewport can rebuild when display settings change.
     private(set) var revision = 0
 
@@ -151,6 +158,9 @@ final class AppSettings {
         material = Material(rawValue: string("print.material", "pla")) ?? .pla
         customDensity = double("print.customDensity", 1.2)
         preferredSlicer = string("print.slicer", "")
+        checkForUpdates = bool("update.check", true)
+        skippedVersion = string("update.skipped", "")
+        lastUpdateCheck = defaults.object(forKey: "update.lastCheck") as? Date ?? .distantPast
         loading = false
     }
 
@@ -178,6 +188,9 @@ final class AppSettings {
         d.set(material.rawValue, forKey: "print.material")
         d.set(customDensity, forKey: "print.customDensity")
         d.set(preferredSlicer, forKey: "print.slicer")
+        d.set(checkForUpdates, forKey: "update.check")
+        d.set(skippedVersion, forKey: "update.skipped")
+        d.set(lastUpdateCheck, forKey: "update.lastCheck")
     }
 
     func resetNavigation() {

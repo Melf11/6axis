@@ -8,16 +8,17 @@ public enum Examples {
     public struct Example: Sendable {
         public let fileName: String
         public let title: String
-        public let document: CADDocument
+        let make: @Sendable () -> CADDocument
+        /// Built on demand – building runs the kernel (fillets, chamfers), so the list itself stays cheap
+        /// (it is read by the menu bar, which SwiftUI may re-evaluate often).
+        public var document: CADDocument { hideSketches(make()) }
     }
 
-    public static var all: [Example] {
-        [
-            Example(fileName: "Korpus", title: String(localized: "Korpus mit Fachboden (Holz)"), document: hideSketches(cabinet())),
-            Example(fileName: "Schneidebrett", title: String(localized: "Schneidebrett (Holz)"), document: hideSketches(cuttingBoard())),
-            Example(fileName: "Aufbewahrungsbox", title: String(localized: "Aufbewahrungsbox (3D-Druck)"), document: hideSketches(storageBox())),
-        ]
-    }
+    public static let all: [Example] = [
+        Example(fileName: "Korpus", title: String(localized: "Korpus mit Fachboden (Holz)"), make: cabinet),
+        Example(fileName: "Schneidebrett", title: String(localized: "Schneidebrett (Holz)"), make: cuttingBoard),
+        Example(fileName: "Aufbewahrungsbox", title: String(localized: "Aufbewahrungsbox (3D-Druck)"), make: storageBox),
+    ]
 
     /// Sketches are consumed by their extrusions; hide them so the model reads cleanly.
     static func hideSketches(_ doc: CADDocument) -> CADDocument {

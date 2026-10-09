@@ -16,7 +16,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool { true }
 
     func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
-        (editor?.confirmDiscard() ?? true) ? .terminateNow : .terminateCancel
+        if MainActor.assumeIsolated({ Updater.shared.isRelaunching }) { return .terminateNow }   // already confirmed
+        return (editor?.confirmDiscard() ?? true) ? .terminateNow : .terminateCancel
     }
 
     func applicationWillTerminate(_ notification: Notification) {
@@ -40,7 +41,9 @@ struct SixAxisApp: App {
                 .onAppear {
                     appDelegate.editor = editor
                     DemoScript.runIfRequested(editor)
+                    Updater.shared.checkIfDue()
                 }
+                .sheet(isPresented: Bindable(Updater.shared).showSheet) { UpdateSheet(editor: editor) }
                 .navigationTitle(editor.documentTitle)
         }
         .defaultSize(width: 1440, height: 900)
@@ -67,6 +70,7 @@ struct AppCommands: Commands {
     var body: some Commands {
         CommandGroup(replacing: .appInfo) {
             Button("Über 6axis") { Branding.showAboutPanel() }
+            Button("Nach Updates suchen …") { Task { await Updater.shared.check(userInitiated: true) } }
         }
         CommandGroup(replacing: .help) {
             Button("Fehler melden …") { Branding.openFeedback(kind: "bug") }
@@ -109,7 +113,7 @@ struct AppCommands: Commands {
             Button("Ansicht von oben") { editor.setView(direction: SIMD3(0, 0, -1), up: SIMD3(0, 1, 0)) }.keyboardShortcut("2")
             Button("Ansicht von rechts") { editor.setView(direction: SIMD3(-1, 0, 0), up: SIMD3(0, 0, 1)) }.keyboardShortcut("3")
             Divider()
-            Toggle("Orthografisch", isOn: Binding(get: { editor.camera.orthographic }, set: { _ in editor.toggleProjection() }))
+            Toggle("Orthografisch", isOn: Binding(get: { editor.isOrthographic }, set: { _ in editor.toggleProjection() }))
             Toggle("Ursprungsebenen", isOn: Binding(get: { editor.showOriginPlanes }, set: { editor.showOriginPlanes = $0; editor.sceneVersion &+= 1 }))
             Toggle("Browser", isOn: Binding(get: { editor.browserVisible }, set: { editor.browserVisible = $0 }))
                 .keyboardShortcut("b", modifiers: [.command, .option])

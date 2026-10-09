@@ -19,6 +19,10 @@
 
 Die fertige App gibt es unter [Releases](https://github.com/Melf11/6axis/releases/latest) (Mac mit Apple Silicon, macOS 15+). 6axis ist nicht von Apple notarisiert: Beim ersten Start einmal *Systemeinstellungen → Datenschutz & Sicherheit → Dennoch öffnen* wählen. Details auf der [Produktseite](https://melf11.github.io/6axis/).
 
+## Updates
+
+Ab Version 1.0.2 sucht 6axis einmal am Tag nach einer neuen Version und zeigt oben rechts einen Hinweis. Ein Klick installiert das Update und startet neu – geprüft über eine digitale Signatur. Abschaltbar unter *Einstellungen → Updates*; manuell über *6axis → Nach Updates suchen …*.
+
 ## Beispiele
 
 Im Ordner [`Examples/`](Examples) und in der App unter **Ablage → Beispiele**: Korpus mit Fachboden und Dübellöchern (inkl. Zeichnung), Schneidebrett mit Abrundungen und Fase, Aufbewahrungsbox für den 3D-Druck. Die Maße hängen an Parametern (*Ändern → Parameter*), z. B. `breite`, `hoehe`, `tiefe`, `staerke` beim Korpus.

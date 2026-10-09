@@ -153,7 +153,12 @@ final class Editor {
     var canRedo = false
 
     // View
-    var camera = Camera()
+    /// Camera changes on every navigation event – keep views and menus from depending on it as a whole.
+    var camera = Camera() {
+        didSet { if camera.orthographic != isOrthographic { isOrthographic = camera.orthographic } }
+    }
+    /// Mirrors `camera.orthographic`; changes only when the projection changes (menus observe this).
+    private(set) var isOrthographic = false
     @ObservationIgnored var cameraAnimation: CameraAnimation?
     var showOriginPlanes = false
     var darkMode = false

@@ -10,7 +10,7 @@ import SwiftUI
 /// - ⌥ + left-drag orbits everywhere.
 final class ViewportNSView: MTKView {
     let editor: Editor
-    private var renderer: Renderer?
+    private(set) var renderer: Renderer?
     private var builtVersion = -1
     private var builtDark = false
     private var builtScale: CGFloat = 0
@@ -18,6 +18,12 @@ final class ViewportNSView: MTKView {
     private var sceneBuilder: SceneBuilder?
     private var lastDrag: CGPoint?
     private var rightDragged = false
+    /// Set by any change that needs a new frame; consumed by the next display-link draw.
+    private var renderPending = true
+    override var needsDisplay: Bool {
+        get { super.needsDisplay }
+        set { if newValue { renderPending = true } }
+    }
     private var builtGridVersion = -1
     /// Hover picking renders the ID buffer and waits for the GPU – too slow for every scroll event,
     /// so it runs once the gesture pauses.
@@ -32,12 +38,20 @@ final class ViewportNSView: MTKView {
         depthStencilPixelFormat = .depth32Float
         sampleCount = Renderer.sampleCount
         clearColor = MTLClearColor(red: 0.9, green: 0.9, blue: 0.92, alpha: 1)
-        enableSetNeedsDisplay = true
-        isPaused = true
+        // Rendering follows the display's refresh: MTKView's display link calls draw once per frame and
+        // the renderer skips frames without changes. Input events only mark the view dirty – drawing per
+        // event blocked the main thread for a vsync each time, so fast mice queued up and lagged.
+        enableSetNeedsDisplay = false
+        isPaused = false
         preferredFramesPerSecond = 120
         if let device, let r = Renderer(device: device) {
             renderer = r
             delegate = r
+            r.needsFrame = { [weak self] in
+                guard let self else { return false }
+                defer { self.renderPending = false }
+                return self.renderPending
+            }
             r.frameProvider = { [weak self] in self?.frameState() ?? Renderer.FrameState(camera: Camera(), hoverId: 0, selection: [], dark: false, animating: false) }
         }
         editor.requestRedraw = { [weak self] in self?.needsDisplay = true }
@@ -194,7 +208,11 @@ final class ViewportNSView: MTKView {
         rightDragged = false
     }
 
+    /// Counts handled drag events (performance check).
+    nonisolated(unsafe) static var dragEvents = 0
+
     override func rightMouseDragged(with event: NSEvent) {
+        Self.dragEvents += 1
         let p = point(event)
         if let last = lastDrag {
             if hypot(p.x - last.x, p.y - last.y) > 0 { rightDragged = true }

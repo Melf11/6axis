@@ -35,6 +35,123 @@ enum DemoScript {
             }
             return
         }
+        // Mouse drag performance: SIXAXIS_DRAG_TEST=1 – orbit (right button) and pan (middle button) on the
+        // cabinet; reports per-event latency until the next frame plus CPU/GPU frame times.
+        if env["SIXAXIS_DRAG_TEST"] != nil {
+            Task { @MainActor in
+                await pause(1.0)
+                editor.openExample(Examples.all[0])
+                await pause(1.5)
+                func findViewport(_ v: NSView?) -> ViewportNSView? {
+                    guard let v else { return nil }
+                    if let vp = v as? ViewportNSView { return vp }
+                    for sub in v.subviews { if let f = findViewport(sub) { return f } }
+                    return nil
+                }
+                guard let vp = NSApp.windows.lazy.compactMap({ findViewport($0.contentView) }).first,
+                      let renderer = vp.renderer else { print("DRAG no viewport"); exit(1) }
+                func event(_ type: CGEventType, _ button: CGMouseButton, _ p: CGPoint) -> NSEvent? {
+                    CGEvent(mouseEventSource: nil, mouseType: type, mouseCursorPosition: p, mouseButton: button).flatMap { NSEvent(cgEvent: $0) }
+                }
+                for (name, down, drag, up, button) in [("orbit", CGEventType.rightMouseDown, CGEventType.rightMouseDragged, CGEventType.rightMouseUp, CGMouseButton.right),
+                                                       ("pan", .otherMouseDown, .otherMouseDragged, .otherMouseUp, .center)] {
+                    var p = CGPoint(x: 800, y: 500)
+                    if let e = event(down, button, p) { if button == .right { vp.rightMouseDown(with: e) } else { vp.otherMouseDown(with: e) } }
+                    renderer.stats.reset()
+                    var latencies: [Double] = []
+                    let start = Date()
+                    for i in 0..<120 {
+                        p.x += 4; p.y += (i % 40 < 20 ? 1 : -1)
+                        guard let e = event(drag, button, p) else { continue }
+                        let before = renderer.stats.frames
+                        let t = CACurrentMediaTime()
+                        if button == .right { vp.rightMouseDragged(with: e) } else { vp.otherMouseDragged(with: e) }
+                        var waited = 0
+                        while renderer.stats.frames == before && waited < 200 { try? await Task.sleep(nanoseconds: 500_000); waited += 1 }
+                        latencies.append((CACurrentMediaTime() - t) * 1000)
+                    }
+                    if let e = event(up, button, p) { if button == .right { vp.rightMouseUp(with: e) } else { vp.otherMouseUp(with: e) } }
+                    try? await Task.sleep(nanoseconds: 200_000_000)
+                    renderer.stats.lock.lock()
+                    let cpu = renderer.stats.cpu, gpu = renderer.stats.gpu, frames = renderer.stats.frames
+                    renderer.stats.lock.unlock()
+                    func avg(_ a: [Double]) -> String { String(format: "%.1f", a.isEmpty ? 0 : a.reduce(0, +) / Double(a.count)) }
+                    func mx(_ a: [Double]) -> String { String(format: "%.1f", a.max() ?? 0) }
+                    print("DRAG \(name): \(frames) frames for 120 events in \(String(format: "%.2f", Date().timeIntervalSince(start))) s · latency avg \(avg(latencies)) max \(mx(latencies)) ms · cpu avg \(avg(cpu)) max \(mx(cpu)) · gpu avg \(avg(gpu)) max \(mx(gpu)) ms")
+                }
+                // Burst: 480 queued drag events (like a fast mouse whose events pile up) – how fast are they consumed?
+                do {
+                    guard let win = vp.window else { exit(1) }
+                    let c = vp.convert(NSPoint(x: vp.bounds.midX, y: vp.bounds.midY), to: nil)
+                    func mouse(_ type: NSEvent.EventType, _ x: CGFloat) -> NSEvent? {
+                        NSEvent.mouseEvent(with: type, location: NSPoint(x: c.x + x, y: c.y), modifierFlags: [], timestamp: ProcessInfo.processInfo.systemUptime,
+                                           windowNumber: win.windowNumber, context: nil, eventNumber: 0, clickCount: 1, pressure: 1)
+                    }
+                    win.makeKeyAndOrderFront(nil)
+                    if let e = mouse(.rightMouseDown, 0) { NSApp.postEvent(e, atStart: false) }
+                    try? await Task.sleep(nanoseconds: 100_000_000)
+                    renderer.stats.reset()
+                    ViewportNSView.dragEvents = 0
+                    let start = CACurrentMediaTime()
+                    for i in 0..<480 { if let e = mouse(.rightMouseDragged, CGFloat(i) * 0.5) { NSApp.postEvent(e, atStart: false) } }
+                    while ViewportNSView.dragEvents < 480 && CACurrentMediaTime() - start < 30 { try? await Task.sleep(nanoseconds: 2_000_000) }
+                    let elapsed = CACurrentMediaTime() - start
+                    if let e = mouse(.rightMouseUp, 240) { NSApp.postEvent(e, atStart: false) }
+                    print("DRAG burst: \(ViewportNSView.dragEvents) queued events consumed in \(String(format: "%.0f", elapsed * 1000)) ms · \(renderer.stats.frames) frames")
+                }
+                // Magic Mouse / trackpad swipe: precise scroll events.
+                for mode in ["swipe", "swipe+⌘"] {
+                    renderer.stats.reset()
+                    var latencies: [Double] = []
+                    let start = Date()
+                    for _ in 0..<120 {
+                        guard let ce = CGEvent(scrollWheelEvent2Source: nil, units: .pixel, wheelCount: 2, wheel1: 2, wheel2: 4, wheel3: 0) else { continue }
+                        ce.setIntegerValueField(.scrollWheelEventIsContinuous, value: 1)
+                        if mode.hasSuffix("⌘") { ce.flags = .maskCommand }
+                        guard let e = NSEvent(cgEvent: ce) else { continue }
+                        let before = renderer.stats.frames
+                        let t = CACurrentMediaTime()
+                        vp.scrollWheel(with: e)
+                        var waited = 0
+                        while renderer.stats.frames == before && waited < 200 { try? await Task.sleep(nanoseconds: 500_000); waited += 1 }
+                        latencies.append((CACurrentMediaTime() - t) * 1000)
+                    }
+                    try? await Task.sleep(nanoseconds: 300_000_000)
+                    let lat = latencies
+                    func avg(_ a: [Double]) -> String { String(format: "%.1f", a.isEmpty ? 0 : a.reduce(0, +) / Double(a.count)) }
+                    print("DRAG \(mode): \(renderer.stats.frames) frames in \(String(format: "%.2f", Date().timeIntervalSince(start))) s · latency avg \(avg(lat)) max \(String(format: "%.1f", lat.max() ?? 0)) ms")
+                }
+                exit(0)
+            }
+            return
+        }
+        // Update check: SIXAXIS_UPDATE_TEST=1 with SIXAXIS_UPDATE_FEED / SIXAXIS_UPDATE_PUBLIC_KEY – check, install, quit.
+        if env["SIXAXIS_UPDATE_TEST"] != nil {
+            Task { @MainActor in
+                await pause(1.0)
+                let u = Updater.shared
+                await u.check(userInitiated: true)
+                print("UPDATE check: \(u.phase) release=\(u.release?.version.description ?? "-") signed=\(u.canInstallAutomatically)")
+                if let dir = env["SIXAXIS_SNAPSHOTS"] {
+                    let url = URL(fileURLWithPath: dir)
+                    try? FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
+                    u.showSheet = false
+                    await snap(editor, "update-badge", url)
+                    u.showSheet = true
+                    await pause(0.8)
+                    if let sheet = NSApp.windows.first(where: { $0.isSheet }), let v = sheet.contentView,
+                       let rep = v.bitmapImageRepForCachingDisplay(in: v.bounds) {
+                        v.cacheDisplay(in: v.bounds, to: rep)
+                        try? rep.representation(using: .png, properties: [:])?.write(to: url.appendingPathComponent("update-sheet.png"))
+                    }
+                    exit(0)
+                }
+                await u.install(editor: editor)
+                print("UPDATE result: \(u.phase)")   // only reached if installing failed
+                exit(2)
+            }
+            return
+        }
         // Navigation check: SIXAXIS_NAV_TEST=1 posts real scroll events (trackpad-style pixel deltas)
         // with and without ⌘ and reports zoom/pan results and the event handling time.
         if env["SIXAXIS_NAV_TEST"] != nil {

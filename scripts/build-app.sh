@@ -28,6 +28,7 @@ cat > "$APP/Contents/Info.plist" <<PLIST
 <dict>
     <key>CFBundleName</key><string>6axis</string>
     <key>CFBundleDevelopmentRegion</key><string>de</string>
+    <key>SixAxisUpdatePublicKey</key><string>$(tr -d '[:space:]' < "$ROOT/Resources/update-public-key.txt")</string>
     <key>CFBundleLocalizations</key><array><string>de</string><string>en</string></array>
     <key>CFBundleDisplayName</key><string>6axis</string>
     <key>CFBundleIdentifier</key><string>app.6axis</string>

@@ -1,0 +1,1 @@
+Bitte beachte die verbindlichen Leitlinien und Arbeitsweisen in [AGENTS.md](../AGENTS.md) im Wurzelverzeichnis: schlankes, natives macOS-CAD, Bedienbarkeit und Einfachheit zuerst, Komplexität über Parameter statt mehr Oberfläche, Texte über den String Catalog, Arbeit auf Branches.

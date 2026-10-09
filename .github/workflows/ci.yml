@@ -43,6 +43,11 @@ jobs:
         timeout-minutes: 15
         run: scripts/ui-check.sh "$RUNNER_TEMP/ui-check"
 
+      - name: Update test
+        # In-app updater end to end: local feed, valid signature installs, forged signature is rejected.
+        timeout-minutes: 15
+        run: scripts/update-test.sh
+
       - uses: actions/upload-artifact@v4
         if: always()
         with:

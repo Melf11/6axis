@@ -2,6 +2,10 @@
 
 Danke, dass du helfen willst! Issues und Pull Requests auf Deutsch oder Englisch sind willkommen.
 
+## Leitlinien
+
+6axis soll **schlank, nativ und einfach zu bedienen** bleiben – und trotzdem komplexe Bauteile ermöglichen. Die verbindlichen Leitlinien (nativ statt mitgeliefert, ein Arbeitsablauf statt vieler Werkbänke, Komplexität über Parameter statt Oberfläche, gute Voreinstellungen, flüssig bleiben, offline) stehen in [AGENTS.md](AGENTS.md). Bitte prüfe jede Änderung dagegen – KI-Assistenten lesen diese Datei automatisch.
+
 ## Grundsätze
 
 1. **Offline zuerst.** Keine Netzwerkzugriffe, keine Telemetrie, keine Konten.
@@ -38,7 +42,7 @@ Mit deinem Beitrag stimmst du zu, dass er unter der MIT-Lizenz veröffentlicht w
    git tag v0.9.0
    git push origin v0.9.0
    ```
-   Der Workflow **Release** baut die App, packt DMG/ZIP mit Prüfsummen und veröffentlicht das GitHub Release. Tags mit Bindestrich (`v0.9.1-beta.1`) werden als Vorabversion markiert.
+   Der Workflow **Release** baut die App, signiert das ZIP für die In-App-Updates (Secret `UPDATE_SIGNING_KEY`), packt DMG/ZIP mit Prüfsummen und veröffentlicht das GitHub Release. Tags mit Bindestrich (`v0.9.1-beta.1`) werden als Vorabversion markiert.
 
 Die Produktseite (`website/`) wird bei jeder Änderung auf `main` automatisch über GitHub Pages veröffentlicht. Bilder neu erzeugen: `scripts/screenshots.sh`.
 

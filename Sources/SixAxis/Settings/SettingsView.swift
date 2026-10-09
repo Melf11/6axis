@@ -10,6 +10,8 @@ struct SettingsView: View {
                 .tabItem { Label("Darstellung", systemImage: "paintbrush") }
             PrintSettings()
                 .tabItem { Label("3D-Druck", systemImage: "printer") }
+            UpdateSettings()
+                .tabItem { Label("Updates", systemImage: "arrow.down.circle") }
         }
         .frame(width: 520)
     }

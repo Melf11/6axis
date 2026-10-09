@@ -182,3 +182,30 @@ EN = {
 }
 # Strings that are the same in every language (format-only, product names).
 SAME = {"", "%@ (%@)", "%@: %@", "%lld", "%lld %%", "6axis", "X %@  Y %@", "name", "⌫"}
+
+# Updater
+EN.update({
+"6axis %@ ist verfügbar": "6axis %@ is available",
+"6axis fragt höchstens einmal am Tag bei GitHub nach einer neuen Version. Dabei werden keine Daten über dich oder deine Konstruktionen übertragen. Updates werden nur installiert, wenn ihre digitale Signatur stimmt.": "6axis asks GitHub for a new version at most once a day. No data about you or your designs is sent. Updates are only installed if their digital signature is valid.",
+"6axis ist auf dem neuesten Stand": "6axis is up to date",
+"Automatisch nach Updates suchen": "Check for updates automatically",
+"Bitte ziehe 6axis zuerst in den Programme-Ordner und starte es von dort – dann kann es sich selbst aktualisieren.": "Please move 6axis to the Applications folder first and open it from there – then it can update itself.",
+"Das Update gehört nicht zu 6axis": "The update does not belong to 6axis",
+"Die Signatur des Updates ist ungültig – es wurde nichts installiert.": "The update's signature is invalid – nothing was installed.",
+"Die Version im Update passt nicht zum Release": "The version in the update does not match the release",
+"Diese Version überspringen": "Skip this version",
+"Dieses Release ist nicht signiert und kann nicht automatisch installiert werden. Lade es bitte von der Release-Seite.": "This release is not signed and cannot be installed automatically. Please download it from the release page.",
+"Download fehlgeschlagen": "Download failed", "Download fehlgeschlagen (%lld)": "Download failed (%lld)",
+"Eine neue Version von 6axis ist verfügbar": "A new version of 6axis is available",
+"GitHub antwortet mit Fehler %lld": "GitHub responded with error %lld",
+"Im Update ist keine App enthalten": "The update contains no app",
+"Installieren und neu starten": "Install and relaunch", "Installiert: %@": "Installed: %@", "Installierte Version": "Installed version",
+"Jetzt nach Updates suchen": "Check for updates now",
+"Keine Schreibrechte für „%@“. Lade das Update bitte von der Release-Seite.": "No write permission for “%@”. Please download the update from the release page.",
+"Lade Update …": "Downloading update …", "Nach Updates suchen …": "Check for Updates …",
+"Prüfe Signatur und installiere …": "Checking signature and installing …", "Release-Seite öffnen": "Open release page", "Später": "Later",
+"Suche nach Updates fehlgeschlagen: %@": "Checking for updates failed: %@", "Suche nach Updates …": "Checking for updates …",
+"Ungültige Versionsnummer im Release": "Invalid version number in the release", "Ungültiger Signaturschlüssel": "Invalid signing key",
+"Update": "Update", "Update %@": "Update %@", "Update fehlgeschlagen: %@": "Update failed: %@",
+"Update konnte nicht entpackt werden": "Could not unpack the update", "Updates": "Updates", "Zuletzt gesucht": "Last checked", "noch nie": "never",
+})
