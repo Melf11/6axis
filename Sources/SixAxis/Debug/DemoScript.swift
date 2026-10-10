@@ -164,8 +164,19 @@ enum DemoScript {
                     }
                     exit(0)
                 }
+                if env["SIXAXIS_UPDATE_WITH_SHEET"] != nil {
+                    // Like a user: the update sheet is open and the document has unsaved changes.
+                    editor.commit { $0 = Examples.storageBox() }
+                    u.showSheet = true
+                    await pause(0.8)
+                }
                 await u.install(editor: editor)
-                print("UPDATE result: \(u.phase)")   // only reached if installing failed
+                print("UPDATE result: \(u.phase)")
+                if u.phase == .installing {
+                    // The app must quit by itself now (the helper then swaps the bundle).
+                    await pause(15)
+                    print("UPDATE app did not quit")
+                }
                 exit(2)
             }
             return
