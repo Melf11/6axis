@@ -39,6 +39,10 @@ public struct SketchCurve: Codable, Hashable, Identifiable, Sendable {
     public var id: Int
     public var geometry: CurveGeometry
     public var construction: Bool
+    /// Splines: tangent handles set by the user, per fit point id. The handle is the vector from the
+    /// fit point to the outgoing Bézier control point (the incoming one mirrors it); its direction sets
+    /// the tangent, its length how full the curve runs through the point. Missing = automatic.
+    public var handles: [Int: Vec2]? = nil
 
     public init(id: Int, geometry: CurveGeometry, construction: Bool = false) {
         self.id = id
@@ -353,6 +357,7 @@ public struct Sketch: Codable, Hashable, Sendable {
             case let .circle(c, rad): curves[i].geometry = .circle(center: r(c), radius: rad)
             case let .arc(c, s, e): curves[i].geometry = .arc(center: r(c), start: r(s), end: r(e))
             case let .spline(pts, closed):
+                if let h = curves[i].handles { curves[i].handles = Dictionary(h.map { (r($0.key), $0.value) }, uniquingKeysWith: { a, _ in a }) }
                 var ids = pts.map(r)
                 // Merging the last fit point into the first closes the spline.
                 var isClosed = closed
@@ -414,7 +419,8 @@ public struct Sketch: Codable, Hashable, Sendable {
             }
         } + curves.filter { !$0.construction && $0.isSpline }.flatMap { c -> [Segment2D] in
             guard case let .spline(ids, closed) = c.geometry else { return [] }
-            return Spline.beziers(ids.compactMap { point($0) }, closed: closed).map { .bezier($0.0, $0.1, $0.2, $0.3) }
+            return Spline.beziers(ids.compactMap { point($0) }, closed: closed, handles: ids.map { c.handles?[$0] })
+                .map { .bezier($0.0, $0.1, $0.2, $0.3) }
         } + curves.filter { !$0.construction && $0.isText }.flatMap { c -> [Segment2D] in
             guard case let .text(a, t, h, f) = c.geometry, let o = point(a) else { return [] }
             return TextOutline.contours(t, height: h, font: f, origin: o).flatMap { $0 }
@@ -441,7 +447,7 @@ public struct Sketch: Codable, Hashable, Sendable {
                 return pc + r * Vec2(cos(t), sin(t))
             }
         case let .spline(ids, closed):
-            return Spline.polyline(ids.compactMap { point($0) }, closed: closed, perSegment: max(8, n / 4))
+            return Spline.polyline(ids.compactMap { point($0) }, closed: closed, handles: ids.map { curve.handles?[$0] }, perSegment: max(8, n / 4))
         case .text:
             return polylines(curve).first ?? []
         case let .arc(c, s, e):
@@ -465,9 +471,18 @@ public struct Sketch: Codable, Hashable, Sendable {
 public enum Spline {
     public typealias Piece = (Vec2, Vec2, Vec2, Vec2)
 
-    public static func beziers(_ pts: [Vec2], closed: Bool) -> [Piece] {
+    public static func beziers(_ pts: [Vec2], closed: Bool, handles: [Vec2?] = []) -> [Piece] {
         let n = pts.count
         guard n >= 2 else { return [] }
+        func handle(_ i: Int) -> Vec2? { i < handles.count ? handles[i] : nil }
+        if handles.contains(where: { $0 != nil }) {
+            // User handles win; automatic ones as below.
+            let auto = beziers(pts, closed: closed)
+            return auto.enumerated().map { (k, piece) in
+                let i = k, j = (k + 1) % n
+                return (piece.0, handle(i).map { pts[i] + $0 } ?? piece.1, handle(j).map { pts[j] - $0 } ?? piece.2, piece.3)
+            }
+        }
         if n == 2 && !closed {
             let d = (pts[1] - pts[0]) / 3
             return [(pts[0], pts[0] + d, pts[1] - d, pts[1])]
@@ -495,8 +510,19 @@ public enum Spline {
         return u * u * u * p.0 + 3 * u * u * t * p.1 + 3 * u * t * t * p.2 + t * t * t * p.3
     }
 
-    public static func polyline(_ pts: [Vec2], closed: Bool, perSegment k: Int = 24) -> [Vec2] {
-        let pieces = beziers(pts, closed: closed)
+    /// Handle of each fit point as currently in effect (user handle or the automatic one), for display.
+    public static func effectiveHandles(_ pts: [Vec2], closed: Bool, handles: [Vec2?]) -> [Vec2] {
+        let pieces = beziers(pts, closed: closed, handles: handles)
+        return pts.indices.map { i in
+            if i < handles.count, let h = handles[i] { return h }
+            if i < pieces.count { return pieces[i].1 - pts[i] }                    // outgoing control
+            if let last = pieces.last { return last.3 - last.2 }                  // open end: incoming mirrored
+            return .zero
+        }
+    }
+
+    public static func polyline(_ pts: [Vec2], closed: Bool, handles: [Vec2?] = [], perSegment k: Int = 24) -> [Vec2] {
+        let pieces = beziers(pts, closed: closed, handles: handles)
         guard let first = pieces.first else { return pts }
         var out = [first.0]
         for p in pieces { for j in 1...k { out.append(point(p, Double(j) / Double(k))) } }

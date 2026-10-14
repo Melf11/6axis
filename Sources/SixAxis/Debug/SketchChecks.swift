@@ -281,6 +281,38 @@ enum SketchChecks {
         editor.finishSketch()
         await pause()
 
+        // 12. Spline handles: select a spline, its handles appear; a longer handle reshapes the curve.
+        editor.beginSketch(on: .xy)
+        await pause(0.8)
+        await view(editor)
+        editor.setSketchTool(.spline)
+        for p in [Vec2(0, 0), Vec2(40, 25), Vec2(80, 0)] { click(editor, p) }
+        _ = editor.handleKey("\r", keyCode: 36, modifiers: [])
+        editor.setSketchTool(.select)
+        let spline = editor.activeSketch?.curves.first { $0.isSpline }
+        if let spline, let sk = editor.activeSketch {
+            let onCurve = sk.polyline(spline, segments: 200)[60]
+            click(editor, onCurve)
+            check("spline selected shows handles", editor.splinesWithHandles == [spline.id] && editor.splineHandles(spline.id).count == 3,
+                  "\(editor.splinesWithHandles) \(editor.splineHandles(spline.id).count)")
+            let before = sk.polyline(spline, segments: 200)
+            if let mid = editor.splineHandles(spline.id).first(where: { simd_distance($0.position, Vec2(40, 25)) < 1e-6 }) {
+                editor.setSplineHandle(curve: spline.id, point: mid.point, to: Vec2(35, 0))
+            }
+            let after = editor.activeSketch.map { $0.polyline($0.curve(spline.id)!, segments: 200) } ?? []
+            let moved = zip(before, after).map { simd_distance($0, $1) }.max() ?? 0
+            check("handle reshapes spline", moved > 1, "max change \(moved)")
+            check("spline still through its point", after.map { simd_distance($0, Vec2(40, 25)) }.min() ?? 1 < 1e-6)
+            check("handle is custom", editor.splineHandles(spline.id).contains { $0.custom })
+            if let dir = ProcessInfo.processInfo.environment["SIXAXIS_SNAPSHOTS"] {
+                await DemoScript.snap(editor, "sketch-spline-handles", URL(fileURLWithPath: dir))
+            }
+        } else {
+            check("spline for handles", false)
+        }
+        editor.finishSketch()
+        await pause()
+
         // 11. Delete bodies with the ⌫ key.
         editor.newDocument()
         editor.commit { d in

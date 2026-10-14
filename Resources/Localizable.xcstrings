@@ -5934,6 +5934,16 @@
         }
       }
     },
+    "Ziehen: Richtung und Stärke der Kurve · Doppelklick: automatisch": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Drag: direction and fullness of the curve · double-click: automatic"
+          }
+        }
+      }
+    },
     "Zirkulärer Bezug bei „%@“": {
       "localizations": {
         "en": {

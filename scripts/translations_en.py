@@ -261,4 +261,5 @@ EN.update({
 "Entfernen": "Remove",
 "Entfernen hat keine Parameter – lösche den Schritt, um die Körper zurückzuholen": "Remove has no parameters – delete the step to bring the bodies back",
 })
+EN.update({"Ziehen: Richtung und Stärke der Kurve · Doppelklick: automatisch": "Drag: direction and fullness of the curve · double-click: automatic"})
 

@@ -191,11 +191,11 @@ public struct SketchSolver {
             }
         }
         /// Fit points of a spline (positions from the variable vector).
-        func splinePoints(_ id: Int) -> ((UnsafeBufferPointer<Double>) -> [Vec2], Bool, [Int])? {
+        func splinePoints(_ id: Int) -> ((UnsafeBufferPointer<Double>) -> [Vec2], Bool, [Vec2?], [Int])? {
             guard let c = curve(id), case let .spline(ids, closed) = c.geometry else { return nil }
             let ps = ids.compactMap { P($0) }
             guard ps.count == ids.count, ps.count >= 2 else { return nil }
-            return ({ x in ps.map { $0.0(x) } }, closed, ps.flatMap { $0.1 })
+            return ({ x in ps.map { $0.0(x) } }, closed, ids.map { c.handles?[$0] }, ps.flatMap { $0.1 })
         }
         let xInit = x0
         func initial<T>(_ f: (UnsafeBufferPointer<Double>) -> T) -> T { xInit.withUnsafeBufferPointer { f($0) } }
@@ -304,10 +304,10 @@ public struct SketchSolver {
                     add(cid, pp.1 + v, 1) { x, o in o[0] = crossN(b(x) - a(x), pp.0(x) - a(x)) }
                 } else if let r = round(c) {
                     add(cid, pp.1 + r.2, 1) { x, o in o[0] = simd_distance(pp.0(x), r.0(x)) - r.1(x) }
-                } else if let (fit, closed, v) = splinePoints(c) {
+                } else if let (fit, closed, handles, v) = splinePoints(c) {
                     // Signed distance to the nearest piece of the sampled spline.
                     add(cid, pp.1 + v, 1) { x, o in
-                        let poly = Spline.polyline(fit(x), closed: closed, perSegment: 16)
+                        let poly = Spline.polyline(fit(x), closed: closed, handles: handles, perSegment: 16)
                         let p = pp.0(x)
                         var best = Double.infinity, signed = 0.0
                         for k in 0..<(poly.count - 1) {
