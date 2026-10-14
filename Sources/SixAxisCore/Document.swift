@@ -241,6 +241,8 @@ public enum FeatureKind: Codable, Hashable, Sendable {
     case chamfer(ChamferFeature)
     case shell(ShellFeature)
     case importStep(ImportFeature)
+    /// Removes bodies from the model from this point of the timeline on.
+    case removeBodies([UUID])
 
     public var typeName: String {
         switch self {
@@ -251,6 +253,7 @@ public enum FeatureKind: Codable, Hashable, Sendable {
         case .chamfer: return String(localized: "Fase")
         case .shell: return String(localized: "Wandstärke")
         case .importStep: return String(localized: "Import")
+        case .removeBodies: return String(localized: "Entfernen")
         }
     }
 
@@ -263,6 +266,7 @@ public enum FeatureKind: Codable, Hashable, Sendable {
         case .chamfer: return "triangle.bottomhalf.filled"
         case .shell: return "shippingbox"
         case .importStep: return "square.and.arrow.down"
+        case .removeBodies: return "trash"
         }
     }
 
@@ -333,7 +337,8 @@ public struct CADDocument: Codable, Hashable, Sendable {
     /// 1 – 0.9 and earlier
     /// 2 – 1.0: profile anchors, topology counts on face/edge references (all optional, so 1 reads as 2)
     /// 3 – 1.1: new sketch curve types (spline); older apps must refuse such files
-    public static let currentFormatVersion = 3
+    /// 4 – 1.1.2: timeline step "remove bodies"
+    public static let currentFormatVersion = 4
 
     public var formatVersion = CADDocument.currentFormatVersion
     public var features: [Feature] = []
@@ -403,6 +408,7 @@ public struct CADDocument: Codable, Hashable, Sendable {
     static let migrations: [Int: ([String: Any]) -> [String: Any]] = [
         1: { $0 },   // 1 → 2: new fields are optional; nothing to rewrite
         2: { $0 },   // 2 → 3: only additions
+        3: { $0 },   // 3 → 4: only additions
     ]
 }
 

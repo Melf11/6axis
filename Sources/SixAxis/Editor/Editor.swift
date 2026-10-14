@@ -577,6 +577,27 @@ final class Editor {
         commit { $0.rollback = c == $0.features.count ? nil : c }
     }
 
+    /// Deletes bodies (⌫ on a selected body, face or edge). A body created by the last timeline step alone
+    /// removes that step; otherwise a "Entfernen" step is added, so later steps keep working and the
+    /// body comes back by deleting that step.
+    func deleteBodies(_ ids: [UUID]) {
+        let ids = ids.filter { state.bodies[$0] != nil }
+        guard !ids.isEmpty else { return }
+        let active = Array(doc.features.prefix(doc.activeCount))
+        if ids.count == 1, let last = active.last, last.id == ids[0], doc.rollback == nil,
+           state.orderedBodies.filter({ $0.sourceFeature == last.id }).map(\.id) == ids {
+            deleteFeature(last.id)
+            return
+        }
+        commit { d in
+            let f = Feature(name: d.nextName(for: .removeBodies(ids)), kind: .removeBodies(ids))
+            let at = d.activeCount
+            d.features.insert(f, at: at)
+            if let r = d.rollback { d.rollback = r + 1 }
+        }
+        selection.removeAll()
+    }
+
     func deleteFeature(_ id: UUID) {
         if sketchId == id { finishSketch() }
         commit { d in
@@ -609,6 +630,7 @@ final class Editor {
         case .chamfer: beginCommand(.chamfer, editing: id)
         case .shell: beginCommand(.shell, editing: id)
         case .importStep: showToast(String(localized: "Importierte Körper haben keine Parameter"))
+        case .removeBodies: showToast(String(localized: "Entfernen hat keine Parameter – lösche den Schritt, um die Körper zurückzuholen"))
         }
     }
 

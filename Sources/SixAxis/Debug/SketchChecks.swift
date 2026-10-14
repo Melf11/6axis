@@ -281,6 +281,64 @@ enum SketchChecks {
         editor.finishSketch()
         await pause()
 
+        // 12. Spline handles: select a spline, its handles appear; a longer handle reshapes the curve.
+        editor.beginSketch(on: .xy)
+        await pause(0.8)
+        await view(editor)
+        editor.setSketchTool(.spline)
+        for p in [Vec2(0, 0), Vec2(40, 25), Vec2(80, 0)] { click(editor, p) }
+        _ = editor.handleKey("\r", keyCode: 36, modifiers: [])
+        editor.setSketchTool(.select)
+        let spline = editor.activeSketch?.curves.first { $0.isSpline }
+        if let spline, let sk = editor.activeSketch {
+            let onCurve = sk.polyline(spline, segments: 200)[60]
+            click(editor, onCurve)
+            check("spline selected shows handles", editor.splinesWithHandles == [spline.id] && editor.splineHandles(spline.id).count == 3,
+                  "\(editor.splinesWithHandles) \(editor.splineHandles(spline.id).count)")
+            let before = sk.polyline(spline, segments: 200)
+            if let mid = editor.splineHandles(spline.id).first(where: { simd_distance($0.position, Vec2(40, 25)) < 1e-6 }) {
+                editor.setSplineHandle(curve: spline.id, point: mid.point, to: Vec2(35, 0))
+            }
+            let after = editor.activeSketch.map { $0.polyline($0.curve(spline.id)!, segments: 200) } ?? []
+            let moved = zip(before, after).map { simd_distance($0, $1) }.max() ?? 0
+            check("handle reshapes spline", moved > 1, "max change \(moved)")
+            check("spline still through its point", after.map { simd_distance($0, Vec2(40, 25)) }.min() ?? 1 < 1e-6)
+            check("handle is custom", editor.splineHandles(spline.id).contains { $0.custom })
+            if let dir = ProcessInfo.processInfo.environment["SIXAXIS_SNAPSHOTS"] {
+                await DemoScript.snap(editor, "sketch-spline-handles", URL(fileURLWithPath: dir))
+            }
+        } else {
+            check("spline for handles", false)
+        }
+        editor.finishSketch()
+        await pause()
+
+        // 11. Delete bodies with the ⌫ key.
+        editor.newDocument()
+        editor.commit { d in
+            let a = SketchEdit.check_box(name: "A", x: 0), b = SketchEdit.check_box(name: "B", x: 100)
+            d.features = a + b
+        }
+        await pause(1.0)
+        let ids = editor.state.bodyOrder
+        check("two bodies", ids.count == 2)
+        if ids.count == 2 {
+            editor.selection = [.body(ids[1])]
+            _ = editor.handleKey("\u{7f}", keyCode: 51, modifiers: [])
+            await pause(0.6)
+            // The extrusion step goes, its sketch stays (like Fusion).
+            check("⌫ deletes newest body with its step", editor.state.bodyOrder == [ids[0]] && editor.doc.features.count == 3,
+                  "bodies \(editor.state.bodyOrder.count) features \(editor.doc.features.count)")
+            editor.selection = [.face(ids[0], 0)]
+            _ = editor.handleKey("\u{7f}", keyCode: 51, modifiers: [])
+            await pause(0.6)
+            let removeStep = editor.doc.features.last.map { if case .removeBodies = $0.kind { return true }; return false } ?? false
+            check("⌫ on older body adds a remove step", editor.state.bodyOrder.isEmpty && removeStep)
+            editor.undo()
+            await pause(0.6)
+            check("undo brings the body back", editor.state.bodyOrder == [ids[0]])
+        }
+
         // 8. Project the top face of a body into a new sketch.
         editor.newDocument()
         editor.commit { $0 = Examples.storageBox().withoutShell() }

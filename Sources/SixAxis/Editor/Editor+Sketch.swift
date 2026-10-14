@@ -535,6 +535,37 @@ extension Editor {
         sketchTool = .select
     }
 
+    // MARK: Spline handles
+
+    /// Splines whose tangent handles are shown (selected spline curves).
+    var splinesWithHandles: [Int] {
+        guard let sk = activeSketch else { return [] }
+        return selection.compactMap { p -> Int? in
+            if case let .sketchCurve(_, c) = p, sk.curve(c)?.isSpline == true { return c }
+            return nil
+        }
+    }
+
+    /// Fit points with the handle in effect (user or automatic) and whether it was set by the user.
+    func splineHandles(_ curveId: Int) -> [(point: Int, position: Vec2, handle: Vec2, custom: Bool)] {
+        guard let sk = activeSketch, let c = sk.curve(curveId), case let .spline(ids, closed) = c.geometry else { return [] }
+        let pts = ids.compactMap { sk.point($0) }
+        guard pts.count == ids.count else { return [] }
+        let user = ids.map { c.handles?[$0] }
+        let eff = Spline.effectiveHandles(pts, closed: closed, handles: user)
+        return ids.indices.map { (ids[$0], pts[$0], eff[$0], user[$0] != nil) }
+    }
+
+    /// Sets (or with nil resets) a tangent handle. Live while dragging; the caller records one undo step.
+    func setSplineHandle(curve: Int, point: Int, to handle: Vec2?) {
+        mutateSketch(undoable: false) { sk in
+            guard let i = sk.curveIndex(curve) else { return }
+            var h = sk.curves[i].handles ?? [:]
+            if let handle, simd_length(handle) > 1e-6 { h[point] = handle } else { h[point] = nil }
+            sk.curves[i].handles = h.isEmpty ? nil : h
+        }
+    }
+
     // MARK: Text
 
     var textRequestHeight: Double? {

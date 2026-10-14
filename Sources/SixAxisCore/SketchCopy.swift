@@ -175,6 +175,15 @@ extension SketchEdit {
             case let .spline(pts, closed): new = sk.addSpline(pts.map(mapped), closed: closed, construction: c.construction)
             case let .text(a, t, h, f): new = sk.addText(t, at: mapped(a), height: h, font: f, construction: c.construction)
             }
+            if let h = c.handles, let k = sk.curveIndex(new) {
+                // Handles are vectors: transform the handle tip and subtract the transformed point.
+                var mappedHandles: [Int: Vec2] = [:]
+                for (pid, v) in h {
+                    guard let p = sk.point(pid) else { continue }
+                    mappedHandles[keep(pid) ? pid : (map[pid] ?? pid)] = position(p + v) - position(p)
+                }
+                sk.curves[k].handles = mappedHandles
+            }
             out.append((cid, new))
             if c.geometry.isCircle { sk.addConstraint(.equal(cid, new), group: group, factor: 1) }
         }

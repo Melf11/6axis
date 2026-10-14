@@ -257,4 +257,9 @@ EN.update({
 "Klicke, wo der Text beginnen soll (Grundlinie) · Doppelklick auf einen Text bearbeitet ihn": "Click where the text should start (baseline) · double-click a text to edit it",
 "Helvetica fett": "Helvetica bold", "Georgia fett": "Georgia bold", "Menlo (Schreibmaschine)": "Menlo (monospace)",
 })
+EN.update({
+"Entfernen": "Remove",
+"Entfernen hat keine Parameter – lösche den Schritt, um die Körper zurückzuholen": "Remove has no parameters – delete the step to bring the bodies back",
+})
+EN.update({"Ziehen: Richtung und Stärke der Kurve · Doppelklick: automatisch": "Drag: direction and fullness of the curve · double-click: automatic"})
 

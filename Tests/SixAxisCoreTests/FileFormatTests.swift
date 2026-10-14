@@ -42,4 +42,15 @@ final class FileFormatTests: XCTestCase {
         let json = try JSONSerialization.jsonObject(with: doc.encoded()) as! [String: Any]
         XCTAssertEqual(json["formatVersion"] as? Int, CADDocument.currentFormatVersion)
     }
+
+    func testRemoveBodiesStep() throws {
+        var doc = CADDocument()
+        doc.features = SketchEdit.check_box(name: "A", x: 0) + SketchEdit.check_box(name: "B", x: 50)
+        let b = doc.features[3].id
+        doc.features.append(Feature(name: "Entfernen1", kind: .removeBodies([b])))
+        let state = ModelBuilder().build(doc)
+        XCTAssertEqual(state.bodyOrder, [doc.features[1].id])
+        XCTAssertEqual(try CADDocument.decode(doc.encoded()), doc)
+    }
 }
+

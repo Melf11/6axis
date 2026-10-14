@@ -1832,6 +1832,26 @@
         }
       }
     },
+    "Entfernen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remove"
+          }
+        }
+      }
+    },
+    "Entfernen hat keine Parameter – lösche den Schritt, um die Körper zurückzuholen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remove has no parameters – delete the step to bring the bodies back"
+          }
+        }
+      }
+    },
     "Ergebnis ist keine gültige Zahl": {
       "localizations": {
         "en": {
@@ -5910,6 +5930,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Drag to change the distance"
+          }
+        }
+      }
+    },
+    "Ziehen: Richtung und Stärke der Kurve · Doppelklick: automatisch": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Drag: direction and fullness of the curve · double-click: automatic"
           }
         }
       }

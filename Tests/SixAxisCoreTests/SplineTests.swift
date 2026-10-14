@@ -83,7 +83,7 @@ final class SplineTests: XCTestCase {
         let back = try CADDocument.decode(doc.encoded())
         XCTAssertEqual(back, doc)
         let json = try JSONSerialization.jsonObject(with: doc.encoded()) as! [String: Any]
-        XCTAssertEqual(json["formatVersion"] as? Int, 3)
+        XCTAssertEqual(json["formatVersion"] as? Int, CADDocument.currentFormatVersion)
     }
 
     /// A body with a spline edge projects into the drawing (curved outline as polyline) and gets a drawing.
@@ -109,4 +109,67 @@ final class SplineTests: XCTestCase {
         let page = DrawingGenerator().generate(.init(shapes: [shape], settings: DrawingSettings(), fallbackTitle: "Spline"))
         XCTAssertFalse(page.lines.isEmpty)
     }
+
+    // MARK: Handles
+
+    func threePointSpline() -> (Sketch, Int, [Int]) {
+        var sk = Sketch(plane: .xy)
+        let ids = [Vec2(0, 0), Vec2(50, 20), Vec2(100, 0)].map { sk.addPoint($0) }
+        let c = sk.addSpline(ids)
+        return (sk, c, ids)
+    }
+
+    func peak(_ sk: Sketch, _ c: Int) -> Double { sk.polyline(sk.curve(c)!, segments: 400).map(\.y).max()! }
+
+    func testHandleSetsTangentAndFullness() {
+        var (sk, c, ids) = threePointSpline()
+        let auto = peak(sk, c)
+        // Middle handle pointing up-right: the tangent at the middle point follows it.
+        let i = sk.curveIndex(c)!
+        sk.curves[i].handles = [ids[1]: Vec2(20, 10)]
+        let pieces = Spline.beziers(ids.map { sk.point($0)! }, closed: false, handles: ids.map { sk.curves[i].handles?[$0] })
+        XCTAssertEqual(simd_distance(pieces[1].1 - pieces[1].0, Vec2(20, 10)), 0, accuracy: 1e-12, "outgoing control")
+        XCTAssertEqual(simd_distance(pieces[0].3 - pieces[0].2, Vec2(20, 10)), 0, accuracy: 1e-12, "incoming mirrors it")
+        // Still through every fit point.
+        let poly = sk.polyline(sk.curve(c)!, segments: 400)
+        for id in ids { XCTAssertLessThan(poly.map { simd_distance($0, sk.point(id)!) }.min()!, 1e-9) }
+        // A long horizontal handle makes the curve fuller at the top (flatter, wider peak) than a short one.
+        func topWidth() -> Double {
+            let xs = sk.polyline(sk.curve(c)!, segments: 400).filter { $0.y > 18 }.map(\.x)
+            return (xs.max() ?? 0) - (xs.min() ?? 0)
+        }
+        sk.curves[i].handles = [ids[1]: Vec2(40, 0)]
+        let full = topWidth()
+        sk.curves[i].handles = [ids[1]: Vec2(5, 0)]
+        let tight = topWidth()
+        XCTAssertGreaterThan(full, tight)
+        XCTAssertGreaterThan(auto, 19)
+    }
+
+    func testEffectiveHandlesForDisplay() {
+        let pts = [Vec2(0, 0), Vec2(50, 20), Vec2(100, 0)]
+        let h = Spline.effectiveHandles(pts, closed: false, handles: [nil, Vec2(10, 0), nil])
+        XCTAssertEqual(h[1], Vec2(10, 0))
+        XCTAssertEqual(h.count, 3)
+        XCTAssertGreaterThan(simd_length(h[0]), 0)
+        XCTAssertGreaterThan(simd_length(h[2]), 0)
+    }
+
+    func testMirrorReflectsHandlesAndRoundTrip() throws {
+        var (sk, c, ids) = threePointSpline()
+        sk.curves[sk.curveIndex(c)!].handles = [ids[1]: Vec2(20, 10)]
+        let a0 = sk.addPoint(Vec2(-10, -50)), a1 = sk.addPoint(Vec2(-10, 50))
+        let axis = sk.addLine(a0, a1, construction: true)
+        let copies = SketchEdit.mirror(&sk, curves: [c], axis: axis)
+        let copy = sk.curve(copies[0])!
+        guard case let .spline(cids, _) = copy.geometry else { return XCTFail() }
+        XCTAssertEqual(copy.handles?[cids[1]], Vec2(-20, 10), "x flipped across the vertical axis")
+        var doc = CADDocument()
+        doc.features = [Feature(name: "S", kind: .sketch(sk))]
+        XCTAssertEqual(try CADDocument.decode(doc.encoded()), doc)
+        // Old spline JSON without handles still decodes.
+        let json = #"{"id":5,"geometry":{"spline":{"points":[1,2],"closed":false}},"construction":false}"#
+        XCTAssertNil(try JSONDecoder().decode(SketchCurve.self, from: Data(json.utf8)).handles)
+    }
 }
+

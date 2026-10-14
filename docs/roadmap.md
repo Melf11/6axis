@@ -14,7 +14,7 @@ Reihenfolge nach Absprache: **zuerst ein weitergebbares Release**, damit Freunde
 | 1.2 | Modellieren | Konstruktionsebenen, Bohrung, Muster/Spiegeln, Körper verschieben/kombinieren |
 | 1.3 | Prüfen & Ausgabe | Messen, Schnittansicht im 3D-Fenster, 3MF |
 | 1.4 | Baugruppen | Komponenten, Gelenke, Explosionsansicht |
-| 2.0 | Fräsen (CAM) | 2,5D für Platten: Kontur, Tasche, Bohren, Nut, G-Code (GRBL, LinuxCNC, Mach3) – [Konzept](cam.md) |
+| 2.0 | Fräsen (CAM) und Maschinensteuerung | 2,5D für Platten (Kontur, Tasche, Bohren, Nut) und die Fräse direkt aus 6axis steuern wie mit dem Estlcam-CNC-Programm (Joggen, Nullpunkt, Antasten, Parken, Programm abfahren) – [Konzept](cam.md) |
 | später | Feature-Sammlung | Holz-Werkzeuge, Plattenzuschnittplan, … |
 
 ---
@@ -131,11 +131,12 @@ Inhalt:
 - Explosionsansicht, auch in der technischen Zeichnung
 - Stückliste aus Komponenten
 
-## 2.0 – Fräsen (CAM)
-Ausführlich: [docs/cam.md](cam.md). Zuerst die Fragen dort klären (Fräse/Steuerung, typische Arbeiten).
-- Stufe 1 – 2,5D für Platten: Einrichtung (Rohteil, Nullpunkt), Werkzeugbibliothek, Kontur mit Haltestegen, Tasche, Bohren (auch aus System-32-Reihen), Nut; Bahnen mit Clipper2; Vorschau und Laufzeit; Postprozessoren GRBL, LinuxCNC, Mach3; Verschachtelung mehrerer Teile (mit dem Plattenzuschnittplan)
-- Stufe 2 – Simulation des Materialabtrags, Warnungen, adaptives Ausräumen, Wendebearbeitung, weitere Steuerungen
-- Stufe 3 – 3D-Schruppen/-Schlichten mit OpenCAMLib
+## 2.0 – Fräsen (CAM) und Maschinensteuerung
+Ausführlich: [docs/cam.md](cam.md). Ziel: vom Modell bis zum Fräsen in einem Mac-Programm – CAM und Maschinensteuerung wie bei Estlcam, aber nativ. Zuerst die Fragen dort klären (Steuerung, Endschalter, Tastplatte, Spindel).
+- Stufe 1 – 2,5D für Platten: Einrichtung (Rohteil, Nullpunkt), Werkzeugbibliothek, Kontur mit Haltestegen, Tasche, Bohren (auch aus System-32-Reihen), Nut; Bahnen mit Clipper2; Vorschau und Laufzeit; Postprozessoren GRBL, LinuxCNC, Mach3, Estlcam (G-Code); Verschachtelung mehrerer Teile (mit dem Plattenzuschnittplan)
+- Stufe 2 – **Maschinensteuerung** für GRBL/grblHAL/FluidNC über USB: Positionsanzeige, Joggen (Tastatur, Gamepad), Referenzfahrt, Achsen nullen, Z antasten, Parken, Job abfahren mit Pause/Stopp/Overrides und Werkzeugwechsel, Live-Fräserposition im 3D-Fenster. Estlcam-Firmware ist proprietär und nicht ansteuerbar – Assistent für GRBL auf derselben Hardware (Arduino + CNC-Shield)
+- Stufe 3 – Simulation des Materialabtrags, Warnungen, adaptives Ausräumen, Wendebearbeitung, weitere Steuerungen
+- Stufe 4 – 3D-Schruppen/-Schlichten mit OpenCAMLib
 
 ---
 

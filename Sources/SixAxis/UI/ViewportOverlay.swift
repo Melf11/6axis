@@ -13,12 +13,14 @@ struct ViewportOverlay: View {
                 drawToolPreview(ctx)
                 drawDimensions(ctx)
                 drawExtrudeArrow(ctx)
+                drawSplineHandles(ctx)
             }
             .allowsHitTesting(false)
 
             if editor.sketchId != nil {
                 constraintGlyphs
                 dimensionLabels
+                splineHandleKnobs
                 toolInputBoxes
             }
             extrudeHandle
@@ -346,6 +348,32 @@ struct ViewportOverlay: View {
         }
     }
 
+    // MARK: Spline handles
+
+    private func drawSplineHandles(_ ctx: GraphicsContext) {
+        for c in editor.splinesWithHandles {
+            for h in editor.splineHandles(c) {
+                ctx.stroke(path([h.position - h.handle, h.position + h.handle]), with: .color(accent.opacity(0.8)),
+                           style: StrokeStyle(lineWidth: 1.2, dash: h.custom ? [] : [3, 3]))
+            }
+        }
+    }
+
+    /// Draggable handle ends: direction = tangent, length = how full the curve runs through the point.
+    private var splineHandleKnobs: some View {
+        let items: [(id: String, curve: Int, point: Int, sign: Double, pos: Vec2, custom: Bool)] = editor.splinesWithHandles.flatMap { c in
+            editor.splineHandles(c).flatMap { h in
+                [1.0, -1.0].map { s in ("\(c)-\(h.point)-\(s)", c, h.point, s, h.position + h.handle * s, h.custom) }
+            }
+        }
+        return ForEach(items, id: \.id) { item in
+            if let p = screen(item.pos) {
+                SplineHandleKnob(editor: editor, curve: item.curve, point: item.point, sign: item.sign, custom: item.custom)
+                    .position(p)
+            }
+        }
+    }
+
     // MARK: Constraint glyphs
 
     private struct Glyph: Identifiable {
@@ -571,3 +599,41 @@ private struct DimensionLabel: View {
         }
     }
 }
+
+/// One end of a spline tangent handle.
+private struct SplineHandleKnob: View {
+    let editor: Editor
+    let curve: Int
+    let point: Int
+    let sign: Double
+    let custom: Bool
+    @State private var snapshot: CADDocument?
+
+    var body: some View {
+        Circle()
+            .fill(custom ? Color.accentColor : Color(nsColor: .windowBackgroundColor))
+            .overlay(Circle().strokeBorder(Color.accentColor, lineWidth: 1.5))
+            .frame(width: 10, height: 10)
+            .contentShape(Circle().inset(by: -4))
+            .onTapGesture(count: 2) {
+                let before = editor.doc
+                editor.setSplineHandle(curve: curve, point: point, to: nil)
+                if editor.doc != before { editor.pushUndo(before) }
+            }
+            .gesture(
+                DragGesture(minimumDistance: 1, coordinateSpace: .named("overlay"))
+                    .onChanged { v in
+                        if snapshot == nil { snapshot = editor.doc }
+                        guard let pos = editor.sketchPosition(at: v.location),
+                              let fit = editor.activeSketch?.point(point) else { return }
+                        editor.setSplineHandle(curve: curve, point: point, to: (pos - fit) * sign)
+                    }
+                    .onEnded { _ in
+                        if let s = snapshot, s != editor.doc { editor.pushUndo(s) }
+                        snapshot = nil
+                    }
+            )
+            .help(String(localized: "Ziehen: Richtung und Stärke der Kurve · Doppelklick: automatisch"))
+    }
+}
+
