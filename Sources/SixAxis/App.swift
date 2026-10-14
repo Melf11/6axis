@@ -42,6 +42,7 @@ struct SixAxisApp: App {
                     appDelegate.editor = editor
                     DemoScript.runIfRequested(editor)
                     Updater.shared.checkIfDue()
+                    Task { await BugReports.shared.restore() }
                 }
                 .sheet(isPresented: Bindable(Updater.shared).showSheet) { UpdateSheet(editor: editor) }
                 .navigationTitle(editor.documentTitle)
@@ -50,6 +51,11 @@ struct SixAxisApp: App {
         .windowStyle(.hiddenTitleBar)
         .windowToolbarStyle(.unified)
         .commands { AppCommands(editor: editor) }
+
+        Window("Fehlerberichte", id: "bugreport") {
+            BugReportWindow()
+        }
+        .defaultSize(width: 760, height: 520)
 
         Window("Zeichnung", id: "drawing") {
             DrawingWindow(editor: editor)
@@ -73,7 +79,10 @@ struct AppCommands: Commands {
             Button("Nach Updates suchen …") { Task { await Updater.shared.check(userInitiated: true) } }
         }
         CommandGroup(replacing: .help) {
-            Button("Fehler melden …") { Branding.openFeedback(kind: "bug") }
+            Button("Fehler melden …") {
+                // The in-app chat when it's switched on and allowed for this account, else GitHub in the browser.
+                if BugReports.shared.canUseChat { editor.openBugReportWindow() } else { Branding.openFeedback(kind: "bug") }
+            }
             Button("Idee vorschlagen …") { Branding.openFeedback(kind: "idea") }
             Divider()
             Button("6axis-Webseite") { NSWorkspace.shared.open(URL(string: Branding.website)!) }

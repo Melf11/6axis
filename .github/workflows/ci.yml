@@ -51,6 +51,11 @@ jobs:
         timeout-minutes: 15
         run: scripts/update-test.sh
 
+      - name: Bug report chat
+        # Sign-in, allowlist, sending and replies against a local mock of the GitHub API.
+        timeout-minutes: 5
+        run: scripts/bugreport-check.sh "$RUNNER_TEMP/ui-check"
+
       - uses: actions/upload-artifact@v4
         if: always()
         with:

@@ -46,6 +46,14 @@ enum DemoScript {
             }
             return
         }
+        // Bug-report chat against scripts/mock_github.py: SIXAXIS_BUGREPORT_TEST=<expected chat permission 1|0>
+        if let expect = env["SIXAXIS_BUGREPORT_TEST"] {
+            Task { @MainActor in
+                await BugReportChecks.run(editor, expectChat: expect == "1", snapshots: env["SIXAXIS_SNAPSHOTS"])
+                exit(0)
+            }
+            return
+        }
         // Mouse drag performance: SIXAXIS_DRAG_TEST=1 – orbit (right button) and pan (middle button) on the
         // cabinet; reports per-event latency until the next frame plus CPU/GPU frame times.
         if env["SIXAXIS_DRAG_TEST"] != nil {

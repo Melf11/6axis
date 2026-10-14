@@ -126,12 +126,19 @@ max_minutes_per_fix: 45
 
 1. **GitHub-OAuth-App anlegen:** github.com → Settings → Developer settings → OAuth Apps → *New OAuth App*
    - Name `6axis`, Homepage `https://melf11.github.io/6axis/`, Callback-URL beliebig (wird beim Device Flow nicht genutzt, z. B. die Homepage)
-   - **„Enable Device Flow“ anhaken** → die **Client-ID** an Claude geben (öffentlich, kommt in die App)
+   - **„Enable Device Flow“ anhaken** → die **Client-ID** in `Resources/github-client-id.txt` eintragen (öffentlich; `build-app.sh` schreibt sie in die Info.plist). Ohne Client-ID zeigt die App „noch nicht eingerichtet“.
 2. **Claude-Token:** `claude setup-token`, als Secret `CLAUDE_CODE_OAUTH_TOKEN` hinterlegen
 3. **GitHub-CLI anmelden** (`gh auth login`), damit Branch-Schutz, Labels und Workflows eingerichtet und getestet werden können
-4. Freigabeliste pflegen: eigene und vertrauenswürdige Benutzernamen eintragen (per PR)
+4. Freigabelisten pflegen: `reporters` (darf den Chat nutzen) und `autofix` (wird automatisch bearbeitet) – per PR
+5. **Branch-Schutz für `main`:** Pull Request mit Zustimmung des Code-Owners erforderlich, damit niemand sonst `.github/` ändert
 
 ## 7. Stufen
+
+**Stand (Branch `feature/bug-reports`):** Stufen 1–4 sind gebaut. Getestet: Freigabeskript (Unit-Tests in CI),
+App-Seite gegen einen nachgebildeten GitHub-Server (`scripts/bugreport-check.sh`, in CI: Anmeldung, Freigabe aus
+`reporters`/`autofix`, ähnliche Fehler, Senden, Rückfrage, Antwort, Abmelden; ein nicht gelistetes Konto bekommt keinen
+Chat). Die Claude-Schritte der Workflows werden übersprungen, solange das Secret fehlt. Offen: Client-ID, Secret,
+Labels/Branch-Schutz einrichten, Probelauf mit echtem Issue; Anhänge (nur Text bisher) und Stufe 5.
 
 | Stufe | Inhalt | Fertig, wenn |
 |---|---|---|
