@@ -94,4 +94,17 @@ public enum SketchEdit {
         sk.addConstraint(.equal(k1, k2))
         return (edge, dim)
     }
+
+    /// Rectangle sketch + extrusion (20 × 20 × 10) at `x` – test helper for checks.
+    public static func check_box(name: String, x: Double) -> [Feature] {
+        var sk = Sketch(plane: .xy)
+        let p = [Vec2(x, 0), Vec2(x + 20, 0), Vec2(x + 20, 20), Vec2(x, 20)].map { sk.addPoint($0) }
+        for i in 0..<4 { sk.addLine(p[i], p[(i + 1) % 4]) }
+        let s = Feature(name: "Skizze \(name)", kind: .sketch(sk))
+        var ex = ExtrudeFeature()
+        ex.profiles = [ProfileRef(sketch: s.id, sample: Vec2(x + 10, 10))]
+        ex.distance = "10 mm"
+        return [s, Feature(name: name, kind: .extrude(ex))]
+    }
 }
+

@@ -83,7 +83,7 @@ final class SplineTests: XCTestCase {
         let back = try CADDocument.decode(doc.encoded())
         XCTAssertEqual(back, doc)
         let json = try JSONSerialization.jsonObject(with: doc.encoded()) as! [String: Any]
-        XCTAssertEqual(json["formatVersion"] as? Int, 3)
+        XCTAssertEqual(json["formatVersion"] as? Int, CADDocument.currentFormatVersion)
     }
 
     /// A body with a spline edge projects into the drawing (curved outline as polyline) and gets a drawing.

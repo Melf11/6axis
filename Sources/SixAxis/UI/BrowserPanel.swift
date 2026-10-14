@@ -122,6 +122,8 @@ struct BrowserPanel: View {
             Button("Als STL exportieren …") { editor.selection = [.body(id)]; editor.exportSTL() }
             Button("Als STEP exportieren …") { editor.selection = [.body(id)]; editor.exportSTEP() }
             Button("Im Slicer öffnen") { editor.selection = [.body(id)]; editor.openInSlicer() }
+            Divider()
+            Button("Löschen", role: .destructive) { editor.deleteBodies([id]) }
         }
     }
 

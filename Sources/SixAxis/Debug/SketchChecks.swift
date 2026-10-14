@@ -281,6 +281,32 @@ enum SketchChecks {
         editor.finishSketch()
         await pause()
 
+        // 11. Delete bodies with the ⌫ key.
+        editor.newDocument()
+        editor.commit { d in
+            let a = SketchEdit.check_box(name: "A", x: 0), b = SketchEdit.check_box(name: "B", x: 100)
+            d.features = a + b
+        }
+        await pause(1.0)
+        let ids = editor.state.bodyOrder
+        check("two bodies", ids.count == 2)
+        if ids.count == 2 {
+            editor.selection = [.body(ids[1])]
+            _ = editor.handleKey("\u{7f}", keyCode: 51, modifiers: [])
+            await pause(0.6)
+            // The extrusion step goes, its sketch stays (like Fusion).
+            check("⌫ deletes newest body with its step", editor.state.bodyOrder == [ids[0]] && editor.doc.features.count == 3,
+                  "bodies \(editor.state.bodyOrder.count) features \(editor.doc.features.count)")
+            editor.selection = [.face(ids[0], 0)]
+            _ = editor.handleKey("\u{7f}", keyCode: 51, modifiers: [])
+            await pause(0.6)
+            let removeStep = editor.doc.features.last.map { if case .removeBodies = $0.kind { return true }; return false } ?? false
+            check("⌫ on older body adds a remove step", editor.state.bodyOrder.isEmpty && removeStep)
+            editor.undo()
+            await pause(0.6)
+            check("undo brings the body back", editor.state.bodyOrder == [ids[0]])
+        }
+
         // 8. Project the top face of a body into a new sketch.
         editor.newDocument()
         editor.commit { $0 = Examples.storageBox().withoutShell() }

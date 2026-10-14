@@ -260,6 +260,8 @@ public final class ModelBuilder: @unchecked Sendable {
                 defer { try? FileManager.default.removeItem(at: url) }
                 let shape = try Shape.readSTEP(from: url)
                 state.setBody(BuiltBody(id: f.id, shape: shape, sourceFeature: f.id))
+            case let .removeBodies(ids):
+                for id in ids { state.removeBody(id) }
             }
         } catch {
             state.errors[f.id] = (error as? LocalizedError)?.errorDescription ?? "\(error)"

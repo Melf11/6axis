@@ -194,8 +194,20 @@ extension Editor {
         requestRedraw()
     }
 
+    /// ⌫ / Entf: deletes what is selected – sketch geometry inside a sketch, otherwise a timeline step,
+    /// selected bodies (also via a selected face or edge) or a selected sketch.
     func deleteSelection() {
         if sketchId != nil { deleteSketchSelection(); return }
-        if let t = timelineSelection { deleteFeature(t); timelineSelection = nil }
+        if let t = timelineSelection { deleteFeature(t); timelineSelection = nil; return }
+        var bodies: [UUID] = [], sketches: [UUID] = []
+        for p in selection {
+            switch p {
+            case let .body(b), let .face(b, _), let .edge(b, _): if !bodies.contains(b) { bodies.append(b) }
+            case let .profile(s, _), let .sketchCurve(s, _): if !sketches.contains(s) { sketches.append(s) }
+            default: break
+            }
+        }
+        if !bodies.isEmpty { deleteBodies(bodies) }
+        for s in sketches { deleteFeature(s) }
     }
 }

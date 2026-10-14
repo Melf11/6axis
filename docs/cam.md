@@ -105,6 +105,7 @@ Wunsch aus dem Testerkreis: *„Es gibt von Estlcam das CNC-Programm. Das steuer
 - 3D-Simulation
 
 ## Offene Fragen an den Werkstatt-Alltag
+- **Stand beim Tester:** Fräse mit **Sub-D-25-Anschluss** (Parallelport, Schritt/Richtung) und einem USB-Konverter dazwischen – vermutlich ein Arduino-basierter Adapter mit Estlcam-Firmware. Für 6axis: GRBL auf diesen Adapter spielen (wenn Arduino-basiert und die Pinbelegung passt) oder eine GRBL/grblHAL-Platine mit Sub-D-25-Ausgang verwenden. Ein reines USB-Druckerkabel kann keine Schrittsignale erzeugen. → Modell/Foto des Konverters klären.
 - **Zur Maschinensteuerung** (an den Freund mit Estlcam): Welche Steuerung steckt in der Fräse (Arduino Uno/Nano/Mega mit CNC-Shield, Estlcam-Klemmenadapter, etwas anderes)? Gibt es Endschalter (Referenzfahrt)? Tastplatte oder Längensensor für Z? Schaltet die Steuerung die Spindel (Relais/PWM) oder läuft die Oberfräse separat? Wäre ein Umstieg auf GRBL auf derselben Hardware in Ordnung?
 - Welche Fräse und Steuerung wird genutzt (GRBL, Mach3, Estlcam, LinuxCNC, Industrie)? → bestimmt den ersten Postprozessor
 - Typische Arbeiten: Plattenteile mit Bohrungen ausschneiden? Taschen/Nuten? Gravuren/Schilder? 3D-Reliefs?
