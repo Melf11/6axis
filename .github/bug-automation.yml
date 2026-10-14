@@ -1,0 +1,14 @@
+# Fehlerberichte & automatische Fehlerbehebung (siehe docs/bug-pipeline.md).
+# Änderungen nur per Pull Request durch den Inhaber (CODEOWNERS).
+
+# Wer den Fehlerbericht-Chat in 6axis nutzen darf (GitHub-Benutzernamen).
+reporters:
+  - Melf11
+
+# Wessen Berichte nachts automatisch bearbeitet werden (ohne Freigabe-Label).
+autofix:
+  - Melf11
+
+# Grenzen für den nächtlichen Lauf.
+max_fixes_per_night: 3
+max_minutes_per_fix: 45

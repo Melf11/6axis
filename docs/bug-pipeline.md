@@ -9,7 +9,8 @@ Ziel: Fehler direkt in 6axis melden – in einem kleinen Chat – und freigegebe
 | Thema | Entscheidung |
 |---|---|
 | Anmeldung in der App | **GitHub-Konto** über den Device Flow („Code eingeben auf github.com“); kein Server, kein Geheimnis in der App |
-| Wer darf automatisch verarbeiten lassen | **Freigabeliste im Repository** (`.github/bug-automation.yml`), nur vom Inhaber änderbar; alle anderen nur per Label `freigegeben` durch den Inhaber |
+| Wer darf den Chat nutzen | Liste **`reporters`** in `.github/bug-automation.yml` – nur diese Nutzer sehen den Fehlerbericht-Chat in 6axis |
+| Wessen Berichte werden automatisch verarbeitet | Liste **`autofix`** in derselben Datei; alle anderen nur, wenn der Inhaber das Label `freigegeben` setzt. Datei nur vom Inhaber änderbar (CODEOWNERS + Branch-Schutz) |
 | Verarbeitung | **GitHub Actions** mit der offiziellen Claude Code Action |
 | Claude-Zugang | **Claude-Pro-Token** (`claude setup-token`) als Secret `CLAUDE_CODE_OAUTH_TOKEN` |
 | Ergebnis | **Ein Pull Request pro Fehler**, nie automatisch gemergt |
@@ -56,15 +57,20 @@ Inhaber prüft und merged  →  nächstes Release  →  In-App-Update  →  Chat
 
 ## 2. Das Repository
 
-### Freigabeliste `.github/bug-automation.yml`
+### Freigabelisten `.github/bug-automation.yml`
 ```yaml
-# Wessen Fehlerberichte automatisch verarbeitet werden (GitHub-Benutzernamen).
+# Wer den Fehlerbericht-Chat in 6axis nutzen darf (GitHub-Benutzernamen).
 reporters:
+  - Melf11
+# Wessen Berichte nachts automatisch bearbeitet werden.
+autofix:
   - Melf11
 # Grenzen für den nächtlichen Lauf
 max_fixes_per_night: 3
 max_minutes_per_fix: 45
 ```
+- `reporters` steuert die App: nach der Anmeldung lädt 6axis die Datei und zeigt den Chat nur für gelistete Nutzer. Das ist eine Bedienungs-, keine Sicherheitsgrenze – Issues kann bei einem öffentlichen Repository jeder anlegen.
+- `autofix` ist die Sicherheitsgrenze: die Workflows prüfen sie per Skript (`scripts/bug_automation.py`) gegen den Stand auf `main`.
 - Geschützt durch **`CODEOWNERS`** (`/.github/ @Melf11`) und **Branch-Schutz auf `main`**: Änderungen nur per Pull Request mit Zustimmung des Inhabers, CI muss grün sein
 - Workflows lesen die Liste immer **vom Stand auf `main`**, nie aus einem PR-Branch
 
