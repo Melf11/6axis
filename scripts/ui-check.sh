@@ -78,6 +78,14 @@ if grep -q "^CHECK FAIL" "$OUT/modelling.log" || ! grep -q "^CHECK ok" "$OUT/mod
 else
     echo "✓ modelling: $(grep -c '^CHECK ok' "$OUT/modelling.log") command checks"
 fi
+run cam 180 SIXAXIS_FAST_SNAPSHOTS=1 SIXAXIS_CAM_TEST=1 SIXAXIS_SNAPSHOTS="$OUT/cam"
+if grep -q "^CHECK FAIL" "$OUT/cam.log" || ! grep -q "^CHECK ok" "$OUT/cam.log"; then
+    grep "^CHECK FAIL" "$OUT/cam.log" | sed 's/^/✗ cam: /'
+    echo "::error::ui-check cam: $(grep -c '^CHECK FAIL' "$OUT/cam.log") failing checks"
+    fail=1
+else
+    echo "✓ cam: $(grep -c '^CHECK ok' "$OUT/cam.log") milling checks"
+fi
 run drag 120 SIXAXIS_FAST_SNAPSHOTS=1 SIXAXIS_DRAG_TEST=1
 if python3 - "$OUT/drag.log" <<'PY'
 import re, sys

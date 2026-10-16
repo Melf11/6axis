@@ -604,6 +604,16 @@
         }
       }
     },
+    "Anklicken": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Click to pick"
+          }
+        }
+      }
+    },
     "Ansicht von oben": {
       "localizations": {
         "en": {
@@ -704,6 +714,26 @@
         }
       }
     },
+    "Arbeitsbereich wechseln": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Switch workspace"
+          }
+        }
+      }
+    },
+    "Auf Linie": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "On line"
+          }
+        }
+      }
+    },
     "Auf eine ebene Fläche klicken oder Skizzenpunkte wählen": {
       "localizations": {
         "en": {
@@ -720,6 +750,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Storage box (3D printing)"
+          }
+        }
+      }
+    },
+    "Aufmaß oben": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Top allowance"
           }
         }
       }
@@ -854,6 +894,16 @@
         }
       }
     },
+    "Außen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Outside"
+          }
+        }
+      }
+    },
     "Außenmaß": {
       "localizations": {
         "en": {
@@ -890,6 +940,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Edit"
+          }
+        }
+      }
+    },
+    "Bearbeitungen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Operations"
           }
         }
       }
@@ -991,6 +1051,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Description"
+          }
+        }
+      }
+    },
+    "Berechne Bahnen …": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Computing toolpaths …"
           }
         }
       }
@@ -1105,6 +1175,16 @@
         }
       }
     },
+    "Boden der Tasche anklicken – Inseln bleiben stehen.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Click the pocket floor – islands are left standing."
+          }
+        }
+      }
+    },
     "Bodenschatten": {
       "localizations": {
         "en": {
@@ -1135,6 +1215,46 @@
         }
       }
     },
+    "Bohren": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Drill"
+          }
+        }
+      }
+    },
+    "Bohrer": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Drill"
+          }
+        }
+      }
+    },
+    "Bohrer Ø5": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Drill Ø5"
+          }
+        }
+      }
+    },
+    "Bohrer Ø8": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Drill Ø8"
+          }
+        }
+      }
+    },
     "Bohrung": {
       "localizations": {
         "en": {
@@ -1161,6 +1281,42 @@
           "stringUnit": {
             "state": "translated",
             "value": "The hole is shorter than the countersink"
+          }
+        }
+      }
+    },
+    "Bohrung Ø%@ ist kleiner als das Werkzeug": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hole Ø%@ is smaller than the tool"
+          }
+        }
+      }
+    },
+    "Bohrung Ø%@ mit %@": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Bohrung Ø%1$@ mit %2$@"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hole Ø%1$@ with %2$@"
+          }
+        }
+      }
+    },
+    "Bohrungen anklicken – oder die Oberseite eines Teils für alle seine Bohrungen.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Click holes – or a part's top face for all of its holes."
           }
         }
       }
@@ -1714,6 +1870,16 @@
         }
       }
     },
+    "Drehzahl": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Speed"
+          }
+        }
+      }
+    },
     "Drucken": {
       "localizations": {
         "en": {
@@ -1904,12 +2070,42 @@
         }
       }
     },
+    "Ecke hinten links, Oberseite": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Back left corner, top"
+          }
+        }
+      }
+    },
     "Ecke klicken": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Click a corner"
+          }
+        }
+      }
+    },
+    "Ecke vorne links, Oberseite": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Front left corner, top"
+          }
+        }
+      }
+    },
+    "Ecke vorne links, Unterseite (Tisch)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Front left corner, bottom (table)"
           }
         }
       }
@@ -2050,6 +2246,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Unit"
+          }
+        }
+      }
+    },
+    "Einrichtung": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Setup"
           }
         }
       }
@@ -2396,6 +2602,16 @@
         }
       }
     },
+    "FRÄSEN": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "MILLING"
+          }
+        }
+      }
+    },
     "Fachboden": {
       "localizations": {
         "en": {
@@ -2638,6 +2854,46 @@
         }
       }
     },
+    "Fräsen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Milling"
+          }
+        }
+      }
+    },
+    "G-Code": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "G-code"
+          }
+        }
+      }
+    },
+    "G-Code gesichert: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "G-code saved: %@"
+          }
+        }
+      }
+    },
+    "G-Code sichern?": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Save G-code?"
+          }
+        }
+      }
+    },
     "Gegenüberliegende Ecke klicken oder Maße eintippen": {
       "localizations": {
         "en": {
@@ -2798,6 +3054,16 @@
         }
       }
     },
+    "Gleichlauf": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Climb milling"
+          }
+        }
+      }
+    },
     "Grob (kleine Dateien)": {
       "localizations": {
         "en": {
@@ -2838,6 +3104,16 @@
         }
       }
     },
+    "Haltestege": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tabs"
+          }
+        }
+      }
+    },
     "Hell": {
       "localizations": {
         "en": {
@@ -2864,6 +3140,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Construction"
+          }
+        }
+      }
+    },
+    "Hinweise": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Notes"
+          }
+        }
+      }
+    },
+    "Hinweise:": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Notes:"
           }
         }
       }
@@ -2944,6 +3240,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Imported bodies have no parameters"
+          }
+        }
+      }
+    },
+    "Innen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Inside"
           }
         }
       }
@@ -3250,6 +3556,16 @@
         }
       }
     },
+    "Keine Fräsbahnen – erst Bearbeitungen anlegen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No toolpaths – add operations first"
+          }
+        }
+      }
+    },
     "Keine Geometrie": {
       "extractionState": "manual",
       "localizations": {
@@ -3337,6 +3653,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "No bodies or features chosen"
+          }
+        }
+      }
+    },
+    "Keine Körper zum Fräsen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No bodies to machine"
           }
         }
       }
@@ -3681,6 +4007,16 @@
         }
       }
     },
+    "Kontur": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Contour"
+          }
+        }
+      }
+    },
     "Konzentrisch": {
       "localizations": {
         "en": {
@@ -3757,6 +4093,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Circular Pattern (Bodies/Features)"
+          }
+        }
+      }
+    },
+    "Kugelfräser": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ball end mill"
           }
         }
       }
@@ -3858,6 +4204,32 @@
           "stringUnit": {
             "state": "translated",
             "value": "Downloading update …"
+          }
+        }
+      }
+    },
+    "Laufzeit": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Run time"
+          }
+        }
+      }
+    },
+    "Laufzeit ca. %lld min. Nullpunkt: %@.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Laufzeit ca. %1$lld min. Nullpunkt: %2$@."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Run time about %1$lld min. Zero: %2$@."
           }
         }
       }
@@ -4152,6 +4524,16 @@
         }
       }
     },
+    "Mitte, Oberseite": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Centre, top"
+          }
+        }
+      }
+    },
     "Mittelebene": {
       "localizations": {
         "en": {
@@ -4258,6 +4640,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Check for Updates …"
+          }
+        }
+      }
+    },
+    "Nach oben": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Move Up"
+          }
+        }
+      }
+    },
+    "Nach unten": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Move Down"
           }
         }
       }
@@ -4374,6 +4776,16 @@
         }
       }
     },
+    "Nullpunkt": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zero"
+          }
+        }
+      }
+    },
     "Nur Ansicht – das Modell bleibt unverändert.": {
       "localizations": {
         "en": {
@@ -4480,6 +4892,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Surface: %.1f cm²"
+          }
+        }
+      }
+    },
+    "Oberseite der Teile anklicken. Außen schneidet das Teil aus, Innen die Aussparungen.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Click the parts' top faces. Outside cuts the part free, inside cuts its openings."
+          }
+        }
+      }
+    },
+    "Oberseite eines Teils anklicken und „Kontur“ wählen – oder einen Taschenboden und „Tasche“.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Click a part's top face and choose “Contour” – or a pocket floor and “Pocket”."
           }
         }
       }
@@ -4904,6 +5336,16 @@
         }
       }
     },
+    "Prüfe Werkzeuge und Nullpunkt und fahre das Programm zuerst „in der Luft“ (Z hoch genullt). Für den Betrieb der Maschine bist du verantwortlich.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Check the tools and the zero and run the program “in the air” first (Z zeroed high). You are responsible for operating the machine."
+          }
+        }
+      }
+    },
     "Punkt auf Kurve": {
       "localizations": {
         "en": {
@@ -5026,6 +5468,16 @@
         }
       }
     },
+    "Rand": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Margin"
+          }
+        }
+      }
+    },
     "Raster anzeigen": {
       "localizations": {
         "en": {
@@ -5142,6 +5594,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Reverse direction"
+          }
+        }
+      }
+    },
+    "Rohteil": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stock"
+          }
+        }
+      }
+    },
+    "Rohteil = alle sichtbaren Teile plus Rand. Teile liegen flach, gefräst wird von oben.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stock = all visible parts plus margin. Parts lie flat and are milled from the top."
           }
         }
       }
@@ -5330,6 +5802,46 @@
         }
       }
     },
+    "Schaftfräser": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "End mill"
+          }
+        }
+      }
+    },
+    "Schaftfräser Ø3": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "End mill Ø3"
+          }
+        }
+      }
+    },
+    "Schaftfräser Ø6": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "End mill Ø6"
+          }
+        }
+      }
+    },
+    "Schaftfräser Ø8": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "End mill Ø8"
+          }
+        }
+      }
+    },
     "Schattierung": {
       "localizations": {
         "en": {
@@ -5356,6 +5868,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Close (Esc)"
+          }
+        }
+      }
+    },
+    "Schneide": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Flute"
           }
         }
       }
@@ -5447,6 +5969,32 @@
           "stringUnit": {
             "state": "translated",
             "value": "Section plane failed"
+          }
+        }
+      }
+    },
+    "Schnitttiefe %@ ist größer als die Schneidenlänge von %@": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Schnitttiefe %1$@ ist größer als die Schneidenlänge von %2$@"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cut depth %1$@ is more than the flute length of %2$@"
+          }
+        }
+      }
+    },
+    "Schnittwerte für Holz als Vorschlag – je nach Material und Maschine anpassen.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cutting data for wood as a suggestion – adjust to material and machine."
           }
         }
       }
@@ -5621,6 +6169,16 @@
         }
       }
     },
+    "Sicherheit": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Safe height"
+          }
+        }
+      }
+    },
     "Sichern": {
       "localizations": {
         "en": {
@@ -5657,6 +6215,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Save as …"
+          }
+        }
+      }
+    },
+    "Sichern …": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Save …"
           }
         }
       }
@@ -6031,6 +6599,36 @@
         }
       }
     },
+    "Stegbreite": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tab width"
+          }
+        }
+      }
+    },
+    "Steghöhe": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tab height"
+          }
+        }
+      }
+    },
+    "Steuerung": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Controller"
+          }
+        }
+      }
+    },
     "Studio": {
       "localizations": {
         "en": {
@@ -6111,12 +6709,58 @@
         }
       }
     },
+    "T%lld": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "T%lld"
+          }
+        }
+      }
+    },
+    "T%lld %@": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "new",
+            "value": "T%1$lld %2$@"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "T%1$lld %2$@"
+          }
+        }
+      }
+    },
     "Tangential": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Tangent"
+          }
+        }
+      }
+    },
+    "Tasche": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pocket"
+          }
+        }
+      }
+    },
+    "Taschenboden muss waagerecht nach oben zeigen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The pocket floor must face straight up"
           }
         }
       }
@@ -6147,6 +6791,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Part %lld"
+          }
+        }
+      }
+    },
+    "Teil liegt nicht flach (Oberseite muss nach oben zeigen)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The part does not lie flat (its top face must face up)"
           }
         }
       }
@@ -6523,6 +7177,26 @@
         }
       }
     },
+    "V-Nut 90°": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "V-bit 90°"
+          }
+        }
+      }
+    },
+    "V-Nutfräser": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "V-bit"
+          }
+        }
+      }
+    },
     "VORNE": {
       "localizations": {
         "en": {
@@ -6786,6 +7460,16 @@
         }
       }
     },
+    "Vorschub": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Feed"
+          }
+        }
+      }
+    },
     "Waagerecht": {
       "localizations": {
         "en": {
@@ -6904,6 +7588,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Tool"
+          }
+        }
+      }
+    },
+    "Werkzeug hinzufügen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add Tool"
+          }
+        }
+      }
+    },
+    "Werkzeug ist zu groß für die Tasche": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The tool is too large for the pocket"
           }
         }
       }
@@ -7399,6 +8103,16 @@
         }
       }
     },
+    "Zustellung": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Step down"
+          }
+        }
+      }
+    },
     "Zwei Ebenen wählen": {
       "localizations": {
         "en": {
@@ -7499,12 +8213,62 @@
         }
       }
     },
+    "ca. %lld min": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "about %lld min"
+          }
+        }
+      }
+    },
     "g/cm³": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "g/cm³"
+          }
+        }
+      }
+    },
+    "keine": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "none"
+          }
+        }
+      }
+    },
+    "keine Fläche gewählt": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "no face chosen"
+          }
+        }
+      }
+    },
+    "keine Innenkontur (Aussparung) in dieser Fläche": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "no inside contour (opening) in this face"
+          }
+        }
+      }
+    },
+    "keine senkrechten Bohrungen gefunden": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "no vertical holes found"
           }
         }
       }
@@ -7639,6 +8403,16 @@
         }
       }
     },
+    "Übertiefe": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Overcut"
+          }
+        }
+      }
+    },
     "„%@“ gehört schon zur Komponente „%@“": {
       "localizations": {
         "de": {
@@ -7651,6 +8425,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "“%@” already belongs to the component “%@”"
+          }
+        }
+      }
+    },
+    "„%@“: kein Werkzeug gewählt": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "“%@”: no tool chosen"
           }
         }
       }

@@ -45,6 +45,17 @@ enum DemoScript {
             }
             return
         }
+        // Milling workspace: SIXAXIS_CAM_TEST=1
+        if env["SIXAXIS_CAM_TEST"] != nil {
+            Task { @MainActor in
+                await pause(1.0)
+                let dir = env["SIXAXIS_SNAPSHOTS"].map { URL(fileURLWithPath: $0) }
+                if let dir { try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true) }
+                await CAMChecks.run(editor, snapshots: dir)
+                exit(0)
+            }
+            return
+        }
         // Modelling commands of 1.2: SIXAXIS_MODEL_TEST=1
         if env["SIXAXIS_MODEL_TEST"] != nil {
             Task { @MainActor in

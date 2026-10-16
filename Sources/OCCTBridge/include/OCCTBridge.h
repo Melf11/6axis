@@ -89,6 +89,8 @@ double ob_distance(const OBShape *a, const OBShape *b, double outA[3], double ou
 double ob_shape_volume(const OBShape *s);
 double ob_shape_area(const OBShape *s);
 int32_t ob_shape_bbox(const OBShape *s, double outMin[3], double outMax[3]);
+/// Exact bounds of the geometry (no tolerance gap; slower – for machining).
+int32_t ob_shape_bbox_exact(const OBShape *s, double outMin[3], double outMax[3]);
 /// Smallest oriented bounding box: centre, three unit axes (row by row) and half sizes along them.
 int32_t ob_shape_obb(const OBShape *s, double outCenter[3], double outAxes[9], double outHalf[3]);
 
@@ -153,6 +155,11 @@ int32_t ob_face_outlines(const OBShape *s, const double viewDir[3], const double
 /// (open side, width `width` there). External threads: rApex < rBase; internal: rApex > rBase.
 OBShape *ob_thread_groove(const double axisOrigin[3], const double axisDir[3], double start, double length,
                           double pitch, double rApex, double rBase, double width);
+
+/// Closed boundary loops of a planar face as 3D polylines (first loop = outer boundary).
+/// `offset` != 0 first offsets the face in its plane (> 0 grows, < 0 shrinks; holes behave accordingly);
+/// returns 0 loops when the offset face vanishes. Polylines are closed (last point == first point).
+int32_t ob_face_loops(const OBShape *face, double offset, double deflection, OBProjection *out);
 
 int32_t ob_write_stl(const OBShape *s, const char *path, double linearDeflection, int32_t ascii);
 int32_t ob_write_step(const OBShape *s, const char *path);

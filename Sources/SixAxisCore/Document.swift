@@ -373,7 +373,8 @@ public struct CADDocument: Codable, Hashable, Sendable {
     /// 4 – 1.1.2: timeline step "remove bodies"
     /// 5 – 1.2: construction planes/axes, holes, threads, patterns, move, combine
     /// 6 – 1.4: components and joints
-    public static let currentFormatVersion = 6
+    /// 7 – 2.0: machining setup (tools, operations)
+    public static let currentFormatVersion = 7
 
     public var formatVersion = CADDocument.currentFormatVersion
     public var features: [Feature] = []
@@ -386,6 +387,8 @@ public struct CADDocument: Codable, Hashable, Sendable {
     public var drawing: DrawingSettings?
     /// Components (named sets of bodies) for assemblies and the parts list.
     public var components: [ComponentDef] = []
+    /// Machining (2.0); nil until the user starts milling.
+    public var cam: CAMSetup?
 
     public init() {}
 
@@ -448,12 +451,13 @@ public struct CADDocument: Codable, Hashable, Sendable {
         3: { $0 },   // 3 → 4: only additions
         4: { $0 },   // 4 → 5: only additions
         5: { $0 },   // 5 → 6: only additions
+        6: { $0 },   // 6 → 7: only additions
     ]
 }
 
 extension CADDocument {
     enum CodingKeys: String, CodingKey {
-        case formatVersion, features, parameters, rollback, bodies, hiddenSketches, drawing, components
+        case formatVersion, features, parameters, rollback, bodies, hiddenSketches, drawing, components, cam
     }
 
     /// Lenient: every field may be missing (older or hand-written files).
@@ -467,5 +471,6 @@ extension CADDocument {
         hiddenSketches = try c.decodeIfPresent(Set<UUID>.self, forKey: .hiddenSketches) ?? []
         drawing = try c.decodeIfPresent(DrawingSettings.self, forKey: .drawing)
         components = try c.decodeIfPresent([ComponentDef].self, forKey: .components) ?? []
+        cam = try c.decodeIfPresent(CAMSetup.self, forKey: .cam)
     }
 }

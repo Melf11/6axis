@@ -222,6 +222,15 @@ final class Editor {
     /// Exploded view: 0 = assembled; 1 = every instance moved its own distance from the centre again.
     var explode: Double = 0 { didSet { sceneVersion &+= 1; requestRedraw() } }
     var showExplode = false
+    /// Toolbar context: construction or milling (same model and viewport).
+    var workspace: Workspace = .design
+    /// Milling: operation being edited, latest toolpaths, background planning.
+    var camEdit: UUID? { didSet { if camEdit != nil { showCAMSetup = false } } }
+    var showCAMSetup = false
+    var showToolLibrary = false
+    var camResult: CAMResult?
+    var camPlanning = false
+    @ObservationIgnored var camToken = 0
     /// Section view (nil = off).
     var section: SectionView? { didSet { requestRedraw() } }
     var darkMode = false
@@ -349,6 +358,7 @@ final class Editor {
         modelRevision &+= 1
         requestRedraw()
         scheduleAutosave()
+        if workspace == .cam { scheduleCAMPlan() }
     }
 
     private func assignBodyNames() {
