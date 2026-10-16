@@ -109,6 +109,7 @@ struct TimelineBar: View {
         case .plane, .axis: return .gray
         case .hole, .thread, .pattern: return .accentColor
         case .move, .combine: return .purple
+        case .joint: return .green
         }
     }
 }

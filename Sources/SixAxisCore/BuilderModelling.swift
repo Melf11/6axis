@@ -295,9 +295,13 @@ extension ModelBuilder {
         var n = 0
         for id in p.bodies {
             guard let body = state.bodies[id] else { throw KernelError("Körper nicht mehr vorhanden") }
-            for place in places {
+            for (pi, place) in places.enumerated() {
                 n += 1
-                state.setBody(BuiltBody(id: f.id.derived(n), shape: try place.apply(body.shape), sourceFeature: f.id))
+                let copy = f.id.derived(n)
+                state.setBody(BuiltBody(id: copy, shape: try place.apply(body.shape), sourceFeature: f.id))
+                state.copyOf[copy] = id
+                // Each placement is one instance: copies of several bodies at the same place belong together.
+                state.copiedBy[copy] = f.id.derived(100_000 + pi)
             }
         }
         var all: [Shape] = []
@@ -342,7 +346,12 @@ extension ModelBuilder {
         for (i, id) in m.bodies.enumerated() {
             guard let body = state.bodies[id] else { throw KernelError("Körper nicht mehr vorhanden") }
             let moved = try body.shape.transformed(rotation: r, translation: translation)
-            state.setBody(BuiltBody(id: m.copy ? f.id.derived(i + 1) : id, shape: moved, sourceFeature: f.id))
+            let target = m.copy ? f.id.derived(i + 1) : id
+            state.setBody(BuiltBody(id: target, shape: moved, sourceFeature: f.id))
+            if m.copy {
+                state.copyOf[target] = id
+                state.copiedBy[target] = f.id
+            }
         }
     }
 

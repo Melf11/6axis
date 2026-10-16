@@ -6,11 +6,15 @@ struct InspectPanel: View {
     @Bindable var editor: Editor
 
     var body: some View {
-        if editor.command == nil, editor.sketchId == nil, editor.measuring || editor.section != nil {
+        if editor.command == nil, editor.sketchId == nil, editor.measuring || editor.section != nil || editor.showExplode {
             VStack(alignment: .leading, spacing: 0) {
                 if editor.measuring { measure }
                 if editor.measuring && editor.section != nil { Divider().opacity(0.5) }
                 if let s = editor.section { section(s) }
+                if editor.showExplode {
+                    if editor.measuring || editor.section != nil { Divider().opacity(0.5) }
+                    explodeView
+                }
             }
             .frame(width: 290)
             .floatingPanel()
@@ -61,6 +65,24 @@ struct InspectPanel: View {
             let v = row.value >= 10_000 ? row.value / 100 : row.value
             let unit = row.value >= 10_000 ? "cm²" : "mm²"
             return v.formatted(.number.precision(.fractionLength(0...2))) + " " + unit
+        }
+    }
+
+    // MARK: Exploded view
+
+    private var explodeView: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            header(String(localized: "Explosionsansicht"), "arrow.up.left.and.arrow.down.right") {
+                editor.showExplode = false
+                editor.explode = 0
+            }
+            Divider().opacity(0.5)
+            VStack(alignment: .leading, spacing: 10) {
+                Slider(value: Binding(get: { editor.explode }, set: { editor.explode = $0 }), in: 0...1.5)
+                Text("Komponenten rücken vom Mittelpunkt weg – nur Ansicht. In der Zeichnung gibt es dafür den Schalter „Explosionsansicht“.")
+                    .font(.system(size: 11)).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+            }
+            .padding(14)
         }
     }
 

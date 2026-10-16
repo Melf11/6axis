@@ -83,8 +83,10 @@ struct SceneBuilder {
         // Bodies
         var translucent: [MeshBatch] = []
         var edgeLines: [LineInstance] = []
+        let exploded = editor.explodeOffsets()
         for body in state.orderedBodies where doc.isBodyVisible(body.id) {
             guard let mesh = body.mesh else { continue }
+            let shift = (exploded[body.id] ?? .zero).float
             let isPreview = translucentSource != nil && body.sourceFeature == translucentSource
             var faceIds = [UInt32](repeating: 0, count: mesh.faceCount)
             if !isPreview {
@@ -94,7 +96,7 @@ struct SceneBuilder {
             var verts = [MeshVertex]()
             verts.reserveCapacity(mesh.positions.count)
             for i in 0..<mesh.positions.count {
-                let p = mesh.positions[i], n = mesh.normals[i]
+                let p = mesh.positions[i] + shift, n = mesh.normals[i]
                 let fid = Int(mesh.faceIds[i])
                 verts.append(MeshVertex(px: p.x, py: p.y, pz: p.z, nx: n.x, ny: n.y, nz: n.z, id: fid < faceIds.count ? faceIds[fid] : 0))
             }
@@ -105,7 +107,7 @@ struct SceneBuilder {
             }
             for (k, seg) in mesh.edgeSegments.enumerated() {
                 let eid = isPreview ? 0 : id(.edge(body.id, Int(mesh.edgeIds[k])))
-                edgeLines.append(LineInstance(seg.0, seg.1, id: eid))
+                edgeLines.append(LineInstance(seg.0 + shift, seg.1 + shift, id: eid))
             }
         }
         // Hidden edges stay pickable (transparent), so fillets still work; hover/selection still shows them.

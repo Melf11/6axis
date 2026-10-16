@@ -52,6 +52,10 @@ extension Editor {
             c.target = bodies.first
             c.tools = Array(bodies.dropFirst())
             return .combine(c)
+        case .joint:
+            var j = JointFeature()
+            j.body = bodies.first { state.component(of: $0, in: doc.components) != nil }
+            return .joint(j)
         default:
             return nil
         }
@@ -63,6 +67,7 @@ extension Editor {
         case let .plane(p): return p.plane == nil ? 0 : 1
         case let .pattern(p): return p.bodies.isEmpty && p.features.isEmpty ? 0 : 1
         case let .combine(c): return c.target == nil ? 0 : 1
+        case let .joint(j): return j.body == nil ? 0 : 1
         default: return 0
         }
     }
@@ -102,6 +107,7 @@ extension Editor {
         case let .pattern(p): return !p.bodies.isEmpty || !p.features.isEmpty
         case let .move(m): return !m.bodies.isEmpty
         case let .combine(c): return c.target != nil
+        case let .joint(j): return j.body != nil
         default: return true
         }
     }
@@ -127,6 +133,7 @@ extension Editor {
             return p.kind == .mirror ? .plane : .axis
         case .move: return i == 0 ? .bodies : .axis
         case .combine: return i == 0 ? .body : .bodies
+        case let .joint(j): return i == 0 ? .body : (j.kind == .rigid ? .body : .axis)
         default: return .none
         }
     }
@@ -209,6 +216,20 @@ extension Editor {
                     x.axis = a
                 }
                 k = .move(x)
+            case var .joint(x):
+                if cmd.activeInput == 0 {
+                    // Only bodies of components can move in a joint.
+                    guard let b = bodyId, state.component(of: b, in: doc.components) != nil else {
+                        showToast(String(localized: "Erst eine Komponente aus den Körpern machen (Körper → Komponente aus Auswahl)"))
+                        return
+                    }
+                    x.body = b
+                } else if x.kind == .rigid {
+                    if let b = bodyId { x.parent = b }
+                } else if let a = axisRef(for: p) {
+                    x.axis = a
+                }
+                k = .joint(x)
             case var .combine(x):
                 guard let b = bodyId else { return }
                 if cmd.activeInput == 0 {
@@ -234,6 +255,8 @@ extension Editor {
         case let .axis(a) where a.mode == .twoPlanes && cmd.activeInput == 0 && a.plane != nil:
             command?.activeInput = 1
         case let .combine(c) where cmd.activeInput == 0 && c.target != nil:
+            command?.activeInput = 1
+        case let .joint(j) where cmd.activeInput == 0 && j.body != nil:
             command?.activeInput = 1
         default:
             return

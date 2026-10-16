@@ -23,6 +23,8 @@ public struct DrawingSettings: Codable, Hashable, Sendable {
     public var showHidden = true
     public var showDimensions = true
     public var showIso = true
+    /// Iso view as exploded view (0 = assembled).
+    public var explodeIso: Double = 0
     /// Stage 4: several bodies → balloons, parts/cut list and part sheets.
     public var showBalloons = true
     public var showPartsList = true
@@ -45,7 +47,7 @@ public struct DrawingSettings: Codable, Hashable, Sendable {
     public init() {}
 
     enum CodingKeys: String, CodingKey {
-        case sheet, scale, showHidden, showDimensions, showIso, showBalloons, showPartsList, showPartSheets
+        case sheet, scale, showHidden, showDimensions, showIso, explodeIso, showBalloons, showPartsList, showPartSheets
         case sectionLeft, sectionX, details
         case title, drawingNumber, author, material
         case hiddenDimensions, dimensionOffsets, viewOffsets, customDimensions
@@ -60,6 +62,7 @@ public struct DrawingSettings: Codable, Hashable, Sendable {
         showHidden = try c.decodeIfPresent(Bool.self, forKey: .showHidden) ?? d.showHidden
         showDimensions = try c.decodeIfPresent(Bool.self, forKey: .showDimensions) ?? d.showDimensions
         showIso = try c.decodeIfPresent(Bool.self, forKey: .showIso) ?? d.showIso
+        explodeIso = try c.decodeIfPresent(Double.self, forKey: .explodeIso) ?? 0
         showBalloons = try c.decodeIfPresent(Bool.self, forKey: .showBalloons) ?? d.showBalloons
         showPartsList = try c.decodeIfPresent(Bool.self, forKey: .showPartsList) ?? d.showPartsList
         showPartSheets = try c.decodeIfPresent(Bool.self, forKey: .showPartSheets) ?? d.showPartSheets

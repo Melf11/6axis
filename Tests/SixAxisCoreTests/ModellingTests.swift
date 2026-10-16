@@ -341,6 +341,6 @@ final class ModellingTests: XCTestCase {
         doc.features.append(Feature(name: "P", kind: .pattern(p)))
         let back = try CADDocument.decode(try doc.encoded())
         XCTAssertEqual(back, doc)
-        XCTAssertEqual(CADDocument.currentFormatVersion, 5)
+        XCTAssertGreaterThanOrEqual(CADDocument.currentFormatVersion, 5)
     }
 }

@@ -9,6 +9,8 @@ struct BrowserPanel: View {
     @State private var bodiesOpen = true
     @State private var sketchesOpen = true
     @State private var constructionOpen = true
+    @State private var componentsOpen = true
+    @State private var renamingComponent: UUID?
     @State private var materialFor: UUID?
 
     var body: some View {
@@ -34,6 +36,13 @@ struct BrowserPanel: View {
                         section(String(localized: "Konstruktion"), count: construction.count, open: $constructionOpen)
                         if constructionOpen {
                             ForEach(construction) { f in constructionRow(f) }
+                        }
+                    }
+                    if !editor.doc.components.isEmpty {
+                        section(String(localized: "Komponenten"), count: editor.doc.components.count, open: $componentsOpen)
+                        if componentsOpen {
+                            let counts = editor.state.instanceCounts(editor.doc.components)
+                            ForEach(editor.doc.components) { c in componentRow(c, count: counts[c.id] ?? 0) }
                         }
                     }
                     section(String(localized: "Körper"), count: editor.state.bodyOrder.count, open: $bodiesOpen)
@@ -64,6 +73,40 @@ struct BrowserPanel: View {
 
     private var sketches: [Feature] {
         editor.doc.features.prefix(editor.doc.activeCount).filter { if case .sketch = $0.kind { return true }; return false }
+    }
+
+    private func componentRow(_ c: ComponentDef, count: Int) -> some View {
+        let selected = !c.bodies.isEmpty && c.bodies.allSatisfy { editor.selection.contains(.body($0)) }
+        return HStack(spacing: 6) {
+            Image(systemName: "shippingbox.fill").font(.system(size: 11)).foregroundStyle(.green)
+            if renamingComponent == c.id {
+                TextField("", text: $renameText)
+                    .textFieldStyle(.plain)
+                    .font(.system(size: 12))
+                    .onSubmit { editor.renameComponent(c.id, to: renameText); renamingComponent = nil }
+                    .onExitCommand { renamingComponent = nil }
+            } else {
+                Text(c.name).font(.system(size: 12)).lineLimit(1)
+            }
+            Spacer()
+            Text("\(count)×").font(.system(size: 10, weight: .medium)).foregroundStyle(.tertiary)
+        }
+        .padding(.horizontal, 6)
+        .frame(height: 24)
+        .padding(.leading, 30)
+        .background(RoundedRectangle(cornerRadius: 6).fill(selected ? Color.accentColor.opacity(0.18) : .clear))
+        .contentShape(Rectangle())
+        .onTapGesture(count: 2) { renameText = c.name; renamingComponent = c.id }
+        .onTapGesture {
+            editor.selection = selected ? [] : c.bodies.map { .body($0) }
+            editor.requestRedraw()
+        }
+        .contextMenu {
+            Button("Umbenennen") { renameText = c.name; renamingComponent = c.id }
+            Button("Weiteres Exemplar einfügen …") { editor.insertInstance(c.id) }
+            Divider()
+            Button("Komponente auflösen (Körper bleiben)") { editor.dissolveComponent(c.id) }
+        }
     }
 
     /// Construction planes and axes (shown and hidden like sketches).

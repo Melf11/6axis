@@ -186,5 +186,31 @@ enum ModellingChecks {
         }(), "\(String(describing: editor.hover))")
         await snap("m09-section")
         editor.toggleSection()
+
+        // Assembly: the bolt becomes a component, turns 90° about the Y axis, the view explodes.
+        editor.selection = [.body(boltF.id)]
+        editor.createComponent()
+        await settle(editor)
+        check("component: created from the selection", editor.doc.components.first?.bodies == [boltF.id], "\(editor.doc.components)")
+        editor.renameComponent(editor.doc.components[0].id, to: "Bolzen M8")
+        editor.selection = [.body(boltF.id)]
+        editor.beginCommand(.joint)
+        check("joint: component preselected, axis input active", editor.command?.activeInput == 1)
+        editor.updateCommandFeature { k in if case var .joint(j) = k { j.axis = .y; j.value = "90"; k = .joint(j) } }
+        await settle(editor)
+        await snap("m10-joint")
+        editor.commitCommand()
+        await settle(editor)
+        let turned = editor.state.bodies[boltF.id]?.shape.boundingBox
+        check("joint: bolt turned onto its side", turned.map { abs(($0.max.x - $0.min.x) - 12) < 0.5 } ?? false, "\(String(describing: turned))")
+        editor.showExplode = true
+        editor.explode = 0.8
+        await settle(editor)
+        check("explode: offsets for every visible body", editor.explodeOffsets().count == editor.state.bodyOrder.filter { editor.doc.isBodyVisible($0) }.count)
+        await snap("m11-explode")
+        editor.explode = 0
+        editor.showExplode = false
+        let names = editor.drawing.input(editor).parts.map(\.name)
+        check("parts list: component name", names.contains("Bolzen M8"), "\(names)")
     }
 }

@@ -259,6 +259,7 @@ public enum FeatureKind: Codable, Hashable, Sendable {
     case pattern(PatternFeature)
     case move(MoveFeature)
     case combine(CombineFeature)
+    case joint(JointFeature)
 
     public var typeName: String {
         switch self {
@@ -277,6 +278,7 @@ public enum FeatureKind: Codable, Hashable, Sendable {
         case let .pattern(p): return p.kind == .mirror ? String(localized: "Spiegelung") : String(localized: "Muster")
         case let .move(m): return m.copy ? String(localized: "Kopie") : String(localized: "Verschiebung")
         case .combine: return String(localized: "Kombination")
+        case .joint: return String(localized: "Gelenk")
         }
     }
 
@@ -297,6 +299,7 @@ public enum FeatureKind: Codable, Hashable, Sendable {
         case let .pattern(p): return p.kind.symbol
         case .move: return "arrow.up.and.down.and.arrow.left.and.right"
         case .combine: return "square.on.square.intersection.dashed"
+        case .joint: return "link"
         }
     }
 
@@ -369,7 +372,8 @@ public struct CADDocument: Codable, Hashable, Sendable {
     /// 3 – 1.1: new sketch curve types (spline); older apps must refuse such files
     /// 4 – 1.1.2: timeline step "remove bodies"
     /// 5 – 1.2: construction planes/axes, holes, threads, patterns, move, combine
-    public static let currentFormatVersion = 5
+    /// 6 – 1.4: components and joints
+    public static let currentFormatVersion = 6
 
     public var formatVersion = CADDocument.currentFormatVersion
     public var features: [Feature] = []
@@ -380,6 +384,8 @@ public struct CADDocument: Codable, Hashable, Sendable {
     public var hiddenSketches: Set<UUID> = []
     /// Technical drawing settings; optional so older files decode unchanged.
     public var drawing: DrawingSettings?
+    /// Components (named sets of bodies) for assemblies and the parts list.
+    public var components: [ComponentDef] = []
 
     public init() {}
 
@@ -441,12 +447,13 @@ public struct CADDocument: Codable, Hashable, Sendable {
         2: { $0 },   // 2 → 3: only additions
         3: { $0 },   // 3 → 4: only additions
         4: { $0 },   // 4 → 5: only additions
+        5: { $0 },   // 5 → 6: only additions
     ]
 }
 
 extension CADDocument {
     enum CodingKeys: String, CodingKey {
-        case formatVersion, features, parameters, rollback, bodies, hiddenSketches, drawing
+        case formatVersion, features, parameters, rollback, bodies, hiddenSketches, drawing, components
     }
 
     /// Lenient: every field may be missing (older or hand-written files).
@@ -459,5 +466,6 @@ extension CADDocument {
         bodies = try c.decodeIfPresent([UUID: BodyMeta].self, forKey: .bodies) ?? [:]
         hiddenSketches = try c.decodeIfPresent(Set<UUID>.self, forKey: .hiddenSketches) ?? []
         drawing = try c.decodeIfPresent(DrawingSettings.self, forKey: .drawing)
+        components = try c.decodeIfPresent([ComponentDef].self, forKey: .components) ?? []
     }
 }

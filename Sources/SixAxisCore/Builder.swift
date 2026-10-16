@@ -168,6 +168,11 @@ public struct ModelState: @unchecked Sendable {
     public var tools: [UUID: FeatureTool] = [:]
     /// Threads that are only marked, not modeled (drawing callouts).
     public var threadMarks: [ThreadMark] = []
+    /// Copies: copy → original body, and the feature that made the copy (component instances).
+    public var copyOf: [UUID: UUID] = [:]
+    public var copiedBy: [UUID: UUID] = [:]
+    /// Rigid joints: instance → instance it is attached to.
+    public var attachments: [InstanceKey: InstanceKey] = [:]
 
     public init() {}
 
@@ -216,6 +221,12 @@ public final class ModelBuilder: @unchecked Sendable {
         }()
         var state = ModelState()
         var liveKeys: Set<Int> = []
+        do {
+            var h = Hasher()
+            h.combine(key)
+            h.combine(doc.components)
+            key = h.finalize()
+        }
         for i in 0..<n {
             let f = doc.features[i]
             var h = Hasher()
@@ -231,7 +242,7 @@ public final class ModelBuilder: @unchecked Sendable {
                 continue
             }
             if !f.suppressed {
-                apply(f, to: &state, evaluator: &evaluator)
+                apply(f, to: &state, evaluator: &evaluator, components: doc.components)
             }
             lock.lock()
             cache[key] = state
@@ -245,7 +256,7 @@ public final class ModelBuilder: @unchecked Sendable {
 
     // MARK: Feature application
 
-    func apply(_ f: Feature, to state: inout ModelState, evaluator: inout Evaluator) {
+    func apply(_ f: Feature, to state: inout ModelState, evaluator: inout Evaluator, components: [ComponentDef] = []) {
         do {
             switch f.kind {
             case let .sketch(sk):
@@ -287,6 +298,8 @@ public final class ModelBuilder: @unchecked Sendable {
                 try applyMove(f, m, &state, &evaluator)
             case let .combine(c):
                 try applyCombine(f, c, &state)
+            case let .joint(j):
+                try applyJoint(f, j, components, &state, &evaluator)
             }
         } catch {
             state.errors[f.id] = (error as? LocalizedError)?.errorDescription ?? "\(error)"
