@@ -35,8 +35,10 @@ final class ViewportNSView: MTKView {
         let device = MTLCreateSystemDefaultDevice()
         super.init(frame: .zero, device: device)
         colorPixelFormat = .bgra8Unorm
-        depthStencilPixelFormat = .depth32Float
-        sampleCount = Renderer.sampleCount
+        // The renderer brings its own multisample and depth targets (memoryless on Apple GPUs) and resolves
+        // straight into the drawable; MTKView's own would keep ~250 MB of render targets on a Retina display.
+        depthStencilPixelFormat = .invalid
+        sampleCount = 1
         clearColor = MTLClearColor(red: 0.9, green: 0.9, blue: 0.92, alpha: 1)
         // Rendering follows the display's refresh: MTKView's display link calls draw once per frame and
         // the renderer skips frames without changes. Input events only mark the view dirty – drawing per

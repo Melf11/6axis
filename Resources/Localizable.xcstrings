@@ -302,6 +302,7 @@
       }
     },
     "Abrunden": {
+      "extractionState": "stale",
       "localizations": {
         "en": {
           "stringUnit": {
@@ -389,6 +390,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Axis"
+          }
+        }
+      }
+    },
+    "Achse nicht mehr gefunden": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Axis no longer found"
+          }
+        }
+      }
+    },
+    "Achse wählen: Ursprungsachse, Kante, Bohrung oder Zylinder": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choose an axis: origin axis, edge, hole or cylinder"
           }
         }
       }
@@ -573,6 +594,26 @@
         }
       }
     },
+    "Anzahl 2": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Count 2"
+          }
+        }
+      }
+    },
+    "Anzahl muss zwischen 1 und 1000 liegen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Count must be between 1 and 1000"
+          }
+        }
+      }
+    },
     "Anzahl und Abstand im Feld rechts eingeben": {
       "localizations": {
         "en": {
@@ -589,6 +630,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Enter count and angle in the panel on the right"
+          }
+        }
+      }
+    },
+    "Auf eine ebene Fläche klicken oder Skizzenpunkte wählen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Click on a planar face or choose sketch points"
           }
         }
       }
@@ -854,6 +905,16 @@
         }
       }
     },
+    "Bezug": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reference"
+          }
+        }
+      }
+    },
     "Birke Multiplex": {
       "localizations": {
         "en": {
@@ -960,6 +1021,46 @@
           "stringUnit": {
             "state": "translated",
             "value": "Arc (3 points)"
+          }
+        }
+      }
+    },
+    "Bohrung": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hole"
+          }
+        }
+      }
+    },
+    "Bohrung fehlgeschlagen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hole failed"
+          }
+        }
+      }
+    },
+    "Bohrung ist kürzer als die Senkung": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The hole is shorter than the countersink"
+          }
+        }
+      }
+    },
+    "Bohrungen, Extrusionen oder Drehungen werden an jeder Position erneut ausgeführt.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Holes, extrusions or revolves are applied again at each position."
           }
         }
       }
@@ -1261,6 +1362,16 @@
         }
       }
     },
+    "Die Ebenen sind parallel": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The planes are parallel"
+          }
+        }
+      }
+    },
     "Die Höhe ist die Höhe der Großbuchstaben.": {
       "localizations": {
         "en": {
@@ -1391,6 +1502,16 @@
         }
       }
     },
+    "Drehachse": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Axis of rotation"
+          }
+        }
+      }
+    },
     "Drehachse muss eine gerade Kante sein": {
       "localizations": {
         "en": {
@@ -1502,12 +1623,42 @@
         }
       }
     },
+    "Durch Zylinder oder Kante": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Through cylinder or edge"
+          }
+        }
+      }
+    },
+    "Durch alles": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Through all"
+          }
+        }
+      }
+    },
     "Durchmesser": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Diameter"
+          }
+        }
+      }
+    },
+    "Durchmesser muss größer als 0 sein": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Diameter must be greater than 0"
           }
         }
       }
@@ -1522,12 +1673,72 @@
         }
       }
     },
+    "Ebene": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Plane"
+          }
+        }
+      }
+    },
+    "Ebene 1": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Plane 1"
+          }
+        }
+      }
+    },
+    "Ebene 2": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Plane 2"
+          }
+        }
+      }
+    },
     "Ebene oder ebene Fläche für die Skizze wählen": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Select a plane or planar face for the sketch"
+          }
+        }
+      }
+    },
+    "Ebene oder ebene Fläche wählen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choose a plane or planar face"
+          }
+        }
+      }
+    },
+    "Ebene unter Winkel": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Plane at Angle"
+          }
+        }
+      }
+    },
+    "Ecke": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Corner"
           }
         }
       }
@@ -1822,6 +2033,36 @@
         }
       }
     },
+    "Element kann nicht wiederholt werden": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This feature cannot be repeated"
+          }
+        }
+      }
+    },
+    "Elemente": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Features"
+          }
+        }
+      }
+    },
+    "Ende": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "End"
+          }
+        }
+      }
+    },
     "Endpunkt klicken": {
       "localizations": {
         "en": {
@@ -1858,6 +2099,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Result is not a valid number"
+          }
+        }
+      }
+    },
+    "Ergebnis ist leer": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The result is empty"
           }
         }
       }
@@ -2134,6 +2385,16 @@
         }
       }
     },
+    "Flachsenkung": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Counterbore"
+          }
+        }
+      }
+    },
     "Fläche": {
       "localizations": {
         "en": {
@@ -2175,6 +2436,16 @@
         }
       }
     },
+    "Flächen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Faces"
+          }
+        }
+      }
+    },
     "Flächen wählen, die offen sein sollen": {
       "localizations": {
         "en": {
@@ -2211,6 +2482,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Georgia bold"
+          }
+        }
+      }
+    },
+    "Gerade Kante, Kreiskante oder Zylinderfläche (z. B. eine Bohrung) anklicken.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Click a straight edge, a circular edge or a cylindrical face (e.g. a hole)."
           }
         }
       }
@@ -2265,6 +2546,56 @@
         }
       }
     },
+    "Gewinde": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Thread"
+          }
+        }
+      }
+    },
+    "Gewinde braucht eine zylindrische Fläche": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A thread needs a cylindrical face"
+          }
+        }
+      }
+    },
+    "Gewinde fehlgeschlagen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Thread failed"
+          }
+        }
+      }
+    },
+    "Gewinde ist zu kurz": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The thread is too short"
+          }
+        }
+      }
+    },
+    "Gewinde modellieren (für den 3D-Druck)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Model the thread (for 3D printing)"
+          }
+        }
+      }
+    },
     "GitHub antwortet mit Fehler %lld": {
       "localizations": {
         "en": {
@@ -2291,6 +2622,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Coarse (small files)"
+          }
+        }
+      }
+    },
+    "Größe": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Size"
           }
         }
       }
@@ -2565,6 +2906,16 @@
         }
       }
     },
+    "Kegelsenkung": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Countersink"
+          }
+        }
+      }
+    },
     "Kein Körper zum Ausschneiden getroffen": {
       "localizations": {
         "en": {
@@ -2616,6 +2967,16 @@
         }
       }
     },
+    "Kein Zielkörper gewählt": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No target body chosen"
+          }
+        }
+      }
+    },
     "Kein bekannter Slicer gefunden. STL-Dateien werden mit der Standard-App geöffnet.": {
       "localizations": {
         "en": {
@@ -2632,6 +2993,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Not a 6axis file"
+          }
+        }
+      }
+    },
+    "Keine Achse gewählt": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No axis chosen"
+          }
+        }
+      }
+    },
+    "Keine Bezugsebene gewählt": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No reference plane chosen"
           }
         }
       }
@@ -2677,6 +3058,16 @@
         }
       }
     },
+    "Keine Kante oder Zylinderfläche gewählt": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No edge or cylindrical face chosen"
+          }
+        }
+      }
+    },
     "Keine Kanten ausgewählt": {
       "localizations": {
         "en": {
@@ -2697,6 +3088,46 @@
         }
       }
     },
+    "Keine Körper gewählt": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No bodies chosen"
+          }
+        }
+      }
+    },
+    "Keine Körper oder Elemente gewählt": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No bodies or features chosen"
+          }
+        }
+      }
+    },
+    "Keine Position gewählt": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No position chosen"
+          }
+        }
+      }
+    },
+    "Keine Richtung gewählt": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No direction chosen"
+          }
+        }
+      }
+    },
     "Keine Schreibrechte für „%@“. Lade das Update bitte von der Release-Seite.": {
       "localizations": {
         "en": {
@@ -2707,12 +3138,62 @@
         }
       }
     },
+    "Keine Spiegelebene gewählt": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No mirror plane chosen"
+          }
+        }
+      }
+    },
+    "Keine Werkzeugkörper gewählt": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No tool bodies chosen"
+          }
+        }
+      }
+    },
+    "Keine Zylinderfläche gewählt": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No cylindrical face chosen"
+          }
+        }
+      }
+    },
+    "Keine passende Gewindegröße": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No matching thread size"
+          }
+        }
+      }
+    },
     "Keine sichtbaren Körper": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "No visible bodies"
+          }
+        }
+      }
+    },
+    "Kernloch Ø %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tap drill Ø %@"
           }
         }
       }
@@ -2807,6 +3288,26 @@
         }
       }
     },
+    "Kombination": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Combine"
+          }
+        }
+      }
+    },
+    "Kombinieren": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Combine"
+          }
+        }
+      }
+    },
     "Kommentar": {
       "localizations": {
         "en": {
@@ -2827,12 +3328,72 @@
         }
       }
     },
+    "Konstruktionsachse": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Construction Axis"
+          }
+        }
+      }
+    },
+    "Konstruktionsachse nicht gefunden": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Construction axis not found"
+          }
+        }
+      }
+    },
+    "Konstruktionsebene": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Construction Plane"
+          }
+        }
+      }
+    },
+    "Konstruktionsebene nicht gefunden": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Construction plane not found"
+          }
+        }
+      }
+    },
     "Konzentrisch": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Concentric"
+          }
+        }
+      }
+    },
+    "Kopie": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copy"
+          }
+        }
+      }
+    },
+    "Kopie erstellen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Create a copy"
           }
         }
       }
@@ -2877,6 +3438,16 @@
         }
       }
     },
+    "Kreismuster (Körper/Elemente)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Circular Pattern (Bodies/Features)"
+          }
+        }
+      }
+    },
     "Kurve überfahren – die Seite des Mauszeigers bestimmt die Richtung, Klick übernimmt": {
       "localizations": {
         "en": {
@@ -2893,6 +3464,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Bodies"
+          }
+        }
+      }
+    },
+    "Körper anklicken · ↩ bestätigt": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Click bodies · ↩ confirms"
           }
         }
       }
@@ -3198,6 +3779,16 @@
         }
       }
     },
+    "Metrisches ISO-Gewinde über die ganze Länge der Fläche.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ISO metric thread along the whole length of the face."
+          }
+        }
+      }
+    },
     "Mit gedrückter ⌘-Taste setzt du Punkte jederzeit frei. Vorhandene Punkte und Linien haben immer Vorrang.": {
       "localizations": {
         "en": {
@@ -3214,6 +3805,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "With ⇧ the other action is performed. In sketches it is the other way round so the top view is kept."
+          }
+        }
+      }
+    },
+    "Mittelebene": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Midplane"
           }
         }
       }
@@ -3446,6 +4047,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Only planar faces can be extruded"
+          }
+        }
+      }
+    },
+    "Nur gekennzeichnet – erscheint in der Zeichnung, der Körper bleibt glatt.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Only marked – shown in the drawing, the body stays smooth."
           }
         }
       }
@@ -3767,6 +4378,16 @@
         }
       }
     },
+    "Positionen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Positions"
+          }
+        }
+      }
+    },
     "Positionsnummern": {
       "localizations": {
         "en": {
@@ -4082,6 +4703,16 @@
         }
       }
     },
+    "Rechteckmuster (Körper/Elemente)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rectangular Pattern (Bodies/Features)"
+          }
+        }
+      }
+    },
     "Reihen": {
       "localizations": {
         "en": {
@@ -4128,6 +4759,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Direction"
+          }
+        }
+      }
+    },
+    "Richtung 2": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Direction 2"
+          }
+        }
+      }
+    },
+    "Richtung umkehren": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reverse direction"
           }
         }
       }
@@ -4356,6 +5007,16 @@
         }
       }
     },
+    "Schnitt zweier Ebenen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Intersection of two planes"
+          }
+        }
+      }
+    },
     "Schnittebene": {
       "extractionState": "manual",
       "localizations": {
@@ -4487,6 +5148,56 @@
         }
       }
     },
+    "Senktiefe": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Counterbore depth"
+          }
+        }
+      }
+    },
+    "Senkung muss größer als die Bohrung sein": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The countersink must be larger than the hole"
+          }
+        }
+      }
+    },
+    "Senkung muss größer als die Bohrung und weniger tief sein": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The counterbore must be larger than the hole and less deep"
+          }
+        }
+      }
+    },
+    "Senkung Ø": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Head Ø"
+          }
+        }
+      }
+    },
+    "Senkwinkel": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Countersink angle"
+          }
+        }
+      }
+    },
     "Sichern": {
       "localizations": {
         "en": {
@@ -4553,6 +5264,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Sketch dowel holes"
+          }
+        }
+      }
+    },
+    "Skizze auf dieser Ebene": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sketch on This Plane"
           }
         }
       }
@@ -4677,6 +5398,16 @@
         }
       }
     },
+    "Skizzenpunkt nicht mehr gefunden": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sketch point no longer found"
+          }
+        }
+      }
+    },
     "Slicer": {
       "localizations": {
         "en": {
@@ -4727,7 +5458,47 @@
         }
       }
     },
+    "Spiegelebene": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mirror plane"
+          }
+        }
+      }
+    },
     "Spiegeln": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mirror"
+          }
+        }
+      }
+    },
+    "Spiegeln (Körper/Elemente)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mirror (Bodies/Features)"
+          }
+        }
+      }
+    },
+    "Spiegeln fehlgeschlagen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mirror failed"
+          }
+        }
+      }
+    },
+    "Spiegelung": {
       "localizations": {
         "en": {
           "stringUnit": {
@@ -4977,6 +5748,26 @@
         }
       }
     },
+    "Tiefe": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Depth"
+          }
+        }
+      }
+    },
+    "Tiefe muss größer als 0 sein": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Depth must be greater than 0"
+          }
+        }
+      }
+    },
     "Tischlerplatte": {
       "localizations": {
         "en": {
@@ -5185,6 +5976,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Invalid value"
+          }
+        }
+      }
+    },
+    "Unter Winkel": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "At angle"
           }
         }
       }
@@ -5441,6 +6242,16 @@
         }
       }
     },
+    "Verschieben/Kopieren": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Move/Copy"
+          }
+        }
+      }
+    },
     "Verschieberichtung umkehren": {
       "localizations": {
         "en": {
@@ -5461,6 +6272,26 @@
         }
       }
     },
+    "Versetzt": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Offset"
+          }
+        }
+      }
+    },
+    "Versetzte Ebene": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Offset Plane"
+          }
+        }
+      }
+    },
     "Vertikal": {
       "localizations": {
         "en": {
@@ -5472,6 +6303,7 @@
       }
     },
     "Verwalten": {
+      "extractionState": "stale",
       "localizations": {
         "en": {
           "stringUnit": {
@@ -5613,6 +6445,26 @@
         }
       }
     },
+    "Werkzeuge": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tools"
+          }
+        }
+      }
+    },
+    "Werkzeugkörper behalten": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keep tool bodies"
+          }
+        }
+      }
+    },
     "Wert": {
       "localizations": {
         "en": {
@@ -5629,6 +6481,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Value must be greater than 0"
+          }
+        }
+      }
+    },
+    "Werte eingeben · ↩ bestätigt": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enter values · ↩ confirms"
           }
         }
       }
@@ -5944,6 +6806,26 @@
         }
       }
     },
+    "Ziel": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Target"
+          }
+        }
+      }
+    },
+    "Zielkörper anklicken": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Click the target body"
+          }
+        }
+      }
+    },
     "Zirkulärer Bezug bei „%@“": {
       "localizations": {
         "en": {
@@ -6024,6 +6906,16 @@
         }
       }
     },
+    "Zwei Ebenen wählen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choose two planes"
+          }
+        }
+      }
+    },
     "Zwei Seiten": {
       "localizations": {
         "en": {
@@ -6044,6 +6936,26 @@
         }
       }
     },
+    "Zweite Ebene fehlt": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Second plane missing"
+          }
+        }
+      }
+    },
+    "Zweite Richtung": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Second direction"
+          }
+        }
+      }
+    },
     "Zweiten Punkt wählen": {
       "localizations": {
         "en": {
@@ -6060,6 +6972,36 @@
           "stringUnit": {
             "state": "translated",
             "value": "Select a second object or place the dimension"
+          }
+        }
+      }
+    },
+    "Zylinderachse": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cylinder axis"
+          }
+        }
+      }
+    },
+    "Zylinderfläche anklicken (Bolzen oder Bohrung)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Click a cylindrical face (bolt or hole)"
+          }
+        }
+      }
+    },
+    "Zylinderfläche nicht mehr gefunden": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cylindrical face no longer found"
           }
         }
       }

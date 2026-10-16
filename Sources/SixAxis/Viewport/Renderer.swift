@@ -174,6 +174,36 @@ final class Renderer: NSObject, MTKViewDelegate {
 
     private var pickTexture: MTLTexture?
     private var pickDepth: MTLTexture?
+    /// Tests: receives a copy of the next frame exactly as presented (needs framebufferOnly = false).
+    var captureNextFrame: ((MTLTexture) -> Void)?
+    private var frameColor: MTLTexture?
+    private var frameDepth: MTLTexture?
+
+    /// Render targets that only live inside a render pass: tile memory on Apple GPUs, no RAM at all.
+    private var transientStorage: MTLStorageMode { device.supportsFamily(.apple1) ? .memoryless : .private }
+
+    private func target(_ fmt: MTLPixelFormat, _ w: Int, _ h: Int, samples: Int, storage: MTLStorageMode) -> MTLTexture? {
+        let d = MTLTextureDescriptor.texture2DDescriptor(pixelFormat: fmt, width: w, height: h, mipmapped: false)
+        d.textureType = samples > 1 ? .type2DMultisample : .type2D
+        d.sampleCount = samples
+        d.usage = [.renderTarget]
+        d.storageMode = storage
+        return device.makeTexture(descriptor: d)
+    }
+
+    /// Pass that renders multisampled into transient targets and resolves into `resolve`.
+    private func resolvingPass(into resolve: MTLTexture, color: MTLTexture, depth: MTLTexture) -> MTLRenderPassDescriptor {
+        let rpd = MTLRenderPassDescriptor()
+        rpd.colorAttachments[0].texture = color
+        rpd.colorAttachments[0].resolveTexture = resolve
+        rpd.colorAttachments[0].loadAction = .clear
+        rpd.colorAttachments[0].storeAction = .multisampleResolve
+        rpd.depthAttachment.texture = depth
+        rpd.depthAttachment.clearDepth = 1
+        rpd.depthAttachment.loadAction = .clear
+        rpd.depthAttachment.storeAction = .dontCare
+        return rpd
+    }
 
     /// Called each frame before drawing to fetch camera/highlight state and advance animations.
     var frameProvider: (() -> FrameState)?
@@ -399,9 +429,16 @@ final class Renderer: NSObject, MTKViewDelegate {
         guard changed || animating else { return }   // idle frames cost nothing
         guard let frame = frameProvider?() else { return }
         animating = frame.animating
-        guard let rpd = view.currentRenderPassDescriptor, let drawable = view.currentDrawable,
-              let cmd = queue.makeCommandBuffer(), let enc = cmd.makeRenderCommandEncoder(descriptor: rpd) else { return }
         let size = view.drawableSize
+        let w = Int(size.width), h = Int(size.height)
+        guard w > 0, h > 0 else { return }
+        if frameColor?.width != w || frameColor?.height != h {
+            frameColor = target(.bgra8Unorm, w, h, samples: Renderer.sampleCount, storage: transientStorage)
+            frameDepth = target(.depth32Float, w, h, samples: Renderer.sampleCount, storage: transientStorage)
+        }
+        guard let color = frameColor, let depth = frameDepth, let drawable = view.currentDrawable,
+              let cmd = queue.makeCommandBuffer(),
+              let enc = cmd.makeRenderCommandEncoder(descriptor: resolvingPass(into: drawable.texture, color: color, depth: depth)) else { return }
         var g = globals(frame, viewportPixels: SIMD2(Float(size.width), Float(size.height)), pick: false)
         let pal = Palette.current(dark: frame.dark)
         var bg = [pal.backgroundTop, pal.backgroundBottom]
@@ -419,6 +456,16 @@ final class Renderer: NSObject, MTKViewDelegate {
         drawable.addPresentedHandler { [weak self] _ in
             DispatchQueue.main.async { if let self, self.inFlight > 0 { self.inFlight -= 1 } }
         }
+        if let capture = captureNextFrame, !view.framebufferOnly {
+            captureNextFrame = nil
+            let d = MTLTextureDescriptor.texture2DDescriptor(pixelFormat: drawable.texture.pixelFormat, width: w, height: h, mipmapped: false)
+            d.storageMode = .shared
+            if let copy = device.makeTexture(descriptor: d), let blit = cmd.makeBlitCommandEncoder() {
+                blit.copy(from: drawable.texture, to: copy)
+                blit.endEncoding()
+                cmd.addCompletedHandler { _ in DispatchQueue.main.async { capture(copy) } }
+            }
+        }
         cmd.present(drawable)
         let stats = self.stats
         cmd.addCompletedHandler { cb in
@@ -431,27 +478,11 @@ final class Renderer: NSObject, MTKViewDelegate {
     /// Renders the current frame offscreen (debug snapshots, thumbnails).
     func snapshot(width w: Int, height h: Int) -> CGImage? {
         guard let frame = frameProvider?(), w > 0, h > 0 else { return nil }
-        func tex(_ fmt: MTLPixelFormat, samples: Int, storage: MTLStorageMode) -> MTLTexture? {
-            let d = MTLTextureDescriptor.texture2DDescriptor(pixelFormat: fmt, width: w, height: h, mipmapped: false)
-            d.textureType = samples > 1 ? .type2DMultisample : .type2D
-            d.sampleCount = samples
-            d.usage = [.renderTarget]
-            d.storageMode = storage
-            return device.makeTexture(descriptor: d)
-        }
-        guard let msaa = tex(.bgra8Unorm, samples: Renderer.sampleCount, storage: .private),
-              let resolve = tex(.bgra8Unorm, samples: 1, storage: .shared),
-              let depth = tex(.depth32Float, samples: Renderer.sampleCount, storage: .private),
+        guard let msaa = target(.bgra8Unorm, w, h, samples: Renderer.sampleCount, storage: transientStorage),
+              let resolve = target(.bgra8Unorm, w, h, samples: 1, storage: .shared),
+              let depth = target(.depth32Float, w, h, samples: Renderer.sampleCount, storage: transientStorage),
               let cmd = queue.makeCommandBuffer() else { return nil }
-        let rpd = MTLRenderPassDescriptor()
-        rpd.colorAttachments[0].texture = msaa
-        rpd.colorAttachments[0].resolveTexture = resolve
-        rpd.colorAttachments[0].loadAction = .clear
-        rpd.colorAttachments[0].storeAction = .multisampleResolve
-        rpd.depthAttachment.texture = depth
-        rpd.depthAttachment.clearDepth = 1
-        rpd.depthAttachment.loadAction = .clear
-        rpd.depthAttachment.storeAction = .dontCare
+        let rpd = resolvingPass(into: resolve, color: msaa, depth: depth)
         guard let enc = cmd.makeRenderCommandEncoder(descriptor: rpd) else { return nil }
         var g = globals(frame, viewportPixels: SIMD2(Float(w), Float(h)), pick: false)
         let pal = Palette.current(dark: frame.dark)
@@ -536,10 +567,7 @@ final class Renderer: NSObject, MTKViewDelegate {
             td.usage = [.renderTarget]
             td.storageMode = .private
             pickTexture = device.makeTexture(descriptor: td)
-            let dd = MTLTextureDescriptor.texture2DDescriptor(pixelFormat: .depth32Float, width: w, height: h, mipmapped: false)
-            dd.usage = [.renderTarget]
-            dd.storageMode = .private
-            pickDepth = device.makeTexture(descriptor: dd)
+            pickDepth = target(.depth32Float, w, h, samples: 1, storage: transientStorage)
         }
         guard let tex = pickTexture, let depth = pickDepth else { return [] }
         let rpd = MTLRenderPassDescriptor()

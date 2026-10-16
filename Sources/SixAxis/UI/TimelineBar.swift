@@ -106,6 +106,9 @@ struct TimelineBar: View {
         case .fillet, .chamfer, .shell: return .purple
         case .importStep: return .teal
         case .removeBodies: return .gray
+        case .plane, .axis: return .gray
+        case .hole, .thread, .pattern: return .accentColor
+        case .move, .combine: return .purple
         }
     }
 }

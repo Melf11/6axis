@@ -4,6 +4,19 @@
 #include "OCCTBridge.h"
 
 #include <BRepAdaptor_Curve.hxx>
+#include <BRepBuilderAPI_MakePolygon.hxx>
+#include <BRepBuilderAPI_MakeSolid.hxx>
+#include <BRepBuilderAPI_Sewing.hxx>
+#include <BRepFill.hxx>
+#include <BRepLib.hxx>
+#include <GCE2d_MakeSegment.hxx>
+#include <Geom2d_TrimmedCurve.hxx>
+#include <Geom_CylindricalSurface.hxx>
+#include <ShapeFix_Solid.hxx>
+#include <TopoDS_Shell.hxx>
+#include <gp_Cylinder.hxx>
+#include <gp_Cone.hxx>
+#include <gp_Lin2d.hxx>
 #include <BRepAdaptor_Surface.hxx>
 #include <BRepAlgoAPI_Common.hxx>
 #include <Geom_BezierCurve.hxx>
@@ -327,6 +340,14 @@ OBShape *ob_transform(const OBShape *s, const double m[12]) {
     });
 }
 
+OBShape *ob_mirror(const OBShape *s, const double origin[3], const double normal[3]) {
+    return guarded("Spiegeln", [&]() -> OBShape * {
+        gp_Trsf t;
+        t.SetMirror(gp_Ax2(toPnt(origin), gp_Dir(normal[0], normal[1], normal[2])));
+        return wrap(BRepBuilderAPI_Transform(s->shape, t, Standard_True).Shape(), "Spiegeln ergab nichts");
+    });
+}
+
 OBShape *ob_revolve(const OBShape *profile, const double axisOrigin[3], const double axisDir[3], double angleRad) {
     return guarded("Drehung", [&]() -> OBShape * {
         gp_Ax1 axis(toPnt(axisOrigin), gp_Dir(axisDir[0], axisDir[1], axisDir[2]));
@@ -478,14 +499,42 @@ int32_t ob_face_info(const OBShape *s, int32_t index, OBFaceInfo *out) {
         double vm = (surf.FirstVParameter() + surf.LastVParameter()) / 2;
         surf.D1(um, vm, p, du, dv);
         gp_Vec n = du.Crossed(dv);
+        out->surface = OB_SURF_OTHER;
+        out->radius = 0;
+        out->vRange[0] = out->vRange[1] = 0;
+        auto setAxis = [&](const gp_Ax1 &ax) {
+            out->axisOrigin[0] = ax.Location().X(); out->axisOrigin[1] = ax.Location().Y(); out->axisOrigin[2] = ax.Location().Z();
+            out->axisDir[0] = ax.Direction().X(); out->axisDir[1] = ax.Direction().Y(); out->axisDir[2] = ax.Direction().Z();
+        };
         if (surf.GetType() == GeomAbs_Plane) {
             gp_Pln pln = surf.Plane();
             n = gp_Vec(pln.Axis().Direction());
             if (!pln.Direct()) n.Reverse();
             p = pln.Location();
             out->isPlanar = 1;
+            out->surface = OB_SURF_PLANE;
         } else {
             out->isPlanar = 0;
+            if (surf.GetType() == GeomAbs_Cylinder) {
+                gp_Cylinder cyl = surf.Cylinder();
+                out->surface = OB_SURF_CYLINDER;
+                out->radius = cyl.Radius();
+                setAxis(cyl.Axis());
+                // Extent along the axis: the face's vertices lie on its end circles.
+                gp_Pnt o = cyl.Axis().Location();
+                gp_Dir d = cyl.Axis().Direction();
+                double lo = 1e300, hi = -1e300;
+                for (TopExp_Explorer ex(f, TopAbs_VERTEX); ex.More(); ex.Next()) {
+                    double t = gp_Vec(o, BRep_Tool::Pnt(TopoDS::Vertex(ex.Current()))).Dot(gp_Vec(d));
+                    lo = std::min(lo, t); hi = std::max(hi, t);
+                }
+                out->vRange[0] = lo; out->vRange[1] = hi;
+            } else if (surf.GetType() == GeomAbs_Cone) {
+                gp_Cone cone = surf.Cone();
+                out->surface = OB_SURF_CONE;
+                out->radius = cone.RefRadius();
+                setAxis(cone.Axis());
+            }
         }
         if (n.Magnitude() > 1e-12) n.Normalize();
         if (reversed) n.Reverse();
@@ -506,6 +555,13 @@ int32_t ob_edge_info(const OBShape *s, int32_t index, OBEdgeInfo *out) {
         double f = c.FirstParameter(), l = c.LastParameter();
         gp_Pnt a = c.Value(f), b = c.Value(l), m = c.Value((f + l) / 2);
         out->kind = c.GetType() == GeomAbs_Line ? 0 : (c.GetType() == GeomAbs_Circle ? 1 : 2);
+        out->radius = 0;
+        if (c.GetType() == GeomAbs_Circle) {
+            gp_Circ ci = c.Circle();
+            out->center[0] = ci.Location().X(); out->center[1] = ci.Location().Y(); out->center[2] = ci.Location().Z();
+            out->axis[0] = ci.Axis().Direction().X(); out->axis[1] = ci.Axis().Direction().Y(); out->axis[2] = ci.Axis().Direction().Z();
+            out->radius = ci.Radius();
+        }
         out->start[0] = a.X(); out->start[1] = a.Y(); out->start[2] = a.Z();
         out->end[0] = b.X(); out->end[1] = b.Y(); out->end[2] = b.Z();
         out->midpoint[0] = m.X(); out->midpoint[1] = m.Y(); out->midpoint[2] = m.Z();
@@ -756,6 +812,64 @@ void ob_projection_free(OBProjection *p) {
     std::free(p->circleMids);
     std::free(p->circleFlags);
     std::memset(p, 0, sizeof(OBProjection));
+}
+
+OBShape *ob_thread_groove(const double axisOrigin[3], const double axisDir[3], double start, double length,
+                          double pitch, double rApex, double rBase, double width) {
+    return guarded("Gewinde", [&]() -> OBShape * {
+        if (pitch <= 0 || length <= 0 || rApex <= 0 || rBase <= 0 || width <= 0 || width >= pitch) {
+            setError("Ungültige Gewindemaße");
+            return nullptr;
+        }
+        // Three helices with the same angular parameter: base edge (both sides of the V) and apex.
+        // Ruled faces between them have straight rulings in the axial plane, so the profile is exact.
+        double turns = length / pitch;
+        double span = turns * std::sqrt(4 * M_PI * M_PI + pitch * pitch);
+        gp_Dir2d dir(2 * M_PI, pitch);
+        auto helix = [&](double r, double z0) {
+            Handle(Geom_CylindricalSurface) cyl = new Geom_CylindricalSurface(gp_Ax3(gp::Origin(), gp::DZ()), r);
+            Handle(Geom2d_TrimmedCurve) seg = GCE2d_MakeSegment(gp_Lin2d(gp_Pnt2d(0, z0), dir), 0, span);
+            TopoDS_Edge e = BRepBuilderAPI_MakeEdge(seg, cyl);
+            BRepLib::BuildCurves3d(e);
+            return e;
+        };
+        TopoDS_Edge top = helix(rBase, start + width / 2), apex = helix(rApex, start), bottom = helix(rBase, start - width / 2);
+        BRepBuilderAPI_Sewing sew(1e-5);
+        sew.Add(BRepFill::Face(top, apex));
+        sew.Add(BRepFill::Face(apex, bottom));
+        sew.Add(BRepFill::Face(bottom, top));
+        for (bool atEnd : {false, true}) {
+            auto pt = [&](const TopoDS_Edge &e) {
+                BRepAdaptor_Curve c(e);
+                return c.Value(atEnd ? c.LastParameter() : c.FirstParameter());
+            };
+            BRepBuilderAPI_MakePolygon poly(pt(top), pt(apex), pt(bottom), Standard_True);
+            sew.Add(BRepBuilderAPI_MakeFace(poly.Wire()).Face());
+        }
+        sew.Perform();
+        TopoDS_Shape sewn = sew.SewedShape();
+        TopoDS_Shell shell;
+        bool found = false;
+        for (TopExp_Explorer ex(sewn, TopAbs_SHELL); ex.More(); ex.Next()) {
+            shell = TopoDS::Shell(ex.Current());
+            found = true;
+            break;
+        }
+        if (!found) {
+            setError("Gewinde: Gewindegang nicht geschlossen");
+            return nullptr;
+        }
+        BRepBuilderAPI_MakeSolid mk(shell);
+        ShapeFix_Solid fix(mk.Solid());
+        fix.Perform();
+        TopoDS_Shape solid = fix.Solid();
+        GProp_GProps props;
+        BRepGProp::VolumeProperties(solid, props);
+        if (props.Mass() < 0) solid.Reverse();
+        gp_Trsf t;
+        t.SetTransformation(gp_Ax3(toPnt(axisOrigin), gp_Dir(axisDir[0], axisDir[1], axisDir[2])), gp_Ax3());
+        return wrap(BRepBuilderAPI_Transform(solid, t, Standard_True).Shape(), "Gewinde ergab nichts");
+    });
 }
 
 int32_t ob_write_stl(const OBShape *s, const char *path, double linearDeflection, int32_t ascii) {

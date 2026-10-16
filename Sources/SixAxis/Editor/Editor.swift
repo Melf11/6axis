@@ -121,6 +121,7 @@ enum ConstraintTool: String, CaseIterable, Identifiable {
 
 enum CommandKind: String {
     case extrude, revolve, fillet, chamfer, shell, sketchPlane
+    case plane, axis, hole, thread, rectPattern, circularPattern, mirror, move, combine
 
     var title: String {
         switch self {
@@ -130,6 +131,35 @@ enum CommandKind: String {
         case .chamfer: return String(localized: "Fase")
         case .shell: return String(localized: "Wandstärke")
         case .sketchPlane: return String(localized: "Skizze erstellen")
+        case .plane: return String(localized: "Konstruktionsebene")
+        case .axis: return String(localized: "Konstruktionsachse")
+        case .hole: return String(localized: "Bohrung")
+        case .thread: return String(localized: "Gewinde")
+        case .rectPattern: return String(localized: "Rechteckmuster")
+        case .circularPattern: return String(localized: "Kreismuster")
+        case .mirror: return String(localized: "Spiegeln")
+        case .move: return String(localized: "Verschieben/Kopieren")
+        case .combine: return String(localized: "Kombinieren")
+        }
+    }
+
+    var symbol: String {
+        switch self {
+        case .extrude: return "square.stack.3d.up.fill"
+        case .revolve: return "arrow.trianglehead.2.clockwise.rotate.90"
+        case .fillet: return "button.roundedtop.horizontal"
+        case .chamfer: return "triangle.bottomhalf.filled"
+        case .shell: return "shippingbox"
+        case .sketchPlane: return "pencil.and.outline"
+        case .plane: return "square.3.layers.3d"
+        case .axis: return "line.diagonal"
+        case .hole: return "circle.dotted.circle"
+        case .thread: return "tornado"
+        case .rectPattern: return PatternKind.rectangular.symbol
+        case .circularPattern: return PatternKind.circular.symbol
+        case .mirror: return PatternKind.mirror.symbol
+        case .move: return "arrow.up.and.down.and.arrow.left.and.right"
+        case .combine: return "square.on.square.intersection.dashed"
         }
     }
 }
@@ -629,6 +659,13 @@ final class Editor {
         case .fillet: beginCommand(.fillet, editing: id)
         case .chamfer: beginCommand(.chamfer, editing: id)
         case .shell: beginCommand(.shell, editing: id)
+        case .plane: beginCommand(.plane, editing: id)
+        case .axis: beginCommand(.axis, editing: id)
+        case .hole: beginCommand(.hole, editing: id)
+        case .thread: beginCommand(.thread, editing: id)
+        case let .pattern(p): beginCommand(p.kind == .rectangular ? .rectPattern : (p.kind == .circular ? .circularPattern : .mirror), editing: id)
+        case .move: beginCommand(.move, editing: id)
+        case .combine: beginCommand(.combine, editing: id)
         case .importStep: showToast(String(localized: "Importierte Körper haben keine Parameter"))
         case .removeBodies: showToast(String(localized: "Entfernen hat keine Parameter – lösche den Schritt, um die Körper zurückzuholen"))
         }

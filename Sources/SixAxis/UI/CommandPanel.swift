@@ -33,7 +33,7 @@ struct CommandPanel: View {
 
     private func header(_ cmd: ActiveCommand) -> some View {
         HStack(spacing: 8) {
-            Image(systemName: symbol(cmd.kind)).foregroundStyle(Color.accentColor)
+            Image(systemName: cmd.kind.symbol).foregroundStyle(Color.accentColor)
             Text(cmd.isNew ? cmd.kind.title : String(localized: "\(cmd.kind.title) bearbeiten"))
                 .font(.system(size: 13, weight: .semibold))
             Spacer()
@@ -55,17 +55,6 @@ struct CommandPanel: View {
         .controlSize(.regular)
         .padding(.horizontal, 14)
         .padding(.vertical, 10)
-    }
-
-    private func symbol(_ k: CommandKind) -> String {
-        switch k {
-        case .extrude: return "square.stack.3d.up.fill"
-        case .revolve: return "arrow.trianglehead.2.clockwise.rotate.90"
-        case .fillet: return "button.roundedtop.horizontal"
-        case .chamfer: return "triangle.bottomhalf.filled"
-        case .shell: return "shippingbox"
-        case .sketchPlane: return "pencil.and.outline"
-        }
     }
 
     @ViewBuilder
@@ -103,7 +92,7 @@ struct CommandPanel: View {
                 editor.updateCommandFeature { k in if case var .shell(x) = k { x.thickness = v; k = .shell(x) } }
             }
         default:
-            EmptyView()
+            modellingContent(cmd)
         }
     }
 
@@ -176,11 +165,12 @@ struct CommandPanel: View {
         }
     }
 
-    private func operationPicker(_ current: BodyOperation, set: @escaping (BodyOperation) -> Void) -> some View {
+    func operationPicker(_ current: BodyOperation, operations: [BodyOperation] = BodyOperation.allCases,
+                         set: @escaping (BodyOperation) -> Void) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             Text("Vorgang").font(.system(size: 11)).foregroundStyle(.secondary)
             HStack(spacing: 4) {
-                ForEach(BodyOperation.allCases, id: \.self) { op in
+                ForEach(operations, id: \.self) { op in
                     Button { set(op) } label: {
                         VStack(spacing: 3) {
                             Image(systemName: op.symbol).font(.system(size: 14))
@@ -201,7 +191,7 @@ struct CommandPanel: View {
         }
     }
 
-    private func selectionRow(_ title: String, count: Int, symbol: String, active: Bool, detail: String? = nil,
+    func selectionRow(_ title: String, count: Int, symbol: String, active: Bool, detail: String? = nil,
                               clear: @escaping () -> Void, activate: (() -> Void)? = nil) -> some View {
         LabeledRow(title) {
             Button {

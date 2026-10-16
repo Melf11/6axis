@@ -161,6 +161,13 @@ public struct ModelState: @unchecked Sendable {
     public var bodies: [UUID: BuiltBody] = [:]
     public var sketches: [UUID: SketchBuild] = [:]
     public var errors: [UUID: String] = [:]
+    /// Construction planes and axes by feature.
+    public var planes: [UUID: Plane] = [:]
+    public var axes: [UUID: Axis3] = [:]
+    /// Tool geometry of material-adding/removing features, so patterns can apply it again.
+    public var tools: [UUID: FeatureTool] = [:]
+    /// Threads that are only marked, not modeled (drawing callouts).
+    public var threadMarks: [ThreadMark] = []
 
     public init() {}
 
@@ -262,6 +269,20 @@ public final class ModelBuilder: @unchecked Sendable {
                 state.setBody(BuiltBody(id: f.id, shape: shape, sourceFeature: f.id))
             case let .removeBodies(ids):
                 for id in ids { state.removeBody(id) }
+            case let .plane(p):
+                state.planes[f.id] = try constructionPlane(p, state, &evaluator)
+            case let .axis(a):
+                state.axes[f.id] = try constructionAxis(a, state)
+            case let .hole(h):
+                try applyHole(f, h, &state, &evaluator)
+            case let .thread(t):
+                try applyThread(f, t, &state)
+            case let .pattern(p):
+                try applyPattern(f, p, &state, &evaluator)
+            case let .move(m):
+                try applyMove(f, m, &state, &evaluator)
+            case let .combine(c):
+                try applyCombine(f, c, &state)
             }
         } catch {
             state.errors[f.id] = (error as? LocalizedError)?.errorDescription ?? "\(error)"
@@ -279,6 +300,9 @@ public final class ModelBuilder: @unchecked Sendable {
             }
             guard info.isPlanar else { throw KernelError("Skizzenebene ist nicht eben") }
             return Plane.forFace(point: info.origin, normal: info.normal)
+        case let .construction(id):
+            guard let p = state.planes[id] else { throw KernelError("Konstruktionsebene nicht gefunden") }
+            return p
         }
     }
 
@@ -328,6 +352,7 @@ public final class ModelBuilder: @unchecked Sendable {
                 tools.append(try face.translated(-n * d2).extruded(n * (d1 + d2)))
             }
         }
+        state.tools[f.id] = FeatureTool(shapes: tools, operation: e.operation, targets: e.targets)
         try combine(tools, op: e.operation, targets: e.targets, feature: f.id, &state)
     }
 
@@ -336,6 +361,7 @@ public final class ModelBuilder: @unchecked Sendable {
         guard let axisRef = r.axis else { throw KernelError("Keine Drehachse gewählt") }
         let (o, dir) = try axis(axisRef, state)
         let tools = try profileFaces(r.profiles, [], state).map { try $0.0.revolved(origin: o, axis: dir, angle: angle) }
+        state.tools[f.id] = FeatureTool(shapes: tools, operation: r.operation, targets: r.targets)
         try combine(tools, op: r.operation, targets: r.targets, feature: f.id, &state)
     }
 
@@ -352,9 +378,20 @@ public final class ModelBuilder: @unchecked Sendable {
             let p0 = sb.plane.point(pa), p1 = sb.plane.point(pb)
             return (p0, simd_normalize(p1 - p0))
         case let .edge(be):
-            guard let body = state.bodies[be.body], let idx = body.resolve(be.edge), let info = body.edgeInfos[idx],
-                  info.kind == .line else { throw KernelError("Drehachse muss eine gerade Kante sein") }
+            guard let body = state.bodies[be.body], let idx = body.resolve(be.edge), let info = body.edgeInfos[idx] else {
+                throw KernelError("Achse nicht mehr gefunden")
+            }
+            // Circular edges stand for their axis (e.g. the rim of a hole).
+            if info.kind == .circle, info.radius > 0 { return (info.center, simd_normalize(info.axis)) }
+            guard info.kind == .line else { throw KernelError("Drehachse muss eine gerade Kante sein") }
             return (info.start, simd_normalize(info.end - info.start))
+        case let .cylinder(bf):
+            guard let body = state.bodies[bf.body], let idx = body.resolve(bf.face), let info = body.faceInfos[idx],
+                  info.surface == .cylinder || info.surface == .cone else { throw KernelError("Zylinderfläche nicht mehr gefunden") }
+            return (info.axisOrigin, simd_normalize(info.axisDir))
+        case let .construction(id):
+            guard let a = state.axes[id] else { throw KernelError("Konstruktionsachse nicht gefunden") }
+            return (a.origin, a.direction)
         }
     }
 

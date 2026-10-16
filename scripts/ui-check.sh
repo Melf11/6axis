@@ -70,6 +70,14 @@ if grep -q "^CHECK FAIL" "$OUT/sketch.log" || ! grep -q "^CHECK ok" "$OUT/sketch
 else
     echo "✓ sketch: $(grep -c '^CHECK ok' "$OUT/sketch.log") interaction checks"
 fi
+run modelling 180 SIXAXIS_FAST_SNAPSHOTS=1 SIXAXIS_MODEL_TEST=1 SIXAXIS_SNAPSHOTS="$OUT/modelling"
+if grep -q "^CHECK FAIL" "$OUT/modelling.log" || ! grep -q "^CHECK ok" "$OUT/modelling.log"; then
+    grep "^CHECK FAIL" "$OUT/modelling.log" | sed 's/^/✗ modelling: /'
+    echo "::error::ui-check modelling: $(grep -c '^CHECK FAIL' "$OUT/modelling.log") failing checks"
+    fail=1
+else
+    echo "✓ modelling: $(grep -c '^CHECK ok' "$OUT/modelling.log") command checks"
+fi
 run drag 120 SIXAXIS_FAST_SNAPSHOTS=1 SIXAXIS_DRAG_TEST=1
 if python3 - "$OUT/drag.log" <<'PY'
 import re, sys
@@ -86,6 +94,9 @@ print(f"burst {burst.group(2) if burst else '?'} ms, max latency {max(lat) if la
 sys.exit(0 if ok else 1)
 PY
 then echo "✓ drag: mouse/swipe events stay responsive"; else echo "✗ drag: navigation too slow"; echo "::error::ui-check drag: navigation too slow"; fail=1; fi
+
+run budget 120 SIXAXIS_FAST_SNAPSHOTS=1 SIXAXIS_BUDGET_TEST=1 SIXAXIS_SNAPSHOTS="$OUT/budget"
+python3 "$ROOT/scripts/budget-check.py" "$OUT" "$ROOT/build/6axis.app" || fail=1
 
 if [ $fail -ne 0 ] && [ -n "${GITHUB_ACTIONS:-}" ]; then
     # Surface details as annotations (readable without access to the job log).

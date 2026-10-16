@@ -69,7 +69,8 @@ struct SceneBuilder {
 
         // Grid and plain axes live in their own layer (buildGrid); only pickable axes belong to the scene.
         if axesPickable { addAxes() }
-        if cmd?.kind == .sketchPlane || editor.showOriginPlanes { addOriginPlanes() }
+        if editor.wantsPlanePick || editor.showOriginPlanes { addOriginPlanes() }
+        addConstruction()
 
         // Bodies
         var translucent: [MeshBatch] = []
@@ -128,17 +129,22 @@ struct SceneBuilder {
             }
         }
         let showAllProfiles = cmd?.kind == .extrude || cmd?.kind == .revolve
+        if case let .hole(h)? = editor.commandFeature?.kind {
+            for case let .sketchPoint(s, _) in h.points { referenced.insert(s) }
+        }
+        let holePoints = cmd?.kind == .hole
         for f in doc.features.prefix(doc.activeCount) {
             guard case .sketch = f.kind, let sb = state.sketches[f.id] else { continue }
             let active = f.id == editor.sketchId
             guard active || !doc.hiddenSketches.contains(f.id) || referenced.contains(f.id) else { continue }
-            addSketch(sb, active: active, showProfiles: active || showAllProfiles || editor.sketchId == nil)
+            addSketch(sb, active: active, showProfiles: (active || showAllProfiles || editor.sketchId == nil) && !holePoints,
+                      showPoints: active || holePoints)
         }
     }
 
     // MARK: Sketches
 
-    private mutating func addSketch(_ sb: SketchBuild, active: Bool, showProfiles: Bool) {
+    private mutating func addSketch(_ sb: SketchBuild, active: Bool, showProfiles: Bool, showPoints: Bool) {
         let sid = sb.featureId
         let sk = (active ? editor.activeSketch : nil) ?? sb.sketch
         let solve = active ? (editor.lastSolve ?? sb.solve) : sb.solve
@@ -183,7 +189,7 @@ struct SceneBuilder {
         }
         scene.lines.append(LineBatch(instances: lines, width: (active ? 2.0 : 1.5) * scale, depthBias: 0.003))
 
-        guard active else { return }
+        guard showPoints else { return }
         var pts: [PointInstance] = []
         let centers = Set(sk.curves.compactMap { c -> Int? in
             switch c.geometry {
@@ -243,7 +249,7 @@ struct SceneBuilder {
 
     // MARK: Grid, axes, origin planes
 
-    private var axesPickable: Bool { editor.command?.kind == .revolve && editor.command?.activeInput == 1 }
+    private var axesPickable: Bool { editor.wantsAxisPick }
 
     /// The camera-following layer: grid and (non-pickable) origin axes.
     mutating func buildGrid() {
@@ -290,7 +296,7 @@ struct SceneBuilder {
             lines.append(LineInstance(plane.point(Vec2(c.x - half, 0)).float, plane.point(Vec2(c.x + half, 0)).float, color: packColor(red)))
             lines.append(LineInstance(plane.point(Vec2(0, c.y - half)).float, plane.point(Vec2(0, c.y + half)).float, color: packColor(green)))
         } else {
-            let showZ = pickable || editor.showOriginPlanes || editor.command?.kind == .sketchPlane
+            let showZ = pickable || editor.showOriginPlanes || editor.wantsPlanePick
             let axes: [(Vec3, Double, SIMD4<Float>, AxisRef)] = [
                 (Vec3(1, 0, 0), c.x, red, .x),
                 (Vec3(0, 1, 0), c.y, green, .y),
@@ -320,6 +326,45 @@ struct SceneBuilder {
         scene.lines.append(LineBatch(instances: outlines, width: 1.2 * scale, depthBias: 0.001))
     }
 
+    // MARK: Construction planes and axes
+
+    /// Construction planes as translucent squares around their origin, axes as long dashed lines.
+    /// Pickable when a command asks for a plane/axis, or without a command (to sketch on a plane).
+    private mutating func addConstruction() {
+        let (planes, axes) = editor.visibleConstruction
+        guard !planes.isEmpty || !axes.isEmpty else { return }
+        let size = max(editor.camera.distance * 0.22, 20)
+        let center = editor.camera.target
+        var fills: [FillVertex] = []
+        var outlines: [LineInstance] = []
+        let pickPlanes = editor.command == nil || editor.wantsPlanePick
+        let fc = packColor(SIMD4(style.plane.x, style.plane.y, style.plane.z, style.plane.w * 0.8))
+        let oc = packColor(style.planeEdge)
+        for (fid, plane) in planes {
+            let ref = PlaneRef.construction(fid)
+            let pid = pickPlanes ? id(.originPlane(ref)) : 0
+            // Centred where the camera looks, projected onto the plane, so it is always in view.
+            let c = plane.project(Vec3(Double(center.x), Double(center.y), Double(center.z)))
+            let h = Double(size)
+            let corners = [Vec2(-h, -h), Vec2(h, -h), Vec2(h, h), Vec2(-h, h)].map { plane.point(c + $0).float }
+            for i in [0, 1, 2, 0, 2, 3] { fills.append(FillVertex(x: corners[i].x, y: corners[i].y, z: corners[i].z, id: pid, color: fc)) }
+            for i in 0..<4 { outlines.append(LineInstance(corners[i], corners[(i + 1) % 4], id: pid, color: oc)) }
+        }
+        scene.fills.append(FillBatch(vertices: fills, depthBias: 0.0005, depth: .readOnly, pickable: pickPlanes))
+        scene.lines.append(LineBatch(instances: outlines, width: 1.2 * scale, depthBias: 0.001, pickable: pickPlanes))
+
+        var lines: [LineInstance] = []
+        let pickAxes = editor.wantsAxisPick
+        let ac = packColor(SIMD4<Float>(0.55, 0.35, 0.85, 0.9))
+        for (fid, axis) in axes {
+            let along = simd_dot(Vec3(Double(center.x), Double(center.y), Double(center.z)) - axis.origin, axis.direction)
+            let a = (axis.origin + axis.direction * (along - Double(size) * 2)).float
+            let b = (axis.origin + axis.direction * (along + Double(size) * 2)).float
+            lines.append(LineInstance(a, b, id: pickAxes ? id(.originAxis(.construction(fid))) : 0, color: ac, flags: LineInstance.dashed))
+        }
+        scene.lines.append(LineBatch(instances: lines, width: (pickAxes ? 2.2 : 1.6) * scale, depthBias: 0.002, pickable: pickAxes))
+    }
+
     // MARK: Highlight ids
 
     func highlightIds(selection: [Pick], hover: Pick?) -> (UInt32, [UInt32]) {
@@ -337,8 +382,8 @@ struct SceneBuilder {
                 if let axis = r.axis {
                     switch axis {
                     case let .sketchLine(s, c): if let i = ids[.sketchCurve(s, c)] { sel.append(i) }
-                    case .x, .y, .z: if let i = ids[.originAxis(axis)] { sel.append(i) }
-                    case .edge: break
+                    case .x, .y, .z, .construction: if let i = ids[.originAxis(axis)] { sel.append(i) }
+                    case .edge, .cylinder: break
                     }
                 }
             default: break

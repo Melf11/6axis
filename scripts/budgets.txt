@@ -1,0 +1,16 @@
+# Grenzwerte, damit 6axis schlank und flüssig bleibt (Leitlinien 5 und 6 in AGENTS.md).
+# Geprüft von scripts/budget-check.py nach der Oberflächenprüfung. Spalte „Mac“ gilt lokal,
+# „CI“ auf den GitHub-Rechnern (etwa halb so schnell, Zeiten dort schwanken stärker).
+# Eine Grenze nur nach Rücksprache mit dem Inhaber erhöhen – Begründung in die Commit-Nachricht.
+#
+# Schlüssel                Mac      CI    Bedeutung (gemessen Okt. 2026: M3 Pro / CI)
+startup_ms                 1500    2500   # Start bis zum ersten Bild (≈ 0,3 s / 0,5 s)
+memory_empty_mb             300     300   # Speicher direkt nach dem Start (≈ 145 MB)
+memory_example_mb           500     500   # Speicher, alle Beispiele nacheinander geöffnet (≈ 370 MB)
+toolbar_model_pt            960     960   # Werkzeugleiste Konstruktion – passt ins kleinste Fenster (≈ 955 pt, voll: Neues in Menüs ▾)
+toolbar_sketch_pt          1200    1230   # Werkzeugleiste Skizze (≈ 1180 pt; CI setzt Schrift etwas breiter)
+drag_latency_ms              50     100   # Ziehen/Drehen: längste Wartezeit bis zum nächsten Bild (≈ 14 / 46 ms)
+drag_burst_ms               250     500   # 480 Maus-Ereignisse auf einmal verarbeitet (≈ 15 / 58 ms)
+rebuild_blocking_ms         150     300   # Oberfläche blockiert beim Ändern eines schweren Modells (≈ 80 / 170 ms)
+rebuild_total_ms           6000   12000   # Platte mit 400 Löchern im Hintergrund neu berechnen (≈ 2,2 / 5 s)
+app_size_mb                  70      70   # Größe der App (≈ 47 MB, davon OpenCASCADE 38 MB)

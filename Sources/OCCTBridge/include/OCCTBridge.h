@@ -48,12 +48,19 @@ typedef struct {
     int32_t edgeCount;
 } OBMesh;
 
+enum { OB_SURF_PLANE = 0, OB_SURF_CYLINDER = 1, OB_SURF_CONE = 2, OB_SURF_OTHER = 3 };
+
 typedef struct {
     int32_t isPlanar;
     double origin[3];      // point on plane (planar faces)
     double normal[3];      // outward normal (planar faces), else normal at centroid
     double centroid[3];
     double area;
+    int32_t surface;       // OB_SURF_*
+    double axisOrigin[3];  // cylinders and cones: point on the axis
+    double axisDir[3];     // cylinders and cones: axis direction
+    double radius;         // cylinder radius, cone reference radius
+    double vRange[2];      // cylinders: extent of the face along the axis (relative to axisOrigin)
 } OBFaceInfo;
 
 typedef struct {
@@ -62,6 +69,9 @@ typedef struct {
     double start[3];
     double end[3];
     double length;
+    double center[3];      // circles: centre
+    double axis[3];        // circles: axis direction
+    double radius;         // circles: radius
 } OBEdgeInfo;
 
 const char *ob_last_error(void);
@@ -89,6 +99,8 @@ OBShape *ob_prism(const OBShape *profile, const double dir[3]);
 OBShape *ob_translate(const OBShape *s, const double v[3]);
 /// Rigid transform: m is a 3x4 row-major matrix (rotation | translation).
 OBShape *ob_transform(const OBShape *s, const double m[12]);
+/// Mirror image across the plane through `origin` with `normal`.
+OBShape *ob_mirror(const OBShape *s, const double origin[3], const double normal[3]);
 OBShape *ob_revolve(const OBShape *profile, const double axisOrigin[3], const double axisDir[3], double angleRad);
 OBShape *ob_boolean(const OBShape *a, const OBShape *b, int32_t op);
 /// Fuses all shapes in one general-fuse operation (much faster than pairwise fusing many tools).
@@ -130,6 +142,12 @@ OBShape *ob_box(const double minP[3], const double maxP[3]);
 OBShape *ob_plane_face(const double origin[3], const double normal[3], const double xDir[3], double halfSize);
 /// Boundaries of all faces, projected like ob_hlr (no hidden-line removal). polyFlags = face index (mod 256).
 int32_t ob_face_outlines(const OBShape *s, const double viewDir[3], const double xDir[3], double deflection, OBProjection *out);
+
+/// Helical V-groove for a thread, as a solid to cut: one turn per `pitch` along the axis from
+/// `start` to `start + length` (axis coordinates), profile from `rApex` (tip of the V) to `rBase`
+/// (open side, width `width` there). External threads: rApex < rBase; internal: rApex > rBase.
+OBShape *ob_thread_groove(const double axisOrigin[3], const double axisDir[3], double start, double length,
+                          double pitch, double rApex, double rBase, double width);
 
 int32_t ob_write_stl(const OBShape *s, const char *path, double linearDeflection, int32_t ascii);
 int32_t ob_write_step(const OBShape *s, const char *path);

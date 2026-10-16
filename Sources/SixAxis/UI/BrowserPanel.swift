@@ -8,6 +8,7 @@ struct BrowserPanel: View {
     @State private var renameText = ""
     @State private var bodiesOpen = true
     @State private var sketchesOpen = true
+    @State private var constructionOpen = true
     @State private var materialFor: UUID?
 
     var body: some View {
@@ -29,6 +30,12 @@ struct BrowserPanel: View {
                             editor.showOriginPlanes.toggle()
                             editor.sceneVersion &+= 1
                         })
+                    if !construction.isEmpty {
+                        section(String(localized: "Konstruktion"), count: construction.count, open: $constructionOpen)
+                        if constructionOpen {
+                            ForEach(construction) { f in constructionRow(f) }
+                        }
+                    }
                     section(String(localized: "Körper"), count: editor.state.bodyOrder.count, open: $bodiesOpen)
                     if bodiesOpen {
                         ForEach(editor.state.bodyOrder, id: \.self) { id in
@@ -57,6 +64,43 @@ struct BrowserPanel: View {
 
     private var sketches: [Feature] {
         editor.doc.features.prefix(editor.doc.activeCount).filter { if case .sketch = $0.kind { return true }; return false }
+    }
+
+    /// Construction planes and axes (shown and hidden like sketches).
+    private var construction: [Feature] {
+        editor.doc.features.prefix(editor.doc.activeCount).filter {
+            switch $0.kind { case .plane, .axis: return true; default: return false }
+        }
+    }
+
+    private func constructionRow(_ f: Feature) -> some View {
+        let visible = !editor.doc.hiddenSketches.contains(f.id)
+        return HStack(spacing: 6) {
+            eyeButton(visible) { editor.toggleSketchVisibility(f.id) }
+            Image(systemName: f.kind.symbol).font(.system(size: 11)).foregroundStyle(.purple)
+            Text(f.name).font(.system(size: 12)).lineLimit(1)
+            Spacer()
+            if editor.state.errors[f.id] != nil {
+                Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(.orange).font(.system(size: 10))
+            }
+        }
+        .padding(.horizontal, 6)
+        .frame(height: 24)
+        .padding(.leading, 30)
+        .contentShape(Rectangle())
+        .onTapGesture(count: 2) { editor.editFeature(f.id) }
+        .contextMenu {
+            if case .plane = f.kind {
+                Button("Skizze auf dieser Ebene") {
+                    editor.selection = [.originPlane(.construction(f.id))]
+                    editor.beginCommand(.sketchPlane)
+                }
+            }
+            Button("Bearbeiten") { editor.editFeature(f.id) }
+            Button(visible ? String(localized: "Ausblenden") : String(localized: "Einblenden")) { editor.toggleSketchVisibility(f.id) }
+            Divider()
+            Button("Löschen", role: .destructive) { editor.deleteFeature(f.id) }
+        }
     }
 
     private func section(_ title: String, count: Int, open: Binding<Bool>) -> some View {
