@@ -58,7 +58,13 @@ extension Editor {
     }
 
     func finishSketch() {
-        guard sketchId != nil else { return }
+        guard let id = sketchId else { return }
+        // A sketch left without any geometry would only clutter browser and timeline.
+        if let sk = activeSketch, sk.curves.isEmpty, sk.points.allSatisfy({ $0.id == Sketch.originId }),
+           let idx = doc.index(of: id), !doc.features.dropFirst(idx + 1).contains(where: { referencesSketch($0, id) }) {
+            doc.features.remove(at: idx)
+            if let r = sketchRollbackBefore, idx < r { sketchRollbackBefore = r - 1 }
+        }
         doc.rollback = sketchRollbackBefore
         sketchId = nil
         sketchTool = .select
@@ -69,6 +75,15 @@ extension Editor {
         constraintPicks.removeAll()
         lastSolve = nil
         rebuild()
+    }
+
+    private func referencesSketch(_ f: Feature, _ id: UUID) -> Bool {
+        switch f.kind {
+        case let .extrude(e): return e.profiles.contains { $0.sketch == id }
+        case let .revolve(r): return r.profiles.contains { $0.sketch == id }
+        case let .hole(h): return h.points.contains { if case let .sketchPoint(s, _) = $0 { return s == id }; return false }
+        default: return false
+        }
     }
 
     // MARK: - Mutation

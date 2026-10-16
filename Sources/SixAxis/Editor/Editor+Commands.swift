@@ -12,7 +12,12 @@ extension Editor {
         return builder.build(doc, upTo: idx)
     }
 
-    var commandError: String? { command?.featureId.flatMap { state.errors[$0] } }
+    /// Error of the command's feature – not before the user gave the inputs a fresh command needs.
+    var commandError: String? {
+        guard let cmd = command, let f = commandFeature else { return nil }
+        if cmd.isNew && !hasInputs(f) { return nil }
+        return state.errors[f.id]
+    }
 
     // MARK: - Begin / end
 
@@ -77,6 +82,9 @@ extension Editor {
             featureKind = .shell(s)
         case .sketchPlane:
             return
+        default:
+            guard let k = makeModellingFeature(kind) else { return }
+            featureKind = k
         }
 
         let f = Feature(name: doc.nextName(for: featureKind), kind: featureKind)
@@ -85,6 +93,7 @@ extension Editor {
         if let r = doc.rollback { doc.rollback = r + 1 }
         var cmd = ActiveCommand(kind: kind, featureId: f.id, isNew: true, snapshot: snapshot)
         if kind == .revolve, case let .revolve(r) = featureKind, !r.profiles.isEmpty, r.axis == nil { cmd.activeInput = 1 }
+        if makeModellingFeature(kind) != nil { cmd.activeInput = firstInput(featureKind) }
         command = cmd
         selection.removeAll()
         rebuild()
@@ -110,6 +119,8 @@ extension Editor {
             switch f.kind {
             case let .extrude(e): for p in e.profiles { doc.hiddenSketches.insert(p.sketch) }
             case let .revolve(r): for p in r.profiles { doc.hiddenSketches.insert(p.sketch) }
+            case let .hole(h):
+                for case let .sketchPoint(s, _) in h.points { doc.hiddenSketches.insert(s) }
             default: break
             }
         }
@@ -126,14 +137,14 @@ extension Editor {
         rebuild()
     }
 
-    private func hasInputs(_ f: Feature) -> Bool {
+    func hasInputs(_ f: Feature) -> Bool {
         switch f.kind {
         case let .extrude(e): return !e.profiles.isEmpty || !e.faces.isEmpty
         case let .revolve(r): return !r.profiles.isEmpty
         case let .fillet(x): return !x.edges.isEmpty
         case let .chamfer(x): return !x.edges.isEmpty
         case let .shell(x): return !x.faces.isEmpty || x.body != nil
-        default: return true
+        default: return hasModellingInputs(f.kind)
         }
     }
 
@@ -196,8 +207,12 @@ extension Editor {
             guard state.sketches[sid]?.sketch.curve(cid)?.isLine == true else { return nil }
             return .sketchLine(sketch: sid, curve: cid)
         case let .edge(b, i):
-            guard let body = state.bodies[b], body.edgeInfos[i]?.kind == .line, let ref = body.edgeRef(i) else { return nil }
+            // Straight edges, and circular edges standing for their axis (rim of a hole or bolt).
+            guard let body = state.bodies[b], let info = body.edgeInfos[i], info.kind == .line || info.kind == .circle,
+                  let ref = body.edgeRef(i) else { return nil }
             return .edge(BodyEdgeRef(body: b, edge: ref))
+        case .face:
+            return cylinderFace(pick, in: state).map { .cylinder($0) }
         default: return nil
         }
     }
@@ -215,7 +230,7 @@ extension Editor {
         }
         guard let cmd = command else {
             switch p {
-            case .face, .edge, .profile, .sketchCurve: return true
+            case .face, .edge, .profile, .sketchCurve, .originPlane(.construction): return true
             default: return false
             }
         }
@@ -238,6 +253,8 @@ extension Editor {
         case .shell:
             if case .face = p { return true }
             return false
+        default:
+            return acceptsModelling(p)
         }
     }
 
@@ -299,6 +316,8 @@ extension Editor {
                 s.body = s.faces.isEmpty ? b : nil
                 k = .shell(s)
             }
+        default:
+            modellingClick(p)
         }
     }
 

@@ -111,12 +111,14 @@ Inhalt:
 - Geänderte Tastenkürzel wie in Fusion: **T** Trimmen, **P** Projizieren, **O** Versatz (in Skizzen); Tangential und Senkrecht bleiben in der Werkzeugleiste
 - Dateiformat 3 (ältere Versionen lehnen Dateien mit Splines/Text mit klarer Meldung ab)
 
-## 1.2 – Modellieren
-- Konstruktionsebenen (versetzt, unter Winkel, mittig zwischen zwei Flächen) und -achsen
-- Bohrung (Durchgang, Sackloch, Senkung, Gewinde-Kernloch)
-- Gewinde (kosmetisch und modelliert)
-- Muster rechteckig/kreisförmig, Spiegeln – für Features und Körper
-- Körper verschieben, kopieren, drehen; Körper kombinieren (verbinden, abziehen, schneiden)
+## 1.2 – Modellieren ✅
+- [x] **Konstruktionsebenen** (versetzt, unter Winkel, mittig zwischen zwei Flächen) und **-achsen** (durch Kante/Zylinder, Schnitt zweier Ebenen); Skizzen darauf, im Browser unter „Konstruktion“
+- [x] **Bohrung** (H): einfach, Flachsenkung, Kegelsenkung; Tiefe oder durch alles; an Skizzenpunkten (folgen den Maßen) oder per Klick auf eine Fläche; Gewinde-Kernloch M2–M24
+- [x] **Gewinde** auf Bolzen und Bohrungen: metrisch ISO, Größe automatisch erkannt; modelliert (3D-Druck) oder nur gekennzeichnet
+- [x] **Muster** rechteckig/kreisförmig und **Spiegeln** – für Körper und Elemente (z. B. eine Bohrung als Lochreihe)
+- [x] **Körper verschieben, drehen, kopieren** und **kombinieren** (verbinden, abziehen, schneiden)
+- Werkzeugleisten: verwandte Befehle in Menüs (Muster ▾, Körper ▾, Ebene ▾; in der Skizze Muster ▾, Ecke ▾), beide Leisten unter ihren Grenzwerten
+- Dateiformat 5
 
 ## 1.3 – Prüfen & Ausgabe
 - Messwerkzeug (Abstand, Winkel, Fläche, Volumen)

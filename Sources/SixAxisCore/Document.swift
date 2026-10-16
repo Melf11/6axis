@@ -120,6 +120,8 @@ public struct ProfileAnchor: Codable, Hashable, Sendable {
 public enum PlaneRef: Codable, Hashable, Sendable {
     case xy, xz, yz
     case face(BodyFaceRef)
+    /// A construction plane feature.
+    case construction(UUID)
 
     public var displayName: String {
         switch self {
@@ -127,6 +129,7 @@ public enum PlaneRef: Codable, Hashable, Sendable {
         case .xz: return String(localized: "XZ-Ebene")
         case .yz: return String(localized: "YZ-Ebene")
         case .face: return String(localized: "Fläche")
+        case .construction: return String(localized: "Konstruktionsebene")
         }
     }
 }
@@ -135,6 +138,10 @@ public enum AxisRef: Codable, Hashable, Sendable {
     case x, y, z
     case sketchLine(sketch: UUID, curve: Int)
     case edge(BodyEdgeRef)
+    /// Axis of a cylindrical face (bolt, hole) or a circular edge.
+    case cylinder(BodyFaceRef)
+    /// A construction axis feature.
+    case construction(UUID)
 
     public var displayName: String {
         switch self {
@@ -143,6 +150,8 @@ public enum AxisRef: Codable, Hashable, Sendable {
         case .z: return String(localized: "Z-Achse")
         case .sketchLine: return String(localized: "Skizzenlinie")
         case .edge: return String(localized: "Kante")
+        case .cylinder: return String(localized: "Zylinderachse")
+        case .construction: return String(localized: "Konstruktionsachse")
         }
     }
 }
@@ -243,6 +252,13 @@ public enum FeatureKind: Codable, Hashable, Sendable {
     case importStep(ImportFeature)
     /// Removes bodies from the model from this point of the timeline on.
     case removeBodies([UUID])
+    case plane(ConstructionPlaneFeature)
+    case axis(ConstructionAxisFeature)
+    case hole(HoleFeature)
+    case thread(ThreadFeature)
+    case pattern(PatternFeature)
+    case move(MoveFeature)
+    case combine(CombineFeature)
 
     public var typeName: String {
         switch self {
@@ -254,6 +270,13 @@ public enum FeatureKind: Codable, Hashable, Sendable {
         case .shell: return String(localized: "Wandstärke")
         case .importStep: return String(localized: "Import")
         case .removeBodies: return String(localized: "Entfernen")
+        case .plane: return String(localized: "Ebene")
+        case .axis: return String(localized: "Achse")
+        case .hole: return String(localized: "Bohrung")
+        case .thread: return String(localized: "Gewinde")
+        case let .pattern(p): return p.kind == .mirror ? String(localized: "Spiegelung") : String(localized: "Muster")
+        case let .move(m): return m.copy ? String(localized: "Kopie") : String(localized: "Verschiebung")
+        case .combine: return String(localized: "Kombination")
         }
     }
 
@@ -267,6 +290,13 @@ public enum FeatureKind: Codable, Hashable, Sendable {
         case .shell: return "shippingbox"
         case .importStep: return "square.and.arrow.down"
         case .removeBodies: return "trash"
+        case .plane: return "square.3.layers.3d"
+        case .axis: return "line.diagonal"
+        case .hole: return "circle.dotted.circle"
+        case .thread: return "tornado"
+        case let .pattern(p): return p.kind.symbol
+        case .move: return "arrow.up.and.down.and.arrow.left.and.right"
+        case .combine: return "square.on.square.intersection.dashed"
         }
     }
 
@@ -338,7 +368,8 @@ public struct CADDocument: Codable, Hashable, Sendable {
     /// 2 – 1.0: profile anchors, topology counts on face/edge references (all optional, so 1 reads as 2)
     /// 3 – 1.1: new sketch curve types (spline); older apps must refuse such files
     /// 4 – 1.1.2: timeline step "remove bodies"
-    public static let currentFormatVersion = 4
+    /// 5 – 1.2: construction planes/axes, holes, threads, patterns, move, combine
+    public static let currentFormatVersion = 5
 
     public var formatVersion = CADDocument.currentFormatVersion
     public var features: [Feature] = []
@@ -409,6 +440,7 @@ public struct CADDocument: Codable, Hashable, Sendable {
         1: { $0 },   // 1 → 2: new fields are optional; nothing to rewrite
         2: { $0 },   // 2 → 3: only additions
         3: { $0 },   // 3 → 4: only additions
+        4: { $0 },   // 4 → 5: only additions
     ]
 }
 

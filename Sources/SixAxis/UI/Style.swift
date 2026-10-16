@@ -71,6 +71,53 @@ struct ToolButton: View {
     }
 }
 
+/// Ribbon button that opens a menu of related commands (keeps the toolbar narrow).
+struct ToolMenuButton<Items: View>: View {
+    let title: String
+    let symbol: String
+    var active = false
+    var enabled = true
+    @ViewBuilder let items: () -> Items
+    @State private var hovering = false
+
+    var body: some View {
+        Menu {
+            items()
+        } label: {
+            VStack(spacing: 3) {
+                Image(systemName: symbol)
+                    .font(.system(size: 17, weight: .regular))
+                    .symbolRenderingMode(.hierarchical)
+                    .foregroundStyle(active ? Color.white : .primary)
+                    .frame(width: 34, height: 26)
+                    .background(
+                        RoundedRectangle(cornerRadius: 7, style: .continuous)
+                            .fill(active ? Color.accentColor : (hovering ? Color.primary.opacity(0.08) : .clear)))
+                HStack(spacing: 2) {
+                    Text(title)
+                    Image(systemName: "chevron.down").font(.system(size: 6, weight: .bold))
+                }
+                .font(.system(size: 10, weight: .medium))
+                .foregroundStyle(.secondary)
+                .lineLimit(1)
+                .fixedSize()
+            }
+            .padding(.horizontal, 3)
+            .frame(minWidth: 44)
+            .fixedSize()
+            .contentShape(Rectangle())
+        }
+        .menuStyle(.button)
+        .buttonStyle(.plain)
+        .menuIndicator(.hidden)
+        .fixedSize()
+        .disabled(!enabled)
+        .opacity(enabled ? 1 : 0.4)
+        .onHover { hovering = $0 }
+        .help(title)
+    }
+}
+
 /// Small square icon button.
 struct IconButton: View {
     let symbol: String

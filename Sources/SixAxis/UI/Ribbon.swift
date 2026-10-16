@@ -42,6 +42,14 @@ struct Ribbon: View {
                            active: editor.command?.kind == .extrude) { editor.beginCommand(.extrude) }
                 ToolButton(title: String(localized: "Drehung"), symbol: "arrow.trianglehead.2.clockwise.rotate.90",
                            active: editor.command?.kind == .revolve) { editor.beginCommand(.revolve) }
+                ToolButton(title: String(localized: "Bohrung"), symbol: "circle.dotted.circle", shortcut: "H",
+                           active: editor.command?.kind == .hole, enabled: hasBodies) { editor.beginCommand(.hole) }
+                ToolMenuButton(title: String(localized: "Muster"), symbol: PatternKind.rectangular.symbol,
+                               active: [.rectPattern, .circularPattern, .mirror].contains(editor.command?.kind), enabled: hasBodies) {
+                    menuItem(.rectPattern)
+                    menuItem(.circularPattern)
+                    menuItem(.mirror)
+                }
             }
             RibbonDivider()
             group(String(localized: "Ändern")) {
@@ -51,11 +59,25 @@ struct Ribbon: View {
                            active: editor.command?.kind == .chamfer, enabled: hasBodies) { editor.beginCommand(.chamfer) }
                 ToolButton(title: String(localized: "Wand"), symbol: "shippingbox",
                            active: editor.command?.kind == .shell, enabled: hasBodies) { editor.beginCommand(.shell) }
+                ToolButton(title: String(localized: "Gewinde"), symbol: "tornado",
+                           active: editor.command?.kind == .thread, enabled: hasBodies) { editor.beginCommand(.thread) }
+                ToolMenuButton(title: String(localized: "Körper"), symbol: "cube.transparent",
+                               active: [.move, .combine].contains(editor.command?.kind), enabled: hasBodies) {
+                    menuItem(.move)
+                    menuItem(.combine)
+                }
             }
             RibbonDivider()
-            group(String(localized: "Verwalten")) {
+            group(String(localized: "Konstruktion")) {
+                ToolMenuButton(title: String(localized: "Ebene"), symbol: "square.3.layers.3d",
+                               active: [.plane, .axis].contains(editor.command?.kind)) {
+                    Button { editor.beginPlane(.offset) } label: { Label("Versetzte Ebene", systemImage: "square.3.layers.3d") }
+                    Button { editor.beginPlane(.angle) } label: { Label("Ebene unter Winkel", systemImage: "rotate.3d") }
+                    Button { editor.beginPlane(.midplane) } label: { Label("Mittelebene", systemImage: "square.split.1x2") }
+                    Divider()
+                    menuItem(.axis)
+                }
                 ToolButton(title: String(localized: "Parameter"), symbol: "function", shortcut: "⌥⌘P") { editor.showParameters = true }
-                ToolButton(title: String(localized: "Import"), symbol: "square.and.arrow.down", shortcut: "⌘I") { editor.importSTEP() }
             }
             RibbonDivider()
             group(String(localized: "Dokumentation")) {
@@ -70,6 +92,14 @@ struct Ribbon: View {
     }
 
     private var hasBodies: Bool { !editor.state.bodyOrder.isEmpty }
+
+    private func sketchMenuItem(_ t: SketchTool, _ symbol: String) -> some View {
+        Button { editor.setSketchTool(t) } label: { Label(t.name, systemImage: symbol) }
+    }
+
+    private func menuItem(_ kind: CommandKind) -> some View {
+        Button { editor.beginCommand(kind) } label: { Label(kind.title, systemImage: kind.symbol) }
+    }
 
     // MARK: Sketch
 
@@ -105,13 +135,18 @@ struct Ribbon: View {
                 tool(.extend, String(localized: "Verlängern"), "arrow.right.to.line")
                 tool(.project, String(localized: "Projizieren"), "square.3.layers.3d.down.backward", "P")
                 tool(.offset, String(localized: "Versatz"), "square.on.square.dashed", "O")
-                tool(.mirror, String(localized: "Spiegeln"), "arrow.left.and.right.righttriangle.left.righttriangle.right")
-                tool(.rectPattern, String(localized: "Muster"), "square.grid.3x1.below.line.grid.1x2")
-                tool(.circularPattern, String(localized: "Kreismuster"), "circle.hexagongrid")
-                tool(.sketchFillet, String(localized: "Abrunden"), "button.roundedtop.horizontal")
-                tool(.sketchChamfer, String(localized: "Fase"), "triangle.bottomhalf.filled")
+                ToolMenuButton(title: String(localized: "Muster"), symbol: "square.grid.3x1.below.line.grid.1x2",
+                               active: [.mirror, .rectPattern, .circularPattern].contains(editor.sketchTool)) {
+                    sketchMenuItem(.mirror, "arrow.left.and.right.righttriangle.left.righttriangle.right")
+                    sketchMenuItem(.rectPattern, "square.grid.3x1.below.line.grid.1x2")
+                    sketchMenuItem(.circularPattern, "circle.hexagongrid")
+                }
+                ToolMenuButton(title: String(localized: "Ecke"), symbol: "button.roundedtop.horizontal",
+                               active: [.sketchFillet, .sketchChamfer].contains(editor.sketchTool)) {
+                    sketchMenuItem(.sketchFillet, "button.roundedtop.horizontal")
+                    sketchMenuItem(.sketchChamfer, "triangle.bottomhalf.filled")
+                }
                 ToolButton(title: String(localized: "Hilfslinie"), symbol: "line.diagonal.arrow", shortcut: "X") { editor.toggleConstruction() }
-                ToolButton(title: String(localized: "Löschen"), symbol: "trash", shortcut: "⌫") { editor.deleteSketchSelection() }
             }
             RibbonDivider()
             VStack(spacing: 4) {

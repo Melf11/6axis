@@ -208,6 +208,16 @@ private struct BottomBar: View {
             case .revolve: return cmd.activeInput == 1 ? String(localized: "Drehachse wählen (Linie, Kante oder Achse)") : String(localized: "Profile wählen")
             case .fillet, .chamfer: return String(localized: "Kanten wählen · ↩ bestätigt")
             case .shell: return String(localized: "Flächen wählen, die offen sein sollen")
+            default:
+                switch editor.modellingInput {
+                case .plane: return String(localized: "Ebene oder ebene Fläche wählen")
+                case .axis: return String(localized: "Achse wählen: Ursprungsachse, Kante, Bohrung oder Zylinder")
+                case .bodies: return String(localized: "Körper anklicken · ↩ bestätigt")
+                case .body: return String(localized: "Zielkörper anklicken")
+                case .cylinder: return String(localized: "Zylinderfläche anklicken (Bolzen oder Bohrung)")
+                case .holePosition: return String(localized: "Auf eine ebene Fläche klicken oder Skizzenpunkte wählen")
+                case .none: return String(localized: "Werte eingeben · ↩ bestätigt")
+                }
             }
         }
         if editor.sketchId != nil {

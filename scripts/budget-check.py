@@ -43,6 +43,9 @@ size = subprocess.run(["du", "-sk", app], capture_output=True, text=True).stdout
 if size:
     values["app_size_mb"] = int(size[0]) / 1024
 
+if "no frame on screen" in read("budget.log"):
+    print("  (Bildschirm zeigt keine Bilder – Startzeit und Ziehen werden nicht bewertet)")
+
 rows, fail = [], False
 for key, limit in budgets.items():
     v = values.get(key)

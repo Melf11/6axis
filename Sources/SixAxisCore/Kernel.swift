@@ -68,7 +68,12 @@ public final class Shape: @unchecked Sendable {
             origin: vec(info.origin),
             normal: vec(info.normal),
             centroid: vec(info.centroid),
-            area: info.area)
+            area: info.area,
+            surface: FaceInfo.Surface(rawValue: Int(info.surface)) ?? .other,
+            axisOrigin: vec(info.axisOrigin),
+            axisDir: vec(info.axisDir),
+            radius: info.radius,
+            axisRange: info.vRange.0...max(info.vRange.0, info.vRange.1))
     }
 
     public func edgeInfo(_ index: Int) -> EdgeInfo? {
@@ -80,7 +85,10 @@ public final class Shape: @unchecked Sendable {
             midpoint: vec(info.midpoint),
             start: vec(info.start),
             end: vec(info.end),
-            length: info.length)
+            length: info.length,
+            center: vec(info.center),
+            axis: vec(info.axis),
+            radius: info.radius)
     }
 
     public func contains(_ p: SIMD3<Double>) -> Bool {
@@ -106,6 +114,11 @@ public final class Shape: @unchecked Sendable {
                  r[0, 1], r[1, 1], r[2, 1], t.y,
                  r[0, 2], r[1, 2], r[2, 2], t.z]
         return try Shape.wrap(ob_transform(handle, &m), "Transformieren fehlgeschlagen")
+    }
+
+    public func mirrored(origin o: Vec3, normal n: Vec3) throws -> Shape {
+        var a = [o.x, o.y, o.z], b = [n.x, n.y, n.z]
+        return try Shape.wrap(ob_mirror(handle, &a, &b), "Spiegeln fehlgeschlagen")
     }
 
     public func revolved(origin: SIMD3<Double>, axis: SIMD3<Double>, angle: Double) throws -> Shape {
@@ -228,6 +241,13 @@ public final class Shape: @unchecked Sendable {
         guard ob_write_step(handle, url.path) != 0 else { throw KernelError.last("STEP-Export fehlgeschlagen") }
     }
 
+    /// Helical V-groove to cut a thread (see ob_thread_groove).
+    public static func threadGroove(axisOrigin o: Vec3, axisDir d: Vec3, start: Double, length: Double, pitch: Double,
+                                    apexRadius: Double, baseRadius: Double, width: Double) throws -> Shape {
+        var a = [o.x, o.y, o.z], b = [d.x, d.y, d.z]
+        return try Shape.wrap(ob_thread_groove(&a, &b, start, length, pitch, apexRadius, baseRadius, width), "Gewinde fehlgeschlagen")
+    }
+
     public static func readSTEP(from url: URL) throws -> Shape {
         try Shape.wrap(ob_read_step(url.path), "STEP-Import fehlgeschlagen")
     }
@@ -241,12 +261,22 @@ private func copy(_ v: SIMD3<Double>, into buf: UnsafeMutableRawBufferPointer) {
 }
 
 public struct FaceInfo: Sendable {
+    public enum Surface: Int, Sendable { case plane = 0, cylinder = 1, cone = 2, other = 3 }
     public let index: Int
     public let isPlanar: Bool
     public let origin: SIMD3<Double>
     public let normal: SIMD3<Double>
     public let centroid: SIMD3<Double>
     public let area: Double
+    public var surface: Surface = .other
+    /// Cylinders and cones: the axis (point and unit direction) and radius.
+    public var axisOrigin: SIMD3<Double> = .zero
+    public var axisDir: SIMD3<Double> = .zero
+    public var radius: Double = 0
+    /// Cylinders: extent of the face along the axis, measured from `axisOrigin`.
+    public var axisRange: ClosedRange<Double> = 0...0
+
+    public var isCylinder: Bool { surface == .cylinder }
 }
 
 public struct EdgeInfo: Sendable {
@@ -257,6 +287,10 @@ public struct EdgeInfo: Sendable {
     public let start: SIMD3<Double>
     public let end: SIMD3<Double>
     public let length: Double
+    /// Circles and arcs: centre, axis direction and radius.
+    public var center: SIMD3<Double> = .zero
+    public var axis: SIMD3<Double> = .zero
+    public var radius: Double = 0
 }
 
 public enum Segment2D: Sendable {

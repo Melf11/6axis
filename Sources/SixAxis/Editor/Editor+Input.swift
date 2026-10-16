@@ -166,7 +166,7 @@ extension Editor {
         case "x": toggleConstruction()
         case "e", "q": beginCommand(.extrude)
         case "f": beginCommand(.fillet)
-        case "h": setSketchTool(.constraint(.horizontal))
+        case "h": if sketchId != nil { setSketchTool(.constraint(.horizontal)) } else { beginCommand(.hole) }
         case "v": setSketchTool(.constraint(.vertical))
         case "t": setSketchTool(.trim)
         case "p": setSketchTool(.project)

@@ -12,7 +12,12 @@ enum BudgetProbe {
         // Launch → first frame on screen (from the kernel's process start time).
         let end = Date().addingTimeInterval(20)
         while firstFrameRenderer() == nil && Date() < end { try? await Task.sleep(nanoseconds: 5_000_000) }
-        report("startup_ms", (Date().timeIntervalSince1970 - processStart()) * 1000)
+        // A sleeping or locked display presents no frames: then the start time can't be rated.
+        if firstFrameRenderer() != nil {
+            report("startup_ms", (Date().timeIntervalSince1970 - processStart()) * 1000)
+        } else {
+            print("BUDGET note no frame on screen (display asleep?) – start time not rated")
+        }
         report("memory_empty_mb", footprintMB())
 
         // Toolbars: width needed by the model and the sketch toolbar (must fit a 13" MacBook window).

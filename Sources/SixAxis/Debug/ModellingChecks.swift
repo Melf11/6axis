@@ -1,0 +1,158 @@
+import AppKit
+import Foundation
+import simd
+import SixAxisCore
+
+/// Scripted use of the 1.2 commands through the real pick pipeline: SIXAXIS_MODEL_TEST=1.
+/// Prints "CHECK ok/FAIL" lines like SketchChecks; snapshots of the dialogs go to SIXAXIS_SNAPSHOTS.
+@MainActor
+enum ModellingChecks {
+    static func check(_ name: String, _ ok: Bool, _ detail: @autoclosure () -> String = "") { SketchChecks.check(name, ok, detail()) }
+    static func pause(_ s: Double = 0.3) async { try? await Task.sleep(nanoseconds: UInt64(s * 1e9)) }
+
+    static func settle(_ editor: Editor) async {
+        await pause(0.15)
+        while editor.isRebuilding { await pause(0.05) }
+        await pause(0.25)
+    }
+
+    /// Hover and click a point in space (whatever the pick buffer has there).
+    static func click(_ editor: Editor, _ p: Vec3) async {
+        guard let pt = editor.camera.project(p) else { return }
+        editor.updateHover(at: pt)
+        editor.mouseDown(at: pt, modifiers: [], clickCount: 1)
+        editor.mouseUp(at: pt, modifiers: [], clickCount: 1)
+        await settle(editor)
+    }
+
+    static func volume(_ editor: Editor, _ body: UUID) -> Double { editor.state.bodies[body]?.shape.volume ?? 0 }
+
+    static func run(_ editor: Editor, snapshots: URL?) async {
+        func snap(_ name: String) async { if let snapshots { await DemoScript.snap(editor, name, snapshots) } }
+        editor.newDocument()
+        // Plate 100 × 60 × 20 and a bolt Ø8 × 12 beside it.
+        var plate = Sketch(plane: .xy)
+        let c = [plate.addPoint(Vec2(0, 0)), plate.addPoint(Vec2(100, 0)), plate.addPoint(Vec2(100, 60)), plate.addPoint(Vec2(0, 60))]
+        for i in 0..<4 { plate.addLine(c[i], c[(i + 1) % 4]) }
+        var boltSketch = Sketch(plane: .xy)
+        boltSketch.addCircle(center: boltSketch.addPoint(Vec2(150, 30)), radius: 4)
+        let s1 = Feature(name: "Platte", kind: .sketch(plate)), s2 = Feature(name: "Bolzen", kind: .sketch(boltSketch))
+        var e1 = ExtrudeFeature(); e1.profiles = [ProfileRef(sketch: s1.id, sample: Vec2(50, 30))]; e1.distance = "20 mm"
+        var e2 = ExtrudeFeature(); e2.profiles = [ProfileRef(sketch: s2.id, sample: Vec2(150, 30))]; e2.distance = "12 mm"
+        let plateF = Feature(name: "Platte", kind: .extrude(e1)), boltF = Feature(name: "Bolzen", kind: .extrude(e2))
+        editor.commit { $0.features = [s1, plateF, s2, boltF]; $0.hiddenSketches = [s1.id, s2.id] }
+        await settle(editor)
+        editor.cameraAnimation = nil
+        editor.camera.target = SIMD3<Float>(75, 30, 5)
+        editor.camera.distance = 330
+        await settle(editor)
+        let full = 100.0 * 60 * 20
+
+        // Hole: two clicks on the top face, Ø8 through.
+        editor.beginCommand(.hole)
+        await click(editor, Vec3(30, 30, 20))
+        await click(editor, Vec3(70, 30, 20))
+        editor.updateCommandFeature { k in if case var .hole(h) = k { h.diameter = "8 mm"; h.extent = .through; k = .hole(h) } }
+        await settle(editor)
+        if case let .hole(h)? = editor.commandFeature?.kind { check("hole: two positions from clicks", h.points.count == 2, "\(h.points.count)") }
+        await snap("m01-hole")
+        let holeId = editor.command?.featureId
+        editor.commitCommand()
+        await settle(editor)
+        check("hole: material removed", abs(volume(editor, plateF.id) - (full - 2 * .pi * 16 * 20)) < 1, "\(volume(editor, plateF.id))")
+
+        // Pattern of the hole feature: second row 20 mm further in Y.
+        editor.timelineSelection = holeId
+        editor.beginCommand(.rectPattern)
+        editor.updateCommandFeature { k in if case var .pattern(p) = k { p.direction = .y; p.count = "2"; p.spacing = "20 mm"; k = .pattern(p) } }
+        await settle(editor)
+        await snap("m02-pattern")
+        editor.commitCommand()
+        await settle(editor)
+        editor.timelineSelection = nil
+        check("pattern: holes repeated", abs(volume(editor, plateF.id) - (full - 4 * .pi * 16 * 20)) < 1, "\(volume(editor, plateF.id))")
+
+        // Offset plane from the top face, then a sketch on it by clicking the plane.
+        editor.beginPlane(.offset)
+        await click(editor, Vec3(95, 5, 20))
+        editor.updateCommandFeature { k in if case var .plane(p) = k { p.distance = "30 mm"; k = .plane(p) } }
+        await settle(editor)
+        await snap("m03-plane")
+        let planeId = editor.command?.featureId
+        editor.commitCommand()
+        await settle(editor)
+        let plane = planeId.flatMap { editor.state.planes[$0] }
+        check("plane: 30 mm above the top face", plane.map { abs($0.origin.z - 50) < 1e-6 } ?? false, "\(String(describing: plane))")
+        editor.selection = []
+        await click(editor, Vec3(75, 30, 50))
+        check("plane: selectable in the viewport", editor.selection.first.map { if case .originPlane(.construction) = $0 { return true }; return false } ?? false,
+              "\(editor.selection)")
+        editor.beginCommand(.sketchPlane)
+        await settle(editor)
+        check("plane: sketch on it", editor.sketchId != nil && abs((editor.activePlane?.origin.z ?? 0) - 50) < 1e-6)
+        editor.finishSketch()
+        await settle(editor)
+
+        // Thread on the bolt: back to the 3D view, click its side facing the camera.
+        editor.cameraAnimation = nil
+        editor.camera.orientation = Camera.homeOrientation
+        editor.camera.target = SIMD3<Float>(75, 30, 5)
+        editor.camera.distance = 330
+        await settle(editor)
+        let eye = editor.camera.eye
+        var toEye = Vec3(Double(eye.x) - 150, Double(eye.y) - 30, 0)
+        toEye = simd_normalize(toEye)
+        editor.beginCommand(.thread)
+        await click(editor, Vec3(150, 30, 6) + toEye * 4)
+        if case let .thread(t)? = editor.commandFeature?.kind { check("thread: cylinder picked", t.faces.count == 1, "\(t.faces.count)") }
+        await snap("m04-thread")
+        editor.commitCommand()
+        await settle(editor)
+        let bolt = volume(editor, boltF.id)
+        check("thread: modeled M8", bolt < .pi * 16 * 12 - 40 && bolt > .pi * 16 * 12 - 100, "\(bolt)")
+
+        // Copy the bolt 30 mm to the right.
+        editor.selection = [.body(boltF.id)]
+        editor.beginCommand(.move)
+        editor.updateCommandFeature { k in if case var .move(m) = k { m.dx = "30 mm"; m.copy = true; k = .move(m) } }
+        await settle(editor)
+        await snap("m05-move")
+        editor.commitCommand()
+        await settle(editor)
+        check("move: copy added", editor.state.bodyOrder.count == 3, "\(editor.state.bodyOrder.count)")
+
+        // Combine: join the copy into the bolt (target clicked, tool set).
+        let copy = editor.state.bodyOrder.last!
+        editor.selection = []
+        editor.beginCommand(.combine)
+        await click(editor, Vec3(150, 30, 12))
+        editor.updateCommandFeature { k in if case var .combine(c) = k { c.tools = [copy]; c.keepTools = false; k = .combine(c) } }
+        await settle(editor)
+        await snap("m06-combine")
+        editor.commitCommand()
+        await settle(editor)
+        check("combine: two bodies left", editor.state.bodyOrder.count == 2, "\(editor.state.bodyOrder.count)")
+
+        // Mirror the bolt across the YZ plane.
+        editor.selection = [.body(boltF.id)]
+        editor.beginCommand(.mirror)
+        editor.updateCommandFeature { k in if case var .pattern(p) = k { p.plane = .yz; k = .pattern(p) } }
+        await settle(editor)
+        editor.commitCommand()
+        await settle(editor)
+        check("mirror: bolt mirrored", editor.state.bodyOrder.count == 3, "\(editor.state.bodyOrder.count)")
+        check("no feature errors", editor.state.errors.isEmpty, "\(editor.state.errors.values)")
+        editor.undo()
+        await settle(editor)
+        check("undo removes the mirror", editor.state.bodyOrder.count == 2)
+
+        // Editing a hole from the timeline reopens its dialog with the values.
+        if let holeId {
+            editor.editFeature(holeId)
+            await settle(editor)
+            if case let .hole(h)? = editor.commandFeature?.kind { check("edit: hole dialog reopens", h.diameter == "8 mm" && editor.command?.kind == .hole) }
+            editor.cancelCommand()
+        }
+        await snap("m07-result")
+    }
+}
