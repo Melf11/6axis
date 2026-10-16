@@ -213,6 +213,12 @@ final class Editor {
     private(set) var isOrthographic = false
     @ObservationIgnored var cameraAnimation: CameraAnimation?
     var showOriginPlanes = false
+    /// Measuring (Prüfen → Messen): up to two picked faces/edges and the result.
+    var measuring = false
+    var measurePicks: [Pick] = []
+    var measureResult: Measure.Result?
+    /// Section view (nil = off).
+    var section: SectionView? { didSet { requestRedraw() } }
     var darkMode = false
     /// Increments whenever GPU scene data must be rebuilt.
     var sceneVersion = 0

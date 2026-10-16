@@ -154,5 +154,37 @@ enum ModellingChecks {
             editor.cancelCommand()
         }
         await snap("m07-result")
+
+        // Measure: the two Ø8 holes 40 mm apart (centres at x = 30 and 70).
+        editor.cameraAnimation = nil
+        editor.camera.orientation = Camera.lookOrientation(direction: SIMD3(0, 0, -1), up: SIMD3(0, 1, 0))
+        editor.camera.target = SIMD3<Float>(50, 30, 20)
+        editor.camera.distance = 200
+        await settle(editor)
+        editor.toggleMeasure()
+        await click(editor, Vec3(30 + 4, 30, 20))
+        await click(editor, Vec3(70 + 4, 30, 20))
+        let rows = editor.measureResult?.rows ?? []
+        check("measure: two hole rims picked", editor.measurePicks.count == 2, "\(editor.measurePicks)")
+        check("measure: hole spacing 40 mm", rows.contains { $0.label == String(localized: "Achsabstand") && abs($0.value - 40) < 1e-3 }, "\(rows)")
+        await snap("m08-measure")
+        editor.escape()
+        check("measure: Esc ends", !editor.measuring)
+
+        // Section through the hole row: cut faces are drawn, picking ignores the removed half.
+        editor.camera.orientation = Camera.homeOrientation
+        editor.camera.target = SIMD3<Float>(50, 30, 10)
+        editor.camera.distance = 260
+        editor.toggleSection()
+        editor.section?.offset = 30
+        await settle(editor)
+        check("section: on through the holes", editor.section?.axis == 1 && editor.section?.offset == 30)
+        editor.updateHover(at: editor.camera.project(Vec3(50, 5, 20)) ?? .zero)
+        check("section: removed half is not pickable", editor.hover == nil || {
+            if case let .face(b, i)? = editor.hover, let c = editor.state.bodies[b]?.faceInfos[i]?.centroid { return c.y >= 29 }
+            return true
+        }(), "\(String(describing: editor.hover))")
+        await snap("m09-section")
+        editor.toggleSection()
     }
 }

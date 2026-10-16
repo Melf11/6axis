@@ -229,6 +229,9 @@ extension Editor {
             }
         }
         guard let cmd = command else {
+            if measuring {
+                switch p { case .face, .edge: return true; default: return false }
+            }
             switch p {
             case .face, .edge, .profile, .sketchCurve, .originPlane(.construction): return true
             default: return false

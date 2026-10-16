@@ -12,9 +12,22 @@ public struct FeatureTool: @unchecked Sendable {
 public struct ThreadMark: Sendable {
     public var body: UUID
     public var axis: Axis3
+    /// Nominal (major) radius.
     public var radius: Double
+    /// Range along the axis (from `axis.origin`).
     public var range: ClosedRange<Double>
     public var name: String
+    /// Hole thread: the drilled (visible) radius is the tap drill, the thin line sits at the nominal size.
+    public var isInternal: Bool = false
+    /// Minor radius (external) or tap-drill radius (internal).
+    public var innerRadius: Double = 0
+    /// Feature that made the thread (patterns repeat its marks).
+    public var feature: UUID? = nil
+
+    /// The circle you see looking along the axis (bolt: nominal Ø; hole: tap drill).
+    public var visibleRadius: Double { isInternal ? innerRadius : radius }
+    /// The thin line of the ISO 6410 representation (bolt: minor Ø; hole: nominal Ø).
+    public var thinRadius: Double { isInternal ? radius : innerRadius }
 }
 
 /// A rigid motion or mirror applied by patterns.
@@ -26,6 +39,20 @@ enum Placement {
         switch self {
         case let .rigid(r, t): return try s.transformed(rotation: r, translation: t)
         case let .mirror(o, n): return try s.mirrored(origin: o, normal: n)
+        }
+    }
+
+    func point(_ p: Vec3) -> Vec3 {
+        switch self {
+        case let .rigid(r, t): return r * p + t
+        case let .mirror(o, n): return p - 2 * simd_dot(p - o, n) * simd_normalize(n)
+        }
+    }
+
+    func direction(_ d: Vec3) -> Vec3 {
+        switch self {
+        case let .rigid(r, _): return r * d
+        case let .mirror(_, n): return d - 2 * simd_dot(d, simd_normalize(n)) * simd_normalize(n)
         }
     }
 }
@@ -145,15 +172,16 @@ extension ModelBuilder {
         try combine(tools, op: .cut, targets: [], feature: f.id, &state)
 
         guard let thread else { return }
-        let threadDepth = through ? depth : depth
+        let threadDepth = depth
         for (o, d) in positions {
             let axis = Axis3(origin: o, direction: d)
-            if h.threadModeled {
+            if h.threadModeled && !markThreads {
                 let groove = try threadGroove(thread, axis: axis, radius: r, range: 0...threadDepth, isInternal: true)
                 state.tools[f.id]?.shapes.append(groove)
                 try combine([groove], op: .cut, targets: [], feature: f.id, &state)
             } else if let body = state.bodyOrder.first(where: { touches(state.bodies[$0]!, o) }) {
-                state.threadMarks.append(ThreadMark(body: body, axis: axis, radius: thread.major / 2, range: 0...threadDepth, name: thread.name))
+                state.threadMarks.append(ThreadMark(body: body, axis: axis, radius: thread.major / 2, range: 0...threadDepth, name: thread.name,
+                                                    isInternal: true, innerRadius: r, feature: f.id))
             }
         }
     }
@@ -206,13 +234,15 @@ extension ModelBuilder {
             guard let size = t.size.flatMap(MetricThread.named) ?? MetricThread.matching(diameter: 2 * info.radius, isInternal: isInternal) else {
                 throw KernelError("Keine passende Gewindegröße")
             }
-            if t.modeled {
+            if t.modeled && !markThreads {
                 let groove = try threadGroove(size, axis: axis, radius: info.radius, range: info.axisRange, isInternal: isInternal)
                 tools.append(groove)
                 let cut = try body.shape.boolean(.cut, groove)
                 state.setBody(BuiltBody(id: bf.body, shape: cut, sourceFeature: f.id))
             } else {
-                state.threadMarks.append(ThreadMark(body: bf.body, axis: axis, radius: size.major / 2, range: info.axisRange, name: size.name))
+                state.threadMarks.append(ThreadMark(body: bf.body, axis: axis, radius: isInternal ? size.major / 2 : info.radius,
+                                                    range: info.axisRange, name: size.name, isInternal: isInternal,
+                                                    innerRadius: isInternal ? info.radius : info.radius - 0.6134 * size.pitch, feature: f.id))
             }
         }
         state.tools[f.id] = FeatureTool(shapes: tools, operation: .cut, targets: t.faces.map(\.body))
@@ -272,7 +302,19 @@ extension ModelBuilder {
         }
         var all: [Shape] = []
         for fid in p.features {
-            guard let tool = state.tools[fid] else { throw KernelError("Element kann nicht wiederholt werden") }
+            let marks = state.threadMarks.filter { $0.feature == fid }
+            for place in places {
+                for var m in marks {
+                    m.axis = Axis3(origin: place.point(m.axis.origin), direction: place.direction(m.axis.direction))
+                    m.feature = f.id
+                    state.threadMarks.append(m)
+                }
+            }
+            // Threads only marked (drawings) leave no tool; their marks were repeated above.
+            guard let tool = state.tools[fid], !tool.shapes.isEmpty else {
+                if !marks.isEmpty { continue }
+                throw KernelError("Element kann nicht wiederholt werden")
+            }
             for place in places {
                 n += 1
                 let shapes = try tool.shapes.map { try place.apply($0) }

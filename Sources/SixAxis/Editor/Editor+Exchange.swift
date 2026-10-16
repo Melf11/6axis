@@ -5,14 +5,40 @@ import SixAxisCore
 
 extension Editor {
     /// Bodies to export: the selection if it contains bodies, otherwise all visible bodies.
-    private func exportShape() -> Shape? {
+    private func exportBodies() -> [BuiltBody]? {
         let selected = Set(selection.compactMap(\.bodyId))
         let bodies = state.orderedBodies.filter { selected.isEmpty ? doc.isBodyVisible($0.id) : selected.contains($0.id) }
         guard !bodies.isEmpty else {
             showToast(String(localized: "Es gibt keinen sichtbaren Körper zum Exportieren"))
             return nil
         }
+        return bodies
+    }
+
+    private func exportShape() -> Shape? {
+        guard let bodies = exportBodies() else { return nil }
         return bodies.count == 1 ? bodies[0].shape : Shape.compound(bodies.map { $0.shape })
+    }
+
+    /// 3MF: one named object per body, in millimetres – the better format for slicers.
+    func export3MF() {
+        guard let bodies = exportBodies() else { return }
+        let panel = NSSavePanel()
+        panel.allowedContentTypes = [UTType(filenameExtension: "3mf") ?? .data]
+        panel.nameFieldStringValue = exportBaseName + ".3mf"
+        guard panel.runModal() == .OK, let url = panel.url else { return }
+        do {
+            try write3MF(bodies, to: url)
+            showToast(String(localized: "3MF exportiert: \(url.lastPathComponent)"))
+        } catch {
+            showToast(error.localizedDescription)
+        }
+    }
+
+    private func write3MF(_ bodies: [BuiltBody], to url: URL) throws {
+        let parts = bodies.map { ThreeMF.Part(name: doc.bodyName($0.id), shape: $0.shape) }
+        let compound = bodies.count == 1 ? bodies[0].shape : Shape.compound(bodies.map(\.shape))
+        try ThreeMF.write(parts, to: url, linearDeflection: stlDeflection(compound))
     }
 
     private var exportBaseName: String {
@@ -54,14 +80,15 @@ extension Editor {
         return base * AppSettings.shared.stlQuality.factor
     }
 
-    /// Exports a temporary STL and opens it with the user's slicer (PrusaSlicer, Bambu Studio, OrcaSlicer, Cura …).
+    /// Exports a temporary 3MF (units and part names included) and opens it with the user's slicer
+    /// (PrusaSlicer, Bambu Studio, OrcaSlicer, Cura …).
     func openInSlicer() {
-        guard let shape = exportShape() else { return }
+        guard let bodies = exportBodies() else { return }
         let dir = FileManager.default.temporaryDirectory.appendingPathComponent("6axis", isDirectory: true)
         try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
-        let url = dir.appendingPathComponent(exportBaseName + ".stl")
+        let url = dir.appendingPathComponent(exportBaseName + ".3mf")
         do {
-            try shape.writeSTL(to: url, linearDeflection: stlDeflection(shape))
+            try write3MF(bodies, to: url)
         } catch {
             showToast(error.localizedDescription)
             return
@@ -78,7 +105,7 @@ extension Editor {
         } else if ws.urlForApplication(toOpen: url) != nil {
             ws.open(url)
         } else {
-            showToast(String(localized: "Kein Slicer gefunden – exportiere stattdessen eine STL-Datei"))
+            showToast(String(localized: "Kein Slicer gefunden – die 3MF-Datei liegt im Finder bereit"))
             ws.activateFileViewerSelecting([url])
         }
     }

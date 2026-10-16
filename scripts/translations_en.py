@@ -68,7 +68,7 @@ EN = {
 "Gegenüberliegende Ecke klicken oder Maße eintippen": "Click the opposite corner or type the sizes", "Gesamtansicht": "Assembly",
 "Gesamtansicht als DXF exportieren …": "Export assembly as DXF …", "Geschwindigkeit": "Speed", "Gewichtsschätzung": "Weight estimate",
 "Gleich": "Equal", "Grob (kleine Dateien)": "Coarse (small files)", "HINTEN": "BACK", "HPL": "HPL", "Hell": "Light",
-"Hilfslinie": "Construction line", "Horizontal": "Horizontal", "Höhe": "Height", "Idee vorschlagen …": "Suggest an idea …",
+"Hilfslinie": "Construction", "Horizontal": "Horizontal", "Höhe": "Height", "Idee vorschlagen …": "Suggest an idea …",
 "Im Slicer öffnen": "Open in slicer", "Import": "Import", "Import fehlgeschlagen: %@": "Import failed: %@",
 "Importierte Körper haben keine Parameter": "Imported bodies have no parameters", "Isometrie": "Isometric",
 "Isometrische Ansicht anzeigen": "Show isometric view", "KONSTRUKTION": "DESIGN", "Kante": "Edge", "Kanten": "Edges",
@@ -359,3 +359,26 @@ EN.update({
 "Zylinderfläche nicht mehr gefunden": "Cylindrical face no longer found",
 })
 EN.update({"Ecke": "Corner"})
+EN.update({
+"3MF (3D-Druck, mit Einheiten) …": "3MF (3D Printing, with Units) …",
+"3MF (empfohlen)": "3MF (recommended)",
+"3MF exportiert: %@": "3MF exported: %@",
+"Achsabstand": "Axis distance",
+"Als 3MF exportieren": "Export as 3MF",
+"Andere Seite zeigen": "Show the other side",
+"Fläche oder Kante anklicken – eine zweite für Abstand und Winkel.": "Click a face or edge – a second one for distance and angle.",
+"Kante nicht gefunden": "Edge not found",
+"Kein Slicer gefunden – die 3MF-Datei liegt im Finder bereit": "No slicer found – the 3MF file is shown in the Finder",
+"Keine Geometrie zum Exportieren": "No geometry to export",
+"Klick auf ein drittes Element beginnt neu · Esc beendet": "Clicking a third element starts over · Esc ends",
+"Messen": "Measure",
+"Messen (M)": "Measure (M)",
+"Nur Ansicht – das Modell bleibt unverändert.": "View only – the model stays unchanged.",
+"Position": "Position",
+"STEP (CAD) …": "STEP (CAD) …",
+"STL …": "STL …",
+"Schließen (Esc)": "Close (Esc)",
+"Schnittansicht": "Section View",
+"X": "X", "Y": "Y", "Z": "Z", "mm": "mm",
+})
+EN.update({"Ausgabe": "Output"})

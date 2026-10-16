@@ -14,11 +14,17 @@ struct Globals {
     uint pickMode;
     uint orthographic;
     uint shading;     // 0 = studio, 1 = simple
-    uint pad2;
+    uint clip;        // section view on
     float4 hoverColor;
     float4 selectColor;
     float4 forward;
+    float4 clipPlane; // normal.xyz, offset: points with dot(p, n) > offset are cut away
+    float4 sectionColor;
 };
+
+static bool clipped(float3 p, constant Globals &g) {
+    return g.clip != 0 && dot(p, g.clipPlane.xyz) > g.clipPlane.w;
+}
 
 struct DrawU {
     float4 color;
@@ -75,12 +81,25 @@ static float3 studioEnv(float3 R) {
     return c + box1 * 0.9 + box2 * 0.55;
 }
 
+static float4 shadeMesh(MeshOut in, constant Globals &g, constant DrawU &d, constant uint *sel);
+
 fragment float4 mesh_fs(MeshOut in [[stage_in]],
                         constant Globals &g [[buffer(1)]],
                         constant DrawU &d [[buffer(2)]],
                         constant uint *sel [[buffer(3)]]) {
+    if (clipped(in.world, g)) discard_fragment();
+    return shadeMesh(in, g, d, sel);
+}
+
+static float4 shadeMesh(MeshOut in, constant Globals &g, constant DrawU &d, constant uint *sel) {
     float3 n = normalize(in.normal);
     float3 V = g.orthographic != 0 ? -g.forward.xyz : normalize(g.eye.xyz - in.world);
+    if (g.clip != 0 && dot(n, V) < 0) {
+        // Looking into a solid through the cut: show its inside as a flat section face.
+        float3 cn = -normalize(g.clipPlane.xyz);
+        float lit = 0.75 + 0.25 * abs(dot(cn, normalize(g.lightDir.xyz)));
+        return float4(g.sectionColor.rgb * lit, 1);
+    }
     if (dot(n, V) < 0) n = -n;
     float3 base = d.color.rgb;
     if (isSelected(in.id, sel, g.selCount)) base = mix(base, g.selectColor.rgb, 0.6);
@@ -119,7 +138,23 @@ fragment float4 mesh_fs(MeshOut in [[stage_in]],
     return float4(c, d.color.a);
 }
 
-fragment uint mesh_pick_fs(MeshOut in [[stage_in]]) { return in.id; }
+// Section view, step 1: count the cut model's surfaces per pixel in the stencil buffer (no colour).
+fragment float4 mesh_count_fs(MeshOut in [[stage_in]], constant Globals &g [[buffer(1)]]) {
+    if (clipped(in.world, g)) discard_fragment();
+    return float4(0);
+}
+
+// Step 2: the cap – a quad in the cutting plane, drawn only where the count is odd (inside the material).
+fragment float4 section_cap_fs(MeshOut in [[stage_in]], constant Globals &g [[buffer(1)]]) {
+    float3 cn = -normalize(g.clipPlane.xyz);
+    float lit = 0.78 + 0.22 * abs(dot(cn, normalize(g.lightDir.xyz)));
+    return float4(g.sectionColor.rgb * lit, 1);
+}
+
+fragment uint mesh_pick_fs(MeshOut in [[stage_in]], constant Globals &g [[buffer(1)]]) {
+    if (clipped(in.world, g)) discard_fragment();
+    return in.id;
+}
 
 // ---------------------------------------------------------------- Thick lines
 
@@ -130,6 +165,7 @@ struct LineOut {
     float along [[center_no_perspective]];
     uint id [[flat]];
     uint flags [[flat]];
+    float3 world;
 };
 
 vertex LineOut line_vs(uint vid [[vertex_id]], uint iid [[instance_id]],
@@ -147,6 +183,7 @@ vertex LineOut line_vs(uint vid [[vertex_id]], uint iid [[instance_id]],
         o.along = 0;
         o.id = 0;
         o.flags = 0;
+        o.world = float3(0);
         return o;
     }
     if (c0.z < 0) c0 = mix(c0, c1, c0.z / (c0.z - c1.z));
@@ -171,7 +208,9 @@ vertex LineOut line_vs(uint vid [[vertex_id]], uint iid [[instance_id]],
     o.color = l.color == 0 ? d.color : unpack_unorm4x8_to_float(l.color);
     o.along = t * len;
     o.id = l.id;
-    o.flags = l.flags;
+    // Bit 16: the batch is cut by the section plane (body edges).
+    o.flags = l.flags | ((d.flags & 1u) << 16);
+    o.world = t < 0.5 ? float3(l.p0) : float3(l.p1);
     return o;
 }
 
@@ -179,13 +218,17 @@ fragment float4 line_fs(LineOut in [[stage_in]],
                         constant Globals &g [[buffer(1)]],
                         constant uint *sel [[buffer(3)]]) {
     if ((in.flags & 1u) != 0 && fmod(in.along, 9.0) > 5.0) discard_fragment();
+    if ((in.flags & 65536u) != 0 && clipped(in.world, g)) discard_fragment();
     float4 c = in.color;
     if (isSelected(in.id, sel, g.selCount)) c = float4(g.selectColor.rgb, 1);
     else if (in.id == g.hoverId && in.id != 0) c = float4(g.hoverColor.rgb, 1);
     return c;
 }
 
-fragment uint line_pick_fs(LineOut in [[stage_in]]) { return in.id; }
+fragment uint line_pick_fs(LineOut in [[stage_in]], constant Globals &g [[buffer(1)]]) {
+    if ((in.flags & 65536u) != 0 && clipped(in.world, g)) discard_fragment();
+    return in.id;
+}
 
 // ---------------------------------------------------------------- Points
 

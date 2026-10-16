@@ -83,9 +83,14 @@ int32_t ob_shape_edge_count(const OBShape *s);
 int32_t ob_shape_solid_count(const OBShape *s);
 OBShape *ob_shape_face(const OBShape *s, int32_t index);
 OBShape *ob_shape_solid(const OBShape *s, int32_t index);
+OBShape *ob_shape_edge(const OBShape *s, int32_t index);
+/// Exact minimum distance between two shapes and the closest points; -1 on failure.
+double ob_distance(const OBShape *a, const OBShape *b, double outA[3], double outB[3]);
 double ob_shape_volume(const OBShape *s);
 double ob_shape_area(const OBShape *s);
 int32_t ob_shape_bbox(const OBShape *s, double outMin[3], double outMax[3]);
+/// Smallest oriented bounding box: centre, three unit axes (row by row) and half sizes along them.
+int32_t ob_shape_obb(const OBShape *s, double outCenter[3], double outAxes[9], double outHalf[3]);
 
 /// Splits the plane by all given curves and returns a compound of the enclosed regions (faces).
 OBShape *ob_sketch_regions(const OBPlane *plane, const OBSegment *segs, int32_t count);

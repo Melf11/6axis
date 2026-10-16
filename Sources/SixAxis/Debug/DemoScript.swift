@@ -349,7 +349,7 @@ enum DemoScript {
                 for (i, p) in pages.enumerated() { renderPNG(p, to: dir.appendingPathComponent("sheet-\(i + 1).png"), pixelsPerMM: 5) }
                 try? DrawingRenderer.writePDF(pages, to: dir.appendingPathComponent("drawing.pdf"), title: "Korpus")
                 // Clean sheet for the website hero: only the three views with their dimensions.
-                var heroInput = DrawingController.input(editor)
+                var heroInput = editor.drawing.input(editor)
                 heroInput.settings.showIso = false
                 heroInput.settings.showBalloons = false
                 heroInput.settings.showPartsList = false
