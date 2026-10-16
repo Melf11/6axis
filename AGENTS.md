@@ -34,6 +34,6 @@ scripts/update-test.sh              # Update-Ablauf Ende-zu-Ende (lokaler Feed, 
 ```
 
 - **Texte:** auf Deutsch im Code (`Text("…")`, `String(localized: "…")`, `KernelError("…")`), englische Übersetzung in `scripts/translations_en.py`, dann `python3 scripts/apply-translations.py`. Das CI bricht bei fehlenden Übersetzungen ab.
-- **Oberfläche prüfen:** Das Terminal hat keine Bildschirmaufnahme-Rechte – stattdessen die Demo-Läufe nutzen (`SIXAXIS_DEMO=1 SIXAXIS_SNAPSHOTS=dir`, `SIXAXIS_DRAWING_DEMO=dir`, `SIXAXIS_EXAMPLES_DEMO=dir`, `SIXAXIS_NAV_TEST=dir`). Automatische Läufe nutzen eigene Einstellungen und einen eigenen Autosave-Ordner und verändern nichts beim Nutzer.
+- **Oberfläche prüfen:** Das Terminal hat keine Bildschirmaufnahme-Rechte – stattdessen die Demo-Läufe nutzen (`SIXAXIS_DEMO=1 SIXAXIS_SNAPSHOTS=dir`, `SIXAXIS_DRAWING_DEMO=dir`, `SIXAXIS_EXAMPLES_DEMO=dir`, `SIXAXIS_NAV_TEST=dir`). Automatische Läufe nutzen eigene Einstellungen und einen eigenen Autosave-Ordner und verändern nichts beim Nutzer. Sie laufen im Hintergrund (kein Dock-Symbol, kein Fokus, unsichtbare und klickdurchlässige Fenster); zum Zuschauen `SIXAXIS_VISIBLE=1` setzen.
 - **Git:** Arbeit auf einem Branch (`feature/…`, `fix/…`, `docs/…`), committen, pushen; nach `main` mergen erst nach Absprache. Releases entstehen durch ein Tag `vX.Y.Z` (GitHub Actions baut DMG/ZIP, Oberflächenprüfung vorher).
 - **Lizenzen:** eigener Code MIT; OpenCASCADE (LGPL 2.1) bleibt dynamisch gelinkt und austauschbar, Lizenztexte liegen in der App.

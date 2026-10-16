@@ -6,9 +6,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     var editor: Editor?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
-        // Needed when launched as a bare executable (swift run) rather than an .app bundle.
-        NSApp.setActivationPolicy(.regular)
-        NSApp.activate(ignoringOtherApps: true)
+        if Editor.runsInBackground {
+            BackgroundRun.start()
+        } else {
+            // Needed when launched as a bare executable (swift run) rather than an .app bundle.
+            NSApp.setActivationPolicy(.regular)
+            NSApp.activate(ignoringOtherApps: true)
+        }
         AppSettings.shared.applyAppearance()
         Branding.installAppIconIfNeeded()
     }
