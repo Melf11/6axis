@@ -29,6 +29,7 @@ struct MainView: View {
                         CommandPanel(editor: editor)
                         PatternPanel(editor: editor)
                         TextPanel(editor: editor)
+                        InspectPanel(editor: editor)
                     }
                 }
                 .padding(.horizontal, 12)

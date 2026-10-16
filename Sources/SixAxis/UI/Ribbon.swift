@@ -80,12 +80,13 @@ struct Ribbon: View {
                 ToolButton(title: String(localized: "Parameter"), symbol: "function", shortcut: "⌥⌘P") { editor.showParameters = true }
             }
             RibbonDivider()
-            group(String(localized: "Dokumentation")) {
+            group(String(localized: "Ausgabe")) {
                 ToolButton(title: String(localized: "Zeichnung"), symbol: "doc.richtext", shortcut: "⇧⌘D", enabled: hasBodies) { editor.openDrawingWindow() }
-            }
-            RibbonDivider()
-            group(String(localized: "3D-Druck")) {
-                ToolButton(title: "STL", symbol: "square.and.arrow.up", shortcut: "⌘E", enabled: hasBodies) { editor.exportSTL() }
+                ToolMenuButton(title: String(localized: "Export"), symbol: "square.and.arrow.up", enabled: hasBodies) {
+                    Button { editor.export3MF() } label: { Label("3MF (empfohlen)", systemImage: "cube") }
+                    Button { editor.exportSTL() } label: { Label("STL …", systemImage: "triangle") }
+                    Button { editor.exportSTEP() } label: { Label("STEP (CAD) …", systemImage: "doc") }
+                }
                 ToolButton(title: String(localized: "Slicer"), symbol: "printer.fill", shortcut: "⇧⌘P", enabled: hasBodies) { editor.openInSlicer() }
             }
         }

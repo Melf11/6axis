@@ -71,6 +71,14 @@ struct SceneBuilder {
         if axesPickable { addAxes() }
         if editor.wantsPlanePick || editor.showOriginPlanes { addOriginPlanes() }
         addConstruction()
+        if let (a, b) = editor.measureResult?.line {
+            let c = packColor(SIMD4<Float>(0.95, 0.45, 0.10, 1))
+            scene.lines.append(LineBatch(instances: [LineInstance(a.float, b.float, id: 0, color: c, flags: LineInstance.emphasized)],
+                                         width: 2 * scale, depthBias: 0, depth: .always, pickable: false))
+            scene.points.append(PointBatch(instances: [a, b].map { p in
+                PointInstance(x: Float(p.x), y: Float(p.y), z: Float(p.z), id: 0, color: c, size: 7 * scale)
+            }, depthBias: 0, depth: .always))
+        }
 
         // Bodies
         var translucent: [MeshBatch] = []
@@ -104,7 +112,7 @@ struct SceneBuilder {
         let showEdges = AppSettings.shared.showEdges
         let edgeColor = showEdges ? style.edge : SIMD4<Float>(0, 0, 0, 0)
         let edgeWidth = Float(showEdges ? AppSettings.shared.edgeWidth : 2) * scale
-        scene.lines.append(LineBatch(instances: edgeLines, width: edgeWidth, color: edgeColor, depthBias: 0.0015))
+        scene.lines.append(LineBatch(instances: edgeLines, width: edgeWidth, color: edgeColor, depthBias: 0.0015, clipped: true))
         scene.meshes.append(contentsOf: translucent)
         if AppSettings.shared.groundShadow {
             var lo = SIMD3<Float>(repeating: .greatestFiniteMagnitude), hi = -lo
@@ -369,7 +377,7 @@ struct SceneBuilder {
 
     func highlightIds(selection: [Pick], hover: Pick?) -> (UInt32, [UInt32]) {
         var sel: [UInt32] = []
-        for p in selection {
+        for p in selection + editor.measurePicks {
             if case let .body(b) = p { sel += bodyFaceIds[b] ?? [] }
             if let i = ids[p] { sel.append(i) }
         }

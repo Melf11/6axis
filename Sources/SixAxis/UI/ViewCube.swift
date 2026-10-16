@@ -65,6 +65,10 @@ struct ViewCube: View {
             HStack(spacing: 2) {
                 IconButton(symbol: "house", help: String(localized: "Ausgangsansicht"), size: 24) { editor.homeView() }
                 IconButton(symbol: "arrow.up.left.and.arrow.down.right", help: String(localized: "Alles einpassen (⌘0)"), size: 24) { editor.fitAll() }
+                IconButton(symbol: "ruler", help: String(localized: "Messen (M)"), active: editor.measuring, size: 24) { editor.toggleMeasure() }
+                IconButton(symbol: "square.split.diagonal.2x2", help: String(localized: "Schnittansicht"), active: editor.section != nil, size: 24) {
+                    editor.toggleSection()
+                }
                 IconButton(symbol: editor.isOrthographic ? "cube" : "perspective", help: editor.isOrthographic ? String(localized: "Orthografisch (O)") : String(localized: "Perspektive (O)"),
                            active: editor.isOrthographic, size: 24) { editor.toggleProjection() }
             }

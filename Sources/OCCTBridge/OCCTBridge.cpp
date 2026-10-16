@@ -25,6 +25,7 @@
 #include <BRepAlgoAPI_Fuse.hxx>
 #include <BRepAlgoAPI_Splitter.hxx>
 #include <BRepBndLib.hxx>
+#include <BRepExtrema_DistShapeShape.hxx>
 #include <BRepBuilderAPI_MakeEdge.hxx>
 #include <BRepBuilderAPI_MakeFace.hxx>
 #include <BRepBuilderAPI_Transform.hxx>
@@ -41,6 +42,7 @@
 #include <BRep_Builder.hxx>
 #include <BRep_Tool.hxx>
 #include <Bnd_Box.hxx>
+#include <Bnd_OBB.hxx>
 #include <GCPnts_AbscissaPoint.hxx>
 #include <GCPnts_TangentialDeflection.hxx>
 #include <GProp_GProps.hxx>
@@ -163,6 +165,28 @@ OBShape *ob_shape_solid(const OBShape *s, int32_t index) {
     return new OBShape(s->solids(index + 1));
 }
 
+OBShape *ob_shape_edge(const OBShape *s, int32_t index) {
+    if (!s || index < 0 || index >= s->edges.Extent()) {
+        setError("Kante nicht gefunden");
+        return nullptr;
+    }
+    return new OBShape(s->edges(index + 1));
+}
+
+double ob_distance(const OBShape *a, const OBShape *b, double outA[3], double outB[3]) {
+    if (!a || !b) return -1;
+    try {
+        BRepExtrema_DistShapeShape d(a->shape, b->shape);
+        if (!d.IsDone() || d.NbSolution() < 1) return -1;
+        gp_Pnt p = d.PointOnShape1(1), q = d.PointOnShape2(1);
+        outA[0] = p.X(); outA[1] = p.Y(); outA[2] = p.Z();
+        outB[0] = q.X(); outB[1] = q.Y(); outB[2] = q.Z();
+        return d.Value();
+    } catch (...) {
+        return -1;
+    }
+}
+
 double ob_shape_volume(const OBShape *s) {
     if (!s || s->shape.IsNull()) return 0;
     GProp_GProps p;
@@ -184,6 +208,25 @@ int32_t ob_shape_bbox(const OBShape *s, double outMin[3], double outMax[3]) {
     if (box.IsVoid()) return 0;
     box.Get(outMin[0], outMin[1], outMin[2], outMax[0], outMax[1], outMax[2]);
     return 1;
+}
+
+int32_t ob_shape_obb(const OBShape *s, double outCenter[3], double outAxes[9], double outHalf[3]) {
+    if (!s || s->shape.IsNull()) return 0;
+    try {
+        Bnd_OBB obb;
+        BRepBndLib::AddOBB(s->shape, obb, Standard_False, Standard_True, Standard_False);
+        if (obb.IsVoid()) return 0;
+        gp_XYZ c = obb.Center();
+        outCenter[0] = c.X(); outCenter[1] = c.Y(); outCenter[2] = c.Z();
+        const gp_XYZ axes[3] = {obb.XDirection(), obb.YDirection(), obb.ZDirection()};
+        for (int i = 0; i < 3; i++) {
+            outAxes[3 * i] = axes[i].X(); outAxes[3 * i + 1] = axes[i].Y(); outAxes[3 * i + 2] = axes[i].Z();
+        }
+        outHalf[0] = obb.XHSize(); outHalf[1] = obb.YHSize(); outHalf[2] = obb.ZHSize();
+        return 1;
+    } catch (...) {
+        return 0;
+    }
 }
 
 OBShape *ob_sketch_regions(const OBPlane *plane, const OBSegment *segs, int32_t count) {

@@ -54,10 +54,12 @@ struct Globals {
     var pickMode: UInt32 = 0
     var orthographic: UInt32 = 0
     var shading: UInt32 = 0
-    var pad2: UInt32 = 0
+    var clip: UInt32 = 0
     var hoverColor = SIMD4<Float>.zero
     var selectColor = SIMD4<Float>.zero
     var forward = SIMD4<Float>.zero
+    var clipPlane = SIMD4<Float>.zero
+    var sectionColor = SIMD4<Float>.zero
 }
 
 struct DrawUniforms {
@@ -94,6 +96,8 @@ struct LineBatch {
     var depthBias: Float = 0.0015
     var depth: DepthMode = .readOnly
     var pickable = true
+    /// Cut by the section plane (body edges; not grid, axes or sketches).
+    var clipped = false
 }
 
 struct PointBatch {
@@ -149,6 +153,12 @@ final class Renderer: NSObject, MTKViewDelegate {
 
     private var meshPipeline: MTLRenderPipelineState!
     private var meshPickPipeline: MTLRenderPipelineState!
+    private var meshCountPipeline: MTLRenderPipelineState!
+    private var sectionCapPipeline: MTLRenderPipelineState!
+    private var countState: MTLDepthStencilState!
+    private var capState: MTLDepthStencilState!
+    /// Depth and stencil share one attachment in the main pass (stencil = section capping).
+    static let depthFormat = MTLPixelFormat.depth32Float_stencil8
     private var linePipeline: MTLRenderPipelineState!
     private var linePickPipeline: MTLRenderPipelineState!
     private var pointPipeline: MTLRenderPipelineState!
@@ -202,7 +212,42 @@ final class Renderer: NSObject, MTKViewDelegate {
         rpd.depthAttachment.clearDepth = 1
         rpd.depthAttachment.loadAction = .clear
         rpd.depthAttachment.storeAction = .dontCare
+        rpd.stencilAttachment.texture = depth
+        rpd.stencilAttachment.clearStencil = 0
+        rpd.stencilAttachment.loadAction = .clear
+        rpd.stencilAttachment.storeAction = .dontCare
         return rpd
+    }
+
+    /// Section caps (stencil method): count the cut model's surfaces behind each pixel, then fill the cutting
+    /// plane where the count is odd. The cap has real depth, so edges inside the material stay hidden.
+    private func drawSectionCap(_ enc: MTLRenderCommandEncoder, _ g: inout Globals) {
+        var u = DrawUniforms()
+        enc.setVertexBytes(&u, length: MemoryLayout<DrawUniforms>.stride, index: 2)
+        enc.setRenderPipelineState(meshCountPipeline)
+        enc.setDepthStencilState(countState)
+        enc.setStencilReferenceValue(0)
+        for m in gpuMeshes where !m.translucent {
+            enc.setVertexBuffer(m.vb, offset: 0, index: 0)
+            enc.drawIndexedPrimitives(type: .triangle, indexCount: m.count, indexType: .uint32, indexBuffer: m.ib, indexBufferOffset: 0)
+        }
+        // A large square in the cutting plane around the point the camera looks at.
+        let n: SIMD3<Float> = simd_normalize(SIMD3<Float>(g.clipPlane.x, g.clipPlane.y, g.clipPlane.z))
+        let eye = SIMD3<Float>(g.eye.x, g.eye.y, g.eye.z), fwd = SIMD3<Float>(g.forward.x, g.forward.y, g.forward.z)
+        let t: SIMD3<Float> = eye + fwd * 100
+        let c: SIMD3<Float> = t - n * (simd_dot(t, n) - g.clipPlane.w)
+        let helper = abs(n.x) < 0.9 ? SIMD3<Float>(1, 0, 0) : SIMD3<Float>(0, 1, 0)
+        let a: SIMD3<Float> = simd_normalize(simd_cross(n, helper)) * 100_000
+        let b: SIMD3<Float> = simd_cross(n, a)
+        let corners: [SIMD3<Float>] = [c - a - b, c + a - b, c + a + b, c - a + b]
+        var verts = [0, 1, 2, 0, 2, 3].map { i in
+            MeshVertex(px: corners[i].x, py: corners[i].y, pz: corners[i].z, nx: -n.x, ny: -n.y, nz: -n.z, id: 0)
+        }
+        enc.setRenderPipelineState(sectionCapPipeline)
+        enc.setDepthStencilState(capState)
+        enc.setStencilReferenceValue(1)
+        enc.setVertexBytes(&verts, length: MemoryLayout<MeshVertex>.stride * verts.count, index: 0)
+        enc.drawPrimitives(type: .triangle, vertexStart: 0, vertexCount: 6)
     }
 
     /// Called each frame before drawing to fetch camera/highlight state and advance animations.
@@ -223,6 +268,8 @@ final class Renderer: NSObject, MTKViewDelegate {
         var selection: [UInt32]
         var dark: Bool
         var animating: Bool
+        /// Section view: plane normal and offset (points beyond are cut away).
+        var clip: SIMD4<Float>? = nil
     }
 
     init?(device: MTLDevice) {
@@ -238,11 +285,13 @@ final class Renderer: NSObject, MTKViewDelegate {
 
     private func buildPipelines() throws {
         let lib = try device.makeLibrary(source: shaderSource, options: nil)
-        func make(_ vs: String, _ fs: String, pick: Bool, blend: Bool = true) throws -> MTLRenderPipelineState {
+        func make(_ vs: String, _ fs: String, pick: Bool, blend: Bool = true, writeColor: Bool = true) throws -> MTLRenderPipelineState {
             let d = MTLRenderPipelineDescriptor()
             d.vertexFunction = lib.makeFunction(name: vs)
             d.fragmentFunction = lib.makeFunction(name: fs)
-            d.depthAttachmentPixelFormat = .depth32Float
+            d.depthAttachmentPixelFormat = pick ? .depth32Float : Renderer.depthFormat
+            if !pick { d.stencilAttachmentPixelFormat = Renderer.depthFormat }
+            if !writeColor { d.colorAttachments[0].writeMask = [] }
             if pick {
                 d.colorAttachments[0].pixelFormat = .r32Uint
                 d.rasterSampleCount = 1
@@ -262,6 +311,30 @@ final class Renderer: NSObject, MTKViewDelegate {
         }
         meshPipeline = try make("mesh_vs", "mesh_fs", pick: false)
         meshPickPipeline = try make("mesh_vs", "mesh_pick_fs", pick: true)
+        meshCountPipeline = try make("mesh_vs", "mesh_count_fs", pick: false, blend: false, writeColor: false)
+        sectionCapPipeline = try make("mesh_vs", "section_cap_fs", pick: false, blend: false)
+        // Counting: every surface fragment of the cut model flips the stencil bit, regardless of depth.
+        let count = MTLDepthStencilDescriptor()
+        count.depthCompareFunction = .always
+        count.isDepthWriteEnabled = false
+        let flip = MTLStencilDescriptor()
+        flip.stencilCompareFunction = .always
+        flip.depthStencilPassOperation = .invert
+        flip.writeMask = 1
+        count.frontFaceStencil = flip
+        count.backFaceStencil = flip
+        countState = device.makeDepthStencilState(descriptor: count)
+        // Cap: where the bit is set (inside the material) and nothing is in front of the plane.
+        let cap = MTLDepthStencilDescriptor()
+        cap.depthCompareFunction = .less
+        cap.isDepthWriteEnabled = true
+        let odd = MTLStencilDescriptor()
+        odd.stencilCompareFunction = .equal
+        odd.readMask = 1
+        odd.writeMask = 0
+        cap.frontFaceStencil = odd
+        cap.backFaceStencil = odd
+        capState = device.makeDepthStencilState(descriptor: cap)
         linePipeline = try make("line_vs", "line_fs", pick: false)
         linePickPipeline = try make("line_vs", "line_pick_fs", pick: true)
         pointPipeline = try make("point_vs", "point_fs", pick: false)
@@ -314,7 +387,9 @@ final class Renderer: NSObject, MTKViewDelegate {
         }
         gpuLines = scene.lines.compactMap { l in
             guard let b = buffer(l.instances) else { return nil }
-            return GPUInstances(buffer: b, count: l.instances.count, u: DrawUniforms(color: l.color, width: l.width, depthBias: l.depthBias), depth: l.depth, pickable: l.pickable)
+            return GPUInstances(buffer: b, count: l.instances.count,
+                                u: DrawUniforms(color: l.color, width: l.width, depthBias: l.depthBias, flags: l.clipped ? 1 : 0),
+                                depth: l.depth, pickable: l.pickable)
         }
         if let b = scene.shadowBounds { renderShadow(b.min, b.max) } else { shadowQuad = nil }
         gpuPoints = scene.points.compactMap { p in
@@ -402,6 +477,11 @@ final class Renderer: NSObject, MTKViewDelegate {
         g.hoverColor = pal.hover
         g.selectColor = pal.select
         g.forward = SIMD4(cam.forward, 0)
+        if let c = f.clip {
+            g.clip = 1
+            g.clipPlane = c
+            g.sectionColor = f.dark ? SIMD4(0.85, 0.42, 0.30, 1) : SIMD4(0.90, 0.48, 0.36, 1)
+        }
         return g
     }
 
@@ -434,7 +514,7 @@ final class Renderer: NSObject, MTKViewDelegate {
         guard w > 0, h > 0 else { return }
         if frameColor?.width != w || frameColor?.height != h {
             frameColor = target(.bgra8Unorm, w, h, samples: Renderer.sampleCount, storage: transientStorage)
-            frameDepth = target(.depth32Float, w, h, samples: Renderer.sampleCount, storage: transientStorage)
+            frameDepth = target(Renderer.depthFormat, w, h, samples: Renderer.sampleCount, storage: transientStorage)
         }
         guard let color = frameColor, let depth = frameDepth, let drawable = view.currentDrawable,
               let cmd = queue.makeCommandBuffer(),
@@ -480,7 +560,7 @@ final class Renderer: NSObject, MTKViewDelegate {
         guard let frame = frameProvider?(), w > 0, h > 0 else { return nil }
         guard let msaa = target(.bgra8Unorm, w, h, samples: Renderer.sampleCount, storage: transientStorage),
               let resolve = target(.bgra8Unorm, w, h, samples: 1, storage: .shared),
-              let depth = target(.depth32Float, w, h, samples: Renderer.sampleCount, storage: transientStorage),
+              let depth = target(Renderer.depthFormat, w, h, samples: Renderer.sampleCount, storage: transientStorage),
               let cmd = queue.makeCommandBuffer() else { return nil }
         let rpd = resolvingPass(into: resolve, color: msaa, depth: depth)
         guard let enc = cmd.makeRenderCommandEncoder(descriptor: rpd) else { return nil }
@@ -523,6 +603,7 @@ final class Renderer: NSObject, MTKViewDelegate {
             }
         }
         meshes(translucent: false)
+        if !pick && g.clip != 0 { drawSectionCap(enc, &g) }
         if !pick, var q = shadowQuad, let tight = shadowTight, let wide = shadowWide {
             q.opacity = 0.62
             enc.setRenderPipelineState(shadowPipeline)

@@ -18,6 +18,8 @@ final class DrawingController {
 
     @ObservationIgnored private let generator = DrawingGenerator()
     @ObservationIgnored private let queue = DispatchQueue(label: "app.6axis.drawing", qos: .userInitiated)
+    /// Builds the model with threads as ISO marks instead of helix geometry (fast, clean drawings).
+    @ObservationIgnored private let markingBuilder = ModelBuilder(markThreads: true)
     @ObservationIgnored private var token = 0
     @ObservationIgnored private var pending: DispatchWorkItem?
 
@@ -36,13 +38,14 @@ final class DrawingController {
     func regenerate(_ editor: Editor) {
         // While a feature dialog shows a preview, keep the drawing of the committed model.
         if editor.command != nil, page != nil { return }
-        let input = Self.input(editor)
+        let request = Self.request(editor)
         token += 1
         let current = token
         isUpdating = true
         let generator = self.generator
+        let builder = markingBuilder
         queue.async { [weak self] in
-            let pages = generator.generatePages(input)
+            let pages = generator.generatePages(request.input(builder))
             DispatchQueue.main.async {
                 guard let self, current == self.token else { return }
                 self.pages = pages
@@ -51,17 +54,43 @@ final class DrawingController {
         }
     }
 
-    /// Visible bodies with their browser names.
-    static func input(_ editor: Editor) -> DrawingGenerator.Input {
-        let parts = editor.state.orderedBodies.filter { editor.doc.isBodyVisible($0.id) }
-            .map { body -> DrawingGenerator.Part in
-                let meta = editor.doc.bodies[body.id]
-                return DrawingGenerator.Part(name: editor.doc.bodyName(body.id), shape: body.shape,
-                                             material: meta?.material ?? "", grain: meta?.grain ?? .none)
+    /// What a drawing needs from the editor (taken on the main thread, built on the drawing queue).
+    struct Request: @unchecked Sendable {
+        var doc: CADDocument
+        var state: ModelState
+        var title: String
+
+        /// Models with modeled threads are rebuilt with threads as marks (the builder caches the prefix).
+        var hasModeledThreads: Bool {
+            doc.features.prefix(doc.activeCount).contains { f in
+                guard !f.suppressed else { return false }
+                switch f.kind {
+                case let .thread(t): return t.modeled
+                case let .hole(h): return h.thread != nil && h.threadModeled
+                default: return false
+                }
             }
-        return DrawingGenerator.Input(parts: parts, settings: editor.doc.drawing ?? DrawingSettings(),
-                                      fallbackTitle: editor.fileURL?.deletingPathExtension().lastPathComponent ?? String(localized: "Unbenannt"))
+        }
+
+        func input(_ marking: ModelBuilder) -> DrawingGenerator.Input {
+            let state = hasModeledThreads ? marking.build(doc) : self.state
+            let parts = state.orderedBodies.filter { doc.isBodyVisible($0.id) }
+                .map { body -> DrawingGenerator.Part in
+                    let meta = doc.bodies[body.id]
+                    return DrawingGenerator.Part(name: doc.bodyName(body.id), shape: body.shape, material: meta?.material ?? "",
+                                                 grain: meta?.grain ?? .none, threads: state.threadMarks.filter { $0.body == body.id })
+                }
+            return DrawingGenerator.Input(parts: parts, settings: doc.drawing ?? DrawingSettings(), fallbackTitle: title)
+        }
     }
+
+    static func request(_ editor: Editor) -> Request {
+        Request(doc: editor.doc, state: editor.state,
+                title: editor.fileURL?.deletingPathExtension().lastPathComponent ?? String(localized: "Unbenannt"))
+    }
+
+    /// Visible bodies with their browser names (synchronous).
+    func input(_ editor: Editor) -> DrawingGenerator.Input { Self.request(editor).input(markingBuilder) }
 
     /// Live preview of a user dimension being placed on page `index`.
     func preview(_ c: CustomDimension, page index: Int) -> DrawingPage? {
@@ -69,9 +98,9 @@ final class DrawingController {
     }
 
     /// Synchronous generation (export, printing, tests).
-    func generateAllNow(_ editor: Editor) -> [DrawingPage] { generator.generatePages(Self.input(editor)) }
+    func generateAllNow(_ editor: Editor) -> [DrawingPage] { generator.generatePages(input(editor)) }
     func generateNow(_ editor: Editor) -> DrawingPage { generateAllNow(editor)[0] }
-    func partsDXF(_ editor: Editor) -> String { generator.partsDXF(Self.input(editor)) }
+    func partsDXF(_ editor: Editor) -> String { generator.partsDXF(input(editor)) }
 }
 
 extension Editor {

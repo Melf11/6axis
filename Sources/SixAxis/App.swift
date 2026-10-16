@@ -101,6 +101,7 @@ struct AppCommands: Commands {
             Button("STEP importieren …") { editor.importSTEP() }.keyboardShortcut("i")
             Menu("Exportieren") {
                 Button("STL (3D-Druck) …") { editor.exportSTL() }.keyboardShortcut("e")
+                Button("3MF (3D-Druck, mit Einheiten) …") { editor.export3MF() }
                 Button("STEP …") { editor.exportSTEP() }
             }
             Button("Im Slicer öffnen") { editor.openInSlicer() }.keyboardShortcut("p", modifiers: [.command, .shift])

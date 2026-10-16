@@ -199,8 +199,12 @@ public struct ModelState: @unchecked Sendable {
 public final class ModelBuilder: @unchecked Sendable {
     private var cache: [Int: ModelState] = [:]
     private let lock = NSLock()
+    /// Drawing mode: modeled threads are only marked (ISO representation instead of helix geometry).
+    public let markThreads: Bool
 
-    public init() {}
+    public init(markThreads: Bool = false) {
+        self.markThreads = markThreads
+    }
 
     public func build(_ doc: CADDocument, upTo count: Int? = nil) -> ModelState {
         let n = min(count ?? doc.activeCount, doc.features.count)

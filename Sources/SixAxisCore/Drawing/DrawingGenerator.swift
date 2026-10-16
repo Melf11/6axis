@@ -11,7 +11,10 @@ public final class DrawingGenerator: @unchecked Sendable {
         public var shape: Shape
         public var material: String
         public var grain: GrainDirection
-        public init(name: String, shape: Shape, material: String = "", grain: GrainDirection = .none) {
+        /// Threads of this body (world coordinates), drawn per ISO 6410.
+        public var threads: [ThreadMark] = []
+        public init(name: String, shape: Shape, material: String = "", grain: GrainDirection = .none, threads: [ThreadMark] = []) {
+            self.threads = threads
             self.name = name
             self.shape = shape
             self.material = material
@@ -38,6 +41,40 @@ public final class DrawingGenerator: @unchecked Sendable {
         }
 
         public var shapes: [Shape] { parts.map(\.shape) }
+        public var threads: [ThreadMark] { parts.flatMap(\.threads) }
+    }
+
+    /// A thread as seen in one view (view coordinates).
+    struct ThreadView {
+        var name: String
+        var isInternal: Bool
+        /// Looking along the axis (circle) or across it (lines).
+        var endOn: Bool
+        var center: Vec2
+        var visibleRadius: Double
+        var thinRadius: Double
+        var a: Vec2
+        var b: Vec2
+    }
+
+    static func threadViews(_ marks: [ThreadMark], _ view: View) -> [ThreadView] {
+        let (dir, x) = view.axes
+        let up = simd_cross(dir, x)
+        func p2(_ p: Vec3) -> Vec2 { Vec2(simd_dot(p, x), simd_dot(p, up)) }
+        return marks.compactMap { m in
+            let along = abs(simd_dot(m.axis.direction, dir))
+            let a = m.axis.origin + m.axis.direction * m.range.lowerBound
+            let b = m.axis.origin + m.axis.direction * m.range.upperBound
+            if along > 0.999 {
+                return ThreadView(name: m.name, isInternal: m.isInternal, endOn: true, center: p2(a), visibleRadius: m.visibleRadius,
+                                  thinRadius: m.thinRadius, a: p2(a), b: p2(b))
+            }
+            if along < 1e-3 {
+                return ThreadView(name: m.name, isInternal: m.isInternal, endOn: false, center: p2(a), visibleRadius: m.visibleRadius,
+                                  thinRadius: m.thinRadius, a: p2(a), b: p2(b))
+            }
+            return nil
+        }
     }
 
     enum View: String, CaseIterable {
@@ -101,6 +138,7 @@ public final class DrawingGenerator: @unchecked Sendable {
         var chamfers: [(Vec2, Vec2)] = []
         /// Other inclined straight edges (slopes, steep chamfers).
         var slopes: [(Vec2, Vec2)] = []
+        var threads: [ThreadView] = []
 
         var size: Vec2 { maxP - minP }
     }
@@ -122,7 +160,13 @@ public final class DrawingGenerator: @unchecked Sendable {
                 }
             }
         }
-        v.holes = p.circles.filter { $0.full && !$0.hidden && $0.radius > minLen * 0.2 }
+        // Visible holes first; holes seen only as hidden circles (e.g. drilled from the back) are dimensioned too.
+        let visibleHoles = p.circles.filter { $0.full && !$0.hidden && $0.radius > minLen * 0.2 }
+        let hiddenHoles = p.circles.filter { h in
+            h.full && h.hidden && h.radius > minLen * 0.2
+                && !visibleHoles.contains { simd_distance($0.center, h.center) < tol * 10 && abs($0.radius - h.radius) < tol * 10 }
+        }
+        v.holes = visibleHoles + hiddenHoles
         // Deduplicate concentric circles of the same size (both ends of a through hole).
         var unique: [Circle2D] = []
         for h in v.holes where !unique.contains(where: { simd_distance($0.center, h.center) < tol * 10 && abs($0.radius - h.radius) < tol * 10 }) {
@@ -220,10 +264,13 @@ public final class DrawingGenerator: @unchecked Sendable {
         func bestScale(_ size: Vec2) -> DrawingScale? { DrawingScale.all.first { fits($0.factor, size) } }
     }
 
-    func makeViewSet(_ shapes: [Shape], prefix: String, settings: DrawingSettings, section: Bool = false) -> ViewSet? {
+    func makeViewSet(_ shapes: [Shape], prefix: String, settings: DrawingSettings, section: Bool = false,
+                     threads: [ThreadMark] = []) -> ViewSet? {
         guard !shapes.isEmpty,
-              let front = projection(shapes, .front).flatMap(Self.analyze),
-              let top = projection(shapes, .top).flatMap(Self.analyze) else { return nil }
+              var front = projection(shapes, .front).flatMap(Self.analyze),
+              var top = projection(shapes, .top).flatMap(Self.analyze) else { return nil }
+        front.threads = Self.threadViews(threads, .front)
+        top.threads = Self.threadViews(threads, .top)
         // Section A–A: the left view shows what remains behind the cutting plane, cut faces hatched.
         var sectionX: Double?
         var hatch: [[[Vec2]]] = []
@@ -233,7 +280,8 @@ public final class DrawingGenerator: @unchecked Sendable {
             sideShapes = cut.remaining
             hatch = cut.faces.map { $0.faceOutlines(viewDir: View.left.axes.dir, xDir: View.left.axes.x, deflection: 0.05) }
         }
-        guard let side = projection(sideShapes, .left).flatMap(Self.analyze) else { return nil }
+        guard var side = projection(sideShapes, .left).flatMap(Self.analyze) else { return nil }
+        side.threads = Self.threadViews(threads, .left)
         var set = ViewSet(prefix: prefix, front: front, top: top, side: side)
         set.sectionX = sectionX
         set.sideHatch = hatch
@@ -481,6 +529,7 @@ public final class DrawingGenerator: @unchecked Sendable {
         for (v, pv) in [(set.front, pf), (set.side, pl), (set.top, pt)] {
             addView(&page, v, pv.toPaper, showHidden: settings.showHidden)
             addCenterLines(&page, v, map: pv.toPaper, s: s)
+            addThreadLines(&page, v, map: pv.toPaper, s: s)
             addSnapPoints(&page, v, pv)
         }
         let o = settings.dimensionOffsets
@@ -524,14 +573,27 @@ public final class DrawingGenerator: @unchecked Sendable {
         public var material: String
         public var grain: GrainDirection
         var shape: Shape
+        var threads: [ThreadMark] = []
+    }
+
+    /// The part's own axes, longest first, with the extents along them. Axis-aligned parts use the
+    /// bounding box; parts lying at an angle use the smallest oriented box (true cut sizes).
+    static func partFrame(_ shape: Shape) -> (axes: [Vec3], size: [Double])? {
+        guard let bb = shape.boundingBox else { return nil }
+        let e = bb.max - bb.min
+        var axes = [Vec3(1, 0, 0), Vec3(0, 1, 0), Vec3(0, 0, 1)], size = [e.x, e.y, e.z]
+        if let o = shape.orientedBox, o.size.x * o.size.y * o.size.z < 0.98 * e.x * e.y * e.z {
+            axes = o.axes
+            size = [o.size.x, o.size.y, o.size.z]
+        }
+        let order = [0, 1, 2].sorted { size[$0] > size[$1] }
+        return (order.map { axes[$0] }, order.map { size[$0] })
     }
 
     public func groupParts(_ parts: [Part]) -> [PartGroup] {
         var groups: [(key: String, group: PartGroup)] = []
         for part in parts {
-            guard let bb = part.shape.boundingBox else { continue }
-            let e = (bb.max - bb.min)
-            let sorted = [e.x, e.y, e.z].sorted(by: >)
+            guard let sorted = Self.partFrame(part.shape)?.size else { continue }
             // Same size, volume, topology, material and grain → same part.
             let key = sorted.map { String(format: "%.1f", $0) }.joined(separator: "x")
                 + "|\(Int(part.shape.volume.rounded()))|\(part.shape.faceCount)|\(part.material)|\(part.grain.rawValue)"
@@ -541,7 +603,7 @@ public final class DrawingGenerator: @unchecked Sendable {
                 groups.append((key, PartGroup(position: groups.count + 1, name: part.name, count: 1,
                                               length: Int(sorted[0].rounded()), width: Int(sorted[1].rounded()),
                                               thickness: Int(sorted[2].rounded()), material: part.material,
-                                              grain: part.grain, shape: part.shape)))
+                                              grain: part.grain, shape: part.shape, threads: part.threads)))
             }
         }
         return groups.map(\.group)
@@ -549,20 +611,46 @@ public final class DrawingGenerator: @unchecked Sendable {
 
     /// Orients a part for its own drawing: length → X, width → Z (up), thickness → Y (depth),
     /// so the front view shows the main face with its drilling pattern.
-    static func normalized(_ shape: Shape) -> Shape {
-        guard let bb = shape.boundingBox else { return shape }
-        let e = bb.max - bb.min
-        let order = [0, 1, 2].sorted { e[$0] > e[$1] }
-        func axis(_ i: Int) -> Vec3 { i == 0 ? Vec3(1, 0, 0) : (i == 1 ? Vec3(0, 1, 0) : Vec3(0, 0, 1)) }
-        let newX = axis(order[0]), newZ = axis(order[1])
-        var newY = axis(order[2])
+    static func normalized(_ shape: Shape) -> Shape { normalizedWithTransform(shape).0 }
+
+    /// The normalized shape and the same motion for thread marks.
+    static func normalizedWithTransform(_ shape: Shape) -> (Shape, (ThreadMark) -> ThreadMark) {
+        let identity: (ThreadMark) -> ThreadMark = { $0 }
+        guard let frame = partFrame(shape) else { return (shape, identity) }
+        let newX = frame.axes[0], newZ = frame.axes[1]
+        var newY = frame.axes[2]
         // Proper rotation only (no mirroring): y = z × x.
         if simd_dot(simd_cross(newZ, newX), newY) < 0 { newY = -newY }
         let r = simd_double3x3(rows: [newX, newY, newZ])
         guard let rotated = try? shape.transformed(rotation: r, translation: .zero),
               let rb = rotated.boundingBox,
-              let moved = try? rotated.translated(-rb.min) else { return shape }
-        return moved
+              let moved = try? rotated.translated(-rb.min) else { return (shape, identity) }
+        return (moved, { m in
+            var t = m
+            t.axis = Axis3(origin: r * m.axis.origin - rb.min, direction: r * m.axis.direction)
+            return t
+        })
+    }
+
+    /// ISO 6410: thin line at the minor Ø (bolts) or nominal Ø (holes); ¾ circle when seen end-on.
+    private func addThreadLines(_ page: inout DrawingPage, _ v: ViewData, map: (Vec2) -> Vec2, s: Double) {
+        for t in v.threads {
+            if t.endOn {
+                let pts = (0...36).map { i -> Vec2 in
+                    let a = Double(i) / 36 * 1.5 * .pi + 0.25 * .pi
+                    return map(t.center + Vec2(cos(a), sin(a)) * t.thinRadius)
+                }
+                page.lines.append(DrawingLine(points: pts, style: .thin))
+            } else {
+                let d = t.b - t.a
+                guard simd_length(d) > 1e-9 else { continue }
+                let n = simd_normalize(d).perpendicular
+                for side in [-1.0, 1.0] {
+                    let off = n * t.thinRadius * side
+                    page.lines.append(DrawingLine(points: [map(t.a + off), map(t.b + off)], style: t.isInternal ? .hidden : .thin))
+                }
+            }
+        }
     }
 
     // MARK: - Generate
@@ -577,7 +665,7 @@ public final class DrawingGenerator: @unchecked Sendable {
         let multi = input.parts.count > 1
         let sheets: [Sheet] = settings.sheet == .auto ? [.a4, .a3, .a2] : [sheetFor(settings.sheet)!]
 
-        guard let set = makeViewSet(input.shapes, prefix: "", settings: settings, section: settings.sectionLeft) else {
+        guard let set = makeViewSet(input.shapes, prefix: "", settings: settings, section: settings.sectionLeft, threads: input.threads) else {
             var page = DrawingPage(sheet: sheets[0], scale: DrawingScale.named("1:1")!)
             page.texts.append(DrawingText(text: String(localized: "Keine sichtbaren Körper"), position: Vec2(page.sheet.width / 2, page.sheet.height / 2 + 10), height: 5))
             var pages = [page]
@@ -740,7 +828,8 @@ public final class DrawingGenerator: @unchecked Sendable {
 
     private func partSheets(_ groups: [PartGroup], sheet: Sheet, settings: DrawingSettings) -> [DrawingPage] {
         let sets: [(PartGroup, ViewSet)] = groups.compactMap { g in
-            makeViewSet([Self.normalized(g.shape)], prefix: "p\(g.position).", settings: settings).map { (g, $0) }
+            let (shape, place) = Self.normalizedWithTransform(g.shape)
+            return makeViewSet([shape], prefix: "p\(g.position).", settings: settings, threads: g.threads.map(place)).map { (g, $0) }
         }
         guard !sets.isEmpty else { return [] }
         let area = Self.drawingArea(sheet)
@@ -848,15 +937,23 @@ public final class DrawingGenerator: @unchecked Sendable {
     /// Ø callouts: one leader per distinct diameter, "n× Ø8" for repeated holes. Offsets move the label.
     private func addHoleLabels(_ page: inout DrawingPage, _ v: ViewData, viewId: String, map: (Vec2) -> Vec2, s: Double,
                                hidden: Set<String>, offsets: [String: DimensionOffset]) {
-        let groups = Dictionary(grouping: v.holes) { Int((20 * $0.radius).rounded()) }   // diameter in 0.1 mm
-        for (d10, holes) in groups.sorted(by: { $0.key < $1.key }) {
-            let d = Self.mmText(Double(d10) / 10)
-            let id = d10 % 10 == 0 ? "\(viewId).hole.\(d10 / 10)" : "\(viewId).hole.\(d)"
+        // Threaded holes and bolts seen end-on are called out by their thread ("M8"), others by "Ø".
+        func label(_ h: Circle2D) -> String {
+            let tol = max(h.radius * 0.02, 0.02)
+            if let t = v.threads.first(where: { $0.endOn && simd_distance($0.center, h.center) < tol * 5 && abs($0.visibleRadius - h.radius) < tol }) {
+                return t.name
+            }
+            return "Ø" + Self.mmText(2 * h.radius)
+        }
+        let groups = Dictionary(grouping: v.holes) { label($0) }
+        for (name, holes) in groups.sorted(by: { ($0.value.first?.radius ?? 0) < ($1.value.first?.radius ?? 0) }) {
+            let key = name.hasPrefix("Ø") ? String(name.dropFirst()) : name
+            let id = "\(viewId).hole.\(key)"
             guard !hidden.contains(id),
                   let h = holes.max(by: { $0.center.x + $0.center.y < $1.center.x + $1.center.y }) else { continue }
             let c = map(h.center)
             let shift = offsets[id].map { Vec2($0.along, $0.distance) } ?? .zero
-            let text = (holes.count > 1 ? "\(holes.count)× " : "") + "Ø\(d)"
+            let text = (holes.count > 1 ? "\(holes.count)× " : "") + name
             let shelf = Double(text.count) * 2.2 + 2
             // Try the four diagonals; take the first without touching other callouts, else push outwards.
             let dirs = [Vec2(1, 1), Vec2(-1, 1), Vec2(1, -1), Vec2(-1, -1)].map(simd_normalize)

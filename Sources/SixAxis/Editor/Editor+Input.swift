@@ -84,6 +84,10 @@ extension Editor {
             if let h = hover { commandClick(h) }
             return
         }
+        if measuring {
+            if let h = hover { measureClick(h) }
+            return
+        }
         guard let h = hover else {
             selection.removeAll()
             timelineSelection = nil
@@ -171,6 +175,7 @@ extension Editor {
         case "t": setSketchTool(.trim)
         case "p": setSketchTool(.project)
         case "o": if sketchId != nil { setSketchTool(.offset) } else { toggleProjection() }
+        case "m": toggleMeasure()
         case "6": homeView()
         case "0": fitAll()
         default: return false
@@ -183,6 +188,7 @@ extension Editor {
         if showCommandPalette { showCommandPalette = false; return }
         if editingDimension != nil { editingDimension = nil; return }
         if command != nil { cancelCommand(); return }
+        if measuring { endMeasure(); return }
         if patternRequest != nil { cancelPattern(); return }
         if textRequest != nil { cancelText(); return }
         if sketchId != nil {

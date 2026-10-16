@@ -178,6 +178,36 @@
         }
       }
     },
+    "3MF (3D-Druck, mit Einheiten) …": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "3MF (3D Printing, with Units) …"
+          }
+        }
+      }
+    },
+    "3MF (empfohlen)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "3MF (recommended)"
+          }
+        }
+      }
+    },
+    "3MF exportiert: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "3MF exported: %@"
+          }
+        }
+      }
+    },
     "6axis": {
       "shouldTranslate": false
     },
@@ -384,6 +414,16 @@
         }
       }
     },
+    "Achsabstand": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Axis distance"
+          }
+        }
+      }
+    },
     "Achse": {
       "localizations": {
         "en": {
@@ -474,6 +514,16 @@
         }
       }
     },
+    "Als 3MF exportieren": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Export as 3MF"
+          }
+        }
+      }
+    },
     "Als PDF oder DXF exportieren": {
       "localizations": {
         "en": {
@@ -530,6 +580,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Sent to slicer"
+          }
+        }
+      }
+    },
+    "Andere Seite zeigen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show the other side"
           }
         }
       }
@@ -680,6 +740,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Incomplete expression"
+          }
+        }
+      }
+    },
+    "Ausgabe": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Output"
           }
         }
       }
@@ -1453,6 +1523,7 @@
       }
     },
     "Dokumentation": {
+      "extractionState": "stale",
       "localizations": {
         "en": {
           "stringUnit": {
@@ -2436,6 +2507,16 @@
         }
       }
     },
+    "Fläche oder Kante anklicken – eine zweite für Abstand und Winkel.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Click a face or edge – a second one for distance and angle."
+          }
+        }
+      }
+    },
     "Flächen": {
       "localizations": {
         "en": {
@@ -2681,7 +2762,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Construction line"
+            "value": "Construction"
           }
         }
       }
@@ -2846,6 +2927,16 @@
         }
       }
     },
+    "Kante nicht gefunden": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Edge not found"
+          }
+        }
+      }
+    },
     "Kante oder Fläche eines Körpers anklicken – sie wird in die Skizze übernommen": {
       "localizations": {
         "en": {
@@ -2957,7 +3048,18 @@
         }
       }
     },
+    "Kein Slicer gefunden – die 3MF-Datei liegt im Finder bereit": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No slicer found – the 3MF file is shown in the Finder"
+          }
+        }
+      }
+    },
     "Kein Slicer gefunden – exportiere stattdessen eine STL-Datei": {
+      "extractionState": "stale",
       "localizations": {
         "en": {
           "stringUnit": {
@@ -3054,6 +3156,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "No geometry created"
+          }
+        }
+      }
+    },
+    "Keine Geometrie zum Exportieren": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No geometry to export"
           }
         }
       }
@@ -3214,6 +3326,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Click a face, edge or corner to orient the view · drag to orbit"
+          }
+        }
+      }
+    },
+    "Klick auf ein drittes Element beginnt neu · Esc beendet": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clicking a third element starts over · Esc ends"
           }
         }
       }
@@ -3779,6 +3901,26 @@
         }
       }
     },
+    "Messen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Measure"
+          }
+        }
+      }
+    },
+    "Messen (M)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Measure (M)"
+          }
+        }
+      }
+    },
     "Metrisches ISO-Gewinde über die ganze Länge der Fläche.": {
       "localizations": {
         "en": {
@@ -4027,6 +4169,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Normal"
+          }
+        }
+      }
+    },
+    "Nur Ansicht – das Modell bleibt unverändert.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "View only – the model stays unchanged."
           }
         }
       }
@@ -4364,6 +4516,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Item %lld   %@   %lld pcs   %lld × %lld × %lld"
+          }
+        }
+      }
+    },
+    "Position": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Position"
           }
         }
       }
@@ -4803,6 +4965,16 @@
         }
       }
     },
+    "STEP (CAD) …": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "STEP (CAD) …"
+          }
+        }
+      }
+    },
     "STEP exportiert: %@": {
       "localizations": {
         "en": {
@@ -4927,6 +5099,16 @@
         }
       }
     },
+    "STL …": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "STL …"
+          }
+        }
+      }
+    },
     "STL-Export fehlgeschlagen": {
       "localizations": {
         "en": {
@@ -4953,6 +5135,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Shading"
+          }
+        }
+      }
+    },
+    "Schließen (Esc)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Close (Esc)"
           }
         }
       }
@@ -5013,6 +5205,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Intersection of two planes"
+          }
+        }
+      }
+    },
+    "Schnittansicht": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Section View"
           }
         }
       }
@@ -6615,6 +6817,16 @@
         }
       }
     },
+    "X": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "X"
+          }
+        }
+      }
+    },
     "X %@  Y %@": {
       "localizations": {
         "de": {
@@ -6656,6 +6868,16 @@
         }
       }
     },
+    "Y": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Y"
+          }
+        }
+      }
+    },
     "Y-Achse": {
       "localizations": {
         "en": {
@@ -6672,6 +6894,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "YZ plane"
+          }
+        }
+      }
+    },
+    "Z": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Z"
           }
         }
       }
@@ -7012,6 +7244,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "g/cm³"
+          }
+        }
+      }
+    },
+    "mm": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "mm"
           }
         }
       }

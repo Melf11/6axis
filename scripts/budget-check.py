@@ -25,6 +25,9 @@ for line in open(os.path.join(root, "budgets.txt"), encoding="utf-8"):
         notes[m.group(1)] = (m.group(4) or "").strip()
 
 values = {k: float(v) for k, v in re.findall(r"^BUDGET (\w+) (\d+)", read("budget.log"), re.M)}
+# Toolbars: the wider of German and English.
+for k, v in re.findall(r"^BUDGET (toolbar_\w+) (\d+)", read("budget-en.log"), re.M):
+    values[k] = max(values.get(k, 0), float(v))
 drag = read("drag.log")
 lat = [float(x) for x in re.findall(r"latency avg [\d.]+ max ([\d.]+) ms", drag)]
 orbit = re.search(r"DRAG orbit: (\d+) frames", drag)

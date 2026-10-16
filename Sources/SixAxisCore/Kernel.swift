@@ -48,8 +48,28 @@ public final class Shape: @unchecked Sendable {
         return (SIMD3(lo[0], lo[1], lo[2]), SIMD3(hi[0], hi[1], hi[2]))
     }
 
+    /// Smallest oriented bounding box: centre, unit axes and full extents along them.
+    public var orientedBox: (center: Vec3, axes: [Vec3], size: Vec3)? {
+        var c = [0.0, 0.0, 0.0], a = [Double](repeating: 0, count: 9), h = [0.0, 0.0, 0.0]
+        guard ob_shape_obb(handle, &c, &a, &h) != 0 else { return nil }
+        let axes = (0..<3).map { Vec3(a[3 * $0], a[3 * $0 + 1], a[3 * $0 + 2]) }
+        return (Vec3(c[0], c[1], c[2]), axes, Vec3(h[0], h[1], h[2]) * 2)
+    }
+
     public func face(_ index: Int) throws -> Shape {
         try Shape.wrap(ob_shape_face(handle, Int32(index)), "Fläche nicht gefunden")
+    }
+
+    public func edge(_ index: Int) throws -> Shape {
+        try Shape.wrap(ob_shape_edge(handle, Int32(index)), "Kante nicht gefunden")
+    }
+
+    /// Exact minimum distance to another shape with the closest points on both.
+    public func distance(to other: Shape) -> (distance: Double, a: Vec3, b: Vec3)? {
+        var p = [0.0, 0.0, 0.0], q = [0.0, 0.0, 0.0]
+        let d = ob_distance(handle, other.handle, &p, &q)
+        guard d >= 0 else { return nil }
+        return (d, Vec3(p[0], p[1], p[2]), Vec3(q[0], q[1], q[2]))
     }
 
     public func solid(_ index: Int) throws -> Shape {

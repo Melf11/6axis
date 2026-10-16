@@ -120,12 +120,13 @@ Inhalt:
 - Werkzeugleisten: verwandte Befehle in Menüs (Muster ▾, Körper ▾, Ebene ▾; in der Skizze Muster ▾, Ecke ▾), beide Leisten unter ihren Grenzwerten
 - Dateiformat 5
 
-## 1.3 – Prüfen & Ausgabe
-- Messwerkzeug (Abstand, Winkel, Fläche, Volumen)
-- Schnittansicht im 3D-Fenster
-- 3MF-Export mit Einheiten (für den 3D-Druck besser als STL)
-- Zuschnittmaße auch für schräg liegende Teile (minimales Hüllquader statt achsparallel)
-- Bemaßung verdeckter Merkmale in der Zeichnung
+## 1.3 – Prüfen & Ausgabe ✅
+- [x] **Messen** (M): Fläche, Länge, Durchmesser; zwischen zwei Elementen exakter Abstand, Winkel und Achsabstand (Lochabstände)
+- [x] **Schnittansicht** im 3D-Fenster: X/Y/Z, Position per Regler oder Zahl, geschlossene Schnittflächen
+- [x] **3MF-Export** mit Einheiten und Teilenamen; der Slicer bekommt jetzt 3MF statt STL
+- [x] **Zuschnittmaße für schräg liegende Teile** (kleinster gedrehter Hüllquader); gleiche Teile werden unabhängig von der Lage zusammengefasst
+- [x] **Verdeckte Bohrungen** in der Zeichnung bemaßt; **Gewinde nach ISO 6410** (dünne Linie, ¾-Kreis, „M8“ statt Kernloch-Ø) – die Zeichnung rechnet ohne Gewindegänge und bleibt schnell
+- Werkzeugleiste: „Ausgabe“ fasst Zeichnung, Export ▾ (3MF, STL, STEP) und Slicer zusammen; Grenzwerte gelten für Deutsch und Englisch
 
 ## 1.4 – Baugruppen
 - Komponenten (wiederverwendbare Teile, mehrfach eingebaut)
