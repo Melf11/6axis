@@ -87,6 +87,9 @@ sys.exit(0 if ok else 1)
 PY
 then echo "✓ drag: mouse/swipe events stay responsive"; else echo "✗ drag: navigation too slow"; echo "::error::ui-check drag: navigation too slow"; fail=1; fi
 
+run budget 120 SIXAXIS_FAST_SNAPSHOTS=1 SIXAXIS_BUDGET_TEST=1 SIXAXIS_SNAPSHOTS="$OUT/budget"
+python3 "$ROOT/scripts/budget-check.py" "$OUT" "$ROOT/build/6axis.app" || fail=1
+
 if [ $fail -ne 0 ] && [ -n "${GITHUB_ACTIONS:-}" ]; then
     # Surface details as annotations (readable without access to the job log).
     for f in "$OUT"/*.log; do

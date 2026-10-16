@@ -37,6 +37,14 @@ enum DemoScript {
             }
             return
         }
+        // Performance and size budgets: SIXAXIS_BUDGET_TEST=1 (see scripts/budgets.txt)
+        if env["SIXAXIS_BUDGET_TEST"] != nil {
+            Task { @MainActor in
+                await BudgetProbe.run(editor)
+                exit(0)
+            }
+            return
+        }
         // Sketch interaction checks: SIXAXIS_SKETCH_TEST=1 – draws like a user and prints CHECK lines.
         if env["SIXAXIS_SKETCH_TEST"] != nil {
             Task { @MainActor in

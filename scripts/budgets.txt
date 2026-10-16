@@ -1,0 +1,15 @@
+# Grenzwerte, damit 6axis schlank und flüssig bleibt (Leitlinien 5 und 6 in AGENTS.md).
+# Geprüft von scripts/budget-check.py nach der Oberflächenprüfung, lokal und in der CI.
+# Ein Wert darf nur nach Rücksprache mit dem Inhaber erhöht werden – Begründung in die Commit-Nachricht.
+#
+# Schlüssel               Grenze   Bedeutung (gemessen auf M3 Pro, Okt. 2026)
+startup_ms                 1500    # Start bis zum ersten Bild (≈ 0,3 s)
+memory_empty_mb             300    # Speicher direkt nach dem Start (≈ 145 MB)
+memory_example_mb           500    # Speicher mit allen Beispielen nacheinander geöffnet (≈ 370 MB)
+toolbar_model_pt            960    # Breite der Werkzeugleiste Konstruktion – passt ins kleinste Fenster (≈ 750 pt)
+toolbar_sketch_pt          1440    # Breite der Werkzeugleiste Skizze (≈ 1414 pt) – ZU BREIT, soll unter 1200 sinken
+drag_latency_ms              50    # Ziehen/Drehen: längste Wartezeit bis zum nächsten Bild (≈ 14 ms; 3 Bilder bei 60 Hz)
+drag_burst_ms               250    # 480 Maus-Ereignisse auf einmal verarbeitet (≈ 15 ms)
+rebuild_blocking_ms         150    # Oberfläche blockiert beim Ändern eines schweren Modells (≈ 80 ms)
+rebuild_total_ms           6000    # Neuberechnung Platte mit 400 Löchern im Hintergrund (≈ 2,2 s)
+app_size_mb                  70    # Größe der App (≈ 47 MB, davon OpenCASCADE ≈ 38 MB)

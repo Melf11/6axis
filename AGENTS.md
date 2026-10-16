@@ -33,6 +33,8 @@ scripts/update-strings.sh           # neue Texte in den String Catalog übernehm
 scripts/update-test.sh              # Update-Ablauf Ende-zu-Ende (lokaler Feed, gültige und gefälschte Signatur)
 ```
 
+- **Grenzwerte:** `scripts/ui-check.sh` misst am Ende Startzeit, Speicher, Breite der Werkzeugleisten, Ziehen/Drehen, Neuberechnung und App-Größe und vergleicht sie mit `scripts/budgets.txt`. Wird ein Wert überschritten, ist das ein Fehler wie ein roter Test: die Ursache beheben, nicht die Grenze anheben. Grenzen nur nach Rücksprache mit dem Inhaber ändern.
+
 - **Texte:** auf Deutsch im Code (`Text("…")`, `String(localized: "…")`, `KernelError("…")`), englische Übersetzung in `scripts/translations_en.py`, dann `python3 scripts/apply-translations.py`. Das CI bricht bei fehlenden Übersetzungen ab.
 - **Oberfläche prüfen:** Das Terminal hat keine Bildschirmaufnahme-Rechte – stattdessen die Demo-Läufe nutzen (`SIXAXIS_DEMO=1 SIXAXIS_SNAPSHOTS=dir`, `SIXAXIS_DRAWING_DEMO=dir`, `SIXAXIS_EXAMPLES_DEMO=dir`, `SIXAXIS_NAV_TEST=dir`). Automatische Läufe nutzen eigene Einstellungen und einen eigenen Autosave-Ordner und verändern nichts beim Nutzer. Sie laufen im Hintergrund (kein Dock-Symbol, kein Fokus, unsichtbare und klickdurchlässige Fenster); zum Zuschauen `SIXAXIS_VISIBLE=1` setzen.
 - **Git:** Arbeit auf einem Branch (`feature/…`, `fix/…`, `docs/…`), committen, pushen; nach `main` mergen erst nach Absprache. Releases entstehen durch ein Tag `vX.Y.Z` (GitHub Actions baut DMG/ZIP, Oberflächenprüfung vorher).
