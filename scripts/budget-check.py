@@ -19,10 +19,10 @@ def read(name):
 
 budgets, notes = {}, {}
 for line in open(os.path.join(root, "budgets.txt"), encoding="utf-8"):
-    m = re.match(r"\s*(\w+)\s+(\d+)\s*(?:#\s*(.*))?$", line)
+    m = re.match(r"\s*(\w+)\s+(\d+)\s+(\d+)\s*(?:#\s*(.*))?$", line)
     if m:
-        budgets[m.group(1)] = int(m.group(2))
-        notes[m.group(1)] = (m.group(3) or "").strip()
+        budgets[m.group(1)] = int(m.group(3) if os.environ.get("GITHUB_ACTIONS") else m.group(2))
+        notes[m.group(1)] = (m.group(4) or "").strip()
 
 values = {k: float(v) for k, v in re.findall(r"^BUDGET (\w+) (\d+)", read("budget.log"), re.M)}
 drag = read("drag.log")
