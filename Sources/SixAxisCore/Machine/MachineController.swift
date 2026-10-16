@@ -198,6 +198,20 @@ public final class MachineController: @unchecked Sendable {
         }
     }
 
+    /// Moves to a work position (nil = keep that axis). Down: X/Y first, then Z; up: Z first – never
+    /// diagonally into the workpiece.
+    public func moveTo(x: Double?, y: Double?, z: Double?, currentZ: Double) {
+        func f(_ v: Double) -> String { String(format: "%.3f", v) }
+        var xy = ""
+        if let x { xy += " X\(f(x))" }
+        if let y { xy += " Y\(f(y))" }
+        var lines: [String] = []
+        if let z, z >= currentZ { lines.append("G90 G0 Z\(f(z))") }
+        if !xy.isEmpty { lines.append("G90 G0" + xy) }
+        if let z, z < currentZ { lines.append("G90 G0 Z\(f(z))") }
+        command(lines)
+    }
+
     /// Up first (machine coordinates), then over the park position.
     public func park(x: Double, y: Double, safeZ: Double = -2) {
         command(["G53 G0 Z\(safeZ)", "G53 G0 X\(x) Y\(y)"])

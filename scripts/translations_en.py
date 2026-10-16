@@ -565,3 +565,14 @@ EN.update({
 "Zurückgesetzt während der Fahrt – Position unsicher": "Reset while moving – position uncertain",
 "noch ca. %lld min": "about %lld min left",
 })
+EN.update({
+"%@ ab Kante": "%@ from edge",
+"Abstände von der linken bzw. vorderen Kante der Fläche; Ausdrücke wie „breite / 2“ gehen auch.": "Distances from the left and front edge of the face; expressions like “width / 2” work too.",
+"Anfahren": "Go To",
+"Angeklickter Punkt (ältere Datei) – neu anklicken für genaue Maße": "Clicked point (older file) – click again for exact distances",
+"Position %lld": "Position %lld",
+"Position entfernen": "Remove position",
+"Skizzenpunkt – Lage über die Maße der Skizze": "Sketch point – placed by the sketch's dimensions",
+"Werkstückposition anfahren – leere Felder bleiben, wie sie sind": "Move to a work position – empty fields stay as they are",
+"–": "–",
+})

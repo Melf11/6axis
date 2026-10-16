@@ -108,8 +108,40 @@ public struct ThreadFeature: Codable, Hashable, Sendable {
 public enum HolePoint: Codable, Hashable, Sendable {
     /// A point of a sketch: the hole follows the sketch's dimensions.
     case sketchPoint(sketch: UUID, point: Int)
-    /// A clicked point on a planar face.
+    /// A clicked point on a planar face (1.2; new holes use `faceOffset`).
     case face(BodyFaceRef, position: Vec3)
+    /// On a planar face, `x`/`y` (expressions) from the face's lower left corner in its own frame
+    /// (`FaceFrame`): exact, and the hole follows when the part changes size.
+    case faceOffset(BodyFaceRef, x: String, y: String)
+}
+
+/// A planar face's own 2D frame: axes like a sketch on that face, origin at the lower left corner of the face.
+public struct FaceFrame: Sendable {
+    public var plane: Plane
+    public var corner: Vec2
+
+    /// Point on the face for distances from the corner.
+    public func point(_ x: Double, _ y: Double) -> Vec3 { plane.point(corner + Vec2(x, y)) }
+    /// Distances from the corner of a point on the face.
+    public func offsets(_ p: Vec3) -> Vec2 { plane.project(p) - corner }
+
+    /// The world axis a direction mostly follows ("X", "Y", "Z"), for labels.
+    public static func axisName(_ d: Vec3) -> String {
+        let a = [abs(d.x), abs(d.y), abs(d.z)]
+        return ["X", "Y", "Z"][a.firstIndex(of: a.max()!)!]
+    }
+
+    public static func of(_ body: BuiltBody, face idx: Int) -> FaceFrame? {
+        guard let info = body.faceInfos[safe: idx] ?? nil, info.isPlanar, let face = try? body.shape.face(idx) else { return nil }
+        let plane = Plane.forFace(point: info.origin, normal: info.normal)
+        guard let outer = face.faceLoops(deflection: 0.05).first, !outer.isEmpty else { return nil }
+        let uv = outer.map { plane.project($0) }
+        return FaceFrame(plane: plane, corner: Vec2(uv.map(\.x).min()!, uv.map(\.y).min()!))
+    }
+}
+
+extension Array {
+    subscript(safe i: Int) -> Element? { i >= 0 && i < count ? self[i] : nil }
 }
 
 public enum HoleType: String, Codable, CaseIterable, Hashable, Sendable {

@@ -124,6 +124,12 @@ extension CommandPanel {
             selectionRow(String(localized: "Positionen"), count: h.points.count, symbol: "smallcircle.filled.circle", active: true) {
                 set { $0.points = [] }
             }
+            if h.points.count > 3 {
+                ScrollView { VStack(alignment: .leading, spacing: 10) { holePositions(h) { change in set(change) } } }
+                    .frame(maxHeight: 260)
+            } else {
+                holePositions(h) { change in set(change) }
+            }
             Picker("", selection: Binding(get: { h.type }, set: { v in set { $0.type = v } })) {
                 ForEach(HoleType.allCases, id: \.self) { Text($0.displayName).tag($0) }
             }
@@ -159,6 +165,37 @@ extension CommandPanel {
                 }
             }
             toggle(String(localized: "Richtung umkehren"), h.flip) { v in set { $0.flip = v } }
+        }
+    }
+
+    /// Each clicked position with exact distances from the face's corner (expressions allowed).
+    @ViewBuilder
+    private func holePositions(_ h: HoleFeature, _ set: @escaping (@escaping (inout HoleFeature) -> Void) -> Void) -> some View {
+        let pre = editor.stateBeforeCommand
+        ForEach(Array(h.points.enumerated()), id: \.offset) { i, pt in
+            VStack(alignment: .leading, spacing: 4) {
+                HStack {
+                    Text(String(localized: "Position \(i + 1)")).font(.system(size: 11, weight: .semibold))
+                    Spacer()
+                    Button { set { $0.points.remove(at: i) } } label: { Image(systemName: "minus.circle") }
+                        .buttonStyle(.plain).foregroundStyle(.secondary).help("Position entfernen")
+                }
+                switch pt {
+                case let .faceOffset(bf, x, y):
+                    let frame = pre.bodies[bf.body].flatMap { b in b.resolve(bf.face).flatMap { FaceFrame.of(b, face: $0) } }
+                    let ax = frame.map { FaceFrame.axisName($0.plane.xDir) } ?? "X"
+                    let ay = frame.map { FaceFrame.axisName($0.plane.yDir) } ?? "Y"
+                    field(String(localized: "\(ax) ab Kante"), x) { v in set { if case let .faceOffset(r, _, yy) = $0.points[i] { $0.points[i] = .faceOffset(r, x: v, y: yy) } } }
+                    field(String(localized: "\(ay) ab Kante"), y) { v in set { if case let .faceOffset(r, xx, _) = $0.points[i] { $0.points[i] = .faceOffset(r, x: xx, y: v) } } }
+                case .sketchPoint:
+                    hint(String(localized: "Skizzenpunkt – Lage über die Maße der Skizze"))
+                case .face:
+                    hint(String(localized: "Angeklickter Punkt (ältere Datei) – neu anklicken für genaue Maße"))
+                }
+            }
+        }
+        if h.points.count > 0 {
+            hint(String(localized: "Abstände von der linken bzw. vorderen Kante der Fläche; Ausdrücke wie „breite / 2“ gehen auch."))
         }
     }
 
