@@ -31,6 +31,9 @@ orbit = re.search(r"DRAG orbit: (\d+) frames", drag)
 # Frame latency only counts when the window was on screen (CI runners may not present frames).
 if lat and "DRAG window visible=1" in drag and orbit and int(orbit.group(1)) >= 100:
     values["drag_latency_ms"] = max(lat)
+    avg = [float(x) for x in re.findall(r"latency avg ([\d.]+) max", drag)]
+    if avg:
+        values["drag_latency_avg_ms"] = max(avg)
 burst = re.search(r"DRAG burst: \d+ queued events consumed in (\d+) ms", drag)
 if burst:
     values["drag_burst_ms"] = float(burst.group(1))
