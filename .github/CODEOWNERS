@@ -1,0 +1,3 @@
+# Workflows, Freigabelisten und Release-Einstellungen nur mit Zustimmung des Inhabers.
+/.github/ @Melf11
+/scripts/bug_automation.py @Melf11

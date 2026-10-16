@@ -60,6 +60,11 @@ struct SixAxisApp: App {
         }
         .defaultSize(width: 900, height: 600)
 
+        Window("Fehlerberichte", id: "bugreport") {
+            BugReportWindow()
+        }
+        .defaultSize(width: 760, height: 520)
+
         Window("Zeichnung", id: "drawing") {
             DrawingWindow(editor: editor)
                 .frame(minWidth: 700, minHeight: 480)
@@ -82,7 +87,11 @@ struct AppCommands: Commands {
             Button("Nach Updates suchen …") { Task { await Updater.shared.check(userInitiated: true) } }
         }
         CommandGroup(replacing: .help) {
-            Button("Fehler melden …") { Branding.openFeedback(kind: "bug") }
+            Button("Fehler melden …") {
+                // The in-app chat when it's switched on and allowed for this account, else GitHub in the browser.
+                // The chat checks the sign-in and permission when it opens (no network access before that).
+                if BugReports.shared.isReady { editor.openBugReportWindow() } else { Branding.openFeedback(kind: "bug") }
+            }
             Button("Idee vorschlagen …") { Branding.openFeedback(kind: "idea") }
             Divider()
             Button("6axis-Webseite") { NSWorkspace.shared.open(URL(string: Branding.website)!) }

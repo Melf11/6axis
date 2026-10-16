@@ -96,6 +96,9 @@ Inhalt:
 - [x] Flüssiges Verschieben (3D und Zeichnung), Zoomen mit ⌘ + Scrollen in der Zeichnung (1.0.1)
 - [x] **Updates in der App** (1.0.2): tägliche Suche (abschaltbar), Hinweis in der Kopfleiste, Versionshinweise, Installation mit einem Klick und Neustart; nur mit gültiger Ed25519-Signatur, sonst Verweis auf die Release-Seite
 
+## Fehlerberichte & Fehlerbehebung
+Fehlerbericht-Chat in der App (GitHub-Anmeldung, nur für die Liste `reporters`); behoben wird lokal auf dem Mac des Inhabers mit `scripts/bugfix.py` und Claude Code – keine Automatik in GitHub Actions. Details: [docs/bug-pipeline.md](bug-pipeline.md).
+
 ## 1.1 – Skizze vervollständigen ✅ (Release 1.1.0)
 - [ ] **Rückmeldungen der Tester** einarbeiten (Bedienung von Zeichnungsfenster, Radialmenü, Navigation, DXF in CAM-/Lasersoftware)
 - [x] Punkte und Ecken mit jedem Werkzeug ziehen (z. B. Rechteck-Ecken direkt nach dem Zeichnen)

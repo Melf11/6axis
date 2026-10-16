@@ -24,12 +24,17 @@ enum Branding {
     }
 
     /// Opens a pre-filled GitHub issue in the browser – only on explicit click, no telemetry.
-    static func openFeedback(kind: String = "bug") {
+    /// "6axis 1.1.2 (70) · macOS … · Mac15,6" – attached to bug reports.
+    static var environmentInfo: String {
         var model = [CChar](repeating: 0, count: 64)
         var size = model.count
         sysctlbyname("hw.model", &model, &size, nil, 0)
         let os = ProcessInfo.processInfo.operatingSystemVersionString
-        let info = "6axis \(version) · macOS \(os) · \(String(cString: model))"
+        return "6axis \(version) · macOS \(os) · \(String(cString: model))"
+    }
+
+    static func openFeedback(kind: String = "bug") {
+        let info = environmentInfo
         var c = URLComponents(string: repository + "/issues/new")!
         c.queryItems = [
             URLQueryItem(name: "template", value: kind == "bug" ? "fehler.yml" : "idee.yml"),
