@@ -12,6 +12,8 @@ struct SettingsView: View {
                 .tabItem { Label("3D-Druck", systemImage: "printer") }
             UpdateSettings()
                 .tabItem { Label("Updates", systemImage: "arrow.down.circle") }
+            BugReportSettings()
+                .tabItem { Label("Fehlerberichte", systemImage: "ladybug") }
         }
         .frame(width: 520)
     }

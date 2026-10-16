@@ -86,6 +86,7 @@ struct MainView: View {
         .onAppear {
             editor.openDrawingWindow = { openWindow(id: "drawing") }
             editor.openMachineWindow = { openWindow(id: "machine") }
+            editor.openBugReportWindow = { openWindow(id: "bugreport") }
         }
     }
 }

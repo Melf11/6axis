@@ -123,6 +123,8 @@ final class AppSettings {
     // MARK: Updates
 
     var checkForUpdates: Bool { didSet { save() } }
+    /// In-app bug-report chat (needs a GitHub sign-in and a place in the 'reporters' list).
+    var bugReportsEnabled: Bool { didSet { save() } }
     /// Tag of a release the user chose to skip ("v1.2.0").
     var skippedVersion: String { didSet { save() } }
     var lastUpdateCheck: Date { didSet { save() } }
@@ -159,6 +161,7 @@ final class AppSettings {
         customDensity = double("print.customDensity", 1.2)
         preferredSlicer = string("print.slicer", "")
         checkForUpdates = bool("update.check", true)
+        bugReportsEnabled = bool("bugreports.enabled", false)
         skippedVersion = string("update.skipped", "")
         lastUpdateCheck = defaults.object(forKey: "update.lastCheck") as? Date ?? .distantPast
         loading = false
@@ -189,6 +192,7 @@ final class AppSettings {
         d.set(customDensity, forKey: "print.customDensity")
         d.set(preferredSlicer, forKey: "print.slicer")
         d.set(checkForUpdates, forKey: "update.check")
+        d.set(bugReportsEnabled, forKey: "bugreports.enabled")
         d.set(skippedVersion, forKey: "update.skipped")
         d.set(lastUpdateCheck, forKey: "update.lastCheck")
     }

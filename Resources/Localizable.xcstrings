@@ -34,6 +34,38 @@
         }
       }
     },
+    "#%lld %@ · %@": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "new",
+            "value": "#%1$lld %2$@ · %3$@"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "#%1$lld %2$@ · %3$@"
+          }
+        }
+      }
+    },
+    "#%lld · %@": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "new",
+            "value": "#%1$lld · %2$@"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "#%1$lld · %2$@"
+          }
+        }
+      }
+    },
     "%@ (%@)": {
       "localizations": {
         "de": {
@@ -46,6 +78,7 @@
       "shouldTranslate": false
     },
     "%@ ab Kante": {
+      "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
@@ -391,6 +424,16 @@
         }
       }
     },
+    "Abmelden": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sign Out"
+          }
+        }
+      }
+    },
     "Abrunden": {
       "extractionState": "stale",
       "localizations": {
@@ -475,6 +518,7 @@
       }
     },
     "Abstände von der linken bzw. vorderen Kante der Fläche; Ausdrücke wie „breite / 2“ gehen auch.": {
+      "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
@@ -530,6 +574,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Solid maple"
+          }
+        }
+      }
+    },
+    "Aktiviere ihn unter Einstellungen → Fehlerberichte und melde dich mit GitHub an.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Turn it on in Settings → Bug Reports and sign in with GitHub."
           }
         }
       }
@@ -695,6 +749,7 @@
       }
     },
     "Anfahren": {
+      "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
@@ -725,11 +780,22 @@
       }
     },
     "Angeklickter Punkt (ältere Datei) – neu anklicken für genaue Maße": {
+      "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Clicked point (older file) – click again for exact distances"
+          }
+        }
+      }
+    },
+    "Angemeldet als": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Signed in as"
           }
         }
       }
@@ -740,6 +806,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Click to pick"
+          }
+        }
+      }
+    },
+    "Anmeldung auf GitHub abgelehnt": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sign-in was declined on GitHub"
           }
         }
       }
@@ -824,6 +900,16 @@
         }
       }
     },
+    "Antwort schreiben …": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Write a reply …"
+          }
+        }
+      }
+    },
     "Anzahl": {
       "localizations": {
         "en": {
@@ -880,6 +966,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Switch workspace"
+          }
+        }
+      }
+    },
+    "Auf GitHub": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "On GitHub"
           }
         }
       }
@@ -1275,6 +1371,26 @@
         }
       }
     },
+    "Bericht konnte nicht angelegt werden": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The report could not be created"
+          }
+        }
+      }
+    },
+    "Bericht senden": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Send Report"
+          }
+        }
+      }
+    },
     "Bewegt sich ab jetzt mit dem anderen Teil mit (z. B. Griff an der Tür).": {
       "localizations": {
         "en": {
@@ -1301,6 +1417,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Birch plywood"
+          }
+        }
+      }
+    },
+    "Bitte Titel und Beschreibung eingeben": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Please enter a title and a description"
           }
         }
       }
@@ -1642,6 +1768,16 @@
         }
       }
     },
+    "Code": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Code"
+          }
+        }
+      }
+    },
     "DXF exportiert": {
       "localizations": {
         "en": {
@@ -1788,6 +1924,67 @@
         }
       }
     },
+    "Deine Berichte werden automatisch bearbeitet": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your reports are processed automatically"
+          }
+        }
+      }
+    },
+    "Deine Berichte werden nach Freigabe bearbeitet": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your reports are processed after approval"
+          }
+        }
+      }
+    },
+    "Der Code ist abgelaufen – bitte erneut anmelden": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The code has expired – please sign in again"
+          }
+        }
+      }
+    },
+    "Der Code ist kopiert. Füge ihn auf GitHub ein und bestätige – 6axis wartet hier auf die Freigabe.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The code is copied. Paste it on GitHub and confirm – 6axis waits here for the approval."
+          }
+        }
+      }
+    },
+    "Der Fehlerbericht-Chat ist für dein Konto nicht freigeschaltet": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The bug report chat is not enabled for your account"
+          }
+        }
+      }
+    },
+    "Der Fehlerbericht-Chat ist für dein Konto nicht freigeschaltet.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The bug report chat is not enabled for your account."
+          }
+        }
+      }
+    },
     "Der Körper gehört zu keiner Komponente": {
       "localizations": {
         "en": {
@@ -1844,6 +2041,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "The planes are parallel"
+          }
+        }
+      }
+    },
+    "Die GitHub-Anmeldung ist abgelaufen – bitte neu anmelden.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your GitHub sign-in has expired – please sign in again."
           }
         }
       }
@@ -2100,12 +2307,42 @@
         }
       }
     },
+    "Du": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You"
+          }
+        }
+      }
+    },
+    "Du darfst Fehler aus 6axis melden": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You can report bugs from 6axis"
+          }
+        }
+      }
+    },
     "Dunkel": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Dark"
+          }
+        }
+      }
+    },
+    "Duplikat": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Duplicate"
           }
         }
       }
@@ -2480,6 +2717,16 @@
         }
       }
     },
+    "Einstellungen öffnen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open Settings"
+          }
+        }
+      }
+    },
     "Einstellungsbefehl nicht unterstützt": {
       "localizations": {
         "en": {
@@ -2676,6 +2923,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "The result is empty"
+          }
+        }
+      }
+    },
+    "Erledigt": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Done"
+          }
+        }
+      }
+    },
+    "Erneut prüfen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Check Again"
           }
         }
       }
@@ -2933,6 +3200,16 @@
         }
       }
     },
+    "Fehler direkt aus 6axis melden und Rückfragen beantworten. Dafür meldest du dich mit deinem GitHub-Konto an; der Inhaber von 6axis legt fest, wer die Funktion nutzen darf und wessen Berichte automatisch bearbeitet werden. Berichte sind öffentlich auf GitHub sichtbar.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Report bugs right from 6axis and answer follow-up questions. You sign in with your GitHub account; the owner of 6axis decides who may use this and whose reports are processed automatically. Reports are public on GitHub."
+          }
+        }
+      }
+    },
     "Fehler in Zeile": {
       "localizations": {
         "en": {
@@ -2965,6 +3242,46 @@
           "stringUnit": {
             "state": "translated",
             "value": "Report a bug …"
+          }
+        }
+      }
+    },
+    "Fehlerbericht": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bug Report"
+          }
+        }
+      }
+    },
+    "Fehlerberichte": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bug Reports"
+          }
+        }
+      }
+    },
+    "Fehlerberichte in 6axis aktivieren": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enable bug reports in 6axis"
+          }
+        }
+      }
+    },
+    "Fehlerberichte sind in diesem Build noch nicht eingerichtet": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bug reports are not set up in this build yet"
           }
         }
       }
@@ -3136,6 +3453,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Milling"
+          }
+        }
+      }
+    },
+    "Für dein Konto ist der Fehlerbericht-Chat nicht freigeschaltet": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The bug report chat is not enabled for your account"
           }
         }
       }
@@ -3360,6 +3687,46 @@
         }
       }
     },
+    "GitHub öffnen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open GitHub"
+          }
+        }
+      }
+    },
+    "GitHub-Anmeldung fehlgeschlagen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "GitHub sign-in failed"
+          }
+        }
+      }
+    },
+    "GitHub-Anmeldung konnte nicht gestartet werden": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Could not start the GitHub sign-in"
+          }
+        }
+      }
+    },
+    "GitHub-Konto konnte nicht gelesen werden": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Could not read the GitHub account"
+          }
+        }
+      }
+    },
     "Gleich": {
       "localizations": {
         "en": {
@@ -3556,6 +3923,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Imported bodies have no parameters"
+          }
+        }
+      }
+    },
+    "In Arbeit": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "In Progress"
+          }
+        }
+      }
+    },
+    "In diesem Build noch nicht eingerichtet.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not set up in this build yet."
           }
         }
       }
@@ -4393,6 +4780,16 @@
         }
       }
     },
+    "Korrektur liegt bereit": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fix ready"
+          }
+        }
+      }
+    },
     "Korrektur während der Fahrt": {
       "localizations": {
         "en": {
@@ -4459,6 +4856,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Hover a curve – the pointer's side sets the direction, click to apply"
+          }
+        }
+      }
+    },
+    "Kurz: Was ist das Problem?": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "In short: what is the problem?"
           }
         }
       }
@@ -4850,6 +5257,16 @@
         }
       }
     },
+    "Meine Berichte": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "My Reports"
+          }
+        }
+      }
+    },
     "Menlo (Schreibmaschine)": {
       "localizations": {
         "en": {
@@ -4886,6 +5303,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "ISO metric thread along the whole length of the face."
+          }
+        }
+      }
+    },
+    "Mit GitHub anmelden …": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sign In with GitHub …"
           }
         }
       }
@@ -5080,12 +5507,42 @@
         }
       }
     },
+    "Neu": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "New"
+          }
+        }
+      }
+    },
     "Neue Designs orthografisch anzeigen": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Show new designs orthographic"
+          }
+        }
+      }
+    },
+    "Neuer Bericht": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "New Report"
+          }
+        }
+      }
+    },
+    "Neuer Fehlerbericht": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "New Bug Report"
           }
         }
       }
@@ -5640,6 +6097,7 @@
       }
     },
     "Position %lld": {
+      "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
@@ -5650,6 +6108,7 @@
       }
     },
     "Position entfernen": {
+      "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
@@ -5848,6 +6307,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Project"
+          }
+        }
+      }
+    },
+    "Prüfe Berechtigung …": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Checking permission …"
           }
         }
       }
@@ -6190,6 +6659,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Sleep"
+          }
+        }
+      }
+    },
+    "Rückfrage": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Question"
           }
         }
       }
@@ -6705,6 +7184,16 @@
         }
       }
     },
+    "Senden": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Send"
+          }
+        }
+      }
+    },
     "Senkrecht": {
       "localizations": {
         "en": {
@@ -7006,6 +7495,7 @@
       }
     },
     "Skizzenpunkt – Lage über die Maße der Skizze": {
+      "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
@@ -8288,6 +8778,16 @@
         }
       }
     },
+    "Was hast du gemacht, was hast du erwartet, was ist passiert? Version und Mac werden automatisch angehängt.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What did you do, what did you expect, what happened? Version and Mac are attached automatically."
+          }
+        }
+      }
+    },
     "Weg": {
       "localizations": {
         "en": {
@@ -8339,6 +8839,7 @@
       }
     },
     "Werkstückposition anfahren – leere Felder bleiben, wie sie sind": {
+      "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
@@ -8504,6 +9005,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Angle"
+          }
+        }
+      }
+    },
+    "Wird bearbeitet": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Being processed"
           }
         }
       }
@@ -9205,6 +9716,16 @@
         }
       }
     },
+    "Ähnliche bekannte Fehler – ist es einer davon?": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Similar known bugs – is it one of these?"
+          }
+        }
+      }
+    },
     "Ändern": {
       "localizations": {
         "en": {
@@ -9266,6 +9787,7 @@
       }
     },
     "–": {
+      "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
