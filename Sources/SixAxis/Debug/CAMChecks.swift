@@ -92,7 +92,9 @@ enum CAMChecks {
         await snap("c02-toolpaths")
         if let r, let setup = editor.doc.cam {
             let g = GCodeWriter.write(r, setup: setup, title: "Test")
-            check("cam: G-code with three sections", g.contains("(Kontur1)") && g.contains("(Tasche1)") && g.contains("(Bohren1)"))
+            // Section comments carry the operation names (localized: "Kontur1" or "Contour1").
+            let names = editor.cam.operations.map(\.name)
+            check("cam: G-code with three sections", names.count == 3 && names.allSatisfy { g.contains("(\($0))") }, "\(names)")
             check("cam: tool change pause for GRBL", g.contains("M0"))
             if let dir = snapshots { try? g.write(to: dir.appendingPathComponent("test.nc"), atomically: true, encoding: .ascii) }
         }
