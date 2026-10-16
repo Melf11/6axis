@@ -68,6 +68,7 @@ struct Ribbon: View {
             RibbonDivider()
             group(String(localized: "Ausgabe")) {
                 ToolButton(title: String(localized: "G-Code"), symbol: "doc.text", enabled: !(editor.camResult?.paths.isEmpty ?? true)) { editor.exportGCode() }
+                ToolButton(title: String(localized: "Maschine"), symbol: "gearshape.arrow.triangle.2.circlepath") { editor.openMachineWindow() }
             }
         }
     }

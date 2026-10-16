@@ -240,6 +240,7 @@ final class Editor {
     var modelRevision = 0
     @ObservationIgnored let drawing = DrawingController()
     @ObservationIgnored var openDrawingWindow: () -> Void = {}
+    @ObservationIgnored var openMachineWindow: () -> Void = {}
 
     // Interaction
     var selection: [Pick] = []

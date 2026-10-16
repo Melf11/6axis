@@ -1,6 +1,6 @@
 # Fräsen (CAM) und Maschinensteuerung – Konzept
 
-Stand: Oktober 2026 · Status: Stufe 1 umgesetzt (Branch feature/2.0-cam)
+Stand: Oktober 2026 · Status: Stufen 1 und 2 umgesetzt (Branch feature/2.0-cam)
 
 Ziel: Bauteile aus 6axis direkt auf der CNC-Fräse fertigen – **vom Modell bis zum Fräsen in einem Mac-Programm**, so wie Estlcam CAM und Maschinensteuerung verbindet. 6axis soll also nicht nur G-Code erzeugen, sondern die Fräse auch selbst steuern: verfahren, Nullpunkt setzen, Programm abfahren – zuerst für die **Holzwerkstatt** (Plattenfräse/Portalfräse, 2,5D), später auch 3D-Formen. Es gelten die [Leitlinien](../AGENTS.md): keine eigene Welt, sondern derselbe Ablauf wie beim Konstruieren – Bearbeitung wählen, Dialog mit Vorschau, Eintrag in einer Liste, alles parametrisch. Umgesetzt als eigene **Werkzeugleiste „Fräsen“** (Umschalter am Arbeitsbereich-Symbol, wie die Skizze ihre eigene Leiste hat): gleiches Modell, gleiches 3D-Fenster, die Bearbeitungen im Browser unter „Fräsen“ – wer nicht fräst, sieht davon nichts.
 

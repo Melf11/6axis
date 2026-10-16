@@ -55,6 +55,11 @@ struct SixAxisApp: App {
         .windowToolbarStyle(.unified)
         .commands { AppCommands(editor: editor) }
 
+        Window("Maschine", id: "machine") {
+            MachineWindow(editor: editor)
+        }
+        .defaultSize(width: 900, height: 600)
+
         Window("Zeichnung", id: "drawing") {
             DrawingWindow(editor: editor)
                 .frame(minWidth: 700, minHeight: 480)

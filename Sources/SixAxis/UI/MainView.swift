@@ -83,7 +83,10 @@ struct MainView: View {
         .sheet(isPresented: Binding(get: { editor.showToolLibrary }, set: { editor.showToolLibrary = $0 })) {
             ToolLibraryView(editor: editor)
         }
-        .onAppear { editor.openDrawingWindow = { openWindow(id: "drawing") } }
+        .onAppear {
+            editor.openDrawingWindow = { openWindow(id: "drawing") }
+            editor.openMachineWindow = { openWindow(id: "machine") }
+        }
     }
 }
 

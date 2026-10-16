@@ -8,8 +8,20 @@ import SixAxisCore
 enum CAMChecks {
     static func check(_ name: String, _ ok: Bool, _ detail: @autoclosure () -> String = "") { SketchChecks.check(name, ok, detail()) }
 
+    static func waitFor(_ seconds: Double, _ done: () -> Bool) async {
+        let end = Date().addingTimeInterval(seconds)
+        while !done() && Date() < end { await ModellingChecks.pause(0.05) }
+    }
+
     static func run(_ editor: Editor, snapshots: URL?) async {
         func snap(_ name: String) async { if let snapshots { await DemoScript.snap(editor, name, snapshots) } }
+        /// Snapshot of another window by title.
+        func snapWindow(_ name: String, _ title: String) async {
+            guard let dir = snapshots, let w = NSApp.windows.first(where: { $0.title == title }), let v = w.contentView,
+                  let rep = v.bitmapImageRepForCachingDisplay(in: v.bounds) else { return }
+            v.cacheDisplay(in: v.bounds, to: rep)
+            try? rep.representation(using: .png, properties: [:])?.write(to: dir.appendingPathComponent("\(name).png"))
+        }
         let settle = ModellingChecks.settle
         let click = ModellingChecks.click
         editor.newDocument()
@@ -84,6 +96,44 @@ enum CAMChecks {
             check("cam: tool change pause for GRBL", g.contains("M0"))
             if let dir = snapshots { try? g.write(to: dir.appendingPathComponent("test.nc"), atomically: true, encoding: .ascii) }
         }
+        // Machine window against the simulator: connect, home, jog, zero, run the milling program.
+        let session = MachineSession.shared
+        editor.openMachineWindow()
+        session.selectedPort = ""
+        session.connect()
+        await waitFor(10) { session.snapshot.firmware.hasPrefix("Grbl") && session.state == .idle }
+        check("machine: simulator connected", session.connected && session.state == .idle, "\(session.snapshot.firmware)")
+        session.controller.home()
+        await waitFor(10) { session.state == .idle && session.snapshot.homed }
+        session.jogStep = 10
+        session.jog(1, 1, 0)
+        await waitFor(10) { session.state == .idle && abs(session.snapshot.status.machine.x - 10) < 1e-6 }
+        check("machine: jog moves X/Y", abs(session.snapshot.status.machine.y - 10) < 1e-6, "\(session.snapshot.status.machine)")
+        session.controller.zero(x: true, y: true, z: true)
+        await waitFor(5) { simd_length(session.snapshot.status.work) < 1e-6 }
+        check("machine: zeroed", simd_length(session.snapshot.status.work) < 1e-6)
+        session.loadFromMilling(editor)
+        check("machine: program from milling", session.programName == "Unbenannt" || !session.programName.isEmpty)
+        session.start()
+        await waitFor(10) { session.running }
+        await ModellingChecks.pause(0.4)
+        await snapWindow("c04-machine", String(localized: "Maschine"))
+        editor.workspace = .cam
+        await snap("c05-live-tool")
+        // The tool change (M0) holds the program until the user continues.
+        var toolChanges = 0
+        await waitFor(120) {
+            if session.state == .hold && session.running && toolChanges < 5 {
+                toolChanges += 1
+                session.controller.resume()
+            }
+            return session.snapshot.jobFinished
+        }
+        check("machine: held for the tool change", toolChanges >= 1, "\(toolChanges)")
+        check("machine: program finished on the simulator", session.snapshot.jobFinished && session.snapshot.jobDone == session.snapshot.jobLines,
+              "\(session.snapshot.jobDone)/\(session.snapshot.jobLines) \(session.snapshot.message ?? "")")
+        session.disconnect()
+
         editor.showCAMSetup = true
         await snap("c03-setup")
         editor.showCAMSetup = false
