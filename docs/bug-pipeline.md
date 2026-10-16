@@ -140,6 +140,11 @@ App-Seite gegen einen nachgebildeten GitHub-Server (`scripts/bugreport-check.sh`
 Chat). Die Claude-Schritte der Workflows werden übersprungen, solange das Secret fehlt. Offen: Client-ID, Secret,
 Labels/Branch-Schutz einrichten, Probelauf mit echtem Issue; Anhänge (nur Text bisher) und Stufe 5.
 
+**Vor dem Hinterlegen des Tokens noch umsetzen (Härtung gegen Prompt-Injection):** Claude bekommt nur Text vom Melder
+und vom Inhaber (Kommentare per Skript vorgefiltert statt `gh issue view --comments`); im Fix-Job keine beliebigen
+Skripte (`Bash(scripts/*)`, `Bash(swift:*)`) ausführen lassen, sondern nur die festen Prüfbefehle. Außerdem entscheiden:
+Berechtigungsprüfung beim App-Start als Ausnahme in Leitlinie 7 aufnehmen oder erst beim Öffnen des Chats prüfen.
+
 | Stufe | Inhalt | Fertig, wenn |
 |---|---|---|
 | **1 Repository** | Freigabeliste, `CODEOWNERS`, Labels, Branch-Schutz `main`, Skript zur Freigabeprüfung mit Tests | Branch-Schutz aktiv; Skript entscheidet korrekt für Liste/Label/Fremde |
