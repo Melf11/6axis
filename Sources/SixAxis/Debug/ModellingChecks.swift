@@ -54,7 +54,20 @@ enum ModellingChecks {
         await click(editor, Vec3(70, 30, 20))
         editor.updateCommandFeature { k in if case var .hole(h) = k { h.diameter = "8 mm"; h.extent = .through; k = .hole(h) } }
         await settle(editor)
-        if case let .hole(h)? = editor.commandFeature?.kind { check("hole: two positions from clicks", h.points.count == 2, "\(h.points.count)") }
+        if case let .hole(h)? = editor.commandFeature?.kind {
+            check("hole: two positions from clicks", h.points.count == 2, "\(h.points.count)")
+            if case let .faceOffset(_, x, y)? = h.points.first {
+                check("hole: click gives distances from the face corner", abs((Double(x) ?? 0) - 30) <= 1 && abs((Double(y) ?? 0) - 30) <= 1, "\(x) \(y)")
+            } else {
+                check("hole: click gives distances from the face corner", false, "\(h.points)")
+            }
+        }
+        // Typed exactly: first hole at X 30, second at X 70, both Y 30.
+        editor.updateCommandFeature { k in
+            guard case var .hole(h) = k else { return }
+            for i in h.points.indices { if case let .faceOffset(r, _, _) = h.points[i] { h.points[i] = .faceOffset(r, x: i == 0 ? "30" : "70", y: "30") } }
+            k = .hole(h)
+        }
         await snap("m01-hole")
         let holeId = editor.command?.featureId
         editor.commitCommand()
@@ -110,6 +123,30 @@ enum ModellingChecks {
         await settle(editor)
         let bolt = volume(editor, boltF.id)
         check("thread: modeled M8", bolt < .pi * 16 * 12 - 40 && bolt > .pi * 16 * 12 - 100, "\(bolt)")
+
+        // Thread in a hole (crashed before 2.0.1): pick the hole wall, then again after the preview changed the faces.
+        editor.cameraAnimation = nil
+        editor.camera.orientation = Camera.homeOrientation
+        editor.camera.target = SIMD3<Float>(30, 30, 10)
+        editor.camera.distance = 120
+        await settle(editor)
+        editor.beginCommand(.thread)
+        // Looking down into the hole, the wall on the far side is visible.
+        let wall = Vec3(30, 30, 18) - toEye * 4
+        await click(editor, wall)
+        if case let .thread(t)? = editor.commandFeature?.kind { check("thread in hole: hole wall picked", t.faces.count == 1, "\(t.faces.count)") }
+        await click(editor, wall)
+        for _ in 0..<5 { editor.updateHover(at: editor.camera.project(wall) ?? .zero); await settle(editor) }
+        check("thread in hole: second click and hover on the threaded preview survive", editor.command?.kind == .thread)
+        if case let .thread(t)? = editor.commandFeature?.kind, t.faces.isEmpty { await click(editor, wall) }
+        editor.commitCommand()
+        await settle(editor)
+        check("thread in hole: no errors", editor.state.errors.isEmpty, "\(editor.state.errors.values)")
+        editor.undo()
+        await settle(editor)
+        editor.camera.target = SIMD3<Float>(75, 30, 5)
+        editor.camera.distance = 330
+        await settle(editor)
 
         // Copy the bolt 30 mm to the right.
         editor.selection = [.body(boltF.id)]
@@ -181,7 +218,7 @@ enum ModellingChecks {
         check("section: on through the holes", editor.section?.axis == 1 && editor.section?.offset == 30)
         editor.updateHover(at: editor.camera.project(Vec3(50, 5, 20)) ?? .zero)
         check("section: removed half is not pickable", editor.hover == nil || {
-            if case let .face(b, i)? = editor.hover, let c = editor.state.bodies[b]?.faceInfos[i]?.centroid { return c.y >= 29 }
+            if case let .face(b, i)? = editor.hover, let c = editor.state.bodies[b]?.faceInfo(at: i)?.centroid { return c.y >= 29 }
             return true
         }(), "\(String(describing: editor.hover))")
         await snap("m09-section")

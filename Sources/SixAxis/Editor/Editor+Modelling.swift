@@ -78,9 +78,15 @@ extension Editor {
         return out
     }
 
+    /// The cylindrical face under a pick, looked up in `s`. Picks carry face numbers of the displayed
+    /// model; in an earlier state (before the command's feature) the same face is found by its geometry,
+    /// because numbers shift once e.g. a thread adds faces.
     func cylinderFace(_ p: Pick, in s: ModelState) -> BodyFaceRef? {
-        guard case let .face(b, i) = p, let body = s.bodies[b], body.faceInfos[i]?.surface == .cylinder,
-              let ref = body.faceRef(i) else { return nil }
+        guard case let .face(b, i) = p, let shown = state.bodies[b], i >= 0, i < shown.faceInfos.count,
+              let info = shown.faceInfo(at: i), let body = s.bodies[b] else { return nil }
+        let idx = body === shown ? i : body.resolve(FaceRef(index: -1, centroid: info.centroid, normal: info.normal))
+        guard let idx, idx < body.faceInfos.count, body.faceInfos[idx]?.surface == .cylinder,
+              let ref = body.faceRef(idx) else { return nil }
         return BodyFaceRef(body: b, face: ref)
     }
 
@@ -154,7 +160,7 @@ extension Editor {
         case .cylinder: return cylinderFace(p, in: stateBeforeCommand) != nil || cylinderFace(p, in: state) != nil
         case .holePosition:
             if case .sketchPoint = p { return true }
-            if case let .face(b, i) = p { return state.bodies[b]?.faceInfos[i]?.isPlanar == true }
+            if case let .face(b, i) = p { return state.bodies[b]?.faceInfo(at: i)?.isPlanar == true }
             return false
         case .none: return false
         }
@@ -185,10 +191,13 @@ extension Editor {
                     let point = HolePoint.sketchPoint(sketch: s, point: i)
                     if let j = x.points.firstIndex(of: point) { x.points.remove(at: j) } else { x.points.append(point) }
                 } else if case let .face(b, i) = p, let hit = faceHit(b, i, in: state),
-                          let preBody = pre.bodies[b], let info = state.bodies[b]?.faceInfos[i],
+                          let preBody = pre.bodies[b], let info = state.bodies[b]?.faceInfo(at: i),
                           let preIdx = preBody.resolve(FaceRef(index: -1, centroid: info.centroid, normal: info.normal)),
-                          let ref = preBody.faceRef(preIdx) {
-                    x.points.append(.face(BodyFaceRef(body: b, face: ref), position: hit))
+                          let ref = preBody.faceRef(preIdx), let frame = FaceFrame.of(preBody, face: preIdx) {
+                    // Distances from the face's corner, rounded to 0.5 mm – then typed exactly in the dialog.
+                    let o = frame.offsets(hit)
+                    func r(_ v: Double) -> String { plainNumber((v * 2).rounded() / 2) }
+                    x.points.append(.faceOffset(BodyFaceRef(body: b, face: ref), x: r(o.x), y: r(o.y)))
                 }
                 k = .hole(x)
             case var .thread(x):
@@ -272,7 +281,7 @@ extension Editor {
 
     /// The point under the cursor on a planar face (for placing holes).
     func faceHit(_ body: UUID, _ face: Int, in s: ModelState) -> Vec3? {
-        guard let info = s.bodies[body]?.faceInfos[face], info.isPlanar else { return nil }
+        guard let info = s.bodies[body]?.faceInfo(at: face), info.isPlanar else { return nil }
         let r = camera.rayD(at: lastMouse)
         let plane = Plane.forFace(point: info.origin, normal: info.normal)
         return plane.intersect(rayOrigin: r.origin, direction: r.direction)

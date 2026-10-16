@@ -112,9 +112,10 @@ extension ModelBuilder {
     // MARK: Holes
 
     /// Start point and drilling direction (into the material) of each hole position.
-    func holePositions(_ h: HoleFeature, _ state: ModelState) throws -> [(Vec3, Vec3)] {
+    func holePositions(_ h: HoleFeature, _ state: ModelState, _ ev: inout Evaluator) throws -> [(Vec3, Vec3)] {
         guard !h.points.isEmpty else { throw KernelError("Keine Position gewählt") }
-        return try h.points.map { pt in
+        var positions: [(Vec3, Vec3)] = []
+        for pt in h.points {
             var origin: Vec3, normal: Vec3
             switch pt {
             case let .sketchPoint(sid, pid):
@@ -127,9 +128,16 @@ extension ModelBuilder {
                 }
                 normal = info.normal
                 origin = position - simd_dot(position - info.origin, normal) * normal
+            case let .faceOffset(bf, x, y):
+                guard let body = state.bodies[bf.body], let idx = body.resolve(bf.face), let frame = FaceFrame.of(body, face: idx) else {
+                    throw KernelError("Fläche nicht mehr gefunden")
+                }
+                normal = frame.plane.normal
+                origin = frame.point(try ev.evaluate(x), try ev.evaluate(y))
             }
-            return (origin, h.flip ? normal : -normal)
+            positions.append((origin, h.flip ? normal : -normal))
         }
+        return positions
     }
 
     func applyHole(_ f: Feature, _ h: HoleFeature, _ state: inout ModelState, _ ev: inout Evaluator) throws {
@@ -160,7 +168,7 @@ extension ModelBuilder {
         profile.append(Vec2(0, depth))
 
         var tools: [Shape] = []
-        let positions = try holePositions(h, state)
+        let positions = try holePositions(h, state, &ev)
         for (o, d) in positions {
             let u = simd_normalize(abs(d.x) < 0.9 ? simd_cross(d, Vec3(1, 0, 0)) : simd_cross(d, Vec3(0, 1, 0)))
             let pl = Plane(origin: o, xDir: u, normal: simd_cross(u, d))

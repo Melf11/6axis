@@ -23,6 +23,10 @@ public final class BuiltBody: @unchecked Sendable {
     public private(set) lazy var faceInfos: [FaceInfo?] = (0..<shape.faceCount).map { shape.faceInfo($0) }
     public private(set) lazy var edgeInfos: [EdgeInfo?] = (0..<shape.edgeCount).map { shape.edgeInfo($0) }
 
+    /// Face/edge info, or nil for an index from a stale pick.
+    public func faceInfo(at i: Int) -> FaceInfo? { i >= 0 && i < faceInfos.count ? faceInfos[i] : nil }
+    public func edgeInfo(at i: Int) -> EdgeInfo? { i >= 0 && i < edgeInfos.count ? edgeInfos[i] : nil }
+
     public func faceRef(_ index: Int) -> FaceRef? {
         guard index < faceInfos.count, let f = faceInfos[index] else { return nil }
         var ref = FaceRef(index: index, centroid: f.centroid, normal: f.normal)

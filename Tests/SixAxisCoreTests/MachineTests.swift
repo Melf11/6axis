@@ -63,6 +63,10 @@ final class MachineTests: XCTestCase {
         m.probeZ(thickness: 12)
         // Contact at machine Z -40: work Z there = 12 (plate), then 5 mm up.
         wait(m, "probed") { $0.status.state == .idle && abs($0.status.work.z - 17) < 1e-3 && abs($0.status.machine.z + 35) < 1e-3 }
+        // Move to a work position: up first, then over.
+        m.moveTo(x: 20, y: 5, z: 25, currentZ: m.snapshot.status.work.z)
+        wait(m, "moved to") { $0.status.state == .idle && abs($0.status.work.x - 20) < 1e-6 && abs($0.status.work.z - 25) < 1e-6 }
+        XCTAssertTrue(sim.executed.suffix(2).first?.contains("Z") == true, "Z first when going up")
         m.park(x: -10, y: -10)
         wait(m, "parked") { $0.status.state == .idle && abs($0.status.machine.x + 10) < 1e-6 && abs($0.status.machine.z + 2) < 1e-6 }
         m.disconnect()

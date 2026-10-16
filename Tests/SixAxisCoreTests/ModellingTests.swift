@@ -125,6 +125,40 @@ final class ModellingTests: XCTestCase {
         XCTAssertEqual(cs.bodies[body2]!.shape.volume, 100 * 60 * 20 - cone - .pi * 6.25 * 17.5, accuracy: 0.5)
     }
 
+    func testHoleAtExactOffsetsFollowsThePart() {
+        var doc = CADDocument()
+        doc.parameters = [UserParameter(name: "breite", expression: "100 mm")]
+        var sk = Sketch(plane: .xy)
+        let c = [sk.addPoint(Vec2(0, 0)), sk.addPoint(Vec2(100, 0)), sk.addPoint(Vec2(100, 60)), sk.addPoint(Vec2(0, 60))]
+        sk.points[sk.pointIndex(c[0])!].fixed = true
+        let l = (0..<4).map { sk.addLine(c[$0], c[($0 + 1) % 4]) }
+        sk.addConstraint(.horizontal(line: l[0])); sk.addConstraint(.vertical(line: l[1]))
+        sk.addConstraint(.horizontal(line: l[2])); sk.addConstraint(.vertical(line: l[3]))
+        sk.addConstraint(.length(line: l[0], value: "breite"))
+        sk.addConstraint(.length(line: l[1], value: "60 mm"))
+        let s = Feature(name: "S", kind: .sketch(sk))
+        var ex = ExtrudeFeature()
+        ex.profiles = [ProfileRef(sketch: s.id, sample: Vec2(5, 5))]
+        ex.distance = "20 mm"
+        let e = Feature(name: "E", kind: .extrude(ex))
+        doc.features = [s, e]
+        let top = topFace(build(doc), e.id)
+        var h = HoleFeature()
+        // 37 mm from the left edge (System 32 front distance), 20 mm from the right edge via the parameter.
+        h.points = [.faceOffset(top, x: "37", y: "30"), .faceOffset(top, x: "breite - 20", y: "30")]
+        h.extent = .through
+        h.diameter = "5 mm"
+        doc.features.append(Feature(name: "B", kind: .hole(h)))
+        for w in [100.0, 160.0] {
+            doc.parameters[0].expression = "\(w) mm"
+            let state = build(doc)
+            let holes = state.bodies[e.id]!.faceInfos.compactMap { $0 }.filter { $0.surface == .cylinder }.map(\.axisOrigin.x).sorted()
+            XCTAssertEqual(holes.count, 2)
+            XCTAssertEqual(holes[0], 37, accuracy: 1e-6)
+            XCTAssertEqual(holes[1], w - 20, accuracy: 1e-6, "follows the width")
+        }
+    }
+
     func testHoleFollowsSketchPoint() {
         var doc = CADDocument()
         doc.parameters = [UserParameter(name: "x", expression: "20 mm")]

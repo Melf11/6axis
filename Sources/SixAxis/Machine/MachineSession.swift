@@ -16,6 +16,16 @@ final class MachineSession {
     var jogStep: Double = 1
     var jogFeed: Double = 2000
     var plateThickness: Double = 12
+    /// Target for "Anfahren" (work coordinates, as typed; empty = keep axis).
+    var gotoX = ""
+    var gotoY = ""
+    var gotoZ = ""
+
+    func goTo() {
+        func v(_ s: String) -> Double? { Double(s.replacingOccurrences(of: ",", with: ".").trimmingCharacters(in: .whitespaces)) }
+        guard connected, !running else { return }
+        controller.moveTo(x: v(gotoX), y: v(gotoY), z: v(gotoZ), currentZ: snapshot.status.work.z)
+    }
     /// Loaded program (from the milling workspace or a file) and its name.
     private(set) var program: String?
     private(set) var programName = ""

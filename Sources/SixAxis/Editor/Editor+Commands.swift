@@ -170,7 +170,7 @@ extension Editor {
 
     func selectedPlanarFaces() -> [BodyFaceRef] {
         selection.compactMap { p in
-            guard case let .face(b, i) = p, let body = state.bodies[b], body.faceInfos[i]?.isPlanar == true,
+            guard case let .face(b, i) = p, let body = state.bodies[b], body.faceInfo(at: i)?.isPlanar == true,
                   let ref = body.faceRef(i) else { return nil }
             return BodyFaceRef(body: b, face: ref)
         }
@@ -196,7 +196,7 @@ extension Editor {
         switch pick {
         case let .originPlane(ref): return ref
         case let .face(b, i):
-            guard let body = state.bodies[b], body.faceInfos[i]?.isPlanar == true, let ref = body.faceRef(i) else { return nil }
+            guard let body = state.bodies[b], body.faceInfo(at: i)?.isPlanar == true, let ref = body.faceRef(i) else { return nil }
             return .face(BodyFaceRef(body: b, face: ref))
         default: return nil
         }
@@ -210,7 +210,7 @@ extension Editor {
             return .sketchLine(sketch: sid, curve: cid)
         case let .edge(b, i):
             // Straight edges, and circular edges standing for their axis (rim of a hole or bolt).
-            guard let body = state.bodies[b], let info = body.edgeInfos[i], info.kind == .line || info.kind == .circle,
+            guard let body = state.bodies[b], let info = body.edgeInfo(at: i), info.kind == .line || info.kind == .circle,
                   let ref = body.edgeRef(i) else { return nil }
             return .edge(BodyEdgeRef(body: b, edge: ref))
         case .face:
@@ -251,7 +251,7 @@ extension Editor {
             return false
         case .extrude:
             if case .profile = p { return true }
-            if case let .face(b, i) = p { return state.bodies[b]?.faceInfos[i]?.isPlanar == true }
+            if case let .face(b, i) = p { return state.bodies[b]?.faceInfo(at: i)?.isPlanar == true }
             return false
         case .revolve:
             if cmd.activeInput == 1 { return axisRef(for: p) != nil }
@@ -297,7 +297,7 @@ extension Editor {
         case .fillet, .chamfer:
             guard case let .edge(b, i) = p else { return }
             let pre = stateBeforeCommand
-            guard let mid = state.bodies[b]?.edgeInfos[i]?.midpoint, let preBody = pre.bodies[b],
+            guard let mid = state.bodies[b]?.edgeInfo(at: i)?.midpoint, let preBody = pre.bodies[b],
                   let preIdx = preBody.resolve(EdgeRef(index: -1, midpoint: mid)), let ref = preBody.edgeRef(preIdx) else { return }
             updateCommandFeature { k in
                 func toggle(_ edges: inout [BodyEdgeRef]) {
@@ -313,7 +313,7 @@ extension Editor {
         case .shell:
             guard case let .face(b, i) = p else { return }
             let pre = stateBeforeCommand
-            guard let info = state.bodies[b]?.faceInfos[i], let preBody = pre.bodies[b],
+            guard let info = state.bodies[b]?.faceInfo(at: i), let preBody = pre.bodies[b],
                   let preIdx = preBody.resolve(FaceRef(index: -1, centroid: info.centroid, normal: info.normal)),
                   let ref = preBody.faceRef(preIdx) else { return }
             updateCommandFeature { k in

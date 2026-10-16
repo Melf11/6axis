@@ -84,7 +84,7 @@ extension Editor {
 
     /// Faces the edited operation accepts: horizontal planar faces facing up, or holes for drilling.
     func acceptsCAMPick(_ p: Pick) -> Bool {
-        guard let op = editedOperation, case let .face(b, i) = p, let info = state.bodies[b]?.faceInfos[i] else { return false }
+        guard let op = editedOperation, case let .face(b, i) = p, let info = state.bodies[b]?.faceInfo(at: i) else { return false }
         if op.kind == .drill && info.surface == .cylinder { return abs(info.axisDir.z) > 0.999 }
         return info.isPlanar && info.normal.z > 0.999
     }

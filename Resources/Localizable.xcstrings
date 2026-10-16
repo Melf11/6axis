@@ -45,6 +45,16 @@
       },
       "shouldTranslate": false
     },
+    "%@ ab Kante": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ from edge"
+          }
+        }
+      }
+    },
     "%@ an dieser Stelle nullen": {
       "localizations": {
         "en": {
@@ -464,6 +474,16 @@
         }
       }
     },
+    "Abstände von der linken bzw. vorderen Kante der Fläche; Ausdrücke wie „breite / 2“ gehen auch.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Distances from the left and front edge of the face; expressions like “width / 2” work too."
+          }
+        }
+      }
+    },
     "Achsabstand": {
       "localizations": {
         "en": {
@@ -674,6 +694,16 @@
         }
       }
     },
+    "Anfahren": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Go To"
+          }
+        }
+      }
+    },
     "Angehalten": {
       "localizations": {
         "en": {
@@ -690,6 +720,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Held – e.g. tool change: insert the new tool, probe Z, then continue."
+          }
+        }
+      }
+    },
+    "Angeklickter Punkt (ältere Datei) – neu anklicken für genaue Maße": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clicked point (older file) – click again for exact distances"
           }
         }
       }
@@ -5599,6 +5639,26 @@
         }
       }
     },
+    "Position %lld": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Position %lld"
+          }
+        }
+      }
+    },
+    "Position entfernen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remove position"
+          }
+        }
+      }
+    },
     "Position zurücksetzen": {
       "localizations": {
         "en": {
@@ -6945,6 +7005,16 @@
         }
       }
     },
+    "Skizzenpunkt – Lage über die Maße der Skizze": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sketch point – placed by the sketch's dimensions"
+          }
+        }
+      }
+    },
     "Slicer": {
       "localizations": {
         "en": {
@@ -8268,6 +8338,16 @@
         }
       }
     },
+    "Werkstückposition anfahren – leere Felder bleiben, wie sie sind": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Move to a work position – empty fields stay as they are"
+          }
+        }
+      }
+    },
     "Werkzeug": {
       "localizations": {
         "en": {
@@ -9181,6 +9261,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Overcut"
+          }
+        }
+      }
+    },
+    "–": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "–"
           }
         }
       }

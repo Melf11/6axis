@@ -171,6 +171,15 @@ struct MachineWindow: View {
                 }
                 Button { session.controller.park(x: -10, y: -10) } label: { Label("Parken", systemImage: "parkingsign") }
             }
+            HStack(spacing: 4) {
+                Button { session.goTo() } label: { Label("Anfahren", systemImage: "scope") }
+                    .help("Werkstückposition anfahren – leere Felder bleiben, wie sie sind")
+                ForEach([("X", \MachineSession.gotoX), ("Y", \MachineSession.gotoY), ("Z", \MachineSession.gotoZ)], id: \.0) { axis, kp in
+                    Text(axis).font(.system(size: 11, weight: .semibold)).foregroundStyle(.secondary)
+                    TextField("–", text: Binding(get: { session[keyPath: kp] }, set: { session[keyPath: kp] = $0 }))
+                        .frame(width: 52).onSubmit { session.goTo() }
+                }
+            }
             HStack {
                 Button { session.controller.probeZ(thickness: session.plateThickness) } label: { Label("Z antasten", systemImage: "arrow.down.to.line.compact") }
                 Text("Platte").font(.system(size: 11)).foregroundStyle(.secondary)
