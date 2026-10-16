@@ -61,7 +61,7 @@ enum DemoScript {
                 }
                 guard let vp = NSApp.windows.lazy.compactMap({ findViewport($0.contentView) }).first,
                       let renderer = vp.renderer else { print("DRAG no viewport"); exit(1) }
-                NSApp.activate(ignoringOtherApps: true)
+                if !Editor.runsInBackground { NSApp.activate(ignoringOtherApps: true) }
                 vp.window?.makeKeyAndOrderFront(nil)
                 await pause(0.5)
                 // Frame latency needs a visible window (hidden windows don't render, by design).
