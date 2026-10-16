@@ -14,6 +14,7 @@ struct ViewportOverlay: View {
                 drawDimensions(ctx)
                 drawExtrudeArrow(ctx)
                 drawSplineHandles(ctx)
+                drawMachineTool(ctx)
             }
             .allowsHitTesting(false)
 
@@ -27,6 +28,19 @@ struct ViewportOverlay: View {
         }
         .coordinateSpace(name: "overlay")
     }
+    /// Live cutter position from a connected machine (work position + program zero of the milling setup).
+    private func drawMachineTool(_ ctx: GraphicsContext) {
+        let session = MachineSession.shared
+        guard session.connected, editor.workspace == .cam, let origin = editor.camResult?.origin else { return }
+        let tip = origin + session.snapshot.status.work
+        guard let a = editor.camera.project(tip), let b = editor.camera.project(tip + Vec3(0, 0, 40)) else { return }
+        var shaft = Path()
+        shaft.move(to: a)
+        shaft.addLine(to: b)
+        ctx.stroke(shaft, with: .color(.red.opacity(0.85)), style: StrokeStyle(lineWidth: 4, lineCap: .round))
+        ctx.fill(Path(ellipseIn: CGRect(x: a.x - 5, y: a.y - 5, width: 10, height: 10)), with: .color(.red))
+    }
+
 
     // MARK: Helpers
 

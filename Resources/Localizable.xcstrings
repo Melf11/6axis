@@ -45,6 +45,16 @@
       },
       "shouldTranslate": false
     },
+    "%@ an dieser Stelle nullen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zero %@ here"
+          }
+        }
+      }
+    },
     "%@ bearbeiten": {
       "localizations": {
         "en": {
@@ -168,6 +178,26 @@
         }
       }
     },
+    "+10 %": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "+10 %"
+          }
+        }
+      }
+    },
+    "0": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "0"
+          }
+        }
+      }
+    },
     "1 Freiheitsgrad": {
       "localizations": {
         "en": {
@@ -227,6 +257,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "6axis %@ is available"
+          }
+        }
+      }
+    },
+    "6axis ersetzt keinen Not-Aus. Die Fräse braucht einen echten Not-Aus-Schalter, der Motoren und Spindel stromlos macht. Erste Programme immer „in der Luft“ testen (Z hoch genullt).": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "6axis does not replace an emergency stop. The router needs a real emergency stop switch that cuts power to the motors and the spindle. Always test new programs “in the air” first (Z zeroed high)."
           }
         }
       }
@@ -494,12 +534,42 @@
         }
       }
     },
+    "Alarm": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alarm"
+          }
+        }
+      }
+    },
+    "Alarm %lld": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alarm %lld"
+          }
+        }
+      }
+    },
     "Alle Anpassungen zurücksetzen": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Reset all adjustments"
+          }
+        }
+      }
+    },
+    "Alle nullen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zero All"
           }
         }
       }
@@ -604,6 +674,66 @@
         }
       }
     },
+    "Angehalten": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Held"
+          }
+        }
+      }
+    },
+    "Angehalten – z. B. Werkzeugwechsel: neues Werkzeug einsetzen, Z antasten, dann fortsetzen.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Held – e.g. tool change: insert the new tool, probe Z, then continue."
+          }
+        }
+      }
+    },
+    "Anklicken": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Click to pick"
+          }
+        }
+      }
+    },
+    "Anschluss": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Port"
+          }
+        }
+      }
+    },
+    "Anschluss %@ lässt sich nicht öffnen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cannot open port %@"
+          }
+        }
+      }
+    },
+    "Anschlüsse neu suchen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Search ports again"
+          }
+        }
+      }
+    },
     "Ansicht von oben": {
       "localizations": {
         "en": {
@@ -704,6 +834,26 @@
         }
       }
     },
+    "Arbeitsbereich wechseln": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Switch workspace"
+          }
+        }
+      }
+    },
+    "Auf Linie": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "On line"
+          }
+        }
+      }
+    },
     "Auf eine ebene Fläche klicken oder Skizzenpunkte wählen": {
       "localizations": {
         "en": {
@@ -720,6 +870,36 @@
           "stringUnit": {
             "state": "translated",
             "value": "Storage box (3D printing)"
+          }
+        }
+      }
+    },
+    "Aufmaß oben": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Top allowance"
+          }
+        }
+      }
+    },
+    "Aus": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Off"
+          }
+        }
+      }
+    },
+    "Aus „Fräsen“ übernehmen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Take from “Milling”"
           }
         }
       }
@@ -854,6 +1034,16 @@
         }
       }
     },
+    "Außen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Outside"
+          }
+        }
+      }
+    },
     "Außenmaß": {
       "localizations": {
         "en": {
@@ -894,6 +1084,16 @@
         }
       }
     },
+    "Bearbeitungen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Operations"
+          }
+        }
+      }
+    },
     "Beenden": {
       "extractionState": "stale",
       "localizations": {
@@ -901,6 +1101,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Quit"
+          }
+        }
+      }
+    },
+    "Befehl nicht verstanden (Buchstabe fehlt)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Command not understood (letter missing)"
           }
         }
       }
@@ -995,12 +1205,32 @@
         }
       }
     },
+    "Berechne Bahnen …": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Computing toolpaths …"
+          }
+        }
+      }
+    },
     "Berechne Modell …": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Computing model …"
+          }
+        }
+      }
+    },
+    "Bereit": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ready"
           }
         }
       }
@@ -1105,6 +1335,16 @@
         }
       }
     },
+    "Boden der Tasche anklicken – Inseln bleiben stehen.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Click the pocket floor – islands are left standing."
+          }
+        }
+      }
+    },
     "Bodenschatten": {
       "localizations": {
         "en": {
@@ -1135,6 +1375,46 @@
         }
       }
     },
+    "Bohren": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Drill"
+          }
+        }
+      }
+    },
+    "Bohrer": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Drill"
+          }
+        }
+      }
+    },
+    "Bohrer Ø5": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Drill Ø5"
+          }
+        }
+      }
+    },
+    "Bohrer Ø8": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Drill Ø8"
+          }
+        }
+      }
+    },
     "Bohrung": {
       "localizations": {
         "en": {
@@ -1161,6 +1441,42 @@
           "stringUnit": {
             "state": "translated",
             "value": "The hole is shorter than the countersink"
+          }
+        }
+      }
+    },
+    "Bohrung Ø%@ ist kleiner als das Werkzeug": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hole Ø%@ is smaller than the tool"
+          }
+        }
+      }
+    },
+    "Bohrung Ø%@ mit %@": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Bohrung Ø%1$@ mit %2$@"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hole Ø%1$@ with %2$@"
+          }
+        }
+      }
+    },
+    "Bohrungen anklicken – oder die Oberseite eines Teils für alle seine Bohrungen.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Click holes – or a part's top face for all of its holes."
           }
         }
       }
@@ -1714,6 +2030,16 @@
         }
       }
     },
+    "Drehzahl": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Speed"
+          }
+        }
+      }
+    },
     "Drucken": {
       "localizations": {
         "en": {
@@ -1904,12 +2230,42 @@
         }
       }
     },
+    "Ecke hinten links, Oberseite": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Back left corner, top"
+          }
+        }
+      }
+    },
     "Ecke klicken": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Click a corner"
+          }
+        }
+      }
+    },
+    "Ecke vorne links, Oberseite": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Front left corner, top"
+          }
+        }
+      }
+    },
+    "Ecke vorne links, Unterseite (Tisch)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Front left corner, bottom (table)"
           }
         }
       }
@@ -2054,6 +2410,16 @@
         }
       }
     },
+    "Einrichtung": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Setup"
+          }
+        }
+      }
+    },
     "Einstellungen": {
       "localizations": {
         "en": {
@@ -2070,6 +2436,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Settings (⌘,)"
+          }
+        }
+      }
+    },
+    "Einstellungsbefehl nicht unterstützt": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Setting command not supported"
           }
         }
       }
@@ -2204,6 +2580,16 @@
         }
       }
     },
+    "Endschalter ausgelöst – Position unsicher, Referenzfahrt nötig": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Limit switch triggered – position uncertain, homing needed"
+          }
+        }
+      }
+    },
     "Entfernen": {
       "localizations": {
         "en": {
@@ -2220,6 +2606,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Remove has no parameters – delete the step to bring the bodies back"
+          }
+        }
+      }
+    },
+    "Entsperren": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unlock"
           }
         }
       }
@@ -2396,6 +2792,16 @@
         }
       }
     },
+    "FRÄSEN": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "MILLING"
+          }
+        }
+      }
+    },
     "Fachboden": {
       "localizations": {
         "en": {
@@ -2487,12 +2893,48 @@
         }
       }
     },
+    "Fehler in Zeile": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Error in line"
+          }
+        }
+      }
+    },
+    "Fehler in Zeile %lld: %@ – Programm angehalten": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Fehler in Zeile %1$lld: %2$@ – Programm angehalten"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Error in line %1$lld: %2$@ – program held"
+          }
+        }
+      }
+    },
     "Fehler melden …": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Report a bug …"
+          }
+        }
+      }
+    },
+    "Fehlerhafter G-Code (Achsen/Wörter)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Faulty G-code (axes/words)"
           }
         }
       }
@@ -2628,12 +3070,82 @@
         }
       }
     },
+    "Fortsetzen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Continue"
+          }
+        }
+      }
+    },
     "Freies, natives CAD für Konstruktion und 3D-Druck – vollständig offline.\n\n": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Free, native CAD for design and 3D printing – fully offline.\n\n"
+          }
+        }
+      }
+    },
+    "Fräsen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Milling"
+          }
+        }
+      }
+    },
+    "G-Code": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "G-code"
+          }
+        }
+      }
+    },
+    "G-Code gesichert: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "G-code saved: %@"
+          }
+        }
+      }
+    },
+    "G-Code gesperrt – erst Alarm aufheben oder Referenzfahrt": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "G-code locked – clear the alarm or home first"
+          }
+        }
+      }
+    },
+    "G-Code sichern?": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Save G-code?"
+          }
+        }
+      }
+    },
+    "G-Code öffnen …": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open G-code …"
           }
         }
       }
@@ -2664,6 +3176,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Georgia bold"
+          }
+        }
+      }
+    },
+    "Geprüft – beim ersten Mal „in der Luft“ (Z hoch genullt) testen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Checked – the first time, test “in the air” (Z zeroed high)"
           }
         }
       }
@@ -2714,6 +3236,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Speed"
+          }
+        }
+      }
+    },
+    "Gestoppt": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stopped"
           }
         }
       }
@@ -2798,6 +3330,16 @@
         }
       }
     },
+    "Gleichlauf": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Climb milling"
+          }
+        }
+      }
+    },
     "Grob (kleine Dateien)": {
       "localizations": {
         "en": {
@@ -2838,6 +3380,16 @@
         }
       }
     },
+    "Haltestege": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tabs"
+          }
+        }
+      }
+    },
     "Hell": {
       "localizations": {
         "en": {
@@ -2864,6 +3416,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Construction"
+          }
+        }
+      }
+    },
+    "Hinweise": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Notes"
+          }
+        }
+      }
+    },
+    "Hinweise:": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Notes:"
           }
         }
       }
@@ -2944,6 +3516,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Imported bodies have no parameters"
+          }
+        }
+      }
+    },
+    "Innen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Inside"
           }
         }
       }
@@ -3250,6 +3832,26 @@
         }
       }
     },
+    "Keine Fräsbahnen – erst Bearbeitungen anlegen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No toolpaths – add operations first"
+          }
+        }
+      }
+    },
+    "Keine Fräsbahnen – erst im Arbeitsbereich „Fräsen“ Bearbeitungen anlegen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No toolpaths – add operations in the “Milling” workspace first"
+          }
+        }
+      }
+    },
     "Keine Geometrie": {
       "extractionState": "manual",
       "localizations": {
@@ -3337,6 +3939,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "No bodies or features chosen"
+          }
+        }
+      }
+    },
+    "Keine Körper zum Fräsen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No bodies to machine"
           }
         }
       }
@@ -3681,6 +4293,16 @@
         }
       }
     },
+    "Kontur": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Contour"
+          }
+        }
+      }
+    },
     "Konzentrisch": {
       "localizations": {
         "en": {
@@ -3731,12 +4353,32 @@
         }
       }
     },
+    "Korrektur während der Fahrt": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Override while running"
+          }
+        }
+      }
+    },
     "Kreis": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Circle"
+          }
+        }
+      }
+    },
+    "Kreisbogen ungültig": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Invalid arc"
           }
         }
       }
@@ -3757,6 +4399,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Circular Pattern (Bodies/Features)"
+          }
+        }
+      }
+    },
+    "Kugelfräser": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ball end mill"
           }
         }
       }
@@ -3862,6 +4514,32 @@
         }
       }
     },
+    "Laufzeit": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Run time"
+          }
+        }
+      }
+    },
+    "Laufzeit ca. %lld min. Nullpunkt: %@.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Laufzeit ca. %1$lld min. Nullpunkt: %2$@."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Run time about %1$lld min. Zero: %2$@."
+          }
+        }
+      }
+    },
     "Linie": {
       "localizations": {
         "en": {
@@ -3942,6 +4620,16 @@
         }
       }
     },
+    "Läuft": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Running"
+          }
+        }
+      }
+    },
     "Löschen": {
       "localizations": {
         "en": {
@@ -3978,6 +4666,36 @@
           "stringUnit": {
             "state": "translated",
             "value": "Reset manual adjustments"
+          }
+        }
+      }
+    },
+    "Maschine": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Machine"
+          }
+        }
+      }
+    },
+    "Maschine steuern": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Control Machine"
+          }
+        }
+      }
+    },
+    "Maschinenkoordinate": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Machine coordinate"
           }
         }
       }
@@ -4152,6 +4870,16 @@
         }
       }
     },
+    "Mitte, Oberseite": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Centre, top"
+          }
+        }
+      }
+    },
     "Mittelebene": {
       "localizations": {
         "en": {
@@ -4262,6 +4990,26 @@
         }
       }
     },
+    "Nach oben": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Move Up"
+          }
+        }
+      }
+    },
+    "Nach unten": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Move Down"
+          }
+        }
+      }
+    },
     "Name": {
       "localizations": {
         "en": {
@@ -4332,6 +5080,26 @@
         }
       }
     },
+    "Nicht unterstützter G-Code-Befehl": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unsupported G-code command"
+          }
+        }
+      }
+    },
+    "Nicht verbunden": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not connected"
+          }
+        }
+      }
+    },
     "Nichts zu exportieren": {
       "extractionState": "manual",
       "localizations": {
@@ -4354,6 +5122,16 @@
         }
       }
     },
+    "Noch kein Programm geladen.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No program loaded yet."
+          }
+        }
+      }
+    },
     "Noch keine Parameter. Lege z. B. „wand = 2 mm“ an.": {
       "localizations": {
         "en": {
@@ -4370,6 +5148,36 @@
           "stringUnit": {
             "state": "translated",
             "value": "Normal"
+          }
+        }
+      }
+    },
+    "Not-Aus erreichbar, Absaugung an": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Emergency stop within reach, dust extraction on"
+          }
+        }
+      }
+    },
+    "Nullpunkt": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zero"
+          }
+        }
+      }
+    },
+    "Nullpunkt X/Y/Z gesetzt (Anzeige zeigt die Werkstückposition)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zero X/Y/Z set (the display shows the work position)"
           }
         }
       }
@@ -4480,6 +5288,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Surface: %.1f cm²"
+          }
+        }
+      }
+    },
+    "Oberseite der Teile anklicken. Außen schneidet das Teil aus, Innen die Aussparungen.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Click the parts' top faces. Outside cuts the part free, inside cuts its openings."
+          }
+        }
+      }
+    },
+    "Oberseite eines Teils anklicken und „Kontur“ wählen – oder einen Taschenboden und „Tasche“.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Click a part's top face and choose “Contour” – or a pocket floor and “Pocket”."
           }
         }
       }
@@ -4655,6 +5483,26 @@
         }
       }
     },
+    "Parken": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Park"
+          }
+        }
+      }
+    },
+    "Pause": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pause"
+          }
+        }
+      }
+    },
     "Perspektive (O)": {
       "localizations": {
         "en": {
@@ -4665,12 +5513,32 @@
         }
       }
     },
+    "Pfeiltasten verfahren X/Y, Bild ↑/↓ verfährt Z, Leertaste stoppt. Gamepad: linker Stick X/Y, Schultertasten Z.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Arrow keys jog X/Y, Page ↑/↓ jogs Z, Space stops. Gamepad: left stick X/Y, shoulder buttons Z."
+          }
+        }
+      }
+    },
     "Pinch": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Pinch"
+          }
+        }
+      }
+    },
+    "Platte": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Plate"
           }
         }
       }
@@ -4864,6 +5732,36 @@
         }
       }
     },
+    "Programm": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Program"
+          }
+        }
+      }
+    },
+    "Programm fertig": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Program finished"
+          }
+        }
+      }
+    },
+    "Programm starten?": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Start the program?"
+          }
+        }
+      }
+    },
     "Projektion fehlgeschlagen": {
       "localizations": {
         "en": {
@@ -4900,6 +5798,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Checking signature and installing …"
+          }
+        }
+      }
+    },
+    "Prüfe Werkzeuge und Nullpunkt und fahre das Programm zuerst „in der Luft“ (Z hoch genullt). Für den Betrieb der Maschine bist du verantwortlich.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Check the tools and the zero and run the program “in the air” first (Z zeroed high). You are responsible for operating the machine."
+          }
+        }
+      }
+    },
+    "Prüfmodus": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Check mode"
           }
         }
       }
@@ -5026,6 +5944,16 @@
         }
       }
     },
+    "Rand": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Margin"
+          }
+        }
+      }
+    },
     "Raster anzeigen": {
       "localizations": {
         "en": {
@@ -5076,6 +6004,26 @@
         }
       }
     },
+    "Referenzfahrt": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Home"
+          }
+        }
+      }
+    },
+    "Referenzfahrt fehlgeschlagen (Endschalter nicht gefunden)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Homing failed (limit switch not found)"
+          }
+        }
+      }
+    },
     "Reihen": {
       "localizations": {
         "en": {
@@ -5116,6 +6064,16 @@
         }
       }
     },
+    "Richtiges Werkzeug eingesetzt und gespannt": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Right tool inserted and tightened"
+          }
+        }
+      }
+    },
     "Richtung": {
       "localizations": {
         "en": {
@@ -5142,6 +6100,36 @@
           "stringUnit": {
             "state": "translated",
             "value": "Reverse direction"
+          }
+        }
+      }
+    },
+    "Rohteil": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stock"
+          }
+        }
+      }
+    },
+    "Rohteil = alle sichtbaren Teile plus Rand. Teile liegen flach, gefräst wird von oben.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stock = all visible parts plus margin. Parts lie flat and are milled from the top."
+          }
+        }
+      }
+    },
+    "Ruhezustand": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sleep"
           }
         }
       }
@@ -5330,6 +6318,56 @@
         }
       }
     },
+    "STOPP": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "STOP"
+          }
+        }
+      }
+    },
+    "Schaftfräser": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "End mill"
+          }
+        }
+      }
+    },
+    "Schaftfräser Ø3": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "End mill Ø3"
+          }
+        }
+      }
+    },
+    "Schaftfräser Ø6": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "End mill Ø6"
+          }
+        }
+      }
+    },
+    "Schaftfräser Ø8": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "End mill Ø8"
+          }
+        }
+      }
+    },
     "Schattierung": {
       "localizations": {
         "en": {
@@ -5356,6 +6394,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Close (Esc)"
+          }
+        }
+      }
+    },
+    "Schneide": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Flute"
           }
         }
       }
@@ -5451,6 +6499,32 @@
         }
       }
     },
+    "Schnitttiefe %@ ist größer als die Schneidenlänge von %@": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Schnitttiefe %1$@ ist größer als die Schneidenlänge von %2$@"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cut depth %1$@ is more than the flute length of %2$@"
+          }
+        }
+      }
+    },
+    "Schnittwerte für Holz als Vorschlag – je nach Material und Maschine anpassen.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cutting data for wood as a suggestion – adjust to material and machine."
+          }
+        }
+      }
+    },
     "Schrift": {
       "localizations": {
         "en": {
@@ -5477,6 +6551,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Fill in title block"
+          }
+        }
+      }
+    },
+    "Schritt": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Step"
           }
         }
       }
@@ -5621,6 +6705,16 @@
         }
       }
     },
+    "Sicherheit": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Safe height"
+          }
+        }
+      }
+    },
     "Sichern": {
       "localizations": {
         "en": {
@@ -5657,6 +6751,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Save as …"
+          }
+        }
+      }
+    },
+    "Sichern …": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Save …"
+          }
+        }
+      }
+    },
+    "Simulator": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Simulator"
           }
         }
       }
@@ -5841,6 +6955,16 @@
         }
       }
     },
+    "Sofort anhalten (Leertaste)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stop immediately (Space)"
+          }
+        }
+      }
+    },
     "Software": {
       "localizations": {
         "en": {
@@ -5931,6 +7055,16 @@
         }
       }
     },
+    "Spindel an": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Spindle On"
+          }
+        }
+      }
+    },
     "Spline": {
       "localizations": {
         "en": {
@@ -5991,6 +7125,16 @@
         }
       }
     },
+    "Start": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Start"
+          }
+        }
+      }
+    },
     "Starte mit einer Skizze – oder drücke S, um jeden Befehl zu finden.": {
       "localizations": {
         "en": {
@@ -6027,6 +7171,46 @@
           "stringUnit": {
             "state": "translated",
             "value": "Click the start point · ⌘ = place freely"
+          }
+        }
+      }
+    },
+    "Stegbreite": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tab width"
+          }
+        }
+      }
+    },
+    "Steghöhe": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tab height"
+          }
+        }
+      }
+    },
+    "Steuerung": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Controller"
+          }
+        }
+      }
+    },
+    "Steuerungsfehler %lld": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Controller error %lld"
           }
         }
       }
@@ -6111,12 +7295,78 @@
         }
       }
     },
+    "T%lld": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "T%lld"
+          }
+        }
+      }
+    },
+    "T%lld %@": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "new",
+            "value": "T%1$lld %2$@"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "T%1$lld %2$@"
+          }
+        }
+      }
+    },
     "Tangential": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Tangent"
+          }
+        }
+      }
+    },
+    "Tasche": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pocket"
+          }
+        }
+      }
+    },
+    "Taschenboden muss waagerecht nach oben zeigen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The pocket floor must face straight up"
+          }
+        }
+      }
+    },
+    "Tastplatte nicht erreicht (Antastweg zu kurz?)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Touch plate not reached (probe travel too short?)"
+          }
+        }
+      }
+    },
+    "Tastplatte war schon vor dem Antasten berührt": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Touch plate was already touched before probing"
           }
         }
       }
@@ -6147,6 +7397,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Part %lld"
+          }
+        }
+      }
+    },
+    "Teil liegt nicht flach (Oberseite muss nach oben zeigen)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The part does not lie flat (its top face must face up)"
           }
         }
       }
@@ -6242,12 +7502,32 @@
         }
       }
     },
+    "Trennen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Disconnect"
+          }
+        }
+      }
+    },
     "Trimmen": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Trim"
+          }
+        }
+      }
+    },
+    "Tür offen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Door open"
           }
         }
       }
@@ -6289,6 +7569,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Outlines failed"
+          }
+        }
+      }
+    },
+    "Unbekannt": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unknown"
           }
         }
       }
@@ -6523,6 +7813,26 @@
         }
       }
     },
+    "V-Nut 90°": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "V-bit 90°"
+          }
+        }
+      }
+    },
+    "V-Nutfräser": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "V-bit"
+          }
+        }
+      }
+    },
     "VORNE": {
       "localizations": {
         "en": {
@@ -6591,6 +7901,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Union failed"
+          }
+        }
+      }
+    },
+    "Verfahrweg über die Software-Endlage hinaus": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Travel beyond the soft limit"
+          }
+        }
+      }
+    },
+    "Verfährt": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Jogging"
           }
         }
       }
@@ -6735,6 +8065,16 @@
         }
       }
     },
+    "Verstanden": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Understood"
+          }
+        }
+      }
+    },
     "Vertikal": {
       "localizations": {
         "en": {
@@ -6782,6 +8122,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Operation"
+          }
+        }
+      }
+    },
+    "Vorschub": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Feed"
+          }
+        }
+      }
+    },
+    "Vorschub fehlt": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Feed rate missing"
           }
         }
       }
@@ -6898,12 +8258,42 @@
         }
       }
     },
+    "Werkstück gespannt, Haltestege/Spannmittel nicht im Weg": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Workpiece clamped, tabs/clamps out of the way"
+          }
+        }
+      }
+    },
     "Werkzeug": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Tool"
+          }
+        }
+      }
+    },
+    "Werkzeug hinzufügen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add Tool"
+          }
+        }
+      }
+    },
+    "Werkzeug ist zu groß für die Tasche": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The tool is too large for the pocket"
           }
         }
       }
@@ -7169,12 +8559,42 @@
         }
       }
     },
+    "Z angetastet – Nullpunkt auf Plattenstärke %@ gesetzt": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Z probed – zero set using plate thickness %@"
+          }
+        }
+      }
+    },
+    "Z antasten": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Probe Z"
+          }
+        }
+      }
+    },
     "Z-Achse": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Z axis"
+          }
+        }
+      }
+    },
+    "Zahlenwert fehlt oder ist ungültig": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Number missing or invalid"
           }
         }
       }
@@ -7235,6 +8655,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Drawing no."
+          }
+        }
+      }
+    },
+    "Zeile %lld von %lld": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Zeile %1$lld von %2$lld"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Line %1$lld of %2$lld"
           }
         }
       }
@@ -7305,6 +8741,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Target"
+          }
+        }
+      }
+    },
+    "Ziel liegt außerhalb des Arbeitsraums (Software-Endlage)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Target outside the work area (soft limit)"
           }
         }
       }
@@ -7389,12 +8835,42 @@
         }
       }
     },
+    "Zurück auf 100 %": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Back to 100 %"
+          }
+        }
+      }
+    },
+    "Zurückgesetzt während der Fahrt – Position unsicher": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reset while moving – position uncertain"
+          }
+        }
+      }
+    },
     "Zurücksetzen": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Reset"
+          }
+        }
+      }
+    },
+    "Zustellung": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Step down"
           }
         }
       }
@@ -7499,12 +8975,62 @@
         }
       }
     },
+    "ca. %lld min": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "about %lld min"
+          }
+        }
+      }
+    },
     "g/cm³": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "g/cm³"
+          }
+        }
+      }
+    },
+    "keine": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "none"
+          }
+        }
+      }
+    },
+    "keine Fläche gewählt": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "no face chosen"
+          }
+        }
+      }
+    },
+    "keine Innenkontur (Aussparung) in dieser Fläche": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "no inside contour (opening) in this face"
+          }
+        }
+      }
+    },
+    "keine senkrechten Bohrungen gefunden": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "no vertical holes found"
           }
         }
       }
@@ -7521,6 +9047,16 @@
     },
     "name": {
       "shouldTranslate": false
+    },
+    "noch ca. %lld min": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "about %lld min left"
+          }
+        }
+      }
     },
     "noch nie": {
       "localizations": {
@@ -7639,6 +9175,16 @@
         }
       }
     },
+    "Übertiefe": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Overcut"
+          }
+        }
+      }
+    },
     "„%@“ gehört schon zur Komponente „%@“": {
       "localizations": {
         "de": {
@@ -7651,6 +9197,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "“%@” already belongs to the component “%@”"
+          }
+        }
+      }
+    },
+    "„%@“: kein Werkzeug gewählt": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "“%@”: no tool chosen"
           }
         }
       }
@@ -7681,6 +9237,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Ignore “natural scrolling” in the 3D view"
+          }
+        }
+      }
+    },
+    "−10 %": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "−10 %"
           }
         }
       }

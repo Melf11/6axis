@@ -30,6 +30,7 @@ struct MainView: View {
                         PatternPanel(editor: editor)
                         TextPanel(editor: editor)
                         InspectPanel(editor: editor)
+                        CAMPanel(editor: editor)
                     }
                 }
                 .padding(.horizontal, 12)
@@ -79,7 +80,13 @@ struct MainView: View {
         .animation(.snappy(duration: 0.15), value: editor.showCommandPalette)
         .animation(.snappy(duration: 0.15), value: editor.markingMenu)
         .sheet(isPresented: $editor.showParameters) { ParametersSheet(editor: editor) }
-        .onAppear { editor.openDrawingWindow = { openWindow(id: "drawing") } }
+        .sheet(isPresented: Binding(get: { editor.showToolLibrary }, set: { editor.showToolLibrary = $0 })) {
+            ToolLibraryView(editor: editor)
+        }
+        .onAppear {
+            editor.openDrawingWindow = { openWindow(id: "drawing") }
+            editor.openMachineWindow = { openWindow(id: "machine") }
+        }
     }
 }
 

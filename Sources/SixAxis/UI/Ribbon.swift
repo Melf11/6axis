@@ -9,7 +9,7 @@ struct Ribbon: View {
         HStack(alignment: .top, spacing: 2) {
             workspaceBadge
             RibbonDivider()
-            if editor.sketchId != nil { sketchTools } else { modelTools }
+            if editor.sketchId != nil { sketchTools } else if editor.workspace == .cam { camTools } else { modelTools }
         }
         .padding(.horizontal, 10)
         .padding(.vertical, 7)
@@ -18,17 +18,59 @@ struct Ribbon: View {
     }
 
     private var workspaceBadge: some View {
-        VStack(spacing: 4) {
-            Image(systemName: editor.sketchId != nil ? "pencil.and.ruler.fill" : "cube.fill")
-                .font(.system(size: 18))
-                .foregroundStyle(editor.sketchId != nil ? Color.orange : Color.accentColor)
-                .frame(height: 26)
-            Text(editor.sketchId != nil ? String(localized: "SKIZZE") : String(localized: "KONSTRUKTION"))
+        let sketch = editor.sketchId != nil
+        let cam = editor.workspace == .cam && !sketch
+        return Menu {
+            Button { editor.setWorkspace(.design) } label: { Label("Konstruktion", systemImage: "cube.fill") }
+            Button { editor.setWorkspace(.cam) } label: { Label("Fräsen", systemImage: "gearshape.2.fill") }
+        } label: {
+            VStack(spacing: 4) {
+                Image(systemName: sketch ? "pencil.and.ruler.fill" : (cam ? "gearshape.2.fill" : "cube.fill"))
+                    .font(.system(size: 18))
+                    .foregroundStyle(sketch ? Color.orange : (cam ? Color.green : Color.accentColor))
+                    .frame(height: 26)
+                HStack(spacing: 2) {
+                    Text(sketch ? String(localized: "SKIZZE") : (cam ? String(localized: "FRÄSEN") : String(localized: "KONSTRUKTION")))
+                    if !sketch { Image(systemName: "chevron.down").font(.system(size: 6, weight: .bold)) }
+                }
                 .font(.system(size: 9, weight: .bold))
                 .tracking(0.6)
                 .foregroundStyle(.secondary)
+            }
+            .frame(minWidth: 78)
+            .contentShape(Rectangle())
         }
-        .frame(minWidth: 78)
+        .menuStyle(.button)
+        .buttonStyle(.plain)
+        .menuIndicator(.hidden)
+        .fixedSize()
+        .disabled(sketch)
+        .help("Arbeitsbereich wechseln")
+    }
+
+    // MARK: Milling
+
+    private var camTools: some View {
+        HStack(alignment: .top, spacing: 2) {
+            group(String(localized: "Einrichtung")) {
+                ToolButton(title: String(localized: "Einrichtung"), symbol: "square.stack.3d.up", active: editor.camEdit == nil && editor.showCAMSetup) {
+                    editor.camEdit = nil
+                    editor.showCAMSetup = true
+                }
+                ToolButton(title: String(localized: "Werkzeuge"), symbol: "wrench.adjustable") { editor.showToolLibrary = true }
+            }
+            RibbonDivider()
+            group(String(localized: "Bearbeitungen")) {
+                ForEach(CAMOperationKind.allCases, id: \.self) { k in
+                    ToolButton(title: k.displayName, symbol: k.symbol, enabled: hasBodies) { editor.addOperation(k) }
+                }
+            }
+            RibbonDivider()
+            group(String(localized: "Ausgabe")) {
+                ToolButton(title: String(localized: "G-Code"), symbol: "doc.text", enabled: !(editor.camResult?.paths.isEmpty ?? true)) { editor.exportGCode() }
+                ToolButton(title: String(localized: "Maschine"), symbol: "gearshape.arrow.triangle.2.circlepath") { editor.openMachineWindow() }
+            }
+        }
     }
 
     // MARK: Model

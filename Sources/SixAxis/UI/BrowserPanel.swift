@@ -10,6 +10,7 @@ struct BrowserPanel: View {
     @State private var sketchesOpen = true
     @State private var constructionOpen = true
     @State private var componentsOpen = true
+    @State private var camOpen = true
     @State private var renamingComponent: UUID?
     @State private var materialFor: UUID?
 
@@ -32,6 +33,12 @@ struct BrowserPanel: View {
                             editor.showOriginPlanes.toggle()
                             editor.sceneVersion &+= 1
                         })
+                    if editor.workspace == .cam {
+                        section(String(localized: "Fräsen"), count: editor.cam.operations.count, open: $camOpen)
+                        if camOpen {
+                            ForEach(editor.cam.operations) { op in operationRow(op) }
+                        }
+                    }
                     if !construction.isEmpty {
                         section(String(localized: "Konstruktion"), count: construction.count, open: $constructionOpen)
                         if constructionOpen {
@@ -73,6 +80,31 @@ struct BrowserPanel: View {
 
     private var sketches: [Feature] {
         editor.doc.features.prefix(editor.doc.activeCount).filter { if case .sketch = $0.kind { return true }; return false }
+    }
+
+    private func operationRow(_ op: CAMOperation) -> some View {
+        let editing = editor.camEdit == op.id
+        let tool = editor.cam.tools.first { $0.id == op.tool }
+        return HStack(spacing: 6) {
+            eyeButton(op.enabled) { editor.updateOperation(op.id) { $0.enabled.toggle() } }
+            Image(systemName: op.kind.symbol).font(.system(size: 11)).foregroundStyle(.green)
+            Text(op.name).font(.system(size: 12, weight: editing ? .semibold : .regular)).lineLimit(1)
+            Spacer()
+            if let tool { Text("T\(tool.number)").font(.system(size: 10, weight: .medium)).foregroundStyle(.tertiary) }
+        }
+        .padding(.horizontal, 6)
+        .frame(height: 24)
+        .padding(.leading, 30)
+        .background(RoundedRectangle(cornerRadius: 6).fill(editing ? Color.green.opacity(0.15) : .clear))
+        .contentShape(Rectangle())
+        .onTapGesture { editor.editOperation(editing ? nil : op.id) }
+        .contextMenu {
+            Button("Bearbeiten") { editor.editOperation(op.id) }
+            Button("Nach oben") { editor.moveOperation(op.id, by: -1) }
+            Button("Nach unten") { editor.moveOperation(op.id, by: 1) }
+            Divider()
+            Button("Löschen", role: .destructive) { editor.deleteOperation(op.id) }
+        }
     }
 
     private func componentRow(_ c: ComponentDef, count: Int) -> some View {

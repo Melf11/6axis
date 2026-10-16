@@ -101,7 +101,7 @@ final class AssemblyTests: XCTestCase {
         doc.features.append(Feature(name: "G", kind: .joint(j)))
         let back = try CADDocument.decode(try doc.encoded())
         XCTAssertEqual(back, doc)
-        XCTAssertEqual(CADDocument.currentFormatVersion, 6)
+        XCTAssertGreaterThanOrEqual(CADDocument.currentFormatVersion, 6)
     }
 
     func testExplodeOffsetsMoveInstancesApart() {

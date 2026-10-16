@@ -231,6 +231,11 @@ extension Editor {
             }
         }
         guard let cmd = command else {
+            if workspace == .cam {
+                if camEdit != nil { return acceptsCAMPick(p) }
+                if case .face = p { return true }
+                return false
+            }
             if measuring {
                 switch p { case .face, .edge: return true; default: return false }
             }

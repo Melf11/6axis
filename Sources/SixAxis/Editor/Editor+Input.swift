@@ -88,6 +88,10 @@ extension Editor {
             if let h = hover { measureClick(h) }
             return
         }
+        if workspace == .cam && camEdit != nil {
+            if let h = hover { camClick(h) }
+            return
+        }
         guard let h = hover else {
             selection.removeAll()
             timelineSelection = nil
@@ -189,6 +193,7 @@ extension Editor {
         if editingDimension != nil { editingDimension = nil; return }
         if command != nil { cancelCommand(); return }
         if measuring { endMeasure(); return }
+        if camEdit != nil { editOperation(nil); return }
         if patternRequest != nil { cancelPattern(); return }
         if textRequest != nil { cancelText(); return }
         if sketchId != nil {

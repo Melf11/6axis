@@ -36,6 +36,9 @@
 #include <BRepLib_ToolTriangulatedShape.hxx>
 #include <BRepMesh_IncrementalMesh.hxx>
 #include <BRepOffsetAPI_MakeThickSolid.hxx>
+#include <BRepOffsetAPI_MakeOffset.hxx>
+#include <BRepTools.hxx>
+#include <BRepTools_WireExplorer.hxx>
 #include <BRepPrimAPI_MakeBox.hxx>
 #include <BRepPrimAPI_MakePrism.hxx>
 #include <BRepPrimAPI_MakeRevol.hxx>
@@ -208,6 +211,19 @@ int32_t ob_shape_bbox(const OBShape *s, double outMin[3], double outMax[3]) {
     if (box.IsVoid()) return 0;
     box.Get(outMin[0], outMin[1], outMin[2], outMax[0], outMax[1], outMax[2]);
     return 1;
+}
+
+int32_t ob_shape_bbox_exact(const OBShape *s, double outMin[3], double outMax[3]) {
+    if (!s || s->shape.IsNull()) return 0;
+    try {
+        Bnd_Box box;
+        BRepBndLib::AddOptimal(s->shape, box, Standard_False, Standard_False);
+        if (box.IsVoid()) return 0;
+        box.Get(outMin[0], outMin[1], outMin[2], outMax[0], outMax[1], outMax[2]);
+        return 1;
+    } catch (...) {
+        return 0;
+    }
 }
 
 int32_t ob_shape_obb(const OBShape *s, double outCenter[3], double outAxes[9], double outHalf[3]) {
@@ -913,6 +929,64 @@ OBShape *ob_thread_groove(const double axisOrigin[3], const double axisDir[3], d
         t.SetTransformation(gp_Ax3(toPnt(axisOrigin), gp_Dir(axisDir[0], axisDir[1], axisDir[2])), gp_Ax3());
         return wrap(BRepBuilderAPI_Transform(solid, t, Standard_True).Shape(), "Gewinde ergab nichts");
     });
+}
+
+int32_t ob_face_loops(const OBShape *s, double offset, double deflection, OBProjection *out) {
+    std::memset(out, 0, sizeof(OBProjection));
+    if (!s) return 0;
+    try {
+        TopoDS_Face face;
+        for (TopExp_Explorer ex(s->shape, TopAbs_FACE); ex.More(); ex.Next()) {
+            face = TopoDS::Face(ex.Current());
+            break;
+        }
+        if (face.IsNull()) return 0;
+        std::vector<TopoDS_Wire> wires;
+        if (std::abs(offset) < 1e-12) {
+            TopoDS_Wire outer = BRepTools::OuterWire(face);
+            wires.push_back(outer);
+            for (TopExp_Explorer ex(face, TopAbs_WIRE); ex.More(); ex.Next())
+                if (!ex.Current().IsSame(outer)) wires.push_back(TopoDS::Wire(ex.Current()));
+        } else {
+            BRepOffsetAPI_MakeOffset mk(face, GeomAbs_Arc);
+            mk.Perform(offset);
+            if (!mk.IsDone() || mk.Shape().IsNull()) return 1;   // vanished: no loops
+            for (TopExp_Explorer ex(mk.Shape(), TopAbs_WIRE); ex.More(); ex.Next()) wires.push_back(TopoDS::Wire(ex.Current()));
+        }
+        std::vector<float> pts;
+        std::vector<int32_t> starts;
+        for (const TopoDS_Wire &w : wires) {
+            starts.push_back((int32_t)(pts.size() / 3));
+            bool first = true;
+            gp_Pnt firstPt;
+            for (BRepTools_WireExplorer we(w, face); we.More(); we.Next()) {
+                BRepAdaptor_Curve c(we.Current());
+                GCPnts_TangentialDeflection d(c, 0.1, deflection);
+                bool reversed = we.Current().Orientation() == TopAbs_REVERSED;
+                int n = d.NbPoints();
+                for (int i = 1; i <= n; i++) {
+                    gp_Pnt p = d.Value(reversed ? n + 1 - i : i);
+                    if (!first && i == 1) continue;   // shared with the previous edge's end
+                    if (first) { firstPt = p; first = false; }
+                    pts.push_back((float)p.X()); pts.push_back((float)p.Y()); pts.push_back((float)p.Z());
+                }
+            }
+            if (!first) { pts.push_back((float)firstPt.X()); pts.push_back((float)firstPt.Y()); pts.push_back((float)firstPt.Z()); }
+        }
+        // Reuse OBProjection: 3 floats per point here (x, y, z).
+        int32_t n = (int32_t)(pts.size() / 3);
+        out->points = (float *)std::malloc(sizeof(float) * std::max<size_t>(pts.size(), 1));
+        std::memcpy(out->points, pts.data(), sizeof(float) * pts.size());
+        out->pointCount = n;
+        out->polyCount = (int32_t)starts.size();
+        out->polyStart = (int32_t *)std::malloc(sizeof(int32_t) * (starts.size() + 1));
+        for (size_t i = 0; i < starts.size(); i++) out->polyStart[i] = starts[i];
+        out->polyStart[starts.size()] = n;
+        out->polyFlags = (uint8_t *)std::calloc(std::max<size_t>(starts.size(), 1), 1);
+        return 1;
+    } catch (...) {
+        return 0;
+    }
 }
 
 int32_t ob_write_stl(const OBShape *s, const char *path, double linearDeflection, int32_t ascii) {

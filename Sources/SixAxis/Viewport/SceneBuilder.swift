@@ -71,6 +71,7 @@ struct SceneBuilder {
         if axesPickable { addAxes() }
         if editor.wantsPlanePick || editor.showOriginPlanes { addOriginPlanes() }
         addConstruction()
+        if editor.workspace == .cam { addToolpaths() }
         if let (a, b) = editor.measureResult?.line {
             let c = packColor(SIMD4<Float>(0.95, 0.45, 0.10, 1))
             scene.lines.append(LineBatch(instances: [LineInstance(a.float, b.float, id: 0, color: c, flags: LineInstance.emphasized)],
@@ -334,6 +335,44 @@ struct SceneBuilder {
         }
         scene.fills.append(FillBatch(vertices: fills, depthBias: 0.0005, depth: .readOnly))
         scene.lines.append(LineBatch(instances: outlines, width: 1.2 * scale, depthBias: 0.001))
+    }
+
+    // MARK: Milling preview
+
+    /// Stock outline, toolpaths (rapids dashed) and the faces of the operation being edited.
+    private mutating func addToolpaths() {
+        if let r = editor.camResult, r.stockMax.x > r.stockMin.x {
+            let lo = r.stockMin.float, hi = r.stockMax.float
+            let c = (0..<8).map { i in SIMD3<Float>(i & 1 == 0 ? lo.x : hi.x, i & 2 == 0 ? lo.y : hi.y, i & 4 == 0 ? lo.z : hi.z) }
+            let edges = [(0, 1), (2, 3), (4, 5), (6, 7), (0, 2), (1, 3), (4, 6), (5, 7), (0, 4), (1, 5), (2, 6), (3, 7)]
+            let sc = packColor(SIMD4<Float>(0.55, 0.42, 0.25, 0.8))
+            scene.lines.append(LineBatch(instances: edges.map { LineInstance(c[$0.0], c[$0.1], id: 0, color: sc, flags: LineInstance.dashed) },
+                                         width: 1.2 * scale, depthBias: 0.001, pickable: false))
+            let rapid = packColor(SIMD4<Float>(0.85, 0.25, 0.25, 0.55))
+            let feed = packColor(SIMD4<Float>(0.10, 0.45, 0.95, 0.95))
+            let plunge = packColor(SIMD4<Float>(0.95, 0.55, 0.10, 0.95))
+            var lines: [LineInstance] = []
+            for p in r.paths where editor.camEdit == nil || p.operation == editor.camEdit {
+                for (a, b) in zip(p.moves, p.moves.dropFirst()) {
+                    let color = b.kind == .rapid ? rapid : (b.kind == .feed ? feed : plunge)
+                    lines.append(LineInstance(a.to.float, b.to.float, id: 0, color: color, flags: b.kind == .rapid ? LineInstance.dashed : 0))
+                }
+            }
+            scene.lines.append(LineBatch(instances: lines, width: 1.5 * scale, depthBias: 0.003, depth: .readOnly, pickable: false))
+        }
+        guard let op = editor.editedOperation else { return }
+        var fills: [FillVertex] = []
+        let color = packColor(SIMD4(0.15, 0.75, 0.35, 0.40))
+        for ref in op.faces {
+            guard let body = editor.state.bodies[ref.body], let idx = body.resolve(ref.face), let m = body.mesh else { continue }
+            for t in stride(from: 0, to: m.indices.count, by: 3) where Int(m.faceIds[Int(m.indices[t])]) == idx {
+                for k in 0..<3 {
+                    let p = m.positions[Int(m.indices[t + k])]
+                    fills.append(FillVertex(x: p.x, y: p.y, z: p.z, id: 0, color: color))
+                }
+            }
+        }
+        scene.fills.append(FillBatch(vertices: fills, depthBias: 0.002, depth: .always, pickable: false))
     }
 
     // MARK: Construction planes and axes

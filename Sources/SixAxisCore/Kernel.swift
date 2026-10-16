@@ -48,6 +48,13 @@ public final class Shape: @unchecked Sendable {
         return (SIMD3(lo[0], lo[1], lo[2]), SIMD3(hi[0], hi[1], hi[2]))
     }
 
+    /// Exact bounds without the tolerance gap of `boundingBox` (slower; for machining).
+    public var exactBoundingBox: (min: SIMD3<Double>, max: SIMD3<Double>)? {
+        var lo = [0.0, 0.0, 0.0], hi = [0.0, 0.0, 0.0]
+        guard ob_shape_bbox_exact(handle, &lo, &hi) != 0 else { return boundingBox }
+        return (SIMD3(lo[0], lo[1], lo[2]), SIMD3(hi[0], hi[1], hi[2]))
+    }
+
     /// Smallest oriented bounding box: centre, unit axes and full extents along them.
     public var orientedBox: (center: Vec3, axes: [Vec3], size: Vec3)? {
         var c = [0.0, 0.0, 0.0], a = [Double](repeating: 0, count: 9), h = [0.0, 0.0, 0.0]
@@ -62,6 +69,19 @@ public final class Shape: @unchecked Sendable {
 
     public func edge(_ index: Int) throws -> Shape {
         try Shape.wrap(ob_shape_edge(handle, Int32(index)), "Kante nicht gefunden")
+    }
+
+    /// Boundary loops of a planar face (first = outer), optionally offset in the face's plane
+    /// (> 0 grows the face, < 0 shrinks it). Empty when the offset face vanishes.
+    public func faceLoops(offset: Double = 0, deflection: Double = 0.01) -> [[Vec3]] {
+        var p = OBProjection()
+        guard ob_face_loops(handle, offset, deflection, &p) != 0 else { return [] }
+        defer { ob_projection_free(&p) }
+        return (0..<Int(p.polyCount)).map { i in
+            (Int(p.polyStart[i])..<Int(p.polyStart[i + 1])).map {
+                Vec3(Double(p.points[3 * $0]), Double(p.points[3 * $0 + 1]), Double(p.points[3 * $0 + 2]))
+            }
+        }
     }
 
     /// Exact minimum distance to another shape with the closest points on both.
