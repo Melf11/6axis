@@ -158,6 +158,16 @@
         }
       }
     },
+    "%lld×": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld×"
+          }
+        }
+      }
+    },
     "1 Freiheitsgrad": {
       "localizations": {
         "en": {
@@ -864,6 +874,16 @@
         }
       }
     },
+    "Baugruppe": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Assembly"
+          }
+        }
+      }
+    },
     "Bearbeiten": {
       "localizations": {
         "en": {
@@ -911,6 +931,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Command search …"
+          }
+        }
+      }
+    },
+    "Befestigt an": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Attached to"
           }
         }
       }
@@ -971,6 +1001,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Computing model …"
+          }
+        }
+      }
+    },
+    "Bewegt sich ab jetzt mit dem anderen Teil mit (z. B. Griff an der Tür).": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "From now on moves along with the other part (e.g. a handle on a door)."
           }
         }
       }
@@ -1388,6 +1428,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Your Mac uses natural scrolling. Turn this on so zooming and orbiting follow the physical movement – like a classic mouse."
+          }
+        }
+      }
+    },
+    "Der Körper gehört zu keiner Komponente": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The body is not part of a component"
           }
         }
       }
@@ -1944,6 +1994,16 @@
         }
       }
     },
+    "Ein Teil kann nicht an sich selbst befestigt werden": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A part cannot be attached to itself"
+          }
+        }
+      }
+    },
     "Einblenden": {
       "localizations": {
         "en": {
@@ -2194,6 +2254,27 @@
         }
       }
     },
+    "Erst eine Komponente aus den Körpern machen (Baugruppe → Komponente)": {
+      "extractionState": "stale",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "First make a component from the bodies (Assembly → Component)"
+          }
+        }
+      }
+    },
+    "Erst eine Komponente aus den Körpern machen (Körper → Komponente aus Auswahl)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "First make a component from the bodies (Bodies → Component from Selection)"
+          }
+        }
+      }
+    },
     "Erste Ecke klicken · ⌘ = frei setzen": {
       "localizations": {
         "en": {
@@ -2250,6 +2331,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "There is no visible body to export"
+          }
+        }
+      }
+    },
+    "Explosionsansicht": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Exploded View"
           }
         }
       }
@@ -2553,6 +2644,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Click the opposite corner or type the sizes"
+          }
+        }
+      }
+    },
+    "Gelenk": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Joint"
           }
         }
       }
@@ -3007,6 +3108,16 @@
         }
       }
     },
+    "Kein Bezugsteil gewählt": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No reference part chosen"
+          }
+        }
+      }
+    },
     "Kein Körper zum Ausschneiden getroffen": {
       "localizations": {
         "en": {
@@ -3186,6 +3297,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "No edges selected"
+          }
+        }
+      }
+    },
+    "Keine Komponente gewählt": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No component chosen"
           }
         }
       }
@@ -3440,6 +3561,76 @@
         }
       }
     },
+    "Komponente": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Component"
+          }
+        }
+      }
+    },
+    "Komponente auflösen (Körper bleiben)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dissolve Component (Bodies Stay)"
+          }
+        }
+      }
+    },
+    "Komponente aus Auswahl": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Component from Selection"
+          }
+        }
+      }
+    },
+    "Komponente „%@“ erstellt – Kopien davon zählen als weitere Exemplare": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Component “%@” created – copies of it count as further instances"
+          }
+        }
+      }
+    },
+    "Komponente%lld": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Component%lld"
+          }
+        }
+      }
+    },
+    "Komponenten": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Components"
+          }
+        }
+      }
+    },
+    "Komponenten rücken vom Mittelpunkt weg – nur Ansicht. In der Zeichnung gibt es dafür den Schalter „Explosionsansicht“.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Components move away from the centre – view only. The drawing has an “Exploded View” switch for this."
+          }
+        }
+      }
+    },
     "Konstruktion": {
       "localizations": {
         "en": {
@@ -3596,6 +3787,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Click bodies · ↩ confirms"
+          }
+        }
+      }
+    },
+    "Körper auswählen, die zusammen ein Bauteil bilden": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Select the bodies that make up one part"
           }
         }
       }
@@ -5139,6 +5340,16 @@
         }
       }
     },
+    "Schieben": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Slide"
+          }
+        }
+      }
+    },
     "Schließen (Esc)": {
       "localizations": {
         "en": {
@@ -5286,6 +5497,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Step back"
+          }
+        }
+      }
+    },
+    "Schubkasten: Richtung als Achse, Weg z. B. „auszug“.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Drawer: direction as the axis, travel e.g. “pull_out”."
           }
         }
       }
@@ -5760,6 +5981,16 @@
         }
       }
     },
+    "Starr": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rigid"
+          }
+        }
+      }
+    },
     "Starte mit einer Skizze – oder drücke S, um jeden Befehl zu finden.": {
       "localizations": {
         "en": {
@@ -6017,6 +6248,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Trim"
+          }
+        }
+      }
+    },
+    "Tür: Scharnierkante als Achse, Winkel z. B. als Parameter „tuer_winkel“.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Door: hinge edge as the axis, angle e.g. as a parameter “door_angle”."
           }
         }
       }
@@ -6617,12 +6858,32 @@
         }
       }
     },
+    "Weg": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Travel"
+          }
+        }
+      }
+    },
     "Weitere Punkte klicken · Startpunkt schließt · Doppelklick, ↩ oder Esc beendet": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Click more points · start point closes · double-click, ↩ or Esc finishes"
+          }
+        }
+      }
+    },
+    "Weiteres Exemplar einfügen …": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Insert Another Instance …"
           }
         }
       }
@@ -7374,6 +7635,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Apply"
+          }
+        }
+      }
+    },
+    "„%@“ gehört schon zur Komponente „%@“": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "new",
+            "value": "„%1$@“ gehört schon zur Komponente „%2$@“"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "“%@” already belongs to the component “%@”"
           }
         }
       }

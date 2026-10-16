@@ -74,13 +74,24 @@ final class DrawingController {
 
         func input(_ marking: ModelBuilder) -> DrawingGenerator.Input {
             let state = hasModeledThreads ? marking.build(doc) : self.state
-            let parts = state.orderedBodies.filter { doc.isBodyVisible($0.id) }
-                .map { body -> DrawingGenerator.Part in
+            let visible = state.orderedBodies.filter { doc.isBodyVisible($0.id) }
+            let settings = doc.drawing ?? DrawingSettings()
+            let explode = state.explodeOffsets(visible.map(\.id), components: doc.components, factor: settings.explodeIso)
+            let parts = visible.map { body -> DrawingGenerator.Part in
                     let meta = doc.bodies[body.id]
-                    return DrawingGenerator.Part(name: doc.bodyName(body.id), shape: body.shape, material: meta?.material ?? "",
-                                                 grain: meta?.grain ?? .none, threads: state.threadMarks.filter { $0.body == body.id })
+                    var part = DrawingGenerator.Part(name: partName(body.id, state), shape: body.shape, material: meta?.material ?? "",
+                                                     grain: meta?.grain ?? .none, threads: state.threadMarks.filter { $0.body == body.id })
+                    part.explode = explode[body.id] ?? .zero
+                    return part
                 }
-            return DrawingGenerator.Input(parts: parts, settings: doc.drawing ?? DrawingSettings(), fallbackTitle: title)
+            return DrawingGenerator.Input(parts: parts, settings: settings, fallbackTitle: title)
+        }
+
+        /// Parts list name: the component's name ("Tür", or "Tür – Füllung" for one body of several).
+        func partName(_ body: UUID, _ state: ModelState) -> String {
+            guard let c = state.component(of: body, in: doc.components) else { return doc.bodyName(body) }
+            if c.bodies.count == 1 { return c.name }
+            return c.name + " – " + doc.bodyName(state.original(of: body))
         }
     }
 

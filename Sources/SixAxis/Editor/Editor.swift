@@ -121,7 +121,7 @@ enum ConstraintTool: String, CaseIterable, Identifiable {
 
 enum CommandKind: String {
     case extrude, revolve, fillet, chamfer, shell, sketchPlane
-    case plane, axis, hole, thread, rectPattern, circularPattern, mirror, move, combine
+    case plane, axis, hole, thread, rectPattern, circularPattern, mirror, move, combine, joint
 
     var title: String {
         switch self {
@@ -140,6 +140,7 @@ enum CommandKind: String {
         case .mirror: return String(localized: "Spiegeln")
         case .move: return String(localized: "Verschieben/Kopieren")
         case .combine: return String(localized: "Kombinieren")
+        case .joint: return String(localized: "Gelenk")
         }
     }
 
@@ -160,6 +161,7 @@ enum CommandKind: String {
         case .mirror: return PatternKind.mirror.symbol
         case .move: return "arrow.up.and.down.and.arrow.left.and.right"
         case .combine: return "square.on.square.intersection.dashed"
+        case .joint: return "link"
         }
     }
 }
@@ -217,6 +219,9 @@ final class Editor {
     var measuring = false
     var measurePicks: [Pick] = []
     var measureResult: Measure.Result?
+    /// Exploded view: 0 = assembled; 1 = every instance moved its own distance from the centre again.
+    var explode: Double = 0 { didSet { sceneVersion &+= 1; requestRedraw() } }
+    var showExplode = false
     /// Section view (nil = off).
     var section: SectionView? { didSet { requestRedraw() } }
     var darkMode = false
@@ -672,6 +677,7 @@ final class Editor {
         case let .pattern(p): beginCommand(p.kind == .rectangular ? .rectPattern : (p.kind == .circular ? .circularPattern : .mirror), editing: id)
         case .move: beginCommand(.move, editing: id)
         case .combine: beginCommand(.combine, editing: id)
+        case .joint: beginCommand(.joint, editing: id)
         case .importStep: showToast(String(localized: "Importierte Körper haben keine Parameter"))
         case .removeBodies: showToast(String(localized: "Entfernen hat keine Parameter – lösche den Schritt, um die Körper zurückzuholen"))
         }

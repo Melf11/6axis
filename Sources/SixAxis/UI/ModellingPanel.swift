@@ -13,6 +13,7 @@ extension CommandPanel {
         case let .pattern(p)?: patternContent(p, cmd)
         case let .move(m)?: moveContent(m, cmd)
         case let .combine(c)?: combineContent(c, cmd)
+        case let .joint(j)?: jointContent(j, cmd)
         default: EmptyView()
         }
     }
@@ -275,6 +276,42 @@ extension CommandPanel {
             axisButtons { a in set { $0.axis = a } }
             field(String(localized: "Winkel"), m.angle, kind: .angle) { v in set { $0.angle = v } }
             toggle(String(localized: "Kopie erstellen"), m.copy) { v in set { $0.copy = v } }
+        }
+    }
+
+    // MARK: Joint
+
+    private func jointContent(_ j: JointFeature, _ cmd: ActiveCommand) -> some View {
+        func set(_ change: @escaping (inout JointFeature) -> Void) {
+            update { k in if case var .joint(x) = k { change(&x); k = .joint(x) } }
+        }
+        let name: (UUID?) -> String? = { id in id.flatMap { editor.componentName(of: $0) } }
+        return VStack(alignment: .leading, spacing: 12) {
+            Picker("", selection: Binding(get: { j.kind }, set: { v in set { $0.kind = v } })) {
+                ForEach(JointKind.allCases, id: \.self) { Text($0.displayName).tag($0) }
+            }
+            .pickerStyle(.segmented).labelsHidden()
+            selectionRow(String(localized: "Komponente"), count: j.body == nil ? 0 : 1, symbol: "cube", active: cmd.activeInput == 0,
+                         detail: name(j.body)) {
+                set { $0.body = nil }
+            } activate: { editor.setActiveInput(0) }
+            if j.kind == .rigid {
+                selectionRow(String(localized: "Befestigt an"), count: j.parent == nil ? 0 : 1, symbol: "cube.fill",
+                             active: cmd.activeInput == 1, detail: name(j.parent) ?? j.parent.map { editor.doc.bodyName($0) }) {
+                    set { $0.parent = nil }
+                } activate: { editor.setActiveInput(1) }
+                hint(String(localized: "Bewegt sich ab jetzt mit dem anderen Teil mit (z. B. Griff an der Tür)."))
+            } else {
+                selectionRow(String(localized: "Achse"), count: j.axis == nil ? 0 : 1, symbol: "line.diagonal",
+                             active: cmd.activeInput == 1, detail: j.axis?.displayName) {
+                    set { $0.axis = nil }
+                } activate: { editor.setActiveInput(1) }
+                axisButtons { a in set { $0.axis = a } }
+                field(j.kind == .revolute ? String(localized: "Winkel") : String(localized: "Weg"), j.value,
+                      kind: j.kind == .revolute ? .angle : .length) { v in set { $0.value = v } }
+                hint(j.kind == .revolute ? String(localized: "Tür: Scharnierkante als Achse, Winkel z. B. als Parameter „tuer_winkel“.")
+                                         : String(localized: "Schubkasten: Richtung als Achse, Weg z. B. „auszug“."))
+            }
         }
     }
 

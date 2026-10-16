@@ -13,6 +13,8 @@ public final class DrawingGenerator: @unchecked Sendable {
         public var grain: GrainDirection
         /// Threads of this body (world coordinates), drawn per ISO 6410.
         public var threads: [ThreadMark] = []
+        /// Offset of this part in the exploded iso view.
+        public var explode: Vec3 = .zero
         public init(name: String, shape: Shape, material: String = "", grain: GrainDirection = .none, threads: [ThreadMark] = []) {
             self.threads = threads
             self.name = name
@@ -712,7 +714,10 @@ public final class DrawingGenerator: @unchecked Sendable {
 
         // Pictorial view in the free quadrant (right of the top view, above the parts list); freely movable.
         let sideView = placed[1]
-        if settings.showIso, let iso = projection(input.shapes, .iso).flatMap(Self.analyze) {
+        let isoShapes = settings.explodeIso > 0
+            ? input.parts.map { p in simd_length(p.explode) > 1e-9 ? ((try? p.shape.translated(p.explode)) ?? p.shape) : p.shape }
+            : input.shapes
+        if settings.showIso, let iso = projection(isoShapes, .iso).flatMap(Self.analyze) {
             let area = Self.drawingArea(sheet)
             let regionMin = Vec2(sideView.min.x, r.origin.y + 2)
             let regionMax = Vec2(area.origin.x + area.size.x - 4, sideView.min.y - ViewSet.band(set.rows.frontBelow) - 2)

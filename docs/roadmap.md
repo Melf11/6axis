@@ -128,11 +128,13 @@ Inhalt:
 - [x] **Verdeckte Bohrungen** in der Zeichnung bemaßt; **Gewinde nach ISO 6410** (dünne Linie, ¾-Kreis, „M8“ statt Kernloch-Ø) – die Zeichnung rechnet ohne Gewindegänge und bleibt schnell
 - Werkzeugleiste: „Ausgabe“ fasst Zeichnung, Export ▾ (3MF, STL, STEP) und Slicer zusammen; Grenzwerte gelten für Deutsch und Englisch
 
-## 1.4 – Baugruppen
-- Komponenten (wiederverwendbare Teile, mehrfach eingebaut)
-- Gelenke: starr, Drehung, Schieben
-- Explosionsansicht, auch in der technischen Zeichnung
-- Stückliste aus Komponenten
+## 1.4 – Baugruppen ✅
+Schlank gehalten: keine verschachtelten Dokumente, sondern Komponenten als benannte Körper-Sätze im selben Modell.
+- [x] **Komponenten** aus ausgewählten Körpern (Körper ▾ → Komponente aus Auswahl); Kopien über Verschieben/Kopieren oder Muster sind weitere **Exemplare** und folgen den Maßen des Originals; Browser-Ordner „Komponenten“ mit Anzahl
+- [x] **Gelenke**: Drehung (z. B. Tür, Winkel als Parameter), Schieben (Schubkasten-Auszug), starr (Griff wandert mit der Tür mit)
+- [x] **Explosionsansicht** per Regler im 3D-Fenster und als Schalter für die Isometrie der Zeichnung
+- [x] **Stückliste** mit Komponentennamen („Tür“, „Tür – Füllung“); Zuschnitt bleibt brettgenau
+- Dateiformat 6
 
 ## 2.0 – Fräsen (CAM) und Maschinensteuerung
 Ausführlich: [docs/cam.md](cam.md). Ziel: vom Modell bis zum Fräsen in einem Mac-Programm – CAM und Maschinensteuerung wie bei Estlcam, aber nativ. Zuerst die Fragen dort klären (Steuerung, Endschalter, Tastplatte, Spindel).

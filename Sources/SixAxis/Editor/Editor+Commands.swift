@@ -23,6 +23,8 @@ extension Editor {
 
     func beginCommand(_ kind: CommandKind, editing: UUID? = nil, pendingTool: SketchTool? = nil) {
         if command != nil { commitCommand() }
+        // Features are edited on the assembled model.
+        if explode > 0 { explode = 0 }
         if sketchId != nil { finishSketch() }
         let snapshot = doc
 

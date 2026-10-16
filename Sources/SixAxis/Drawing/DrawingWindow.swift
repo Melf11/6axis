@@ -557,6 +557,11 @@ struct DrawingWindow: View {
             Toggle(isOn: settingBinding(\.showHidden)) { Label("Verdeckte Kanten", systemImage: "square.dashed") }
                 .help("Verdeckte Kanten anzeigen")
             Toggle(isOn: settingBinding(\.showIso)) { Label("Isometrie", systemImage: "cube") }
+            Toggle(isOn: Binding(get: { editor.drawingSettings.explodeIso > 0 },
+                                 set: { on in editor.updateDrawingSettings { $0.explodeIso = on ? 0.6 : 0 } })) {
+                Label("Explosionsansicht", systemImage: "arrow.up.left.and.arrow.down.right")
+            }
+            .disabled(!editor.drawingSettings.showIso)
                 .help("Isometrische Ansicht anzeigen")
             sheetsMenu
             resetMenu

@@ -61,10 +61,18 @@ struct Ribbon: View {
                            active: editor.command?.kind == .shell, enabled: hasBodies) { editor.beginCommand(.shell) }
                 ToolButton(title: String(localized: "Gewinde"), symbol: "tornado",
                            active: editor.command?.kind == .thread, enabled: hasBodies) { editor.beginCommand(.thread) }
+                // Bodies and assemblies: move/copy, combine, components, joints, exploded view.
                 ToolMenuButton(title: String(localized: "Körper"), symbol: "cube.transparent",
-                               active: [.move, .combine].contains(editor.command?.kind), enabled: hasBodies) {
+                               active: [.move, .combine, .joint].contains(editor.command?.kind) || editor.showExplode, enabled: hasBodies) {
                     menuItem(.move)
                     menuItem(.combine)
+                    Section("Baugruppe") {
+                        Button { editor.createComponent() } label: { Label("Komponente aus Auswahl", systemImage: "shippingbox") }
+                        menuItem(.joint)
+                        Button { editor.showExplode.toggle(); if !editor.showExplode { editor.explode = 0 } } label: {
+                            Label("Explosionsansicht", systemImage: "arrow.up.left.and.arrow.down.right")
+                        }
+                    }
                 }
             }
             RibbonDivider()
