@@ -19,6 +19,7 @@ extension Editor {
         }?.element
         let newHover = overlayHover ?? best
         if newHover != hover { hover = newHover }
+        if gridFacePick != shownGridFace { gridVersion &+= 1 }   // face grid follows the hovered face
         if sketchId != nil {
             let s = snap(at: pt)
             if s != cursor { cursor = s }

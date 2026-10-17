@@ -1291,6 +1291,16 @@
         }
       }
     },
+    "Beim Positionieren": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "While positioning"
+          }
+        }
+      }
+    },
     "Beispiel „%@“ geöffnet – Parameter unter Ändern → Parameter": {
       "localizations": {
         "en": {
@@ -3897,6 +3907,16 @@
         }
       }
     },
+    "Immer": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Always"
+          }
+        }
+      }
+    },
     "Import": {
       "localizations": {
         "en": {
@@ -6489,6 +6509,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Show grid"
+          }
+        }
+      }
+    },
+    "Raster auf Flächen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Grid on faces"
           }
         }
       }

@@ -119,6 +119,8 @@ public enum HolePoint: Codable, Hashable, Sendable {
 public struct FaceFrame: Sendable {
     public var plane: Plane
     public var corner: Vec2
+    /// Extent of the face's outer loop from the corner (for a grid on the face).
+    public var size: Vec2 = .zero
 
     /// Point on the face for distances from the corner.
     public func point(_ x: Double, _ y: Double) -> Vec3 { plane.point(corner + Vec2(x, y)) }
@@ -136,7 +138,8 @@ public struct FaceFrame: Sendable {
         let plane = Plane.forFace(point: info.origin, normal: info.normal)
         guard let outer = face.faceLoops(deflection: 0.05).first, !outer.isEmpty else { return nil }
         let uv = outer.map { plane.project($0) }
-        return FaceFrame(plane: plane, corner: Vec2(uv.map(\.x).min()!, uv.map(\.y).min()!))
+        let lo = Vec2(uv.map(\.x).min()!, uv.map(\.y).min()!), hi = Vec2(uv.map(\.x).max()!, uv.map(\.y).max()!)
+        return FaceFrame(plane: plane, corner: lo, size: hi - lo)
     }
 }
 

@@ -50,7 +50,20 @@ enum ModellingChecks {
 
         // Hole: two clicks on the top face, Ø8 through.
         editor.beginCommand(.hole)
-        await click(editor, Vec3(30, 30, 20))
+        await click(editor, Vec3(31.6, 28.7, 20))
+        // While positioning, the hovered face shows a grid (step 10 at this zoom) and the click lands on it.
+        // (The preview renumbers faces – move the mouse again like the user would.)
+        if let pt = editor.camera.project(Vec3(50, 45, 20)) { editor.updateHover(at: pt) }
+        var grid = SceneBuilder(editor: editor, scale: 2)
+        grid.buildGrid()
+        let faceLines = grid.scene.lines.filter { $0.depthBias > 0 }.flatMap(\.instances)
+        check("hole: grid on the hovered face", faceLines.count == 11 + 7 && faceLines.allSatisfy { abs($0.z0 - 20) < 1e-3 && abs($0.z1 - 20) < 1e-3 },
+              "\(faceLines.count) lines, step \(editor.gridSpacing.minor), z \(Set(faceLines.map(\.z0)))")
+        if case let .hole(h)? = editor.commandFeature?.kind, case let .faceOffset(_, x, y)? = h.points.first {
+            check("hole: click snaps to the face grid", x == "30" && y == "30", "\(x) \(y)")
+        } else {
+            check("hole: click snaps to the face grid", false)
+        }
         await click(editor, Vec3(70, 30, 20))
         editor.updateCommandFeature { k in if case var .hole(h) = k { h.diameter = "8 mm"; h.extent = .through; k = .hole(h) } }
         await settle(editor)
@@ -103,6 +116,12 @@ enum ModellingChecks {
         editor.beginCommand(.sketchPlane)
         await settle(editor)
         check("plane: sketch on it", editor.sketchId != nil && abs((editor.activePlane?.origin.z ?? 0) - 50) < 1e-6)
+        // A sketch grid must lie in front of the face/plane it sits on, not behind it.
+        var sketchGrid = SceneBuilder(editor: editor, scale: 2)
+        sketchGrid.buildGrid()
+        let gridBatches = sketchGrid.scene.lines.filter { $0.instances.count > 2 }   // not the two axes
+        check("plane: sketch grid not hidden by the face", !gridBatches.isEmpty && gridBatches.allSatisfy { $0.depthBias > 0 },
+              "\(gridBatches.map(\.depthBias))")
         editor.finishSketch()
         await settle(editor)
 
