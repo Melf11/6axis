@@ -991,11 +991,22 @@
       }
     },
     "Auf eine ebene Fläche klicken oder Skizzenpunkte wählen": {
+      "extractionState": "stale",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Click on a planar face or choose sketch points"
+          }
+        }
+      }
+    },
+    "Auf eine ebene Fläche klicken oder Skizzenpunkte wählen · Pfeile ziehen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Click on a planar face or choose sketch points · drag the arrows"
           }
         }
       }
@@ -9312,6 +9323,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Drag to change the distance"
+          }
+        }
+      }
+    },
+    "Ziehen, um die Bohrung zu verschieben": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Drag to move the hole"
           }
         }
       }

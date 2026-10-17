@@ -374,4 +374,61 @@ extension Editor {
             k = .extrude(e)
         }
     }
+
+    // MARK: - Dragging along a line
+
+    /// Position along the line through `origin` that is closest to the mouse ray at a screen point.
+    func dragParameter(at pt: CGPoint, origin: Vec3, direction D: Vec3) -> Double? {
+        let r = camera.rayD(at: pt)
+        let w0 = origin - r.origin
+        let b = simd_dot(D, r.direction), d = simd_dot(D, w0), ee = simd_dot(r.direction, w0)
+        let den = 1 - b * b
+        guard abs(den) > 1e-6 else { return nil }
+        return (b * ee - d) / den
+    }
+
+    /// Snap step for dragged values that fits the zoom (1 mm, 10 mm, 0.1 mm …).
+    var dragStep: Double { pow(10, floor(log10(Double(camera.worldPerPoint) * 8))) }
+
+    // MARK: - Hole manipulator
+
+    /// A hole position on a face with its arrows along the face's own X and Y.
+    struct HoleHandle {
+        var index: Int
+        var center: Vec3
+        var axes: [Vec3]
+        /// Current distances from the face's corner (the dialog's "X/Y ab Kante").
+        var offsets: [Double]
+    }
+
+    /// Arrows for every hole position given by distances on a face.
+    var holeHandles: [HoleHandle] {
+        guard let cmd = command, cmd.kind == .hole, case let .hole(h)? = commandFeature?.kind else { return [] }
+        let pre = stateBeforeCommand
+        return h.points.enumerated().compactMap { i, pt in
+            guard case let .faceOffset(bf, x, y) = pt, let body = pre.bodies[bf.body], let idx = body.resolve(bf.face),
+                  let frame = FaceFrame.of(body, face: idx),
+                  let xv = try? evaluator.value(x), let yv = try? evaluator.value(y) else { return nil }
+            return HoleHandle(index: i, center: frame.point(xv, yv), axes: [frame.plane.xDir, frame.plane.yDir], offsets: [xv, yv])
+        }
+    }
+
+    /// Arrow length in the model, constant on screen.
+    var holeArrowLength: Double { Double(camera.worldPerPoint) * 45 }
+
+    /// New distance from the edge when an arrow of `h` is dragged from `from` to `to`.
+    func holeOffset(_ h: HoleHandle, axis: Int, from: CGPoint, to: CGPoint) -> Double? {
+        guard let t0 = dragParameter(at: from, origin: h.center, direction: h.axes[axis]),
+              let t = dragParameter(at: to, origin: h.center, direction: h.axes[axis]) else { return nil }
+        let step = dragStep
+        return ((h.offsets[axis] + t - t0) / step).rounded() * step
+    }
+
+    func setHoleOffset(_ i: Int, axis: Int, _ v: Double) {
+        updateCommandFeature { k in
+            guard case var .hole(h) = k, h.points.indices.contains(i), case let .faceOffset(r, x, y) = h.points[i] else { return }
+            h.points[i] = axis == 0 ? .faceOffset(r, x: plainNumber(v), y: y) : .faceOffset(r, x: x, y: plainNumber(v))
+            k = .hole(h)
+        }
+    }
 }

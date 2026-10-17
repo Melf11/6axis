@@ -224,7 +224,7 @@ private struct BottomBar: View {
                 case .bodies: return String(localized: "Körper anklicken · ↩ bestätigt")
                 case .body: return String(localized: "Zielkörper anklicken")
                 case .cylinder: return String(localized: "Zylinderfläche anklicken (Bolzen oder Bohrung)")
-                case .holePosition: return String(localized: "Auf eine ebene Fläche klicken oder Skizzenpunkte wählen")
+                case .holePosition: return String(localized: "Auf eine ebene Fläche klicken oder Skizzenpunkte wählen · Pfeile ziehen")
                 case .none: return String(localized: "Werte eingeben · ↩ bestätigt")
                 }
             }

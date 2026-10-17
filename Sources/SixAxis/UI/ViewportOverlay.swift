@@ -13,6 +13,7 @@ struct ViewportOverlay: View {
                 drawToolPreview(ctx)
                 drawDimensions(ctx)
                 drawExtrudeArrow(ctx)
+                drawHoleArrows(ctx)
                 drawSplineHandles(ctx)
                 drawMachineTool(ctx)
             }
@@ -25,6 +26,7 @@ struct ViewportOverlay: View {
                 toolInputBoxes
             }
             extrudeHandle
+            holeHandles
         }
         .coordinateSpace(name: "overlay")
     }
@@ -493,6 +495,81 @@ struct ViewportOverlay: View {
             }
         }
     }
+
+    // MARK: Hole manipulator
+
+    private func drawHoleArrows(_ ctx: GraphicsContext) {
+        // Only touch the camera when there are arrows (otherwise the overlay would redraw on every camera move).
+        let handles = editor.holeHandles
+        guard !handles.isEmpty else { return }
+        let len = editor.holeArrowLength
+        for h in handles {
+            guard let a = editor.camera.project(h.center) else { continue }
+            for d in h.axes {
+                guard let b = editor.camera.project(h.center + d * len) else { continue }
+                var p = Path()
+                p.move(to: a)
+                p.addLine(to: b)
+                ctx.stroke(p, with: .color(accent), lineWidth: 2)
+            }
+        }
+    }
+
+    private var holeHandles: some View {
+        let handles = editor.holeHandles
+        return ForEach(handles, id: \.index) { h in
+            ForEach(0..<2, id: \.self) { axis in
+                if let base = editor.camera.project(h.center),
+                   let tip = editor.camera.project(h.center + h.axes[axis] * editor.holeArrowLength) {
+                    HoleArrow(editor: editor, handle: h, axis: axis, angle: atan2(tip.y - base.y, tip.x - base.x))
+                        .position(tip)
+                }
+            }
+        }
+    }
+}
+
+/// Arrow tip at a hole position; dragging moves the hole along the face's X or Y.
+private struct HoleArrow: View {
+    let editor: Editor
+    let handle: Editor.HoleHandle
+    let axis: Int
+    let angle: CGFloat
+    @State private var start: Editor.HoleHandle?
+    @State private var hovering = false
+
+    var body: some View {
+        ZStack {
+            Image(systemName: "arrowtriangle.right.fill")
+                .font(.system(size: hovering || start != nil ? 15 : 12))
+                .foregroundStyle(Color.accentColor)
+                .shadow(color: .black.opacity(0.25), radius: 2, y: 1)
+                .rotationEffect(.radians(angle))
+            if start != nil {
+                Text(formatValue(handle.offsets[axis]))
+                    .font(.system(size: 11, weight: .semibold, design: .rounded))
+                    .padding(.horizontal, 7)
+                    .padding(.vertical, 3)
+                    .background(Capsule().fill(PanelStyle.fill))
+                    .fixedSize()
+                    .offset(x: 0, y: -20)
+                    .allowsHitTesting(false)
+            }
+        }
+        .frame(width: 24, height: 24)
+        .contentShape(Circle())
+        .onHover { hovering = $0 }
+        .gesture(
+            DragGesture(minimumDistance: 1, coordinateSpace: .named("overlay"))
+                .onChanged { v in
+                    if start == nil { start = handle }
+                    guard let start, let value = editor.holeOffset(start, axis: axis, from: v.startLocation, to: v.location) else { return }
+                    editor.setHoleOffset(start.index, axis: axis, value)
+                }
+                .onEnded { _ in start = nil }
+        )
+        .help("Ziehen, um die Bohrung zu verschieben")
+    }
 }
 
 /// Draggable arrow tip that sets the extrusion distance.
@@ -527,13 +604,8 @@ private struct ExtrudeHandle: View {
                     let symmetric = e.extent == .symmetric
                     // Profile origin (handle origin is shifted back for symmetric extrusions).
                     let o = symmetric ? handle.origin + handle.direction * handle.distance / 2 : handle.origin
-                    let r = editor.camera.rayD(at: v.location)
-                    let D = handle.direction, w0 = o - r.origin
-                    let b = simd_dot(D, r.direction), d = simd_dot(D, w0), ee = simd_dot(r.direction, w0)
-                    let den = 1 - b * b
-                    guard abs(den) > 1e-6 else { return }
-                    var t = (b * ee - d) / den
-                    let step = pow(10, floor(log10(Double(editor.camera.worldPerPoint) * 8)))
+                    guard var t = editor.dragParameter(at: v.location, origin: o, direction: handle.direction) else { return }
+                    let step = editor.dragStep
                     t = (t / step).rounded() * step
                     let dist = symmetric ? 2 * t : t
                     if abs(dist) > 1e-9 { editor.setExtrudeDistance(dist) }

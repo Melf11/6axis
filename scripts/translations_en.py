@@ -626,4 +626,6 @@ EN.update({
 "Skizzenpunkt – Lage über die Maße der Skizze": "Sketch point – placed by the sketch's dimensions",
 "Werkstückposition anfahren – leere Felder bleiben, wie sie sind": "Move to a work position – empty fields stay as they are",
 "–": "–",
+"Auf eine ebene Fläche klicken oder Skizzenpunkte wählen · Pfeile ziehen": "Click on a planar face or choose sketch points · drag the arrows",
+"Ziehen, um die Bohrung zu verschieben": "Drag to move the hole",
 })
