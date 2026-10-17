@@ -37,6 +37,19 @@ final class AppSettings {
         var title: String { self == .studio ? String(localized: "Studio") : String(localized: "Einfach") }
     }
 
+    /// Grid on the planar body face under the cursor.
+    enum FaceGrid: String, CaseIterable, Identifiable {
+        case off, positioning, always
+        var id: String { rawValue }
+        var title: String {
+            switch self {
+            case .off: return String(localized: "Aus")
+            case .positioning: return String(localized: "Beim Positionieren")
+            case .always: return String(localized: "Immer")
+            }
+        }
+    }
+
     enum STLQuality: String, CaseIterable, Identifiable {
         case coarse, normal, fine
         var id: String { rawValue }
@@ -103,6 +116,7 @@ final class AppSettings {
 
     var appearance: Appearance { didSet { save(); applyAppearance() } }
     var showGrid: Bool { didSet { save() } }
+    var faceGrid: FaceGrid { didSet { save() } }
     var defaultOrthographic: Bool { didSet { save() } }
     var shading: Shading { didSet { save() } }
     var showEdges: Bool { didSet { save() } }
@@ -150,6 +164,7 @@ final class AppSettings {
         zoomSpeed = double("nav.zoomSpeed", 1)
         appearance = Appearance(rawValue: string("display.appearance", "system")) ?? .system
         showGrid = bool("display.grid", true)
+        faceGrid = FaceGrid(rawValue: string("display.faceGrid", "positioning")) ?? .positioning
         defaultOrthographic = bool("display.ortho", false)
         snapToGrid = bool("sketch.snapToGrid", true)
         shading = Shading(rawValue: string("display.shading", "studio")) ?? .studio
@@ -181,6 +196,7 @@ final class AppSettings {
         d.set(zoomSpeed, forKey: "nav.zoomSpeed")
         d.set(appearance.rawValue, forKey: "display.appearance")
         d.set(showGrid, forKey: "display.grid")
+        d.set(faceGrid.rawValue, forKey: "display.faceGrid")
         d.set(defaultOrthographic, forKey: "display.ortho")
         d.set(snapToGrid, forKey: "sketch.snapToGrid")
         d.set(shading.rawValue, forKey: "display.shading")

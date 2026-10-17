@@ -299,6 +299,10 @@ final class Editor {
     @ObservationIgnored var gridCenter: Vec2 = .zero
     /// Increments when only the grid/axes layer must follow the camera (cheap; no body re-upload).
     @ObservationIgnored var gridVersion = 0
+    /// Face whose grid the grid layer currently shows (the layer is rebuilt when it changes).
+    @ObservationIgnored var shownGridFace: Pick?
+    struct FaceFrameKey: Equatable { var body: ObjectIdentifier; var face: Int }
+    @ObservationIgnored var faceFrameCache: (key: FaceFrameKey, frame: FaceFrame?)?
 
     struct DragState {
         var start: CGPoint

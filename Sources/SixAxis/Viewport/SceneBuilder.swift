@@ -265,7 +265,32 @@ struct SceneBuilder {
     /// The camera-following layer: grid and (non-pickable) origin axes.
     mutating func buildGrid() {
         if AppSettings.shared.showGrid { addGrid() }
+        editor.shownGridFace = editor.gridFacePick
+        if let frame = editor.gridFaceFrame { addFaceGrid(frame) }
         if !axesPickable { addAxes() }
+    }
+
+    /// Grid on a planar body face, counted from the face corner like hole positions (and snapped to by them).
+    private mutating func addFaceGrid(_ f: FaceFrame) {
+        let (step, major) = editor.gridSpacing
+        let nx = Int(f.size.x / step + 1e-6), ny = Int(f.size.y / step + 1e-6)
+        guard nx + ny < 1000 else { return }
+        let every = Int((major / step).rounded())
+        var minor: [LineInstance] = [], majorLines: [LineInstance] = []
+        let minorColor = packColor(style.gridMinor), majorColor = packColor(style.gridMajor)
+        for i in 0...nx {
+            let x = Double(i) * step
+            let l = LineInstance(f.point(x, 0).float, f.point(x, f.size.y).float, color: i % every == 0 ? majorColor : minorColor)
+            if i % every == 0 { majorLines.append(l) } else { minor.append(l) }
+        }
+        for j in 0...ny {
+            let y = Double(j) * step
+            let l = LineInstance(f.point(0, y).float, f.point(f.size.x, y).float, color: j % every == 0 ? majorColor : minorColor)
+            if j % every == 0 { majorLines.append(l) } else { minor.append(l) }
+        }
+        // Slightly in front of the face itself, so the face doesn't cover its own grid.
+        scene.lines.append(LineBatch(instances: minor, width: 1 * scale, depthBias: 0.0008, depth: .readOnly, pickable: false))
+        scene.lines.append(LineBatch(instances: majorLines, width: 1 * scale, depthBias: 0.0008, depth: .readOnly, pickable: false))
     }
 
     private mutating func addGrid() {
@@ -288,8 +313,11 @@ struct SceneBuilder {
             if isMajor { majorLines.append(LineInstance(a, b, color: majorColor)) } else { minor.append(LineInstance(a, b, color: minorColor)) }
             if isMajorY { majorLines.append(LineInstance(a2, b2, color: majorColor)) } else { minor.append(LineInstance(a2, b2, color: minorColor)) }
         }
-        scene.lines.append(LineBatch(instances: minor, width: 1 * scale, depthBias: -0.002, depth: .readOnly, pickable: false))
-        scene.lines.append(LineBatch(instances: majorLines, width: 1 * scale, depthBias: -0.002, depth: .readOnly, pickable: false))
+        // The ground grid stays behind bodies standing on it; a sketch grid lies in front of the
+        // face it was started on, otherwise that face would hide it.
+        let bias: Float = editor.activePlane == nil ? -0.002 : 0.0008
+        scene.lines.append(LineBatch(instances: minor, width: 1 * scale, depthBias: bias, depth: .readOnly, pickable: false))
+        scene.lines.append(LineBatch(instances: majorLines, width: 1 * scale, depthBias: bias, depth: .readOnly, pickable: false))
     }
 
     /// Origin axes as long lines through the grid, drawn *behind* geometry (negative depth bias),

@@ -194,9 +194,11 @@ extension Editor {
                           let preBody = pre.bodies[b], let info = state.bodies[b]?.faceInfo(at: i),
                           let preIdx = preBody.resolve(FaceRef(index: -1, centroid: info.centroid, normal: info.normal)),
                           let ref = preBody.faceRef(preIdx), let frame = FaceFrame.of(preBody, face: preIdx) {
-                    // Distances from the face's corner, rounded to 0.5 mm – then typed exactly in the dialog.
+                    // Distances from the face's corner, on the face grid when it is shown (else rounded
+                    // to 0.5 mm) – then typed exactly in the dialog.
                     let o = frame.offsets(hit)
-                    func r(_ v: Double) -> String { plainNumber((v * 2).rounded() / 2) }
+                    let step = gridFacePick == p && gridSnapActive ? gridSpacing.minor : 0.5
+                    func r(_ v: Double) -> String { plainNumber((v / step).rounded() * step) }
                     x.points.append(.faceOffset(BodyFaceRef(body: b, face: ref), x: r(o.x), y: r(o.y)))
                 }
                 k = .hole(x)

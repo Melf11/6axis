@@ -111,6 +111,9 @@ struct DisplaySettings: View {
             }
             Section("Ansichtsfenster") {
                 Toggle("Raster anzeigen", isOn: $s.showGrid)
+                Picker("Raster auf Flächen", selection: $s.faceGrid) {
+                    ForEach(AppSettings.FaceGrid.allCases) { Text($0.title).tag($0) }
+                }
                 Toggle("Neue Designs orthografisch anzeigen", isOn: $s.defaultOrthographic)
             }
             Section {

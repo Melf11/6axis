@@ -146,6 +146,26 @@ extension Editor {
         AppSettings.shared.snapToGrid && !NSEvent.modifierFlags.contains(.command)
     }
 
+    /// The planar body face under the cursor that shows its own grid (setting "Raster auf Flächen").
+    var gridFacePick: Pick? {
+        guard sketchId == nil, case let .face(b, i)? = hover, state.bodies[b]?.faceInfo(at: i)?.isPlanar == true else { return nil }
+        switch AppSettings.shared.faceGrid {
+        case .off: return nil
+        case .positioning: return modellingInput == .holePosition ? hover : nil
+        case .always: return hover
+        }
+    }
+
+    /// Frame of `gridFacePick`, cached per face (the outer loop comes from the kernel).
+    var gridFaceFrame: FaceFrame? {
+        guard case let .face(b, i)? = gridFacePick, let body = state.bodies[b] else { return nil }
+        let key = FaceFrameKey(body: ObjectIdentifier(body), face: i)
+        if let c = faceFrameCache, c.key == key { return c.frame }
+        let frame = FaceFrame.of(body, face: i)
+        faceFrameCache = (key, frame)
+        return frame
+    }
+
     func snapToGrid(_ p: Vec2) -> Vec2 {
         let s = gridSpacing.minor
         return Vec2((p.x / s).rounded() * s, (p.y / s).rounded() * s)
