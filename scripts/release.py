@@ -14,6 +14,7 @@ Needs: gh (logged in), git, Xcode, OpenCASCADE.
 """
 import argparse
 import json
+import os
 import re
 import shutil
 import subprocess
@@ -190,8 +191,8 @@ def merge(pr, repo, dry_run):
     return True
 
 
-def close(pr, repo, dry_run):
-    reason = ask("   Kurze Begründung für das Issue (wird öffentlich kommentiert)", default="Die automatische Korrektur passt so nicht.")
+def close(pr, repo, dry_run, reason=None):
+    reason = reason or ask("   Kurze Begründung für das Issue (wird öffentlich kommentiert)", default="Die automatische Korrektur passt so nicht.")
     if dry_run:
         log("   (Probelauf) würde den Pull Request schließen")
         return
@@ -323,16 +324,78 @@ def wait_for_release(tag, repo):
     return None, run_id["url"] if run_id else None
 
 
-def release(repo, merged, dry_run):
+def release_state():
+    """What main has that the last release does not: (head sha, current version, change lines)."""
     run(["git", "fetch", "-q", "--tags", "origin", "main"])
     head = run(["git", "rev-parse", "origin/main"]).stdout.strip()
     current = latest_version(run(["git", "tag", "--list", "v*"]).stdout.split())
+    changes = run(["git", "log", "--no-merges", "--pretty=%s", f"{tag_name(current)}..{head}"]).stdout.split("\n")
+    return head, current, [c for c in changes if c.strip()]
+
+
+def check_tag(tag, current):
+    if not parse_version(tag) or parse_version(tag) <= current:
+        raise SystemExit(f"✗ {tag} ist keine gültige neue Version (aktuell {tag_name(current)}).")
+    if run(["git", "rev-parse", "-q", "--verify", f"refs/tags/{tag}"], check=False).returncode == 0:
+        raise SystemExit(f"✗ {tag} gibt es schon.")
+
+
+def check_locally(head):
+    """Full verification of exactly this commit in its own working copy."""
+    tree = WORK / "release"
+    if tree.exists():
+        run(["git", "worktree", "remove", "--force", str(tree)], check=False)
+    WORK.mkdir(parents=True, exist_ok=True)
+    run(["git", "worktree", "add", "-q", "--detach", str(tree), head])
+    (tree / ".bugfix").mkdir(exist_ok=True)
+    results = checks(tree)
+    if not all(ok for _, ok, _ in results):
+        name, _, out = next(r for r in results if not r[1])
+        raise SystemExit(f"✗ {name} fehlgeschlagen – nichts veröffentlicht. Arbeitskopie: {tree}\n{out}")
+    run(["git", "worktree", "remove", "--force", str(tree)], check=False)
+
+
+def fixed_since(last, tag, merged=()):
+    bodies = run(["git", "log", "--format=%B", f"{last}..{tag}"]).stdout
+    return linked_issues(bodies, *(p["body"] for p in merged))
+
+
+def notify(issues, tag, repo):
+    for n in issues:
+        run(["gh", "issue", "comment", str(n), "--repo", repo, "--body",
+             f"Behoben in 6axis {tag[1:]}. Das Update bietet 6axis automatisch an "
+             f"(oder: https://github.com/{repo}/releases/tag/{tag})."], check=False)
+        run(["gh", "issue", "edit", str(n), "--repo", repo, "--remove-label", "fix-bereit"], check=False)
+    log(f"✓ Melder benachrichtigt: {', '.join(f'#{n}' for n in issues)}")
+
+
+def publish(tag, text, head, repo):
+    """Tags, pushes, waits for the workflow and verifies. True only when published and verified."""
+    run(["git", "tag", "-a", tag, head, "-m", f"6axis {tag[1:]} – {text}"])
+    run(["git", "push", "-q", "origin", tag])
+    log(f"✓ Tag {tag} gepusht.")
+    ok, url = wait_for_release(tag, repo)
+    if ok is None:
+        return False
+    if not ok:
+        log(f"✗ Der Release-Lauf ist fehlgeschlagen: {url}\n  Nichts wurde veröffentlicht. Ursache beheben, dann:"
+            f"\n  git push --delete origin {tag} && git tag -d {tag}   und erneut veröffentlichen.")
+        return False
+    log("Prüfe die veröffentlichten Dateien …")
+    if not verify(tag, repo):
+        log("✗ Die Prüfung hat Fehler gefunden – bitte ansehen, bevor Nutzer das Update installieren.")
+        return False
+    log(f"✓ {tag} ist veröffentlicht und geprüft.")
+    return True
+
+
+def release(repo, merged, dry_run):
+    head, current, changes = release_state()
     last = tag_name(current)
-    changes = run(["git", "log", "--no-merges", "--pretty=- %s", f"{last}..{head}"]).stdout.strip()
     if not changes:
         log(f"\nmain enthält nichts Neues seit {last} – kein Release nötig.")
         return
-    log(f"\nNoch nicht veröffentlicht (seit {last}):\n{changes}")
+    log(f"\nNoch nicht veröffentlicht (seit {last}):\n" + "\n".join(f"- {c}" for c in changes))
     if not yes("\nJetzt eine neue Version veröffentlichen?"):
         return
 
@@ -340,27 +403,14 @@ def release(repo, merged, dry_run):
     c = ask("Welche Version?", {"1": f"{kinds['1']} Fehlerbehebung", "2": f"{kinds['2']} neue Funktionen",
                                 "3": f"{kinds['3']} große Änderung", "e": "eigene"}, "1")
     tag = kinds.get(c) or ask("Version (z. B. v2.1.0)")
-    if not parse_version(tag) or parse_version(tag) <= current:
-        raise SystemExit(f"✗ {tag} ist keine gültige neue Version (aktuell {last}).")
-    if run(["git", "rev-parse", "-q", "--verify", f"refs/tags/{tag}"], check=False).returncode == 0:
-        raise SystemExit(f"✗ {tag} gibt es schon.")
+    check_tag(tag, current)
 
     fixed = linked_issues(*(p["body"] for p in merged))
     default = "Fehlerbehebungen" + (f" ({', '.join(f'#{n}' for n in fixed)})" if fixed else "")
     text = ask("Kurzbeschreibung (deutsch, steht im Tag)", default=default)
 
     if yes("Vorher genau diesen Stand hier auf dem Mac prüfen (Tests, Build, Oberflächenprüfung – ca. 10 Minuten)?"):
-        tree = WORK / "release"
-        if tree.exists():
-            run(["git", "worktree", "remove", "--force", str(tree)], check=False)
-        WORK.mkdir(parents=True, exist_ok=True)
-        run(["git", "worktree", "add", "-q", "--detach", str(tree), head])
-        (tree / ".bugfix").mkdir(exist_ok=True)
-        results = checks(tree)
-        if not all(ok for _, ok, _ in results):
-            name, _, out = next(r for r in results if not r[1])
-            raise SystemExit(f"✗ {name} fehlgeschlagen – nichts veröffentlicht. Arbeitskopie: {tree}\n{out}")
-        run(["git", "worktree", "remove", "--force", str(tree)], check=False)
+        check_locally(head)
 
     log(f"\n{tag} – „{text}“ – Stand {head[:7]}")
     if dry_run:
@@ -369,40 +419,81 @@ def release(repo, merged, dry_run):
     if not confirm_public(f"{tag} jetzt veröffentlichen? Danach bekommen alle das Update angeboten."):
         log("Abgebrochen – nichts veröffentlicht.")
         return
-    run(["git", "tag", "-a", tag, head, "-m", f"6axis {tag[1:]} – {text}"])
-    run(["git", "push", "-q", "origin", tag])
-    log(f"✓ Tag {tag} gepusht.")
-
-    ok, url = wait_for_release(tag, repo)
-    if ok is None:
+    if not publish(tag, text, head, repo):
         return
-    if not ok:
-        log(f"✗ Der Release-Lauf ist fehlgeschlagen: {url}\n  Nichts wurde veröffentlicht. Ursache beheben, dann:"
-            f"\n  git push --delete origin {tag} && git tag -d {tag}   und dieses Skript erneut starten.")
-        return
-    log("Prüfe die veröffentlichten Dateien …")
-    if not verify(tag, repo):
-        log("✗ Die Prüfung hat Fehler gefunden – bitte ansehen, bevor Nutzer das Update installieren.")
-        return
-    log(f"✓ {tag} ist veröffentlicht und geprüft.")
-
-    bodies = run(["git", "log", "--format=%B", f"{last}..{tag}"]).stdout
-    issues = linked_issues(bodies, *(p["body"] for p in merged))
+    issues = fixed_since(last, tag, merged)
     if issues and yes(f"Melder von {', '.join(f'#{n}' for n in issues)} benachrichtigen („Behoben in {tag}“)?"):
-        for n in issues:
-            run(["gh", "issue", "comment", str(n), "--repo", repo, "--body",
-                 f"Behoben in 6axis {tag[1:]}. Das Update bietet 6axis automatisch an "
-                 f"(oder: https://github.com/{repo}/releases/tag/{tag})."], check=False)
-            run(["gh", "issue", "edit", str(n), "--repo", repo, "--remove-label", "fix-bereit"], check=False)
-        log("✓ benachrichtigt.")
+        notify(issues, tag, repo)
+
+
+# MARK: Without questions (used by the menu bar app "6axis Wartung")
+
+def status(repo, owner):
+    """Everything the menu bar app shows, as one JSON object."""
+    from bugfix import bug_list, load_main_config
+    prs = gh_json("pr", "list", "--repo", repo, "--state", "open", "--limit", "50", "--json", PR_FIELDS)
+    head, current, changes = release_state()
+    return {
+        "repo": repo,
+        "bugs": bug_list(repo, owner, load_main_config()),
+        "prs": [{"number": p["number"], "title": p["title"], "url": p["url"], "author": p["author"]["login"],
+                 "head": p["headRefOid"], "issues": linked_issues(p["body"]), "ci": ci_state(p["statusCheckRollup"]),
+                 "additions": p["additions"], "deletions": p["deletions"], "files": len(p["files"] or []),
+                 "blockers": review_notes(p, owner)[0], "warnings": review_notes(p, owner)[1]} for p in prs],
+        "release": {"last": tag_name(current), "head": head, "changes": changes,
+                    "next": {k: tag_name(next_version(current, k)) for k in ("patch", "minor", "major")}},
+    }
+
+
+def merge_now(n, head, repo, owner, accept_warnings):
+    pr = gh_json("pr", "view", str(n), "--repo", repo, "--json", PR_FIELDS)
+    if pr["headRefOid"] != head:
+        raise SystemExit(f"✗ #{n} hat sich seit dem Ansehen geändert – bitte neu laden und prüfen.")
+    blockers, warnings = review_notes(pr, owner)
+    if blockers:
+        raise SystemExit("✗ Nicht mergebar: " + "; ".join(blockers))
+    if warnings and not accept_warnings:
+        raise SystemExit("✗ Hinweise nicht bestätigt: " + "; ".join(warnings))
+    if not merge(pr, repo, False):
+        sys.exit(1)
+
+
+def publish_now(tag, text, head, repo, local_check, notify_reporters):
+    expected, current, changes = release_state()
+    if head != expected:
+        raise SystemExit("✗ main hat sich seit dem Ansehen geändert – bitte neu laden.")
+    if not changes:
+        raise SystemExit("✗ Nichts Neues seit dem letzten Release.")
+    check_tag(tag, current)
+    if local_check:
+        check_locally(head)
+    if not publish(tag, text, head, repo):
+        sys.exit(1)
+    issues = fixed_since(tag_name(current), tag)
+    if issues and notify_reporters:
+        notify(issues, tag, repo)
 
 
 # MARK: Main
 
 def main(argv=None):
+    if os.environ.get("SIXAXIS_WARTUNG"):
+        os.setpgrp()  # started by the menu bar app: own process group, so "Abbrechen" also stops builds and Claude
     p = argparse.ArgumentParser(description="Merge pull requests and publish a release")
     p.add_argument("--dry-run", action="store_true", help="only show, change nothing")
     p.add_argument("--verify", metavar="TAG", help="only check a published release")
+    g = p.add_argument_group("without questions (menu bar app)")
+    g.add_argument("--status-json", action="store_true", help="bugs, pull requests and release state as JSON")
+    g.add_argument("--merge", type=int, metavar="PR", help="merge this pull request (needs --head)")
+    g.add_argument("--head", help="commit that was reviewed (pull request or main)")
+    g.add_argument("--accept-warnings", action="store_true")
+    g.add_argument("--close", type=int, metavar="PR", help="discard this pull request (needs --reason)")
+    g.add_argument("--reason")
+    g.add_argument("--try", dest="try_pr", type=int, metavar="PR", help="build the app from this pull request and open it")
+    g.add_argument("--publish", metavar="TAG", help="publish main as TAG (needs --head and --text)")
+    g.add_argument("--text")
+    g.add_argument("--check", action="store_true", help="with --publish: full local check first")
+    g.add_argument("--notify", action="store_true", help="with --publish: comment 'fixed in …' on the issues")
     args = p.parse_args(argv)
 
     for tool in ("gh", "git"):
@@ -418,6 +509,23 @@ def main(argv=None):
 
     if args.verify:
         sys.exit(0 if verify(args.verify, repo) else 1)
+    if args.status_json:
+        print(json.dumps(status(repo, owner), ensure_ascii=False))
+        return
+    if args.merge:
+        if not args.head:
+            raise SystemExit("✗ --merge braucht --head")
+        return merge_now(args.merge, args.head, repo, owner, args.accept_warnings)
+    if args.close:
+        pr = gh_json("pr", "view", str(args.close), "--repo", repo, "--json", PR_FIELDS)
+        return close(pr, repo, False, reason=args.reason or "Die automatische Korrektur passt so nicht.")
+    if args.try_pr:
+        return try_out(gh_json("pr", "view", str(args.try_pr), "--repo", repo, "--json", PR_FIELDS))
+    if args.publish:
+        if not (args.head and args.text):
+            raise SystemExit("✗ --publish braucht --head und --text")
+        return publish_now(args.publish, args.text, args.head, repo, args.check, args.notify)
+
     if args.dry_run:
         log("Probelauf – es wird nichts geändert.\n")
     try:

@@ -23,14 +23,14 @@ import tempfile
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from bug_automation import decide, load_config  # noqa: E402
+from bug_automation import decide, load_config, names  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
 WORK = Path.home() / ".6axis-bugfix"
 SKIP_LABELS = {"fix-bereit", "braucht-mensch", "in-arbeit", "duplikat", "braucht-info"}
 # Files Claude must not touch: automation, update signing, CI.
 PROTECTED = (".github/", "Resources/update-public-key.txt", "scripts/update-key.swift",
-             "scripts/bug_automation.py", "scripts/bugfix.py", "scripts/release.py")
+             "scripts/bug_automation.py", "scripts/bugfix.py", "scripts/release.py", "tools/")
 CLAUDE_TOOLS = [
     "Read", "Edit", "Write", "Grep", "Glob",
     "Bash(swift build:*)", "Bash(swift test:*)",
@@ -75,6 +75,35 @@ def candidates(issues, config, owner, events_for):
     return out
 
 
+STATE_LABELS = ("in-arbeit", "fix-bereit", "braucht-mensch", "braucht-info", "duplikat")
+
+
+def load_main_config():
+    """The allowlists always come from main, never from a working copy."""
+    run(["git", "fetch", "-q", "origin", "main"])
+    return load_config(run(["git", "show", "origin/main:.github/bug-automation.yml"]).stdout)
+
+
+def bug_list(repo, owner, config):
+    """Open bug reports with their state, for the menu bar app (release.py --status-json)."""
+    autofix = names(config, "autofix")
+    out = []
+    for issue in gh_json("api", f"repos/{repo}/issues?state=open&per_page=100"):
+        if not is_bug_report(issue):
+            continue
+        labels = {l["name"] for l in issue.get("labels", [])}
+        # The issue events only matter for an approval label on a report from outside the autofix list.
+        needs_events = "freigegeben" in labels and issue["user"]["login"].lower() not in autofix
+        events = gh_json("api", f"repos/{repo}/issues/{issue['number']}/events", "--paginate") if needs_events else []
+        d = decide(issue, events or [], config, owner)
+        ready = d["autofix"] and not labels & SKIP_LABELS
+        state = next((l for l in STATE_LABELS if l in labels), "bereit" if ready else "wartet auf Freigabe")
+        out.append({"number": issue["number"], "title": issue["title"], "url": issue["html_url"],
+                    "author": issue["user"]["login"], "created": issue["created_at"],
+                    "state": state, "ready": ready, "reason": d["reason"]})
+    return out
+
+
 def report_text(issue, comments, owner):
     """The report as data for Claude: only text from the reporter and the owner (no third-party comments)."""
     author = issue["user"]["login"].lower()
@@ -107,7 +136,7 @@ Vorgehen:
    Erste Zeile genau `STATUS: behoben` oder `STATUS: nicht behoben`, zweite Zeile ein kurzer englischer
    Commit-Titel (Imperativ, < 70 Zeichen). Danach auf Deutsch: Ursache, Lösung, Nachweis (welcher Test).
    Wenn nicht behoben: Befund und offene Fragen an den Melder.
-Nicht ändern: .github/, Resources/update-public-key.txt, scripts/update-key.swift, scripts/bug_automation.py, scripts/bugfix.py, scripts/release.py.
+Nicht ändern: .github/, Resources/update-public-key.txt, scripts/update-key.swift, scripts/bug_automation.py, scripts/bugfix.py, scripts/release.py, tools/.
 """
 
 
@@ -213,11 +242,14 @@ def process(issue, owner, repo, args):
 # MARK: Main
 
 def main(argv=None):
+    if os.environ.get("SIXAXIS_WARTUNG"):
+        os.setpgrp()  # started by the menu bar app: own process group, so "Abbrechen" also stops builds and Claude
     p = argparse.ArgumentParser(description="Bug reports with Claude Code on this Mac")
     p.add_argument("--issue", type=int, help="only this issue")
     p.add_argument("--max", type=int, default=3, help="at most this many reports per run")
     p.add_argument("--dry-run", action="store_true", help="only list")
     p.add_argument("--timeout", type=int, default=3600, help="seconds per report for Claude")
+    p.add_argument("--approve", type=int, metavar="ISSUE", help="approve this report for fixing (label 'freigegeben')")
     args = p.parse_args(argv)
 
     for tool in ("gh", "git", "claude"):
@@ -231,9 +263,11 @@ def main(argv=None):
     for name, color in [("fehler", "d73a4a"), ("freigegeben", "0e8a16"), ("in-arbeit", "5319e7"), ("fix-bereit", "0e8a16"),
                         ("braucht-mensch", "b60205"), ("braucht-info", "fbca04"), ("duplikat", "cfd3d7")]:
         run(["gh", "label", "create", name, "--repo", repo, "--color", color], check=False)
-    run(["git", "fetch", "-q", "origin", "main"])
-    # The lists always come from main, never from a working copy.
-    config = load_config(run(["git", "show", "origin/main:.github/bug-automation.yml"]).stdout)
+    if args.approve:
+        run(["gh", "issue", "edit", str(args.approve), "--repo", repo, "--add-label", "freigegeben"])
+        log(f"✓ #{args.approve} freigegeben")
+        return
+    config = load_main_config()
 
     if args.issue:
         issues = [gh_json("api", f"repos/{repo}/issues/{args.issue}")]
