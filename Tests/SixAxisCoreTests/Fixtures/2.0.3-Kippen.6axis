@@ -1,0 +1,175 @@
+{
+  "bodies" : [
+
+  ],
+  "components" : [
+
+  ],
+  "features" : [
+    {
+      "id" : "1C70DE43-54AD-40DB-BE5B-CAE67C0CD2C9",
+      "kind" : {
+        "sketch" : {
+          "_0" : {
+            "constraints" : [
+
+            ],
+            "curves" : [
+              {
+                "construction" : false,
+                "geometry" : {
+                  "line" : {
+                    "end" : 2,
+                    "start" : 1
+                  }
+                },
+                "id" : 5
+              },
+              {
+                "construction" : false,
+                "geometry" : {
+                  "line" : {
+                    "end" : 3,
+                    "start" : 2
+                  }
+                },
+                "id" : 6
+              },
+              {
+                "construction" : false,
+                "geometry" : {
+                  "line" : {
+                    "end" : 4,
+                    "start" : 3
+                  }
+                },
+                "id" : 7
+              },
+              {
+                "construction" : false,
+                "geometry" : {
+                  "line" : {
+                    "end" : 1,
+                    "start" : 4
+                  }
+                },
+                "id" : 8
+              }
+            ],
+            "nextId" : 9,
+            "plane" : {
+              "xy" : {
+
+              }
+            },
+            "points" : [
+              {
+                "fixed" : true,
+                "id" : 0,
+                "position" : [
+                  0,
+                  0
+                ]
+              },
+              {
+                "fixed" : false,
+                "id" : 1,
+                "position" : [
+                  0,
+                  0
+                ]
+              },
+              {
+                "fixed" : false,
+                "id" : 2,
+                "position" : [
+                  20,
+                  0
+                ]
+              },
+              {
+                "fixed" : false,
+                "id" : 3,
+                "position" : [
+                  20,
+                  20
+                ]
+              },
+              {
+                "fixed" : false,
+                "id" : 4,
+                "position" : [
+                  0,
+                  20
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "name" : "Skizze Klotz",
+      "suppressed" : false
+    },
+    {
+      "id" : "105C5897-1362-4108-8C3D-CE31911F2592",
+      "kind" : {
+        "extrude" : {
+          "_0" : {
+            "distance" : "10 mm",
+            "distance2" : "10 mm",
+            "extent" : "oneSide",
+            "faces" : [
+
+            ],
+            "operation" : "newBody",
+            "profiles" : [
+              {
+                "sample" : [
+                  10,
+                  10
+                ],
+                "sketch" : "1C70DE43-54AD-40DB-BE5B-CAE67C0CD2C9"
+              }
+            ],
+            "targets" : [
+
+            ]
+          }
+        }
+      },
+      "name" : "Klotz",
+      "suppressed" : false
+    },
+    {
+      "id" : "7614D9D8-675C-4D17-83E5-3780B25BB166",
+      "kind" : {
+        "move" : {
+          "_0" : {
+            "angle" : "90",
+            "axis" : {
+              "x" : {
+
+              }
+            },
+            "bodies" : [
+              "105C5897-1362-4108-8C3D-CE31911F2592"
+            ],
+            "copy" : false,
+            "dx" : "0 mm",
+            "dy" : "0 mm",
+            "dz" : "5 mm"
+          }
+        }
+      },
+      "name" : "Kippen",
+      "suppressed" : false
+    }
+  ],
+  "formatVersion" : 7,
+  "hiddenSketches" : [
+
+  ],
+  "parameters" : [
+
+  ]
+}

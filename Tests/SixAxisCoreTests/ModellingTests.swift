@@ -374,6 +374,32 @@ final class ModellingTests: XCTestCase {
         XCTAssertEqual(build(old).bodies[body]!.shape.boundingBox!.min.y, -10, accuracy: 1e-6)
     }
 
+    /// The pivot is part of the model, so it must not depend on whether a body was already tessellated:
+    /// OpenCASCADE's quick bounding box of a threaded bolt is up to 0.5 mm off before meshing.
+    func testMovePivotIgnoresTessellation() {
+        var doc = CADDocument()
+        var sk = Sketch(plane: .xy)
+        sk.addCircle(center: sk.addPoint(.zero), radius: 4)
+        let s = Feature(name: "S", kind: .sketch(sk))
+        var ex = ExtrudeFeature()
+        ex.profiles = [ProfileRef(sketch: s.id, sample: .zero)]
+        ex.distance = "12 mm"
+        let e = Feature(name: "Bolzen", kind: .extrude(ex))
+        doc.features = [s, e]
+        let plain = build(doc).bodies[e.id]!
+        let cyl = plain.faceInfos.compactMap { $0 }.first { $0.surface == .cylinder }!
+        var t = ThreadFeature()
+        t.faces = [BodyFaceRef(body: e.id, face: plain.faceRef(cyl.index)!)]
+        doc.features.append(Feature(name: "G", kind: .thread(t)))
+        let fresh = build(doc)
+        let before = fresh.center(of: [e.id])!
+        let meshed = build(doc)
+        _ = meshed.bodies[e.id]!.mesh
+        let after = meshed.center(of: [e.id])!
+        XCTAssertLessThan(simd_distance(before, after), 1e-6)
+        XCTAssertLessThan(simd_distance(before, Vec3(0, 0, 6)), 1e-3, "\(before)")
+    }
+
     func testCombineCutKeepsOrRemovesTool() {
         var doc = CADDocument()
         let a = box(&doc, w: 50, d: 50, height: 20)
