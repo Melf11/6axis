@@ -75,6 +75,22 @@ enum ModellingChecks {
                 check("hole: click gives distances from the face corner", false, "\(h.points)")
             }
         }
+        // Arrows on the face: dragging the first position's arrows moves it 20 mm along X, then 10 mm along Y.
+        let handles = editor.holeHandles
+        check("hole: arrows at each position", handles.count == 2, "\(handles.count)")
+        if let start = handles.first {
+            let len = editor.holeArrowLength
+            for (axis, delta) in [(0, 20.0), (1, 10.0)] {
+                guard let h = editor.holeHandles.first, let a = editor.camera.project(h.center + h.axes[axis] * len),
+                      let b = editor.camera.project(h.center + h.axes[axis] * (len + delta)),
+                      let v = editor.holeOffset(h, axis: axis, from: a, to: b) else { continue }
+                editor.setHoleOffset(h.index, axis: axis, v)
+            }
+            await settle(editor)
+            let moved = editor.holeHandles.first?.offsets ?? []
+            let dx = (moved.first ?? 0) - start.offsets[0], dy = (moved.last ?? 0) - start.offsets[1]
+            check("hole: arrows move the position", abs(dx - 20) <= 1 && abs(dy - 10) <= 1, "\(start.offsets) → \(moved)")
+        }
         // Typed exactly: first hole at X 30, second at X 70, both Y 30.
         editor.updateCommandFeature { k in
             guard case var .hole(h) = k else { return }
