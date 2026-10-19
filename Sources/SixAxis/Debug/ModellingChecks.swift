@@ -48,6 +48,22 @@ enum ModellingChecks {
         await settle(editor)
         let full = 100.0 * 60 * 20
 
+        // Cutting extrusion: the removed material is previewed in red, the trimmed body stays solid.
+        editor.beginCommand(.extrude)
+        editor.updateCommandFeature { k in
+            guard case var .extrude(e) = k else { return }
+            e.profiles = [ProfileRef(sketch: s2.id, sample: Vec2(150, 30))]; e.distance = "5 mm"; e.operation = .cut
+            k = .extrude(e)
+        }
+        await settle(editor)
+        var cutScene = SceneBuilder(editor: editor, scale: 2)
+        cutScene.build()
+        let translucent = cutScene.scene.meshes.filter(\.translucent)
+        check("cut: removed material shown in red", !translucent.isEmpty && translucent.allSatisfy { $0.color.x > 0.8 && $0.color.y < 0.4 },
+              "\(translucent.map(\.color))")
+        editor.cancelCommand()
+        await settle(editor)
+
         // Hole: two clicks on the top face, Ø8 through.
         editor.beginCommand(.hole)
         await click(editor, Vec3(31.6, 28.7, 20))
@@ -79,7 +95,7 @@ enum ModellingChecks {
         let handles = editor.holeHandles
         check("hole: arrows at each position", handles.count == 2, "\(handles.count)")
         if let start = handles.first {
-            let len = editor.holeArrowLength
+            let len = editor.arrowLength
             for (axis, delta) in [(0, 20.0), (1, 10.0)] {
                 guard let h = editor.holeHandles.first, let a = editor.camera.project(h.center + h.axes[axis] * len),
                       let b = editor.camera.project(h.center + h.axes[axis] * (len + delta)),
@@ -113,6 +129,37 @@ enum ModellingChecks {
         await settle(editor)
         editor.timelineSelection = nil
         check("pattern: holes repeated", abs(volume(editor, plateF.id) - (full - 4 * .pi * 16 * 20)) < 1, "\(volume(editor, plateF.id))")
+
+        // Fillet and chamfer on the plate's top front edge: an arrow on the edge, dragged 2 mm into the corner
+        // (measured on the rounded/chamfered surface) gives radius/distance 1 → 3 mm (scale 0.414 / 0.707 at 90°).
+        for kind in [CommandKind.fillet, .chamfer] {
+            editor.beginCommand(kind)
+            if let body = editor.stateBeforeCommand.bodies[plateF.id],
+               let idx = body.edgeInfos.compactMap({ $0 }).first(where: { simd_distance($0.midpoint, Vec3(50, 0, 20)) < 1e-6 })?.index,
+               let ref = body.edgeRef(idx) {
+                editor.updateCommandFeature { k in
+                    if case var .fillet(f) = k { f.edges = [BodyEdgeRef(body: plateF.id, edge: ref)]; k = .fillet(f) }
+                    if case var .chamfer(c) = k { c.edges = [BodyEdgeRef(body: plateF.id, edge: ref)]; k = .chamfer(c) }
+                }
+            }
+            await settle(editor)
+            let name = kind == .fillet ? "fillet" : "chamfer"
+            guard let h = editor.edgeHandle else { check("\(name): arrow on the edge", false); editor.cancelCommand(); continue }
+            let out = simd_normalize(Vec3(0, -1, 1))
+            check("\(name): arrow on the edge", simd_dot(h.direction, out) > 0.999 && abs(h.value - 1) < 1e-9, "\(h.direction) \(h.value)")
+            let len = editor.arrowLength, depth = 2 * h.scale
+            if let a = editor.camera.project(h.center + h.direction * len),
+               let b = editor.camera.project(h.center + h.direction * (len - depth)),
+               let v = editor.edgeValue(h, from: a, to: b) {
+                editor.setEdgeValue(v)
+            }
+            await settle(editor)
+            check("\(name): arrow changes the size", abs((editor.edgeHandle?.value ?? 0) - 3) < 1e-6 && editor.state.errors.isEmpty,
+                  "\(editor.edgeHandle?.value ?? 0) \(editor.state.errors.values)")
+            await snap(kind == .fillet ? "m02-fillet" : "m02-chamfer")
+            editor.cancelCommand()
+            await settle(editor)
+        }
 
         // Offset plane from the top face, then a sketch on it by clicking the plane.
         editor.beginPlane(.offset)
@@ -284,6 +331,28 @@ enum ModellingChecks {
         editor.showExplode = false
         let names = editor.drawing.input(editor).parts.map(\.name)
         check("parts list: component name", names.contains("Bolzen M8"), "\(names)")
+
+        // View cube arrows (#7): from the front, turn to the right face, roll twice, tilt to the top.
+        func goal() -> Camera { editor.cameraAnimation?.to ?? editor.camera }
+        func near(_ a: SIMD3<Float>, _ b: SIMD3<Float>) -> Bool { simd_distance(a, b) < 1e-4 }
+        editor.cameraAnimation = nil
+        editor.camera.orientation = Camera.lookOrientation(direction: SIMD3(0, 1, 0), up: SIMD3(0, 0, 1))
+        check("view cube: front view shows the arrows", editor.camera.isAxisView)
+        editor.turnView(axis: SIMD3(0, 1, 0), sign: 1)
+        check("view cube: right arrow looks at the right face", near(goal().forward, SIMD3(-1, 0, 0)) && near(goal().up, SIMD3(0, 0, 1)),
+              "\(goal().forward) \(goal().up)")
+        editor.turnView(axis: SIMD3(0, 0, 1), sign: 1)
+        editor.turnView(axis: SIMD3(0, 0, 1), sign: 1)
+        check("view cube: two quick rolls turn the view upside down", near(goal().forward, SIMD3(-1, 0, 0)) && near(goal().up, SIMD3(0, 0, -1)),
+              "\(goal().forward) \(goal().up)")
+        editor.cameraAnimation = nil
+        editor.camera.orientation = Camera.lookOrientation(direction: SIMD3(0, 1, 0), up: SIMD3(0, 0, 1))
+        editor.turnView(axis: SIMD3(1, 0, 0), sign: -1)
+        check("view cube: up arrow looks at the top face", near(goal().forward, SIMD3(0, 0, -1)) && near(goal().up, SIMD3(0, 1, 0)),
+              "\(goal().forward) \(goal().up)")
+        editor.camera = goal()
+        editor.cameraAnimation = nil
+        await snap("m12-viewcube-arrows")
 
         await dragHeavyPreview(editor)
     }

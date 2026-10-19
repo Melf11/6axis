@@ -336,11 +336,12 @@ final class Editor {
         // every input event for the whole budget; the result then arrives asynchronously.
         let busy = latest.isRunning
         latest.start(generation)
+        let previewing = command?.kind == .extrude || command?.kind == .revolve ? command?.featureId : nil
         let result = RebuildResult()
         rebuildQueue.async {
             if latest.get() == generation {
-                let state = builder.build(snapshot)
-                state.prepareForDisplay()
+                var state = builder.build(snapshot)
+                state.prepareForDisplay(previewing: previewing)
                 result.state = state
             }
             latest.finish()
@@ -598,6 +599,13 @@ final class Editor {
     func setView(direction: SIMD3<Float>, up: SIMD3<Float>) {
         var c = camera
         c.orientation = Camera.lookOrientation(direction: direction, up: up)
+        animateCamera(to: c)
+    }
+
+    /// View cube arrows: quarter turn about a camera axis, continuing from a running animation's goal.
+    func turnView(axis: SIMD3<Float>, sign: Float) {
+        var c = cameraAnimation?.to ?? camera
+        c.orientation = Camera.quarterTurn(c.orientation, axis: axis, sign: sign)
         animateCamera(to: c)
     }
 

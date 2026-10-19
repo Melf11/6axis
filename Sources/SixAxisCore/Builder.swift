@@ -43,6 +43,31 @@ public final class BuiltBody: @unchecked Sendable {
         return ref
     }
 
+    /// Outward normals of the planar and cylindrical faces meeting at an edge, taken at its midpoint.
+    public func edgeFaceNormals(_ index: Int) -> [Vec3] {
+        guard let mid = edgeInfo(at: index)?.midpoint else { return [] }
+        let tol = 1e-6
+        return faceInfos.compactMap { f -> Vec3? in
+            guard let f else { return nil }
+            var n: Vec3
+            switch f.surface {
+            case .plane:
+                guard abs(simd_dot(mid - f.origin, f.normal)) < tol else { return nil }
+                n = f.normal
+            case .cylinder:
+                func radial(_ p: Vec3) -> Vec3 { p - f.axisOrigin - f.axisDir * simd_dot(p - f.axisOrigin, f.axisDir) }
+                let r = radial(mid)
+                guard abs(simd_length(r) - f.radius) < tol else { return nil }
+                // The face's normal (at its own sample point) tells whether it faces away from the axis (bolt) or towards it (hole).
+                n = simd_normalize(r) * (simd_dot(f.normal, radial(f.origin)) < 0 ? -1 : 1)
+            default:
+                return nil
+            }
+            guard (try? shape.face(f.index))?.contains(mid) == true else { return nil }
+            return n
+        }
+    }
+
     static func direction(_ e: EdgeInfo) -> Vec3? {
         guard e.kind == .line, simd_distance(e.start, e.end) > 1e-9 else { return nil }
         return simd_normalize(e.end - e.start)
@@ -177,6 +202,8 @@ public struct ModelState: @unchecked Sendable {
     public var copiedBy: [UUID: UUID] = [:]
     /// Rigid joints: instance → instance it is attached to.
     public var attachments: [InstanceKey: InstanceKey] = [:]
+    /// Tessellated tool of the cutting feature being edited (shown as removed material), see `prepareForDisplay`.
+    public var cutPreview: (feature: UUID, meshes: [TriangleMesh])?
 
     public init() {}
 
@@ -184,12 +211,20 @@ public struct ModelState: @unchecked Sendable {
 
     /// Computes tessellation and topology info of every body up front (call off the main thread),
     /// so the UI never triggers OpenCASCADE work or races on the lazy caches.
-    public func prepareForDisplay() {
+    /// With `previewing`, also tessellates the tool of that feature if it removes material.
+    public mutating func prepareForDisplay(previewing feature: UUID? = nil) {
         for body in bodies.values {
             _ = body.mesh
             _ = body.faceInfos
             _ = body.edgeInfos
         }
+        cutPreview = nil
+        guard let feature, let tool = tools[feature], tool.operation == .cut else { return }
+        let meshes = tool.shapes.compactMap { s -> TriangleMesh? in
+            guard let bb = s.boundingBox else { return nil }
+            return try? s.mesh(linearDeflection: max(0.005, simd_length(bb.max - bb.min) * 0.0008), angularDeflection: 0.25)
+        }
+        if !meshes.isEmpty { cutPreview = (feature, meshes) }
     }
 
     mutating func setBody(_ b: BuiltBody) {
