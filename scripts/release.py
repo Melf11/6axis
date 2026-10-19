@@ -308,8 +308,14 @@ def wait_for_release(tag, repo):
     try:
         run_id, last = None, None
         for _ in range(240):
-            runs = gh_json("run", "list", "--repo", repo, "--workflow", "release.yml", "--branch", tag,
-                           "--json", "databaseId,status,conclusion,url", "--limit", "1")
+            r = run(["gh", "run", "list", "--repo", repo, "--workflow", "release.yml", "--branch", tag,
+                     "--json", "databaseId,status,conclusion,url", "--limit", "1"], check=False)
+            if r.returncode != 0:
+                # Network hiccup: the release keeps running on GitHub, so keep waiting instead of giving up.
+                log(f"   {time.strftime('%H:%M')} GitHub nicht erreichbar – versuche es weiter")
+                time.sleep(30)
+                continue
+            runs = json.loads(r.stdout or "null")
             if runs:
                 run_id = runs[0]
                 state = f"{run_id['status']} {run_id['conclusion'] or ''}".strip()
