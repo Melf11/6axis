@@ -284,5 +284,57 @@ enum ModellingChecks {
         editor.showExplode = false
         let names = editor.drawing.input(editor).parts.map(\.name)
         check("parts list: component name", names.contains("Bolzen M8"), "\(names)")
+
+        await dragHeavyPreview(editor)
+    }
+
+    /// Dragging a live preview on a model whose rebuild takes longer than a frame (#10): the input must not
+    /// block, and the preview must follow during the drag, not only once the mouse stops.
+    static func dragHeavyPreview(_ editor: Editor) async {
+        editor.newDocument()
+        var sk = Sketch(plane: .xy)
+        let c = [sk.addPoint(Vec2(0, 0)), sk.addPoint(Vec2(300, 0)), sk.addPoint(Vec2(300, 300)), sk.addPoint(Vec2(0, 300))]
+        for i in 0..<4 { sk.addLine(c[i], c[(i + 1) % 4]) }
+        let plate = Feature(name: "Platte", kind: .sketch(sk))
+        var ex = ExtrudeFeature()
+        ex.profiles = [ProfileRef(sketch: plate.id, sample: Vec2(1, 1))]
+        ex.distance = "10 mm"
+        var holes = Sketch(plane: .xy)
+        let hs = UUID()
+        var profiles: [ProfileRef] = []
+        for i in 0..<14 { for j in 0..<14 {
+            let p = Vec2(15 + Double(i) * 20, 15 + Double(j) * 20)
+            holes.addCircle(center: holes.addPoint(p), radius: 4)
+            profiles.append(ProfileRef(sketch: hs, sample: p))
+        } }
+        var cut = ExtrudeFeature()
+        cut.profiles = profiles
+        cut.distance = "30 mm"
+        cut.operation = .cut
+        let plateF = Feature(name: "Platte", kind: .extrude(ex))
+        editor.commit { $0.features = [plate, plateF, Feature(id: hs, name: "Löcher", kind: .sketch(holes)), Feature(name: "Löcher", kind: .extrude(cut))]
+                        $0.hiddenSketches = [plate.id, hs] }
+        await settle(editor)
+        editor.selection = [.body(plateF.id)]
+        editor.beginCommand(.move)
+        await settle(editor)
+        // Like a drag arrow: one change per mouse event, 60 events per second for 1.5 s.
+        let revision = editor.modelRevision
+        var blocked: [Double] = []
+        for i in 1...90 {
+            let t = CACurrentMediaTime()
+            editor.updateCommandFeature { k in if case var .move(m) = k { m.dx = "\(i) mm"; k = .move(m) } }
+            blocked.append((CACurrentMediaTime() - t) * 1000)
+            await pause(1.0 / 60)
+        }
+        let updates = editor.modelRevision &- revision
+        await settle(editor)
+        let longest = blocked.dropFirst().max() ?? 0
+        check("drag on a heavy model: input not blocked", longest < 30, "longest step \(Int(longest)) ms, first \(Int(blocked[0])) ms")
+        check("drag on a heavy model: preview follows while dragging", updates >= 3, "\(updates) updates during the drag")
+        let box = editor.state.bodies[plateF.id]?.shape.boundingBox
+        check("drag on a heavy model: last position shown", box.map { abs($0.min.x - 90) < 0.1 } ?? false, "\(String(describing: box))")
+        editor.cancelCommand()
+        await settle(editor)
     }
 }

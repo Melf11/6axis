@@ -332,7 +332,10 @@ final class Editor {
         let snapshot = doc
         let builder = self.builder
         let latest = latestRequested
-        latest.set(generation)
+        // While an earlier rebuild still runs (e.g. dragging a preview on a heavy model), waiting would block
+        // every input event for the whole budget; the result then arrives asynchronously.
+        let busy = latest.isRunning
+        latest.start(generation)
         let result = RebuildResult()
         rebuildQueue.async {
             if latest.get() == generation {
@@ -340,13 +343,14 @@ final class Editor {
                 state.prepareForDisplay()
                 result.state = state
             }
+            latest.finish()
             result.done.signal()
             DispatchQueue.main.async { [weak self] in
                 guard let self, let state = result.state else { return }
                 self.apply(state, generation: generation)
             }
         }
-        if result.done.wait(timeout: .now() + .milliseconds(80)) == .success, let state = result.state {
+        if !busy, result.done.wait(timeout: .now() + .milliseconds(80)) == .success, let state = result.state {
             apply(state, generation: generation)
         } else {
             isRebuilding = true
@@ -354,10 +358,11 @@ final class Editor {
     }
 
     private func apply(_ newState: ModelState, generation: Int) {
-        // Only the newest request counts; each generation is applied once.
-        guard generation == rebuildGeneration, generation != appliedGeneration else { return }
+        // Each generation is applied once and never replaced by an older one. Results of requests superseded
+        // meanwhile are still shown, so a preview follows a drag that outpaces the rebuilds.
+        guard generation > appliedGeneration else { return }
         appliedGeneration = generation
-        isRebuilding = false
+        isRebuilding = generation != rebuildGeneration
         state = newState
         assignBodyNames()
         sceneVersion &+= 1
@@ -735,12 +740,15 @@ private final class RebuildResult: @unchecked Sendable {
     let done = DispatchSemaphore(value: 0)
 }
 
-/// Newest requested rebuild, read by the queue to skip superseded work.
+/// Newest requested rebuild, read by the queue to skip superseded work, and the number of requests not yet done.
 private final class LatestGeneration: @unchecked Sendable {
     private var value = 0
+    private var running = 0
     private let lock = NSLock()
-    func set(_ v: Int) { lock.lock(); value = v; lock.unlock() }
+    func start(_ v: Int) { lock.lock(); value = v; running += 1; lock.unlock() }
+    func finish() { lock.lock(); running -= 1; lock.unlock() }
     func get() -> Int { lock.lock(); defer { lock.unlock() }; return value }
+    var isRunning: Bool { lock.lock(); defer { lock.unlock() }; return running > 0 }
 }
 
 /// Settings of the sketch pattern dialog (strings, so expressions like "32 mm" or "breite / 4" work).
