@@ -241,7 +241,18 @@ public struct MoveFeature: Codable, Hashable, Sendable {
     public var angle: String = "0"
     /// Keep the original and add a moved copy.
     public var copy: Bool = false
+    /// Turn about the bodies' centre in the direction of an origin axis (X/Y/Z) instead of about the axis
+    /// through the origin – like the manipulator in Fusion. nil in files before format 8.
+    public var aroundCenter: Bool? = true
     public init() {}
+
+    /// Whether the turn uses the bodies' centre instead of the axis line itself.
+    public var turnsAboutCenter: Bool {
+        switch axis {
+        case .x?, .y?, .z?: return aroundCenter == true
+        default: return false
+        }
+    }
 }
 
 public struct CombineFeature: Codable, Hashable, Sendable {

@@ -633,4 +633,7 @@ EN.update({
 "Ziehen, um die Bohrung zu verschieben": "Drag to move the hole",
 "Kanten wählen · Pfeil ziehen · ↩ bestätigt": "Choose edges · drag the arrow · ↩ confirms",
 "Ziehen, um die Größe zu ändern": "Drag to change the size",
+"Ziehen, um die Körper zu verschieben": "Drag to move the bodies",
+"Ziehen, um die Körper zu drehen": "Drag to rotate the bodies",
+"Um Körpermitte drehen": "Rotate about body center",
 })

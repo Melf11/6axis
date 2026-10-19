@@ -209,6 +209,15 @@ public struct ModelState: @unchecked Sendable {
 
     public var orderedBodies: [BuiltBody] { bodyOrder.compactMap { bodies[$0] } }
 
+    /// Centre of the common bounding box of some bodies (pivot of a move).
+    public func center(of ids: [UUID]) -> Vec3? {
+        let boxes = ids.compactMap { bodies[$0]?.shape.boundingBox }
+        guard let first = boxes.first else { return nil }
+        let lo = boxes.dropFirst().reduce(first.min) { simd_min($0, $1.min) }
+        let hi = boxes.dropFirst().reduce(first.max) { simd_max($0, $1.max) }
+        return (lo + hi) / 2
+    }
+
     /// Computes tessellation and topology info of every body up front (call off the main thread),
     /// so the UI never triggers OpenCASCADE work or races on the lazy caches.
     /// With `previewing`, also tessellates the tool of that feature if it removes material.
