@@ -333,11 +333,12 @@ final class Editor {
         let builder = self.builder
         let latest = latestRequested
         latest.set(generation)
+        let previewing = command?.kind == .extrude || command?.kind == .revolve ? command?.featureId : nil
         let result = RebuildResult()
         rebuildQueue.async {
             if latest.get() == generation {
-                let state = builder.build(snapshot)
-                state.prepareForDisplay()
+                var state = builder.build(snapshot)
+                state.prepareForDisplay(previewing: previewing)
                 result.state = state
             }
             result.done.signal()

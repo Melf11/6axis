@@ -66,6 +66,8 @@ struct SceneBuilder {
         let state = editor.state
         let cmd = editor.command
         let translucentSource = (cmd?.kind == .extrude || cmd?.kind == .revolve) ? cmd?.featureId : nil
+        // Cutting: the trimmed body stays solid, the removed material is shown in red.
+        let cutPreview = translucentSource != nil && state.cutPreview?.feature == translucentSource ? state.cutPreview : nil
 
         // Grid and plain axes live in their own layer (buildGrid); only pickable axes belong to the scene.
         if axesPickable { addAxes() }
@@ -101,7 +103,7 @@ struct SceneBuilder {
                 let fid = Int(mesh.faceIds[i])
                 verts.append(MeshVertex(px: p.x, py: p.y, pz: p.z, nx: n.x, ny: n.y, nz: n.z, id: fid < faceIds.count ? faceIds[fid] : 0))
             }
-            if isPreview {
+            if isPreview && cutPreview == nil {
                 translucent.append(MeshBatch(vertices: verts, indices: mesh.indices, color: SIMD4(style.select.x * 0.5 + 0.35, style.select.y * 0.5 + 0.4, style.select.z * 0.5 + 0.45, 0.55), translucent: true))
             } else {
                 scene.meshes.append(MeshBatch(vertices: verts, indices: mesh.indices, color: style.body))
@@ -110,6 +112,13 @@ struct SceneBuilder {
                 let eid = isPreview ? 0 : id(.edge(body.id, Int(mesh.edgeIds[k])))
                 edgeLines.append(LineInstance(seg.0 + shift, seg.1 + shift, id: eid))
             }
+        }
+        for mesh in cutPreview?.meshes ?? [] {
+            let verts = (0..<mesh.positions.count).map { i in
+                let p = mesh.positions[i], n = mesh.normals[i]
+                return MeshVertex(px: p.x, py: p.y, pz: p.z, nx: n.x, ny: n.y, nz: n.z, id: 0)
+            }
+            translucent.append(MeshBatch(vertices: verts, indices: mesh.indices, color: SIMD4(0.95, 0.25, 0.22, 0.45), translucent: true))
         }
         // Hidden edges stay pickable (transparent), so fillets still work; hover/selection still shows them.
         let showEdges = AppSettings.shared.showEdges
