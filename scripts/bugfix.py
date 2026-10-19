@@ -229,6 +229,10 @@ def process(issue, owner, repo, args):
         else:
             failed = next((f"{name}:\n{out}" for name, ok, out in results if not ok), "")
             note = details or "Kein Ergebnis."
+            if failed:
+                # Which of the script's own checks failed – Claude's text alone does not say why it was rejected.
+                name, out = failed.split(":\n", 1)
+                note = f"**Eigene Prüfung fehlgeschlagen: {name}**\n```\n{out[-1200:]}\n```\n\n" + note
             run(["gh", "issue", "edit", str(n), "--repo", repo, "--add-label", "braucht-mensch"], check=False)
             run(["gh", "issue", "comment", str(n), "--repo", repo, "--body",
                  "Automatische Korrektur nicht gelungen – wird von Hand angesehen.\n\n" + note[:3000]], check=False)
