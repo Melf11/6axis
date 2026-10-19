@@ -129,8 +129,42 @@ private struct TopBar: View {
             .padding(.horizontal, 12)
             .frame(height: 30)
             .padding(.top, 6)
+            .background(TitleBarArea())
 
             Ribbon(editor: editor)
+        }
+    }
+}
+
+/// The empty part of the title row behaves like a real title bar (the window's own one is hidden and the
+/// viewport lies underneath): drag moves the window, double-click does what the system setting says.
+private struct TitleBarArea: NSViewRepresentable {
+    func makeNSView(context: Context) -> TitleBarNSView { TitleBarNSView() }
+    func updateNSView(_ nsView: TitleBarNSView, context: Context) {}
+}
+
+final class TitleBarNSView: NSView {
+    enum DoubleClickAction { case zoom, minimize, none }
+
+    /// System Settings › Desktop & Dock › "Double-click a window's title bar to".
+    static var doubleClickAction: DoubleClickAction {
+        let defaults = UserDefaults.standard
+        switch defaults.string(forKey: "AppleActionOnDoubleClick") {
+        case "Minimize": return .minimize
+        case "None": return .none
+        case nil: return defaults.bool(forKey: "AppleMiniaturizeOnDoubleClick") ? .minimize : .zoom
+        default: return .zoom   // "Maximize", "Fill"
+        }
+    }
+
+    override var mouseDownCanMoveWindow: Bool { true }
+
+    override func mouseDown(with event: NSEvent) {
+        guard event.clickCount == 2 else { window?.performDrag(with: event); return }
+        switch Self.doubleClickAction {
+        case .zoom: window?.zoom(nil)
+        case .minimize: window?.miniaturize(nil)
+        case .none: break
         }
     }
 }
