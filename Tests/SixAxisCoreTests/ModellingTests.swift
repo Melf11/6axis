@@ -337,6 +337,7 @@ final class ModellingTests: XCTestCase {
         m.angle = "90"
         m.dx = "100 mm"
         m.copy = true
+        m.aroundCenter = nil   // as in files before format 8: about the Z axis through the origin
         doc.features.append(Feature(name: "V", kind: .move(m)))
         let state = build(doc)
         XCTAssertEqual(state.bodyOrder.count, 2)
@@ -345,6 +346,58 @@ final class ModellingTests: XCTestCase {
         XCTAssertEqual(bb.min.x, 90, accuracy: 1e-6)
         XCTAssertEqual(bb.max.y, 20, accuracy: 1e-6)
         XCTAssertEqual(state.orderedBodies[0].shape.boundingBox!.min.x, 0, accuracy: 1e-6, "original stays")
+    }
+
+    func testMoveTurnsAboutBodyCenter() throws {
+        var doc = CADDocument()
+        let body = box(&doc, w: 20, d: 10, height: 10)
+        var m = MoveFeature()
+        m.bodies = [body]
+        m.axis = .x
+        m.angle = "90"
+        m.dz = "5 mm"
+        doc.features.append(Feature(name: "V", kind: .move(m)))
+        let bb = build(doc).bodies[body]!.shape.boundingBox!
+        // Tilted in place about its centre (10, 5, 5): 10 deep and 10 high stay where they were, then 5 up.
+        XCTAssertEqual(bb.min.x, 0, accuracy: 1e-6)
+        XCTAssertEqual(bb.min.y, 0, accuracy: 1e-6)
+        XCTAssertEqual(bb.min.z, 5, accuracy: 1e-6)
+        // Saved and read again it still turns in place; a move without the field (older file) turns about the origin.
+        let reread = try CADDocument.decode(try doc.encoded())
+        XCTAssertEqual(build(reread).bodies[body]!.shape.boundingBox!.min.z, 5, accuracy: 1e-6)
+        let text = String(decoding: try doc.encoded(), as: UTF8.self)
+            .replacingOccurrences(of: #""aroundCenter"\s*:\s*true,?"#, with: "", options: .regularExpression)
+            .replacingOccurrences(of: #""formatVersion"\s*:\s*8"#, with: #""formatVersion" : 7"#, options: .regularExpression)
+        XCTAssertFalse(text.contains("aroundCenter"))
+        let old = try CADDocument.decode(Data(text.utf8))
+        // About the X axis through the origin: y ∈ [0, 10] turns into y ∈ [-10, 0].
+        XCTAssertEqual(build(old).bodies[body]!.shape.boundingBox!.min.y, -10, accuracy: 1e-6)
+    }
+
+    /// The pivot is part of the model, so it must not depend on whether a body was already tessellated:
+    /// OpenCASCADE's quick bounding box of a threaded bolt is up to 0.5 mm off before meshing.
+    func testMovePivotIgnoresTessellation() {
+        var doc = CADDocument()
+        var sk = Sketch(plane: .xy)
+        sk.addCircle(center: sk.addPoint(.zero), radius: 4)
+        let s = Feature(name: "S", kind: .sketch(sk))
+        var ex = ExtrudeFeature()
+        ex.profiles = [ProfileRef(sketch: s.id, sample: .zero)]
+        ex.distance = "12 mm"
+        let e = Feature(name: "Bolzen", kind: .extrude(ex))
+        doc.features = [s, e]
+        let plain = build(doc).bodies[e.id]!
+        let cyl = plain.faceInfos.compactMap { $0 }.first { $0.surface == .cylinder }!
+        var t = ThreadFeature()
+        t.faces = [BodyFaceRef(body: e.id, face: plain.faceRef(cyl.index)!)]
+        doc.features.append(Feature(name: "G", kind: .thread(t)))
+        let fresh = build(doc)
+        let before = fresh.center(of: [e.id])!
+        let meshed = build(doc)
+        _ = meshed.bodies[e.id]!.mesh
+        let after = meshed.center(of: [e.id])!
+        XCTAssertLessThan(simd_distance(before, after), 1e-6)
+        XCTAssertLessThan(simd_distance(before, Vec3(0, 0, 6)), 1e-3, "\(before)")
     }
 
     func testCombineCutKeepsOrRemovesTool() {

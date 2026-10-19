@@ -15,6 +15,7 @@ struct ViewportOverlay: View {
                 drawExtrudeArrow(ctx)
                 drawHoleArrows(ctx)
                 drawEdgeArrow(ctx)
+                drawMoveManipulator(ctx)
                 drawSplineHandles(ctx)
                 drawMachineTool(ctx)
             }
@@ -29,6 +30,7 @@ struct ViewportOverlay: View {
             extrudeHandle
             holeHandles
             edgeHandle
+            moveHandles
         }
         .coordinateSpace(name: "overlay")
     }
@@ -547,6 +549,151 @@ struct ViewportOverlay: View {
                 }
             }
         }
+    }
+
+    // MARK: Move manipulator
+
+    private func drawMoveManipulator(_ ctx: GraphicsContext) {
+        // Only touch the camera while the move command is open.
+        guard let h = editor.moveHandle, let a = editor.camera.project(h.center) else { return }
+        let len = editor.moveArrowLength, radius = editor.moveRingRadius
+        for (i, d) in Editor.moveAxes.enumerated() {
+            guard let b = editor.camera.project(h.center + d * len) else { continue }
+            var p = Path()
+            p.move(to: a)
+            p.addLine(to: b)
+            ctx.stroke(p, with: .color(moveAxisColor(i)), lineWidth: 2)
+        }
+        for ring in h.rings {
+            let u = ring.start, v = simd_cross(ring.direction, ring.start)
+            var p = Path()
+            for k in 0...64 {
+                let t = Double(k) / 64 * 2 * .pi
+                guard let s = editor.camera.project(ring.center + (u * cos(t) + v * sin(t)) * radius) else { continue }
+                if k == 0 { p.move(to: s) } else { p.addLine(to: s) }
+            }
+            ctx.stroke(p, with: .color(moveRingColor(ring).opacity(ring.active ? 0.9 : 0.45)), lineWidth: ring.active ? 2 : 1.5)
+        }
+    }
+
+    private func moveAxisColor(_ i: Int) -> Color { [Color.red, Color.green, Color.blue][i] }
+
+    private func moveRingColor(_ ring: Editor.MoveRing) -> Color {
+        switch ring.axis {
+        case .x: return moveAxisColor(0)
+        case .y: return moveAxisColor(1)
+        case .z: return moveAxisColor(2)
+        default: return accent
+        }
+    }
+
+    private var moveHandles: some View {
+        Group {
+            if let h = editor.moveHandle, let base = editor.camera.project(h.center) {
+                ForEach(0..<3, id: \.self) { axis in
+                    if let tip = editor.camera.project(h.center + Editor.moveAxes[axis] * editor.moveArrowLength) {
+                        MoveArrow(editor: editor, handle: h, axis: axis, color: moveAxisColor(axis),
+                                  angle: atan2(tip.y - base.y, tip.x - base.x))
+                            .position(tip)
+                    }
+                }
+                // By axis: the other rings vanish once turning starts, the dragged knob must stay the same view.
+                ForEach(h.rings, id: \.axis) { ring in
+                    if let knob = editor.camera.project(editor.moveKnob(h, ring)) {
+                        MoveRingKnob(editor: editor, handle: h, ring: ring, color: moveRingColor(ring))
+                            .position(knob)
+                    }
+                }
+            }
+        }
+    }
+}
+
+/// Arrow tip of the move manipulator; dragging shifts the bodies along X, Y or Z.
+private struct MoveArrow: View {
+    let editor: Editor
+    let handle: Editor.MoveHandle
+    let axis: Int
+    let color: Color
+    let angle: CGFloat
+    @State private var start: Editor.MoveHandle?
+    @State private var hovering = false
+
+    var body: some View {
+        ZStack {
+            Image(systemName: "arrowtriangle.right.fill")
+                .font(.system(size: hovering || start != nil ? 15 : 12))
+                .foregroundStyle(color)
+                .shadow(color: .black.opacity(0.25), radius: 2, y: 1)
+                .rotationEffect(.radians(angle))
+            if start != nil {
+                Text(formatValue(handle.offsets[axis]))
+                    .font(.system(size: 11, weight: .semibold, design: .rounded))
+                    .padding(.horizontal, 7)
+                    .padding(.vertical, 3)
+                    .background(Capsule().fill(PanelStyle.fill))
+                    .fixedSize()
+                    .offset(x: 0, y: -20)
+                    .allowsHitTesting(false)
+            }
+        }
+        .frame(width: 24, height: 24)
+        .contentShape(Circle())
+        .onHover { hovering = $0 }
+        .gesture(
+            DragGesture(minimumDistance: 1, coordinateSpace: .named("overlay"))
+                .onChanged { v in
+                    if start == nil { start = handle }
+                    guard let start, let value = editor.moveOffset(start, axis: axis, from: v.startLocation, to: v.location) else { return }
+                    editor.setMoveOffset(axis: axis, value)
+                }
+                .onEnded { _ in start = nil }
+        )
+        .help("Ziehen, um die Körper zu verschieben")
+    }
+}
+
+/// Knob on a ring of the move manipulator; dragging it around turns the bodies (⇧ in 1° steps).
+private struct MoveRingKnob: View {
+    let editor: Editor
+    let handle: Editor.MoveHandle
+    let ring: Editor.MoveRing
+    let color: Color
+    @State private var start: (handle: Editor.MoveHandle, ring: Editor.MoveRing)?
+    @State private var hovering = false
+
+    var body: some View {
+        ZStack {
+            Circle()
+                .fill(color)
+                .frame(width: hovering || start != nil ? 14 : 11, height: hovering || start != nil ? 14 : 11)
+                .overlay(Circle().strokeBorder(.white, lineWidth: 1.5))
+                .shadow(color: .black.opacity(0.25), radius: 2, y: 1)
+            if start != nil {
+                Text(formatValue(handle.angle, kind: .angle))
+                    .font(.system(size: 11, weight: .semibold, design: .rounded))
+                    .padding(.horizontal, 7)
+                    .padding(.vertical, 3)
+                    .background(Capsule().fill(PanelStyle.fill))
+                    .fixedSize()
+                    .offset(x: 0, y: -20)
+                    .allowsHitTesting(false)
+            }
+        }
+        .frame(width: 24, height: 24)
+        .contentShape(Circle())
+        .onHover { hovering = $0 }
+        .gesture(
+            DragGesture(minimumDistance: 1, coordinateSpace: .named("overlay"))
+                .onChanged { v in
+                    if start == nil { start = (handle, ring) }
+                    guard let start, let value = editor.moveAngle(start.handle, start.ring, from: v.startLocation, to: v.location,
+                                                                  fine: NSEvent.modifierFlags.contains(.shift)) else { return }
+                    editor.setMoveAngle(start.ring, value)
+                }
+                .onEnded { _ in start = nil }
+        )
+        .help("Ziehen, um die Körper zu drehen")
     }
 }
 

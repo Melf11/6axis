@@ -14,6 +14,19 @@ public final class BuiltBody: @unchecked Sendable {
         self.sourceFeature = sourceFeature
     }
 
+    /// Exact bounds, cached. Unlike `shape.boundingBox` it does not depend on whether the body is already
+    /// tessellated, so it can place geometry (pivot of a move). Locked: the builder and the manipulator may ask
+    /// from different threads.
+    public var exactBounds: (min: Vec3, max: Vec3)? {
+        boundsLock.lock()
+        defer { boundsLock.unlock() }
+        if !boundsDone { cachedBounds = shape.exactBoundingBox; boundsDone = true }
+        return cachedBounds
+    }
+    private let boundsLock = NSLock()
+    private var cachedBounds: (min: Vec3, max: Vec3)?
+    private var boundsDone = false
+
     public private(set) lazy var mesh: TriangleMesh? = {
         guard let bb = shape.boundingBox else { return nil }
         let size = simd_length(bb.max - bb.min)
@@ -208,6 +221,15 @@ public struct ModelState: @unchecked Sendable {
     public init() {}
 
     public var orderedBodies: [BuiltBody] { bodyOrder.compactMap { bodies[$0] } }
+
+    /// Centre of the common exact bounding box of some bodies (pivot of a move).
+    public func center(of ids: [UUID]) -> Vec3? {
+        let boxes = ids.compactMap { bodies[$0]?.exactBounds }
+        guard let first = boxes.first else { return nil }
+        let lo = boxes.dropFirst().reduce(first.min) { simd_min($0, $1.min) }
+        let hi = boxes.dropFirst().reduce(first.max) { simd_max($0, $1.max) }
+        return (lo + hi) / 2
+    }
 
     /// Computes tessellation and topology info of every body up front (call off the main thread),
     /// so the UI never triggers OpenCASCADE work or races on the lazy caches.

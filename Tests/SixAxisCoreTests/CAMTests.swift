@@ -146,7 +146,7 @@ final class CAMFormatTests: XCTestCase {
         doc.cam = s
         let back = try CADDocument.decode(try doc.encoded())
         XCTAssertEqual(back.cam, s)
-        XCTAssertEqual(CADDocument.currentFormatVersion, 7)
+        XCTAssertGreaterThanOrEqual(CADDocument.currentFormatVersion, 7)
         XCTAssertNil(try CADDocument.decode(try CADDocument().encoded()).cam, "no setup until the user starts milling")
     }
 }

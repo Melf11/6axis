@@ -347,7 +347,7 @@ extension ModelBuilder {
         if abs(angle) > 1e-12, let a = m.axis {
             let (ao, dir) = try axis(a, state)
             r = rotationMatrix(axis: dir, angle: angle)
-            o = ao
+            o = m.turnsAboutCenter ? (state.center(of: m.bodies) ?? ao) : ao
         }
         // Turn around the axis, then shift.
         let translation = o - r * o + t

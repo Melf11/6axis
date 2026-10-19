@@ -20,6 +20,20 @@ final class FileFormatTests: XCTestCase {
         }
     }
 
+    /// A move saved by 2.0.3 (format 7) turns about the X axis through the origin; since format 8 new moves turn
+    /// about the bodies' centre. The old file must build exactly as 2.0.3 built it.
+    func testMoveFrom203KeepsTurningAboutTheOrigin() throws {
+        let doc = try CADDocument.decode(Data(contentsOf: Self.fixtures.appendingPathComponent("2.0.3-Kippen.6axis")))
+        guard case let .move(m)? = doc.features.last?.kind else { return XCTFail("no move") }
+        XCTAssertNil(m.aroundCenter)
+        XCTAssertFalse(m.turnsAboutCenter)
+        let bb = try XCTUnwrap(ModelBuilder().build(doc).bodies[m.bodies[0]]?.shape.boundingBox)
+        // Result of 2.0.3 (printed when the file was written).
+        for (got, want) in zip([bb.min.x, bb.min.y, bb.min.z, bb.max.x, bb.max.y, bb.max.z], [0.0, -10, 5, 20, 0, 25]) {
+            XCTAssertEqual(got, want, accuracy: 1e-5)
+        }
+    }
+
     func testNewerFormatIsRefused() {
         let data = Data(#"{"formatVersion": 99, "features": []}"#.utf8)
         XCTAssertThrowsError(try CADDocument.decode(data)) { error in

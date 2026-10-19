@@ -374,7 +374,9 @@ public struct CADDocument: Codable, Hashable, Sendable {
     /// 5 – 1.2: construction planes/axes, holes, threads, patterns, move, combine
     /// 6 – 1.4: components and joints
     /// 7 – 2.0: machining setup (tools, operations)
-    public static let currentFormatVersion = 7
+    /// 8 – 2.1: move turns about the bodies' centre (`MoveFeature.aroundCenter`); older apps must refuse
+    ///     such files, they would turn about the origin
+    public static let currentFormatVersion = 8
 
     public var formatVersion = CADDocument.currentFormatVersion
     public var features: [Feature] = []
@@ -452,6 +454,7 @@ public struct CADDocument: Codable, Hashable, Sendable {
         4: { $0 },   // 4 → 5: only additions
         5: { $0 },   // 5 → 6: only additions
         6: { $0 },   // 6 → 7: only additions
+        7: { $0 },   // 7 → 8: moves without "aroundCenter" keep turning about the axis itself
     ]
 }
 

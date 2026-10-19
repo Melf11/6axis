@@ -312,6 +312,9 @@ extension CommandPanel {
             } activate: { editor.setActiveInput(1) }
             axisButtons { a in set { $0.axis = a } }
             field(String(localized: "Winkel"), m.angle, kind: .angle) { v in set { $0.angle = v } }
+            if m.axis == .x || m.axis == .y || m.axis == .z {
+                toggle(String(localized: "Um Körpermitte drehen"), m.aroundCenter == true) { v in set { $0.aroundCenter = v } }
+            }
             toggle(String(localized: "Kopie erstellen"), m.copy) { v in set { $0.copy = v } }
         }
     }

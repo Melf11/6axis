@@ -484,4 +484,120 @@ extension Editor {
             if case var .chamfer(c) = k { c.distance = plainNumber(v); k = .chamfer(c) }
         }
     }
+
+    // MARK: - Move manipulator
+
+    /// Arrows along X/Y/Z and rings to turn the bodies of a move, like Fusion's manipulator.
+    struct MoveHandle {
+        /// Centre of the moved bodies (where the arrows start).
+        var center: Vec3
+        /// Current dx, dy, dz.
+        var offsets: [Double]
+        var angle: Double
+        /// Rings: X, Y, Z of an origin axis, or the single picked axis. `active` is the one that turns now.
+        var rings: [MoveRing]
+    }
+
+    struct MoveRing {
+        var axis: AxisRef
+        var center: Vec3
+        var direction: Vec3
+        /// Direction in the ring's plane where the knob sits at 0°.
+        var start: Vec3
+        var active: Bool
+    }
+
+    static let moveAxes: [Vec3] = [Vec3(1, 0, 0), Vec3(0, 1, 0), Vec3(0, 0, 1)]
+
+    var moveHandle: MoveHandle? {
+        guard let cmd = command, cmd.kind == .move, case let .move(m)? = commandFeature?.kind else { return nil }
+        let pre = stateBeforeCommand
+        let ev = evaluator
+        guard let c0 = pre.center(of: m.bodies), let dx = try? ev.value(m.dx), let dy = try? ev.value(m.dy),
+              let dz = try? ev.value(m.dz) else { return nil }
+        let angle = (try? ev.value(m.angle, kind: .angle)) ?? 0
+        let t = Vec3(dx, dy, dz)
+        var r = matrix_identity_double3x3, o = c0
+        var turn: (origin: Vec3, direction: Vec3)?
+        if let a = m.axis, let line = try? builder.axis(a, pre) {
+            o = m.turnsAboutCenter ? c0 : line.0
+            r = rotationMatrix(axis: line.1, angle: angle * .pi / 180)
+            turn = (o + t, line.1)
+        }
+        let center = r * (c0 - o) + o + t
+        func ring(_ a: AxisRef, _ dir: Vec3, through p: Vec3, active: Bool) -> MoveRing {
+            // Ring centre: the point of the axis closest to the bodies.
+            let c = p + dir * simd_dot(center - p, dir)
+            let other = abs(dir.z) < 0.9 ? Vec3(0, 0, 1) : Vec3(1, 0, 0)
+            let start = simd_normalize(simd_cross(other, dir))
+            return MoveRing(axis: a, center: c, direction: dir, start: start, active: active)
+        }
+        var rings: [MoveRing] = []
+        let origin: [AxisRef] = [.x, .y, .z]
+        if let a = m.axis, !origin.contains(a), let turn {
+            rings = [ring(a, turn.direction, through: turn.origin, active: true)]
+        } else {
+            // Once turned, only the ring of that axis stays (a move holds one turn).
+            for (i, a) in origin.enumerated() where abs(angle) < 1e-9 || m.axis == a {
+                rings.append(ring(a, Self.moveAxes[i], through: m.axis == a ? (turn?.origin ?? center) : center, active: m.axis == a))
+            }
+        }
+        return MoveHandle(center: center, offsets: [dx, dy, dz], angle: angle, rings: rings)
+    }
+
+    /// Arrow length and ring radius in the model, constant on screen.
+    var moveArrowLength: Double { Double(camera.worldPerPoint) * 70 }
+    var moveRingRadius: Double { Double(camera.worldPerPoint) * 50 }
+
+    /// Knob position on a ring for the current angle.
+    func moveKnob(_ h: MoveHandle, _ ring: MoveRing) -> Vec3 {
+        let a = ring.active ? h.angle * .pi / 180 : 0
+        return ring.center + rotationMatrix(axis: ring.direction, angle: a) * ring.start * moveRingRadius
+    }
+
+    /// New dx/dy/dz when the arrow along `axis` is dragged from `from` to `to`.
+    func moveOffset(_ h: MoveHandle, axis: Int, from: CGPoint, to: CGPoint) -> Double? {
+        let d = Self.moveAxes[axis]
+        guard let t0 = dragParameter(at: from, origin: h.center, direction: d),
+              let t = dragParameter(at: to, origin: h.center, direction: d) else { return nil }
+        let step = dragStep
+        return ((h.offsets[axis] + t - t0) / step).rounded() * step
+    }
+
+    func setMoveOffset(axis: Int, _ v: Double) {
+        updateCommandFeature { k in
+            guard case var .move(m) = k else { return }
+            switch axis {
+            case 0: m.dx = plainNumber(v)
+            case 1: m.dy = plainNumber(v)
+            default: m.dz = plainNumber(v)
+            }
+            k = .move(m)
+        }
+    }
+
+    /// New angle when the knob of `ring` is dragged from `from` to `to` (5° steps, ⇧ for 1°).
+    func moveAngle(_ h: MoveHandle, _ ring: MoveRing, from: CGPoint, to: CGPoint, fine: Bool = false) -> Double? {
+        func onPlane(_ pt: CGPoint) -> Vec3? {
+            let r = camera.rayD(at: pt)
+            let den = simd_dot(r.direction, ring.direction)
+            guard abs(den) > 1e-6 else { return nil }
+            let p = r.origin + r.direction * (simd_dot(ring.center - r.origin, ring.direction) / den)
+            let v = p - ring.center
+            return simd_length(v) > 1e-9 ? v : nil
+        }
+        guard let a = onPlane(from), let b = onPlane(to) else { return nil }
+        let delta = atan2(simd_dot(simd_cross(a, b), ring.direction), simd_dot(a, b)) * 180 / .pi
+        let step = fine ? 1.0 : 5.0
+        return (((ring.active ? h.angle : 0) + delta) / step).rounded() * step
+    }
+
+    func setMoveAngle(_ ring: MoveRing, _ v: Double) {
+        updateCommandFeature { k in
+            guard case var .move(m) = k else { return }
+            m.axis = ring.axis
+            m.angle = plainNumber(v)
+            k = .move(m)
+        }
+    }
 }

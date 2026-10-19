@@ -8176,6 +8176,16 @@
         }
       }
     },
+    "Um Körpermitte drehen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rotate about body center"
+          }
+        }
+      }
+    },
     "Umbenennen": {
       "localizations": {
         "en": {
@@ -9397,6 +9407,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Drag to change the size"
+          }
+        }
+      }
+    },
+    "Ziehen, um die Körper zu drehen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Drag to rotate the bodies"
+          }
+        }
+      }
+    },
+    "Ziehen, um die Körper zu verschieben": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Drag to move the bodies"
           }
         }
       }

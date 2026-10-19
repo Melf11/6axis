@@ -233,6 +233,33 @@ enum ModellingChecks {
         // Copy the bolt 30 mm to the right.
         editor.selection = [.body(boltF.id)]
         editor.beginCommand(.move)
+        // Manipulator: the Z arrow lifts it 10 mm, the X ring tilts it 90° in place, then back down and upright.
+        if let h = editor.moveHandle {
+            check("move: arrows and three rings", h.rings.count == 3 && simd_distance(h.center, Vec3(150, 30, 6)) < 1e-6, "\(h.center) \(h.rings.count)")
+            let len = editor.moveArrowLength
+            if let a = editor.camera.project(h.center + Vec3(0, 0, len)), let b = editor.camera.project(h.center + Vec3(0, 0, len + 10)),
+               let v = editor.moveOffset(h, axis: 2, from: a, to: b) { editor.setMoveOffset(axis: 2, v) }
+            await settle(editor)
+            if let h = editor.moveHandle, let ring = h.rings.first(where: { $0.axis == .x }) {
+                let from = editor.moveKnob(h, ring)
+                let to = ring.center + rotationMatrix(axis: ring.direction, angle: .pi / 2) * (from - ring.center)
+                if let a = editor.camera.project(from), let b = editor.camera.project(to),
+                   let v = editor.moveAngle(h, ring, from: a, to: b) { editor.setMoveAngle(ring, v) }
+            }
+            await settle(editor)
+            let bb = editor.state.bodies[boltF.id]?.shape.boundingBox
+            if case let .move(m)? = editor.commandFeature?.kind, let bb {
+                // Bolt Ø8 × 12 lying on its side about its centre (150, 30, 6), lifted by 10: z ∈ [12, 20], y ∈ [24, 36].
+                check("move: arrow and ring drag", m.dz == "10" && m.axis == .x && m.angle == "90" &&
+                      abs(bb.min.z - 12) < 0.05 && abs(bb.min.y - 24) < 0.05 && editor.moveHandle?.rings.count == 1,
+                      "\(m.dz) \(String(describing: m.axis)) \(m.angle) \(bb)")
+            } else {
+                check("move: arrow and ring drag", false)
+            }
+            editor.updateCommandFeature { k in if case var .move(m) = k { m.dz = "0 mm"; m.angle = "0"; m.axis = .z; k = .move(m) } }
+        } else {
+            check("move: arrows and three rings", false)
+        }
         editor.updateCommandFeature { k in if case var .move(m) = k { m.dx = "30 mm"; m.copy = true; k = .move(m) } }
         await settle(editor)
         await snap("m05-move")
