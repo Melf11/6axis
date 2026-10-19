@@ -249,7 +249,7 @@ private struct BottomBar: View {
             case .sketchPlane: return String(localized: "Ebene oder ebene Fläche für die Skizze wählen")
             case .extrude: return String(localized: "Profile oder Flächen wählen · Pfeil ziehen · ↩ bestätigt")
             case .revolve: return cmd.activeInput == 1 ? String(localized: "Drehachse wählen (Linie, Kante oder Achse)") : String(localized: "Profile wählen")
-            case .fillet, .chamfer: return String(localized: "Kanten wählen · ↩ bestätigt")
+            case .fillet, .chamfer: return String(localized: "Kanten wählen · Pfeil ziehen · ↩ bestätigt")
             case .shell: return String(localized: "Flächen wählen, die offen sein sollen")
             default:
                 switch editor.modellingInput {

@@ -174,6 +174,28 @@ final class KernelTests: XCTestCase {
         XCTAssertEqual(re.volume, v, accuracy: 0.05)
     }
 
+    func testCutPreviewMeshesRemovedVolume() {
+        var (doc, ex) = boxDocument()
+        var sk = Sketch(plane: .face(BodyFaceRef(body: ex, face: FaceRef(index: 0, centroid: Vec3(20, 10, 10), normal: Vec3(0, 0, 1)))))
+        sk.addCircle(center: sk.addPoint(Vec2(5, 5)), radius: 2)
+        let sketch = Feature(name: "Skizze2", kind: .sketch(sk))
+        var cut = ExtrudeFeature()
+        cut.profiles = [ProfileRef(sketch: sketch.id, sample: Vec2(5, 5))]
+        cut.distance = "-4"
+        cut.operation = .cut
+        let cutFeature = Feature(name: "Extrusion2", kind: .extrude(cut))
+        doc.features += [sketch, cutFeature]
+        var state = ModelBuilder().build(doc)
+        state.prepareForDisplay(previewing: cutFeature.id)
+        let preview = state.cutPreview
+        XCTAssertEqual(preview?.feature, cutFeature.id)
+        XCTAssertFalse(preview?.meshes.isEmpty ?? true)
+        XCTAssertGreaterThan(preview?.meshes.first?.indices.count ?? 0, 0)
+        // Material-adding features have nothing to show in red.
+        state.prepareForDisplay(previewing: ex)
+        XCTAssertNil(state.cutPreview)
+    }
+
     func testDocumentRoundTrip() throws {
         let (doc, _) = boxDocument()
         let data = try doc.encoded()
