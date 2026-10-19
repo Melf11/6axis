@@ -354,6 +354,7 @@ enum ModellingChecks {
         editor.cameraAnimation = nil
         await snap("m12-viewcube-arrows")
 
+        await titleBarChecks()
         await dragHeavyPreview(editor)
     }
 
@@ -405,5 +406,23 @@ enum ModellingChecks {
         check("drag on a heavy model: last position shown", box.map { abs($0.min.x - 90) < 0.1 } ?? false, "\(String(describing: box))")
         editor.cancelCommand()
         await settle(editor)
+    }
+
+    /// The empty part of the title row acts like a title bar: a double-click zooms the window (issue #8).
+    static func titleBarChecks() async {
+        guard let win = NSApp.windows.first(where: { $0.identifier?.rawValue.hasPrefix("main") == true }),
+              let content = win.contentView else { check("title bar: main window", false); return }
+        let p = NSPoint(x: content.bounds.width * 0.6, y: content.isFlipped ? 18 : content.bounds.height - 18)
+        let hit = content.hitTest(content.convert(p, to: content.superview))
+        check("title bar: empty title row is a title bar area", hit is TitleBarNSView, "\(String(describing: hit))")
+        guard let area = hit as? TitleBarNSView, TitleBarNSView.doubleClickAction == .zoom else { return }
+        let before = win.frame
+        let down = NSEvent.mouseEvent(with: .leftMouseDown, location: content.convert(p, to: nil), modifierFlags: [],
+                                      timestamp: ProcessInfo.processInfo.systemUptime, windowNumber: win.windowNumber,
+                                      context: nil, eventNumber: 0, clickCount: 2, pressure: 1)
+        if let down { area.mouseDown(with: down) }
+        await pause(0.6)
+        check("title bar: double-click zooms the window", win.frame != before, "\(before) → \(win.frame)")
+        win.setFrame(before, display: true)
     }
 }
