@@ -79,7 +79,7 @@ enum ModellingChecks {
         let handles = editor.holeHandles
         check("hole: arrows at each position", handles.count == 2, "\(handles.count)")
         if let start = handles.first {
-            let len = editor.holeArrowLength
+            let len = editor.arrowLength
             for (axis, delta) in [(0, 20.0), (1, 10.0)] {
                 guard let h = editor.holeHandles.first, let a = editor.camera.project(h.center + h.axes[axis] * len),
                       let b = editor.camera.project(h.center + h.axes[axis] * (len + delta)),
@@ -113,6 +113,37 @@ enum ModellingChecks {
         await settle(editor)
         editor.timelineSelection = nil
         check("pattern: holes repeated", abs(volume(editor, plateF.id) - (full - 4 * .pi * 16 * 20)) < 1, "\(volume(editor, plateF.id))")
+
+        // Fillet and chamfer on the plate's top front edge: an arrow on the edge, dragged 2 mm into the corner
+        // (measured on the rounded/chamfered surface) gives radius/distance 1 → 3 mm (scale 0.414 / 0.707 at 90°).
+        for kind in [CommandKind.fillet, .chamfer] {
+            editor.beginCommand(kind)
+            if let body = editor.stateBeforeCommand.bodies[plateF.id],
+               let idx = body.edgeInfos.compactMap({ $0 }).first(where: { simd_distance($0.midpoint, Vec3(50, 0, 20)) < 1e-6 })?.index,
+               let ref = body.edgeRef(idx) {
+                editor.updateCommandFeature { k in
+                    if case var .fillet(f) = k { f.edges = [BodyEdgeRef(body: plateF.id, edge: ref)]; k = .fillet(f) }
+                    if case var .chamfer(c) = k { c.edges = [BodyEdgeRef(body: plateF.id, edge: ref)]; k = .chamfer(c) }
+                }
+            }
+            await settle(editor)
+            let name = kind == .fillet ? "fillet" : "chamfer"
+            guard let h = editor.edgeHandle else { check("\(name): arrow on the edge", false); editor.cancelCommand(); continue }
+            let out = simd_normalize(Vec3(0, -1, 1))
+            check("\(name): arrow on the edge", simd_dot(h.direction, out) > 0.999 && abs(h.value - 1) < 1e-9, "\(h.direction) \(h.value)")
+            let len = editor.arrowLength, depth = 2 * h.scale
+            if let a = editor.camera.project(h.center + h.direction * len),
+               let b = editor.camera.project(h.center + h.direction * (len - depth)),
+               let v = editor.edgeValue(h, from: a, to: b) {
+                editor.setEdgeValue(v)
+            }
+            await settle(editor)
+            check("\(name): arrow changes the size", abs((editor.edgeHandle?.value ?? 0) - 3) < 1e-6 && editor.state.errors.isEmpty,
+                  "\(editor.edgeHandle?.value ?? 0) \(editor.state.errors.values)")
+            await snap(kind == .fillet ? "m02-fillet" : "m02-chamfer")
+            editor.cancelCommand()
+            await settle(editor)
+        }
 
         // Offset plane from the top face, then a sketch on it by clicking the plane.
         editor.beginPlane(.offset)

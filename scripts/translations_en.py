@@ -631,4 +631,6 @@ EN.update({
 "–": "–",
 "Auf eine ebene Fläche klicken oder Skizzenpunkte wählen · Pfeile ziehen": "Click on a planar face or choose sketch points · drag the arrows",
 "Ziehen, um die Bohrung zu verschieben": "Drag to move the hole",
+"Kanten wählen · Pfeil ziehen · ↩ bestätigt": "Choose edges · drag the arrow · ↩ confirms",
+"Ziehen, um die Größe zu ändern": "Drag to change the size",
 })

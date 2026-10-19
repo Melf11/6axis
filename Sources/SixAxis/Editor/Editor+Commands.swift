@@ -414,7 +414,7 @@ extension Editor {
     }
 
     /// Arrow length in the model, constant on screen.
-    var holeArrowLength: Double { Double(camera.worldPerPoint) * 45 }
+    var arrowLength: Double { Double(camera.worldPerPoint) * 45 }
 
     /// New distance from the edge when an arrow of `h` is dragged from `from` to `to`.
     func holeOffset(_ h: HoleHandle, axis: Int, from: CGPoint, to: CGPoint) -> Double? {
@@ -429,6 +429,59 @@ extension Editor {
             guard case var .hole(h) = k, h.points.indices.contains(i), case let .faceOffset(r, x, y) = h.points[i] else { return }
             h.points[i] = axis == 0 ? .faceOffset(r, x: plainNumber(v), y: y) : .faceOffset(r, x: x, y: plainNumber(v))
             k = .hole(h)
+        }
+    }
+
+    // MARK: - Fillet / chamfer manipulator
+
+    /// Arrow on the first chosen edge, pointing out of the corner along the bisector of the two faces.
+    struct EdgeHandle {
+        /// Middle of the rounded or chamfered surface (the arrow's base).
+        var center: Vec3
+        var direction: Vec3
+        /// Current radius or chamfer distance.
+        var value: Double
+        /// How far the surface's middle moves along `direction` per millimetre of `value`.
+        var scale: Double
+    }
+
+    var edgeHandle: EdgeHandle? {
+        guard let cmd = command, cmd.kind == .fillet || cmd.kind == .chamfer, let kind = commandFeature?.kind else { return nil }
+        let edges: [BodyEdgeRef], expr: String
+        switch kind {
+        case let .fillet(f): (edges, expr) = (f.edges, f.radius)
+        case let .chamfer(c): (edges, expr) = (c.edges, c.distance)
+        default: return nil
+        }
+        guard let e = edges.first, let body = stateBeforeCommand.bodies[e.body], let idx = body.resolve(e.edge),
+              let mid = body.edgeInfo(at: idx)?.midpoint else { return nil }
+        let normals = body.edgeFaceNormals(idx)
+        guard let n0 = normals.first else { return nil }
+        let value = (try? evaluator.value(expr)) ?? 0
+        var dir = n0, scale = 1.0
+        if normals.count >= 2, simd_length(n0 + normals[1]) > 1e-6 {
+            dir = simd_normalize(n0 + normals[1])
+            // Half the angle between the normals: 45° at a right-angled corner.
+            // Fillet: the surface's middle lies r·(1 − cos)/cos inside the corner; chamfer: d·sin.
+            let c: Double = min(1, max(0, simd_dot(n0, dir)))
+            scale = cmd.kind == .fillet ? (1 - c) / max(c, 1e-6) : (1 - c * c).squareRoot()
+            if scale < 0.1 { scale = 1 }
+        }
+        return EdgeHandle(center: mid - dir * value * scale, direction: dir, value: value, scale: scale)
+    }
+
+    /// New radius or distance when the arrow of `h` is dragged from `from` to `to` (dragging into the corner makes it larger).
+    func edgeValue(_ h: EdgeHandle, from: CGPoint, to: CGPoint) -> Double? {
+        guard let t0 = dragParameter(at: from, origin: h.center, direction: h.direction),
+              let t = dragParameter(at: to, origin: h.center, direction: h.direction) else { return nil }
+        let step = dragStep
+        return max(step, ((h.value + (t0 - t) / h.scale) / step).rounded() * step)
+    }
+
+    func setEdgeValue(_ v: Double) {
+        updateCommandFeature { k in
+            if case var .fillet(f) = k { f.radius = plainNumber(v); k = .fillet(f) }
+            if case var .chamfer(c) = k { c.distance = plainNumber(v); k = .chamfer(c) }
         }
     }
 }

@@ -43,6 +43,31 @@ public final class BuiltBody: @unchecked Sendable {
         return ref
     }
 
+    /// Outward normals of the planar and cylindrical faces meeting at an edge, taken at its midpoint.
+    public func edgeFaceNormals(_ index: Int) -> [Vec3] {
+        guard let mid = edgeInfo(at: index)?.midpoint else { return [] }
+        let tol = 1e-6
+        return faceInfos.compactMap { f -> Vec3? in
+            guard let f else { return nil }
+            var n: Vec3
+            switch f.surface {
+            case .plane:
+                guard abs(simd_dot(mid - f.origin, f.normal)) < tol else { return nil }
+                n = f.normal
+            case .cylinder:
+                func radial(_ p: Vec3) -> Vec3 { p - f.axisOrigin - f.axisDir * simd_dot(p - f.axisOrigin, f.axisDir) }
+                let r = radial(mid)
+                guard abs(simd_length(r) - f.radius) < tol else { return nil }
+                // The face's normal (at its own sample point) tells whether it faces away from the axis (bolt) or towards it (hole).
+                n = simd_normalize(r) * (simd_dot(f.normal, radial(f.origin)) < 0 ? -1 : 1)
+            default:
+                return nil
+            }
+            guard (try? shape.face(f.index))?.contains(mid) == true else { return nil }
+            return n
+        }
+    }
+
     static func direction(_ e: EdgeInfo) -> Vec3? {
         guard e.kind == .line, simd_distance(e.start, e.end) > 1e-9 else { return nil }
         return simd_normalize(e.end - e.start)
