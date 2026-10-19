@@ -214,9 +214,20 @@ final class ViewportNSView: MTKView {
     /// Counts handled drag events (performance check).
     nonisolated(unsafe) static var dragEvents = 0
 
+    /// The newest of the drag events already waiting in the queue: a burst (fast mouse, busy main thread)
+    /// becomes one orbit or pan instead of one per event. Only the end point matters for the delta.
+    private func newestDrag(_ event: NSEvent, _ mask: NSEvent.EventTypeMask) -> NSEvent {
+        var newest = event
+        while let next = NSApp.nextEvent(matching: mask, until: .distantPast, inMode: .default, dequeue: true) {
+            Self.dragEvents += 1
+            newest = next
+        }
+        return newest
+    }
+
     override func rightMouseDragged(with event: NSEvent) {
         Self.dragEvents += 1
-        let p = point(event)
+        let p = point(newestDrag(event, .rightMouseDragged))
         if let last = lastDrag {
             if hypot(p.x - last.x, p.y - last.y) > 0 { rightDragged = true }
             editor.orbit(dx: p.x - last.x, dy: p.y - last.y)
@@ -232,6 +243,7 @@ final class ViewportNSView: MTKView {
     override func otherMouseDown(with event: NSEvent) { lastDrag = point(event) }
 
     override func otherMouseDragged(with event: NSEvent) {
+        let event = newestDrag(event, .otherMouseDragged)
         let p = point(event)
         if let last = lastDrag {
             if event.modifierFlags.contains(.shift) {
