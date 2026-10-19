@@ -4118,7 +4118,19 @@
         }
       }
     },
+    "Kanten wählen · Pfeil ziehen · ↩ bestätigt": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choose edges · drag the arrow · ↩ confirms"
+          }
+        }
+      }
+    },
     "Kanten wählen · ↩ bestätigt": {
+      "extractionState": "stale",
       "localizations": {
         "en": {
           "stringUnit": {
@@ -9363,6 +9375,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Drag to move the hole"
+          }
+        }
+      }
+    },
+    "Ziehen, um die Größe zu ändern": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Drag to change the size"
           }
         }
       }

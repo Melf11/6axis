@@ -14,6 +14,7 @@ struct ViewportOverlay: View {
                 drawDimensions(ctx)
                 drawExtrudeArrow(ctx)
                 drawHoleArrows(ctx)
+                drawEdgeArrow(ctx)
                 drawSplineHandles(ctx)
                 drawMachineTool(ctx)
             }
@@ -27,6 +28,7 @@ struct ViewportOverlay: View {
             }
             extrudeHandle
             holeHandles
+            edgeHandle
         }
         .coordinateSpace(name: "overlay")
     }
@@ -496,13 +498,32 @@ struct ViewportOverlay: View {
         }
     }
 
+    // MARK: Fillet / chamfer manipulator
+
+    private func drawEdgeArrow(_ ctx: GraphicsContext) {
+        guard let h = editor.edgeHandle, let a = editor.camera.project(h.center),
+              let b = editor.camera.project(h.center + h.direction * editor.arrowLength) else { return }
+        var p = Path()
+        p.move(to: a)
+        p.addLine(to: b)
+        ctx.stroke(p, with: .color(accent), lineWidth: 2)
+    }
+
+    @ViewBuilder private var edgeHandle: some View {
+        if let h = editor.edgeHandle, let base = editor.camera.project(h.center),
+           let tip = editor.camera.project(h.center + h.direction * editor.arrowLength) {
+            EdgeArrow(editor: editor, handle: h, angle: atan2(tip.y - base.y, tip.x - base.x))
+                .position(tip)
+        }
+    }
+
     // MARK: Hole manipulator
 
     private func drawHoleArrows(_ ctx: GraphicsContext) {
         // Only touch the camera when there are arrows (otherwise the overlay would redraw on every camera move).
         let handles = editor.holeHandles
         guard !handles.isEmpty else { return }
-        let len = editor.holeArrowLength
+        let len = editor.arrowLength
         for h in handles {
             guard let a = editor.camera.project(h.center) else { continue }
             for d in h.axes {
@@ -520,7 +541,7 @@ struct ViewportOverlay: View {
         return ForEach(handles, id: \.index) { h in
             ForEach(0..<2, id: \.self) { axis in
                 if let base = editor.camera.project(h.center),
-                   let tip = editor.camera.project(h.center + h.axes[axis] * editor.holeArrowLength) {
+                   let tip = editor.camera.project(h.center + h.axes[axis] * editor.arrowLength) {
                     HoleArrow(editor: editor, handle: h, axis: axis, angle: atan2(tip.y - base.y, tip.x - base.x))
                         .position(tip)
                 }
@@ -569,6 +590,46 @@ private struct HoleArrow: View {
                 .onEnded { _ in start = nil }
         )
         .help("Ziehen, um die Bohrung zu verschieben")
+    }
+}
+
+/// Arrow tip on the first edge of a fillet or chamfer; dragging into the corner makes it larger.
+private struct EdgeArrow: View {
+    let editor: Editor
+    let handle: Editor.EdgeHandle
+    let angle: CGFloat
+    @State private var start: Editor.EdgeHandle?
+    @State private var hovering = false
+
+    var body: some View {
+        ZStack {
+            Image(systemName: "arrowtriangle.right.fill")
+                .font(.system(size: hovering || start != nil ? 15 : 12))
+                .foregroundStyle(Color.accentColor)
+                .shadow(color: .black.opacity(0.25), radius: 2, y: 1)
+                .rotationEffect(.radians(angle))
+            Text(formatValue(handle.value))
+                .font(.system(size: 11, weight: .semibold, design: .rounded))
+                .padding(.horizontal, 7)
+                .padding(.vertical, 3)
+                .background(Capsule().fill(PanelStyle.fill))
+                .fixedSize()
+                .offset(x: 0, y: -20)
+                .allowsHitTesting(false)
+        }
+        .frame(width: 24, height: 24)
+        .contentShape(Circle())
+        .onHover { hovering = $0 }
+        .gesture(
+            DragGesture(minimumDistance: 1, coordinateSpace: .named("overlay"))
+                .onChanged { v in
+                    if start == nil { start = handle }
+                    guard let start, let value = editor.edgeValue(start, from: v.startLocation, to: v.location) else { return }
+                    editor.setEdgeValue(value)
+                }
+                .onEnded { _ in start = nil }
+        )
+        .help("Ziehen, um die Größe zu ändern")
     }
 }
 
