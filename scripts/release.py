@@ -368,10 +368,14 @@ def fixed_since(last, tag, merged=()):
 
 def notify(issues, tag, repo):
     for n in issues:
-        run(["gh", "issue", "comment", str(n), "--repo", repo, "--body",
-             f"Behoben in 6axis {tag[1:]}. Das Update bietet 6axis automatisch an "
-             f"(oder: https://github.com/{repo}/releases/tag/{tag})."], check=False)
-        run(["gh", "issue", "edit", str(n), "--repo", repo, "--remove-label", "fix-bereit"], check=False)
+        # Via the API with a timeout: 'gh issue comment' once hung after posting.
+        body = (f"Behoben in 6axis {tag[1:]}. Das Update bietet 6axis automatisch an "
+                f"(oder: https://github.com/{repo}/releases/tag/{tag}).")
+        try:
+            run(["gh", "api", f"repos/{repo}/issues/{n}/comments", "-f", f"body={body}"], check=False, timeout=60)
+            run(["gh", "api", "-X", "DELETE", f"repos/{repo}/issues/{n}/labels/fix-bereit"], check=False, timeout=60)
+        except subprocess.TimeoutExpired:
+            log(f"   ⚠️  #{n}: GitHub antwortet nicht – Kommentar bitte prüfen")
     log(f"✓ Melder benachrichtigt: {', '.join(f'#{n}' for n in issues)}")
 
 
