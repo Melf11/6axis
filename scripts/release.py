@@ -308,8 +308,14 @@ def wait_for_release(tag, repo):
     try:
         run_id, last = None, None
         for _ in range(240):
-            runs = gh_json("run", "list", "--repo", repo, "--workflow", "release.yml", "--branch", tag,
-                           "--json", "databaseId,status,conclusion,url", "--limit", "1")
+            r = run(["gh", "run", "list", "--repo", repo, "--workflow", "release.yml", "--branch", tag,
+                     "--json", "databaseId,status,conclusion,url", "--limit", "1"], check=False)
+            if r.returncode != 0:
+                # Network hiccup: the release keeps running on GitHub, so keep waiting instead of giving up.
+                log(f"   {time.strftime('%H:%M')} GitHub nicht erreichbar – versuche es weiter")
+                time.sleep(30)
+                continue
+            runs = json.loads(r.stdout or "null")
             if runs:
                 run_id = runs[0]
                 state = f"{run_id['status']} {run_id['conclusion'] or ''}".strip()
@@ -362,10 +368,14 @@ def fixed_since(last, tag, merged=()):
 
 def notify(issues, tag, repo):
     for n in issues:
-        run(["gh", "issue", "comment", str(n), "--repo", repo, "--body",
-             f"Behoben in 6axis {tag[1:]}. Das Update bietet 6axis automatisch an "
-             f"(oder: https://github.com/{repo}/releases/tag/{tag})."], check=False)
-        run(["gh", "issue", "edit", str(n), "--repo", repo, "--remove-label", "fix-bereit"], check=False)
+        # Via the API with a timeout: 'gh issue comment' once hung after posting.
+        body = (f"Behoben in 6axis {tag[1:]}. Das Update bietet 6axis automatisch an "
+                f"(oder: https://github.com/{repo}/releases/tag/{tag}).")
+        try:
+            run(["gh", "api", f"repos/{repo}/issues/{n}/comments", "-f", f"body={body}"], check=False, timeout=60)
+            run(["gh", "api", "-X", "DELETE", f"repos/{repo}/issues/{n}/labels/fix-bereit"], check=False, timeout=60)
+        except subprocess.TimeoutExpired:
+            log(f"   ⚠️  #{n}: GitHub antwortet nicht – Kommentar bitte prüfen")
     log(f"✓ Melder benachrichtigt: {', '.join(f'#{n}' for n in issues)}")
 
 
