@@ -284,5 +284,27 @@ enum ModellingChecks {
         editor.showExplode = false
         let names = editor.drawing.input(editor).parts.map(\.name)
         check("parts list: component name", names.contains("Bolzen M8"), "\(names)")
+
+        // View cube arrows (#7): from the front, turn to the right face, roll twice, tilt to the top.
+        func goal() -> Camera { editor.cameraAnimation?.to ?? editor.camera }
+        func near(_ a: SIMD3<Float>, _ b: SIMD3<Float>) -> Bool { simd_distance(a, b) < 1e-4 }
+        editor.cameraAnimation = nil
+        editor.camera.orientation = Camera.lookOrientation(direction: SIMD3(0, 1, 0), up: SIMD3(0, 0, 1))
+        check("view cube: front view shows the arrows", editor.camera.isAxisView)
+        editor.turnView(axis: SIMD3(0, 1, 0), sign: 1)
+        check("view cube: right arrow looks at the right face", near(goal().forward, SIMD3(-1, 0, 0)) && near(goal().up, SIMD3(0, 0, 1)),
+              "\(goal().forward) \(goal().up)")
+        editor.turnView(axis: SIMD3(0, 0, 1), sign: 1)
+        editor.turnView(axis: SIMD3(0, 0, 1), sign: 1)
+        check("view cube: two quick rolls turn the view upside down", near(goal().forward, SIMD3(-1, 0, 0)) && near(goal().up, SIMD3(0, 0, -1)),
+              "\(goal().forward) \(goal().up)")
+        editor.cameraAnimation = nil
+        editor.camera.orientation = Camera.lookOrientation(direction: SIMD3(0, 1, 0), up: SIMD3(0, 0, 1))
+        editor.turnView(axis: SIMD3(1, 0, 0), sign: -1)
+        check("view cube: up arrow looks at the top face", near(goal().forward, SIMD3(0, 0, -1)) && near(goal().up, SIMD3(0, 1, 0)),
+              "\(goal().forward) \(goal().up)")
+        editor.camera = goal()
+        editor.cameraAnimation = nil
+        await snap("m12-viewcube-arrows")
     }
 }

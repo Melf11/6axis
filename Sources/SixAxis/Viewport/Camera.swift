@@ -26,6 +26,20 @@ struct Camera: Equatable {
         return simd_quatf(m)
     }
 
+    /// Quarter turn about a camera axis (X tilts, Y turns, Z rolls about the view direction).
+    /// Snaps to the world axes so repeated turns stay exact face views.
+    static func quarterTurn(_ o: simd_quatf, axis: SIMD3<Float>, sign: Float) -> simd_quatf {
+        let t = o * simd_quatf(angle: sign * .pi / 2, axis: axis)
+        func snap(_ v: SIMD3<Float>) -> SIMD3<Float> {
+            let r = v.rounded(.toNearestOrAwayFromZero)
+            return simd_length_squared(r) == 1 && simd_distance(r, v) < 0.02 ? r : v
+        }
+        return lookOrientation(direction: snap(t.act(SIMD3(0, 0, -1))), up: snap(t.act(SIMD3(0, 1, 0))))
+    }
+
+    /// Whether the camera looks straight at one of the six cube faces.
+    var isAxisView: Bool { simd_reduce_max(simd_abs(forward)) > 0.999 }
+
     var forward: SIMD3<Float> { orientation.act(SIMD3(0, 0, -1)) }
     var up: SIMD3<Float> { orientation.act(SIMD3(0, 1, 0)) }
     var right: SIMD3<Float> { orientation.act(SIMD3(1, 0, 0)) }

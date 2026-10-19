@@ -3,10 +3,11 @@ import SwiftUI
 
 /// Orientation cube in the top-right corner, like Fusion's ViewCube.
 /// Each face is split into a 3×3 grid: the center looks at the face, the borders at edges, the corners at corners.
-/// Drag on the cube to orbit.
+/// Drag on the cube to orbit. In a straight face view, arrows turn the view by 90°.
 struct ViewCube: View {
     @Bindable var editor: Editor
     @State private var hovered: Region?
+    @State private var hoveredArrow: Arrow?
     @State private var lastDrag: CGSize = .zero
 
     private struct Face {
@@ -22,6 +23,35 @@ struct ViewCube: View {
         let face: Int
         let u: Int
         let v: Int
+    }
+
+    /// Arrows around a face view: triangles turn to the neighbouring face, the round arrows roll the view.
+    private enum Arrow: CaseIterable {
+        case up, down, left, right, rollLeft, rollRight
+
+        /// Camera axis and direction of the quarter turn.
+        var turn: (axis: SIMD3<Float>, sign: Float) {
+            switch self {
+            case .up: return (SIMD3(1, 0, 0), -1)
+            case .down: return (SIMD3(1, 0, 0), 1)
+            case .left: return (SIMD3(0, 1, 0), -1)
+            case .right: return (SIMD3(0, 1, 0), 1)
+            case .rollLeft: return (SIMD3(0, 0, 1), -1)
+            case .rollRight: return (SIMD3(0, 0, 1), 1)
+            }
+        }
+
+        /// Offset from the cube center in points (screen y down).
+        var offset: CGVector {
+            switch self {
+            case .up: return CGVector(dx: 0, dy: -31)
+            case .down: return CGVector(dx: 0, dy: 31)
+            case .left: return CGVector(dx: -31, dy: 0)
+            case .right: return CGVector(dx: 31, dy: 0)
+            case .rollLeft: return CGVector(dx: -36, dy: -36)
+            case .rollRight: return CGVector(dx: 36, dy: -36)
+            }
+        }
     }
 
     // Z-up world. "Vorne" faces -Y, i.e. the camera looks along +Y.
@@ -54,14 +84,18 @@ struct ViewCube: View {
                 )
                 .onContinuousHover { phase in
                     switch phase {
-                    case let .active(p): hovered = region(at: p)
-                    case .ended: hovered = nil
+                    case let .active(p):
+                        hoveredArrow = arrow(at: p)
+                        hovered = hoveredArrow == nil ? region(at: p) : nil
+                    case .ended: hovered = nil; hoveredArrow = nil
                     }
                 }
                 .onTapGesture { p in
-                    if let r = region(at: p) { look(at: r) }
+                    if let a = arrow(at: p) {
+                        editor.turnView(axis: a.turn.axis, sign: a.turn.sign)
+                    } else if let r = region(at: p) { look(at: r) }
                 }
-                .help("Klick auf Fläche, Kante oder Ecke richtet die Ansicht aus · Ziehen dreht")
+                .help("Klick auf Fläche, Kante oder Ecke richtet die Ansicht aus · Pfeile drehen um 90° · Ziehen dreht")
             HStack(spacing: 2) {
                 IconButton(symbol: "house", help: String(localized: "Ausgangsansicht"), size: 24) { editor.homeView() }
                 IconButton(symbol: "arrow.up.left.and.arrow.down.right", help: String(localized: "Alles einpassen (⌘0)"), size: 24) { editor.fitAll() }
@@ -145,6 +179,11 @@ struct ViewCube: View {
         return nil
     }
 
+    private func arrow(at p: CGPoint) -> Arrow? {
+        guard editor.camera.isAxisView else { return nil }
+        return Arrow.allCases.first { a in hypot(p.x - size / 2 - a.offset.dx, p.y - size / 2 - a.offset.dy) < 9 }
+    }
+
     private func look(at r: Region) {
         let f = faces[r.face]
         let d = simd_normalize(f.normal + Float(r.u) * f.right + Float(r.v) * f.up)
@@ -199,6 +238,29 @@ struct ViewCube: View {
                 c2.draw(text, at: .zero, anchor: .center)
             }
             ctx.stroke(outline, with: .color(edge), lineWidth: 0.8)
+        }
+        if editor.camera.isAxisView { drawArrows(ctx) }
+    }
+
+    private func drawArrows(_ ctx: GraphicsContext) {
+        for a in Arrow.allCases {
+            let c = CGPoint(x: size / 2 + a.offset.dx, y: size / 2 + a.offset.dy)
+            let color = a == hoveredArrow ? Color.accentColor : Color.primary.opacity(editor.darkMode ? 0.6 : 0.45)
+            switch a {
+            case .rollLeft, .rollRight:
+                let symbol = Image(systemName: a == .rollLeft ? "arrow.counterclockwise" : "arrow.clockwise")
+                ctx.draw(Text(symbol).font(.system(size: 11, weight: .semibold)).foregroundStyle(color), at: c)
+            default:
+                // Triangle pointing away from the cube.
+                let len = hypot(a.offset.dx, a.offset.dy)
+                let d = CGVector(dx: a.offset.dx / len, dy: a.offset.dy / len), n = CGVector(dx: -d.dy, dy: d.dx)
+                var t = Path()
+                t.addLines([CGPoint(x: c.x + d.dx * 4, y: c.y + d.dy * 4),
+                            CGPoint(x: c.x - d.dx * 3 + n.dx * 6, y: c.y - d.dy * 3 + n.dy * 6),
+                            CGPoint(x: c.x - d.dx * 3 - n.dx * 6, y: c.y - d.dy * 3 - n.dy * 6)])
+                t.closeSubpath()
+                ctx.fill(t, with: .color(color))
+            }
         }
     }
 }
