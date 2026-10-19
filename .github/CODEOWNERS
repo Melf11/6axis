@@ -1,3 +1,6 @@
 # Workflows, Freigabelisten und Release-Einstellungen nur mit Zustimmung des Inhabers.
 /.github/ @Melf11
 /scripts/bug_automation.py @Melf11
+/scripts/bugfix.py @Melf11
+/scripts/release.py @Melf11
+/scripts/update-key.swift @Melf11

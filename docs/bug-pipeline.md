@@ -52,6 +52,31 @@ Für jeden Bericht:
    Sonst: Label `braucht-mensch`, Befund als Kommentar, Arbeitskopie bleibt zum Ansehen.
 7. **Gemergt wird nie automatisch** – du prüfst den Pull Request.
 
+## 4. Prüfen, mergen, veröffentlichen: `scripts/release.py`
+
+```bash
+scripts/release.py              # Pull Requests durchgehen, danach Release anbieten
+scripts/release.py --dry-run    # nur zeigen, nichts ändern
+scripts/release.py --verify v2.0.3   # ein veröffentlichtes Release prüfen
+```
+
+1. Läuft nur, wenn `gh` als Inhaber angemeldet ist.
+2. Für jeden offenen Pull Request (Korrekturen aus `bugfix.py` zuerst) zeigt es: behobene Issues, Umfang, CI-Status und Hinweise
+   (fremder Autor, Fork, geänderte geschützte Dateien). Auswahl:
+   - **b** Bericht und Lösung lesen · **d** Änderungen ansehen
+   - **t** App mit genau dieser Korrektur bauen und öffnen – zum Ausprobieren neben der installierten
+   - **m** mergen – nur bei grüner CI, ohne Konflikt, und nur genau der angezeigte Stand (`--match-head-commit`).
+     Bei Hinweisen muss die PR-Nummer eingetippt werden. Das Issue schließt GitHub automatisch („Fixes #N“).
+   - **x** verwerfen (Begründung als Kommentar, Issue → `braucht-mensch`) · **s** überspringen · **w** auf CI warten
+3. Danach: was seit dem letzten Tag neu ist, Vorschlag der nächsten Version (Fehlerbehebung = letzte Stelle +1), Kurzbeschreibung,
+   auf Wunsch die volle Prüfung genau dieses Stands auf dem Mac (eigene Arbeitskopie).
+4. Veröffentlichen erst nach eingetipptem „ja“: Tag pushen → GitHub Actions baut und signiert → das Skript wartet,
+   lädt die Dateien und prüft Prüfsummen, Update-Signatur, Version und Code-Signatur.
+5. Auf Wunsch bekommen die Melder einen Kommentar „Behoben in …“.
+
+Von Hand geht es auch: Pull Request auf GitHub ansehen → „Merge pull request“; dann
+`git checkout main && git pull && git tag -a v2.0.3 -m "6axis 2.0.3 – …" && git push origin v2.0.3`.
+
 ## Sicherheit
 
 | Risiko | Gegenmaßnahme |
@@ -61,7 +86,7 @@ Für jeden Bericht:
 | Manipulierter Berichtstext (Prompt-Injection) | Bericht als Daten mit Hinweis; nur Text von Melder und Inhaber; Claude ohne Netz, Git und GitHub; Werkzeug-Liste fest |
 | Schädlicher Code in der Korrektur | eigene Arbeitskopie; Tests laufen auf deinem Mac – deshalb nur vertrauenswürdige Melder in `autofix`; PR-Prüfung vor dem Merge |
 | Änderungen an Automatisierung/Signierung | geschützte Dateien → Abbruch |
-| Ungeprüfte Änderungen landen in `main` | nie automatisch: nur Pull Requests, Merge durch dich |
+| Ungeprüfte Änderungen landen in `main` | nie automatisch: nur Pull Requests, Merge durch dich (`release.py`: nur grüne CI, nur der angesehene Stand) |
 
 Restrisiko: Bauen und Testen führen Code der Arbeitskopie auf deinem Mac aus. Darum bearbeitet das Werkzeug ohne
 deine ausdrückliche Freigabe nur Berichte von Personen, denen du vertraust (`autofix`).

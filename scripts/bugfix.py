@@ -30,7 +30,7 @@ WORK = Path.home() / ".6axis-bugfix"
 SKIP_LABELS = {"fix-bereit", "braucht-mensch", "in-arbeit", "duplikat", "braucht-info"}
 # Files Claude must not touch: automation, update signing, CI.
 PROTECTED = (".github/", "Resources/update-public-key.txt", "scripts/update-key.swift",
-             "scripts/bug_automation.py", "scripts/bugfix.py")
+             "scripts/bug_automation.py", "scripts/bugfix.py", "scripts/release.py")
 CLAUDE_TOOLS = [
     "Read", "Edit", "Write", "Grep", "Glob",
     "Bash(swift build:*)", "Bash(swift test:*)",
@@ -107,7 +107,7 @@ Vorgehen:
    Erste Zeile genau `STATUS: behoben` oder `STATUS: nicht behoben`, zweite Zeile ein kurzer englischer
    Commit-Titel (Imperativ, < 70 Zeichen). Danach auf Deutsch: Ursache, Lösung, Nachweis (welcher Test).
    Wenn nicht behoben: Befund und offene Fragen an den Melder.
-Nicht ändern: .github/, Resources/update-public-key.txt, scripts/update-key.swift, scripts/bug_automation.py, scripts/bugfix.py.
+Nicht ändern: .github/, Resources/update-public-key.txt, scripts/update-key.swift, scripts/bug_automation.py, scripts/bugfix.py, scripts/release.py.
 """
 
 
