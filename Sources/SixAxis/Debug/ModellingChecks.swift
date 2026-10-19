@@ -48,6 +48,22 @@ enum ModellingChecks {
         await settle(editor)
         let full = 100.0 * 60 * 20
 
+        // Cutting extrusion: the removed material is previewed in red, the trimmed body stays solid.
+        editor.beginCommand(.extrude)
+        editor.updateCommandFeature { k in
+            guard case var .extrude(e) = k else { return }
+            e.profiles = [ProfileRef(sketch: s2.id, sample: Vec2(150, 30))]; e.distance = "5 mm"; e.operation = .cut
+            k = .extrude(e)
+        }
+        await settle(editor)
+        var cutScene = SceneBuilder(editor: editor, scale: 2)
+        cutScene.build()
+        let translucent = cutScene.scene.meshes.filter(\.translucent)
+        check("cut: removed material shown in red", !translucent.isEmpty && translucent.allSatisfy { $0.color.x > 0.8 && $0.color.y < 0.4 },
+              "\(translucent.map(\.color))")
+        editor.cancelCommand()
+        await settle(editor)
+
         // Hole: two clicks on the top face, Ø8 through.
         editor.beginCommand(.hole)
         await click(editor, Vec3(31.6, 28.7, 20))
