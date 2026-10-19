@@ -88,6 +88,10 @@ struct Panel: View {
         .padding(14)
         .frame(width: 400)
         .task { await model.refresh() }
+        // Each time the panel opens: reload unless the last load is fresh (merges or releases made elsewhere).
+        .onReceive(NotificationCenter.default.publisher(for: NSWindow.didBecomeKeyNotification)) { _ in
+            Task { await model.refresh(ifOlderThan: 20) }
+        }
     }
 
     private var header: some View {
@@ -160,12 +164,13 @@ struct Panel: View {
     @ViewBuilder private func release(_ s: Status) -> some View {
         Section("Release", count: nil) {
             if s.release.changes.isEmpty {
-                Empty("Alles veröffentlicht (\(s.release.last)).")
+                Empty("Alles veröffentlicht – aktuelle Version \(s.release.last).")
             } else {
-                Text("Seit \(s.release.last) noch nicht veröffentlicht:").font(.caption).foregroundStyle(.secondary)
+                Text("Veröffentlicht ist \(s.release.last). Neu seit dieser Version (\(s.release.changes.count)):")
+                    .font(.caption).foregroundStyle(.secondary)
                 ForEach(s.release.changes.prefix(6), id: \.self) { Text("• \($0)").font(.caption).lineLimit(1) }
                 if s.release.changes.count > 6 { Text("… und \(s.release.changes.count - 6) weitere").font(.caption).foregroundStyle(.secondary) }
-                Button("Veröffentlichen …") { open("publish") }.disabled(model.busy)
+                Button("\(s.release.next["patch"] ?? "Neue Version") veröffentlichen …") { open("publish") }.disabled(model.busy)
             }
         }
     }
@@ -298,7 +303,7 @@ struct PublishView: View {
                 TextField("Kurzbeschreibung", text: $text, prompt: Text("deutsch, steht im Tag"))
                 Toggle("Vorher genau diesen Stand auf dem Mac prüfen (≈ 10 Minuten)", isOn: $check)
                 Toggle("Melder benachrichtigen („Behoben in …“)", isOn: $notifyReporters)
-                LabeledContent("Änderungen seit \(r.last)") {
+                LabeledContent("Neu seit \(r.last)") {
                     VStack(alignment: .leading) {
                         ForEach(r.changes.prefix(12), id: \.self) { Text("• \($0)").lineLimit(1) }
                     }
@@ -322,6 +327,7 @@ struct PublishView: View {
             }
             .formStyle(.grouped)
             .frame(width: 480)
+            .task { await model.refresh(ifOlderThan: 5) }
         } else {
             Text("Nichts zu veröffentlichen.").foregroundStyle(.secondary).padding(40)
         }

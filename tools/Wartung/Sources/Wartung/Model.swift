@@ -42,6 +42,11 @@ final class Wartung {
 
     // MARK: Status
 
+    func refresh(ifOlderThan seconds: TimeInterval) async {
+        if let updated, Date().timeIntervalSince(updated) < seconds { return }
+        await refresh()
+    }
+
     func refresh() async {
         guard !loading else { return }
         guard scriptsFound else { error = "Im gewählten Ordner fehlt scripts/release.py – Projektordner wählen."; return }
