@@ -77,6 +77,26 @@ scripts/release.py --verify v2.0.3   # ein veröffentlichtes Release prüfen
 Von Hand geht es auch: Pull Request auf GitHub ansehen → „Merge pull request“; dann
 `git checkout main && git pull && git tag -a v2.0.3 -m "6axis 2.0.3 – …" && git push origin v2.0.3`.
 
+## 5. Menüleisten-App „6axis Wartung“
+
+```bash
+tools/Wartung/build.sh          # bauen, nach ~/Applications installieren, starten
+```
+
+Ein Marienkäfer in der Menüleiste, daneben die Zahl neuer Fehlerberichte. Ein Klick öffnet die Übersicht:
+- **Fehlerberichte**: Status je Bericht; **Beheben** startet `bugfix.py --issue N`, **Freigeben …** setzt das Label `freigegeben`
+  (für Melder außerhalb der Liste `autofix`), **Alle beheben** arbeitet alle bereiten ab.
+- **Pull Requests**: CI-Status, Hinweise und Sperren wie in `release.py`; **Ausprobieren**, **Mergen …**, **Verwerfen …**.
+- **Release**: was seit der letzten Version neu ist; **Veröffentlichen …** öffnet ein Fenster mit Version, Kurzbeschreibung,
+  lokaler Prüfung und Benachrichtigung der Melder.
+- Laufende Arbeit unten im Panel, **Protokoll** zeigt die Ausgabe live, **Abbrechen** beendet auch Build und Claude.
+- Mitteilung bei neuen Fehlerberichten und wenn eine Arbeit fertig ist. Aktualisiert alle 10 Minuten (über `gh`, dein Login).
+- Zahnrad: Projektordner, „Bei Anmeldung starten“.
+
+Die App ist nur eine Oberfläche: Jede Aktion läuft über `scripts/bugfix.py` bzw. `scripts/release.py` mit denselben Prüfungen.
+Gemergt bzw. veröffentlicht wird nur der Stand, der angezeigt wurde (`--head`); hat er sich geändert, bricht das Skript ab.
+Sie gehört nicht zu 6axis und wird nicht mit ausgeliefert.
+
 ## Sicherheit
 
 | Risiko | Gegenmaßnahme |
