@@ -4523,7 +4523,18 @@
         }
       }
     },
+    "Klick auf Fläche, Kante oder Ecke richtet die Ansicht aus · Pfeile drehen um 90° · Ziehen dreht": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Click a face, edge or corner to orient the view · arrows turn by 90° · drag to orbit"
+          }
+        }
+      }
+    },
     "Klick auf Fläche, Kante oder Ecke richtet die Ansicht aus · Ziehen dreht": {
+      "extractionState": "stale",
       "localizations": {
         "en": {
           "stringUnit": {

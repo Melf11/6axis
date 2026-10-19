@@ -597,6 +597,13 @@ final class Editor {
         animateCamera(to: c)
     }
 
+    /// View cube arrows: quarter turn about a camera axis, continuing from a running animation's goal.
+    func turnView(axis: SIMD3<Float>, sign: Float) {
+        var c = cameraAnimation?.to ?? camera
+        c.orientation = Camera.quarterTurn(c.orientation, axis: axis, sign: sign)
+        animateCamera(to: c)
+    }
+
     func homeView() {
         var c = camera
         c.orientation = Camera.homeOrientation

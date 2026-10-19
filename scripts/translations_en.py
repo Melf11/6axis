@@ -78,7 +78,7 @@ EN = {
 "Kein bekannter Slicer gefunden. STL-Dateien werden mit der Standard-App geöffnet.": "No known slicer found. STL files open with the default app.",
 "Keine 6axis-Datei": "Not a 6axis file", "Keine Drehachse gewählt": "No axis selected", "Keine Fläche oder kein Körper ausgewählt": "No face or body selected",
 "Keine Geometrie erzeugt": "No geometry created", "Keine Kanten ausgewählt": "No edges selected", "Keine sichtbaren Körper": "No visible bodies",
-"Kiefer massiv": "Solid pine", "Klick auf Fläche, Kante oder Ecke richtet die Ansicht aus · Ziehen dreht": "Click a face, edge or corner to orient the view · drag to orbit",
+"Kiefer massiv": "Solid pine", "Klick auf Fläche, Kante oder Ecke richtet die Ansicht aus · Pfeile drehen um 90° · Ziehen dreht": "Click a face, edge or corner to orient the view · arrows turn by 90° · drag to orbit",
 "Klicke Flächen an, die offen sein sollen.": "Click the faces that should be open.", "Kollinear": "Collinear", "Kommentar": "Comment",
 "Konstruktion": "Design", "Konzentrisch": "Concentric", "Korpus": "Cabinet", "Korpus mit Fachboden (Holz)": "Cabinet with shelf (wood)",
 "Kreis": "Circle", "Körper": "Bodies", "Körper nicht gefunden": "Body not found", "Körper nicht mehr vorhanden": "Body no longer exists",
