@@ -159,6 +159,39 @@ final class ModellingTests: XCTestCase {
         }
     }
 
+    func testHoleGridOnFace() {
+        var doc = CADDocument()
+        var sk = Sketch(plane: .xy)
+        let c = [sk.addPoint(Vec2(0, 0)), sk.addPoint(Vec2(200, 0)), sk.addPoint(Vec2(200, 60)), sk.addPoint(Vec2(0, 60))]
+        for i in 0..<4 { sk.addLine(c[i], c[(i + 1) % 4]) }
+        let s = Feature(name: "S", kind: .sketch(sk))
+        var ex = ExtrudeFeature()
+        ex.profiles = [ProfileRef(sketch: s.id, sample: Vec2(5, 5))]
+        ex.distance = "19 mm"
+        let e = Feature(name: "E", kind: .extrude(ex))
+        doc.features = [s, e]
+        let top = topFace(build(doc), e.id)
+        var h = HoleFeature()
+        // Shelf-pin rows: 5 holes every 32 mm, two rows 20 mm apart.
+        h.points = [.faceOffset(top, x: "37", y: "20")]
+        h.extent = .depth
+        h.depth = "12 mm"
+        h.diameter = "5 mm"
+        var g = HoleGrid()
+        g.countX = "5"; g.spacingX = "32 mm"; g.countY = "2"; g.spacingY = "20 mm"
+        h.grid = g
+        doc.features.append(Feature(name: "B", kind: .hole(h)))
+        let holes = build(doc).bodies[e.id]!.faceInfos.compactMap { $0 }.filter { $0.surface == .cylinder }.map(\.axisOrigin)
+        XCTAssertEqual(holes.count, 10)
+        XCTAssertEqual(Set(holes.map { Int(($0.x).rounded()) }), [37, 69, 101, 133, 165])
+        XCTAssertEqual(Set(holes.map { Int(($0.y).rounded()) }), [20, 40])
+        // Too many holes is a clear error, not a frozen app.
+        g.countX = "100"; g.countY = "100"; h.grid = g
+        doc.features[2].kind = .hole(h)
+        let err = (try? ModelBuilder().build(doc).errors[doc.features[2].id]) ?? nil
+        XCTAssertTrue(err?.contains("Zu viele") == true, err ?? "no error")
+    }
+
     func testHoleFollowsSketchPoint() {
         var doc = CADDocument()
         doc.parameters = [UserParameter(name: "x", expression: "20 mm")]

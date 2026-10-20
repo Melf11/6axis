@@ -287,6 +287,8 @@ final class Editor {
 
     // Chrome
     var toast: String?
+    /// Frame of the command dialog in the main view (manipulators are kept out from under it).
+    var dialogFrame: CGRect = .zero
     @ObservationIgnored private var toastToken = 0
     var showCommandPalette = false
     var showParameters = false
@@ -579,6 +581,24 @@ final class Editor {
         camera = c
         if done { cameraAnimation = nil }
         return !done
+    }
+
+    /// Pans the view once so a manipulator's screen points lie in the free area: not under the
+    /// command dialog, the top bar or the timeline. Leaves the camera alone when everything is visible.
+    func reveal(_ points: [CGPoint]) {
+        guard !points.isEmpty, cameraAnimation == nil else { return }
+        let size = camera.viewSize, margin: CGFloat = 36
+        let xs = points.map(\.x), ys = points.map(\.y)
+        let box = CGRect(x: xs.min()!, y: ys.min()!, width: xs.max()! - xs.min()!, height: ys.max()! - ys.min()!).insetBy(dx: -margin, dy: -margin)
+        let right = dialogFrame.width > 0 ? dialogFrame.minX - 8 : size.width
+        let free = CGRect(x: 0, y: 70, width: right, height: max(0, size.height - 70 - 110))
+        guard free.width > box.width, !free.contains(box) else { return }
+        let dx = box.maxX > free.maxX ? free.maxX - box.maxX : box.minX < free.minX ? free.minX - box.minX : 0
+        let dy = box.maxY > free.maxY ? free.maxY - box.maxY : box.minY < free.minY ? free.minY - box.minY : 0
+        guard dx != 0 || dy != 0 else { return }
+        var c = camera
+        c.pan(dx: Float(dx), dy: Float(dy))
+        animateCamera(to: c)
     }
 
     func modelBounds() -> (SIMD3<Float>, SIMD3<Float>)? {

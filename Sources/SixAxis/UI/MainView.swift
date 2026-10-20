@@ -27,6 +27,7 @@ struct MainView: View {
                     VStack(alignment: .trailing, spacing: 12) {
                         ViewCube(editor: editor)
                         CommandPanel(editor: editor)
+                            .onGeometryChange(for: CGRect.self, of: { $0.frame(in: .global) }) { editor.dialogFrame = $0 }
                         PatternPanel(editor: editor)
                         TextPanel(editor: editor)
                         InspectPanel(editor: editor)

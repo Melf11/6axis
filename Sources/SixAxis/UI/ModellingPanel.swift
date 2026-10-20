@@ -130,6 +130,7 @@ extension CommandPanel {
             } else {
                 holePositions(h) { change in set(change) }
             }
+            holeGrid(h) { change in set(change) }
             Picker("", selection: Binding(get: { h.type }, set: { v in set { $0.type = v } })) {
                 ForEach(HoleType.allCases, id: \.self) { Text($0.displayName).tag($0) }
             }
@@ -197,6 +198,34 @@ extension CommandPanel {
         if h.points.count > 0 {
             hint(String(localized: "Abstände von der linken bzw. vorderen Kante der Fläche; Ausdrücke wie „breite / 2“ gehen auch."))
         }
+    }
+
+    /// Optional grid: every position repeated along the face's own X and Y (shelf-pin rows, hole grids).
+    @ViewBuilder
+    private func holeGrid(_ h: HoleFeature, _ set: @escaping (@escaping (inout HoleFeature) -> Void) -> Void) -> some View {
+        toggle(String(localized: "Als Raster wiederholen"), h.grid != nil) { on in set { $0.grid = on ? HoleGrid() : nil } }
+        if let g = h.grid {
+            let (ax, ay) = holeAxisNames(h)
+            field(String(localized: "Anzahl \(ax)"), g.countX, kind: .scalar) { v in set { $0.grid?.countX = v } }
+            if g.countX != "1" { field(String(localized: "Abstand \(ax)"), g.spacingX) { v in set { $0.grid?.spacingX = v } } }
+            field(String(localized: "Anzahl \(ay)"), g.countY, kind: .scalar) { v in set { $0.grid?.countY = v } }
+            if g.countY != "1" { field(String(localized: "Abstand \(ay)"), g.spacingY) { v in set { $0.grid?.spacingY = v } } }
+            hint(String(localized: "Von jeder Position aus in Richtung \(ax) und \(ay) – z. B. eine Lochreihe im 32er-Raster."))
+        }
+    }
+
+    /// World axis names of the face (or sketch) the first position lies on, for the grid labels.
+    private func holeAxisNames(_ h: HoleFeature) -> (String, String) {
+        let pre = editor.stateBeforeCommand
+        let plane: Plane? = switch h.points.first {
+        case let .faceOffset(bf, _, _)?, let .face(bf, _)?:
+            pre.bodies[bf.body].flatMap { b in b.resolve(bf.face).flatMap { FaceFrame.of(b, face: $0)?.plane } }
+        case let .sketchPoint(sid, _)?:
+            pre.sketches[sid]?.plane
+        case nil:
+            nil
+        }
+        return plane.map { (FaceFrame.axisName($0.xDir), FaceFrame.axisName($0.yDir)) } ?? ("X", "Y")
     }
 
     // MARK: Thread

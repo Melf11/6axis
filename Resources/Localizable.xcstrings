@@ -486,6 +486,16 @@
         }
       }
     },
+    "Abstand %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Spacing %@"
+          }
+        }
+      }
+    },
     "Abstand 1": {
       "localizations": {
         "en": {
@@ -684,6 +694,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Export as PDF or DXF"
+          }
+        }
+      }
+    },
+    "Als Raster wiederholen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Repeat as grid"
           }
         }
       }
@@ -920,12 +940,32 @@
         }
       }
     },
+    "Anzahl %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Count %@"
+          }
+        }
+      }
+    },
     "Anzahl 2": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Count 2"
+          }
+        }
+      }
+    },
+    "Anzahl muss mindestens 1 sein": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Count must be at least 1"
           }
         }
       }
@@ -8740,6 +8780,22 @@
         }
       }
     },
+    "Von jeder Position aus in Richtung %@ und %@ – z. B. eine Lochreihe im 32er-Raster.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Von jeder Position aus in Richtung %1$@ und %2$@ – z. B. eine Lochreihe im 32er-Raster."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "From each position towards %@ and %@ – e.g. a row of shelf-pin holes on a 32 mm grid."
+          }
+        }
+      }
+    },
     "Vorderansicht": {
       "localizations": {
         "en": {
@@ -9497,6 +9553,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Reverse mouse wheel zoom"
+          }
+        }
+      }
+    },
+    "Zu viele Bohrungen (höchstens %lld)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Too many holes (at most %lld)"
           }
         }
       }

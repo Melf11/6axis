@@ -113,6 +113,18 @@ enum ModellingChecks {
             for i in h.points.indices { if case let .faceOffset(r, _, _) = h.points[i] { h.points[i] = .faceOffset(r, x: i == 0 ? "30" : "70", y: "30") } }
             k = .hole(h)
         }
+        // Grid: each position repeated 2 × 2 every 15 mm along the face → 8 holes in the preview.
+        editor.updateCommandFeature { k in
+            guard case var .hole(h) = k else { return }
+            var g = HoleGrid(); g.countX = "2"; g.spacingX = "15 mm"; g.countY = "2"; g.spacingY = "15 mm"
+            h.grid = g
+            k = .hole(h)
+        }
+        await settle(editor)
+        check("hole: grid on the face", abs(volume(editor, plateF.id) - (full - 8 * .pi * 16 * 20)) < 1, "\(volume(editor, plateF.id))")
+        await snap("m01-hole-grid")
+        editor.updateCommandFeature { k in if case var .hole(h) = k { h.grid = nil; k = .hole(h) } }
+        await settle(editor)
         await snap("m01-hole")
         let holeId = editor.command?.featureId
         editor.commitCommand()

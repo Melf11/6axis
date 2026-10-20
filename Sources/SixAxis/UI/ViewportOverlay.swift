@@ -34,6 +34,8 @@ struct ViewportOverlay: View {
             moveHandles
         }
         .coordinateSpace(name: "overlay")
+        // When a manipulator appears (or the dialog grows) under the dialog, move the view once.
+        .onChange(of: manipulatorKey) { editor.reveal(manipulatorPoints) }
     }
     /// Live cutter position from a connected machine (work position + program zero of the milling setup).
     private func drawMachineTool(_ ctx: GraphicsContext) {
@@ -482,6 +484,32 @@ struct ViewportOverlay: View {
     }
 
     // MARK: Manipulators (extrude, hole, fillet/chamfer, move) – shared look in `Gizmo`
+
+    /// Changes when a manipulator appears or disappears, or the dialog changes height – not on camera moves.
+    private var manipulatorKey: String {
+        let shown = [editor.extrudeHandle != nil, editor.edgeHandle != nil, editor.moveHandle != nil].map { $0 ? "1" : "0" }.joined()
+        return "\(shown)-\(editor.holeHandles.count)-\(Int(editor.dialogFrame.height))"
+    }
+
+    /// Screen points a shown manipulator needs room for.
+    private var manipulatorPoints: [CGPoint] {
+        let cam = editor.camera
+        var world: [Vec3] = []
+        if let h = editor.extrudeHandle { world += [h.origin, h.origin + h.direction * h.distance] }
+        if let h = editor.edgeHandle { world += [h.center, h.center + h.direction * editor.arrowLength] }
+        for h in editor.holeHandles { world += [h.center] + h.axes.map { h.center + $0 * editor.arrowLength } }
+        if let h = editor.moveHandle {
+            world += [h.center] + Editor.moveAxes.map { h.center + $0 * editor.moveArrowLength }
+            for ring in h.rings {
+                let u = ring.start, v = simd_cross(ring.direction, ring.start)
+                world += (0..<8).map { k in
+                    let t = Double(k) / 8 * 2 * .pi
+                    return ring.center + (u * cos(t) + v * sin(t)) * editor.moveRingRadius
+                }
+            }
+        }
+        return world.compactMap { cam.project($0) }
+    }
 
     private func state(_ id: String) -> (highlighted: Bool, dimmed: Bool) {
         (gizmoFocus?.id == id, gizmoFocus?.dragging == true && gizmoFocus?.id != id)
