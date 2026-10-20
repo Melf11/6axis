@@ -196,7 +196,19 @@ final class Editor {
     private(set) var state = ModelState()
     @ObservationIgnored let builder = ModelBuilder()
     /// True while a slow rebuild runs in the background (the UI shows "Berechne …").
-    private(set) var isRebuilding = false
+    private(set) var isRebuilding = false {
+        didSet {
+            // The "Berechne Modell …" hint only for rebuilds that really take a while – a drag would make it flicker.
+            if !isRebuilding { showsRebuilding = false; return }
+            guard !oldValue else { return }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) { [weak self] in
+                if let self, self.isRebuilding { self.showsRebuilding = true }
+            }
+        }
+    }
+    private(set) var showsRebuilding = false
+    /// When the last rebuild was requested: changes in quick succession (a drag) do not wait for their result.
+    private var lastRebuildRequest: CFTimeInterval = 0
     @ObservationIgnored private let rebuildQueue = DispatchQueue(label: "app.6axis.rebuild", qos: .userInitiated)
     @ObservationIgnored private var rebuildGeneration = 0
     @ObservationIgnored private var appliedGeneration = 0
@@ -332,9 +344,14 @@ final class Editor {
         let snapshot = doc
         let builder = self.builder
         let latest = latestRequested
-        // While an earlier rebuild still runs (e.g. dragging a preview on a heavy model), waiting would block
-        // every input event for the whole budget; the result then arrives asynchronously.
-        let busy = latest.isRunning
+        // Waiting for the result blocks the main thread for the whole rebuild. Fine for a single change (a typed
+        // value shows at once), but not while a drag sends a change per mouse event: then input and drawing
+        // starve and the preview feels sluggish. So during a quick series of changes, and while an earlier
+        // rebuild still runs, the result arrives asynchronously (one frame later at most).
+        let now = CACurrentMediaTime()
+        let series = command != nil && now - lastRebuildRequest < 0.1
+        lastRebuildRequest = now
+        let busy = latest.isRunning || series
         latest.start(generation)
         let previewing = command?.kind == .extrude || command?.kind == .revolve ? command?.featureId : nil
         let result = RebuildResult()

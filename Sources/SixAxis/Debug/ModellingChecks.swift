@@ -383,6 +383,34 @@ enum ModellingChecks {
 
         await titleBarChecks()
         await dragHeavyPreview(editor)
+        await dragLightPreview(editor)
+    }
+
+    /// Dragging the extrude arrow on an ordinary model (the cabinet): a change per mouse event must not wait
+    /// for the rebuild on the main thread, and the preview still shows nearly every step.
+    static func dragLightPreview(_ editor: Editor) async {
+        editor.openExample(Examples.all[0])
+        await settle(editor)
+        guard let f = editor.doc.features.last(where: { if case .extrude = $0.kind { return true }; return false }),
+              case let .extrude(e0) = f.kind else { return check("light drag: cabinet has an extrusion", false) }
+        editor.editFeature(f.id)
+        await settle(editor)
+        let revision = editor.modelRevision
+        var blocked: [Double] = []
+        for k in 1...60 {
+            let t = CACurrentMediaTime()
+            editor.updateCommandFeature { kind in if case var .extrude(e) = kind { e.distance = "(\(e0.distance)) + \(k) mm"; kind = .extrude(e) } }
+            blocked.append((CACurrentMediaTime() - t) * 1000)
+            await pause(1.0 / 60)
+        }
+        let updates = editor.modelRevision &- revision
+        await settle(editor)
+        let median = blocked.dropFirst().sorted()[blocked.count / 2]
+        check("light drag: input not blocked", median < 3, "median \(String(format: "%.1f", median)) ms per change")
+        check("light drag: preview follows", updates >= 40, "\(updates) of 60 changes shown")
+        check("light drag: no rebuild hint", !editor.showsRebuilding)
+        editor.cancelCommand()
+        await settle(editor)
     }
 
     /// Dragging a live preview on a model whose rebuild takes longer than a frame (#10): the input must not

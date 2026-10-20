@@ -189,7 +189,7 @@ private struct BottomBar: View {
                     .frame(height: 24)
                     .floatingPanel(radius: 12)
                 }
-                if editor.isRebuilding {
+                if editor.showsRebuilding {
                     HStack(spacing: 6) {
                         ProgressView().controlSize(.mini)
                         Text("Berechne Modell …")
