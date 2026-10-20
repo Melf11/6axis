@@ -6,6 +6,7 @@ import SixAxisCore
 /// constraint glyphs and the extrude manipulator. Only interactive elements receive clicks.
 struct ViewportOverlay: View {
     @Bindable var editor: Editor
+    @State private var gizmoFocus: GizmoFocus?
 
     var body: some View {
         ZStack(alignment: .topLeading) {
@@ -480,46 +481,44 @@ struct ViewportOverlay: View {
         }
     }
 
-    // MARK: Extrude manipulator
+    // MARK: Manipulators (extrude, hole, fillet/chamfer, move) – shared look in `Gizmo`
+
+    private func state(_ id: String) -> (highlighted: Bool, dimmed: Bool) {
+        (gizmoFocus?.id == id, gizmoFocus?.dragging == true && gizmoFocus?.id != id)
+    }
 
     private func drawExtrudeArrow(_ ctx: GraphicsContext) {
         guard let h = editor.extrudeHandle, let a = editor.camera.project(h.origin),
               let b = editor.camera.project(h.origin + h.direction * h.distance) else { return }
-        var p = Path()
-        p.move(to: a)
-        p.addLine(to: b)
-        ctx.stroke(p, with: .color(accent), style: StrokeStyle(lineWidth: 2, dash: [4, 3]))
+        let s = state("extrude")
+        Gizmo.base(ctx, a, accent)
+        Gizmo.shaft(ctx, a, b, accent, highlighted: s.highlighted)
     }
 
     private var extrudeHandle: some View {
         Group {
-            if let h = editor.extrudeHandle, let tip = editor.camera.project(h.origin + h.direction * h.distance) {
-                ExtrudeHandle(editor: editor, handle: h)
+            if let h = editor.extrudeHandle, let base = editor.camera.project(h.origin),
+               let tip = editor.camera.project(h.origin + h.direction * h.distance) {
+                ExtrudeHandle(editor: editor, handle: h, angle: Gizmo.angle(base, tip), focus: $gizmoFocus)
                     .position(tip)
             }
         }
     }
 
-    // MARK: Fillet / chamfer manipulator
-
     private func drawEdgeArrow(_ ctx: GraphicsContext) {
         guard let h = editor.edgeHandle, let a = editor.camera.project(h.center),
               let b = editor.camera.project(h.center + h.direction * editor.arrowLength) else { return }
-        var p = Path()
-        p.move(to: a)
-        p.addLine(to: b)
-        ctx.stroke(p, with: .color(accent), lineWidth: 2)
+        Gizmo.base(ctx, a, accent)
+        Gizmo.shaft(ctx, a, b, accent, highlighted: state("edge").highlighted)
     }
 
     @ViewBuilder private var edgeHandle: some View {
         if let h = editor.edgeHandle, let base = editor.camera.project(h.center),
            let tip = editor.camera.project(h.center + h.direction * editor.arrowLength) {
-            EdgeArrow(editor: editor, handle: h, angle: atan2(tip.y - base.y, tip.x - base.x))
+            EdgeArrow(editor: editor, handle: h, angle: Gizmo.angle(base, tip), focus: $gizmoFocus)
                 .position(tip)
         }
     }
-
-    // MARK: Hole manipulator
 
     private func drawHoleArrows(_ ctx: GraphicsContext) {
         // Only touch the camera when there are arrows (otherwise the overlay would redraw on every camera move).
@@ -528,13 +527,12 @@ struct ViewportOverlay: View {
         let len = editor.arrowLength
         for h in handles {
             guard let a = editor.camera.project(h.center) else { continue }
-            for d in h.axes {
+            for (axis, d) in h.axes.enumerated() {
                 guard let b = editor.camera.project(h.center + d * len) else { continue }
-                var p = Path()
-                p.move(to: a)
-                p.addLine(to: b)
-                ctx.stroke(p, with: .color(accent), lineWidth: 2)
+                let s = state("hole-\(h.index)-\(axis)")
+                Gizmo.shaft(ctx, a, b, accent, highlighted: s.highlighted, opacity: (s.dimmed ? 0.3 : 1) * Gizmo.visibility(a, b))
             }
+            Gizmo.base(ctx, a, accent)
         }
     }
 
@@ -544,39 +542,63 @@ struct ViewportOverlay: View {
             ForEach(0..<2, id: \.self) { axis in
                 if let base = editor.camera.project(h.center),
                    let tip = editor.camera.project(h.center + h.axes[axis] * editor.arrowLength) {
-                    HoleArrow(editor: editor, handle: h, axis: axis, angle: atan2(tip.y - base.y, tip.x - base.x))
+                    HoleArrow(editor: editor, handle: h, axis: axis, angle: Gizmo.angle(base, tip), focus: $gizmoFocus)
+                        .opacity((state("hole-\(h.index)-\(axis)").dimmed ? 0.3 : 1) * Gizmo.visibility(base, tip))
+                        .allowsHitTesting(Gizmo.visibility(base, tip) > 0.5)
                         .position(tip)
                 }
             }
         }
     }
 
-    // MARK: Move manipulator
-
     private func drawMoveManipulator(_ ctx: GraphicsContext) {
         // Only touch the camera while the move command is open.
         guard let h = editor.moveHandle, let a = editor.camera.project(h.center) else { return }
         let len = editor.moveArrowLength, radius = editor.moveRingRadius
+        let forward = Vec3(editor.camera.forward)
+        for ring in h.rings {
+            let s = state("ring-\(ring.axis)")
+            let color = moveRingColor(ring)
+            let u = ring.start, v = simd_cross(ring.direction, ring.start)
+            // Swept angle while the ring turns: a light wedge from 0° to the current angle.
+            if ring.active, abs(h.angle) > 0.01 {
+                var wedge = Path()
+                wedge.move(to: editor.camera.project(ring.center) ?? a)
+                let steps = max(2, Int(abs(h.angle) / 4))
+                for k in 0...steps {
+                    let t = h.angle * .pi / 180 * Double(k) / Double(steps)
+                    if let p = editor.camera.project(ring.center + (u * cos(t) + v * sin(t)) * radius) { wedge.addLine(to: p) }
+                }
+                wedge.closeSubpath()
+                ctx.fill(wedge, with: .color(color.opacity(0.18)))
+            }
+            // The half of the ring behind the centre is drawn faintly, like a real ring seen at an angle.
+            var front = Path(), back = Path()
+            var last: (CGPoint, Bool)?
+            for k in 0...96 {
+                let t = Double(k) / 96 * 2 * .pi
+                let w = u * cos(t) + v * sin(t)
+                guard let p = editor.camera.project(ring.center + w * radius) else { last = nil; continue }
+                let behind = simd_dot(w, forward) > 0
+                if let (q, wasBehind) = last {
+                    if wasBehind { back.move(to: q); back.addLine(to: p) } else { front.move(to: q); front.addLine(to: p) }
+                }
+                last = (p, behind)
+            }
+            let o = s.dimmed ? 0.25 : 1
+            ctx.stroke(back, with: .color(color.opacity(0.35 * o)), style: StrokeStyle(lineWidth: 1.5, lineCap: .round))
+            Gizmo.stroke(ctx, front, color, highlighted: s.highlighted || (ring.active && gizmoFocus?.dragging == true && !s.dimmed),
+                         opacity: o)
+        }
         for (i, d) in Editor.moveAxes.enumerated() {
             guard let b = editor.camera.project(h.center + d * len) else { continue }
-            var p = Path()
-            p.move(to: a)
-            p.addLine(to: b)
-            ctx.stroke(p, with: .color(moveAxisColor(i)), lineWidth: 2)
+            let s = state("move-\(i)")
+            Gizmo.shaft(ctx, a, b, moveAxisColor(i), highlighted: s.highlighted, opacity: (s.dimmed ? 0.25 : 1) * Gizmo.visibility(a, b))
         }
-        for ring in h.rings {
-            let u = ring.start, v = simd_cross(ring.direction, ring.start)
-            var p = Path()
-            for k in 0...64 {
-                let t = Double(k) / 64 * 2 * .pi
-                guard let s = editor.camera.project(ring.center + (u * cos(t) + v * sin(t)) * radius) else { continue }
-                if k == 0 { p.move(to: s) } else { p.addLine(to: s) }
-            }
-            ctx.stroke(p, with: .color(moveRingColor(ring).opacity(ring.active ? 0.9 : 0.45)), lineWidth: ring.active ? 2 : 1.5)
-        }
+        Gizmo.base(ctx, a, .white, radius: 4.5)
     }
 
-    private func moveAxisColor(_ i: Int) -> Color { [Color.red, Color.green, Color.blue][i] }
+    private func moveAxisColor(_ i: Int) -> Color { Gizmo.axisColors[i] }
 
     private func moveRingColor(_ ring: Editor.MoveRing) -> Color {
         switch ring.axis {
@@ -593,20 +615,167 @@ struct ViewportOverlay: View {
                 ForEach(0..<3, id: \.self) { axis in
                     if let tip = editor.camera.project(h.center + Editor.moveAxes[axis] * editor.moveArrowLength) {
                         MoveArrow(editor: editor, handle: h, axis: axis, color: moveAxisColor(axis),
-                                  angle: atan2(tip.y - base.y, tip.x - base.x))
+                                  angle: Gizmo.angle(base, tip), focus: $gizmoFocus)
+                            .opacity((state("move-\(axis)").dimmed ? 0.25 : 1) * Gizmo.visibility(base, tip))
+                            .allowsHitTesting(Gizmo.visibility(base, tip) > 0.5)
                             .position(tip)
                     }
                 }
                 // By axis: the other rings vanish once turning starts, the dragged knob must stay the same view.
                 ForEach(h.rings, id: \.axis) { ring in
                     if let knob = editor.camera.project(editor.moveKnob(h, ring)) {
-                        MoveRingKnob(editor: editor, handle: h, ring: ring, color: moveRingColor(ring))
+                        MoveRingKnob(editor: editor, handle: h, ring: ring, color: moveRingColor(ring), focus: $gizmoFocus)
+                            .opacity(state("ring-\(ring.axis)").dimmed ? 0.25 : 1)
                             .position(knob)
                     }
                 }
             }
         }
     }
+}
+
+/// Which manipulator the pointer is over or drags; the others step back while one is dragged.
+struct GizmoFocus: Equatable {
+    var id: String
+    var dragging: Bool
+}
+
+/// Shared look of all viewport manipulators: round shafts with a soft dark edge (readable on light
+/// and dark surfaces), rounded arrowheads, and value badges in the panels' material.
+enum Gizmo {
+    static let axisColors = [Color(nsColor: .systemRed), Color(nsColor: .systemGreen), Color(nsColor: .systemBlue)]
+    static let headSize: CGFloat = 26
+    static let animation = Animation.snappy(duration: 0.16)
+
+    static func angle(_ base: CGPoint, _ tip: CGPoint) -> CGFloat { atan2(tip.y - base.y, tip.x - base.x) }
+
+    /// An arrow that points (almost) at the viewer is short on screen and cannot be dragged sensibly: fade it out.
+    static func visibility(_ a: CGPoint, _ b: CGPoint) -> Double {
+        min(1, max(0, (hypot(b.x - a.x, b.y - a.y) - 10) / 14))
+    }
+
+    static func stroke(_ ctx: GraphicsContext, _ p: Path, _ color: Color, highlighted: Bool, opacity: Double = 1) {
+        guard opacity > 0.01 else { return }
+        let w: CGFloat = highlighted ? 3.5 : 2.5
+        ctx.stroke(p, with: .color(.black.opacity(0.28 * opacity)), style: StrokeStyle(lineWidth: w + 2, lineCap: .round, lineJoin: .round))
+        ctx.stroke(p, with: .color(color.opacity(opacity)), style: StrokeStyle(lineWidth: w, lineCap: .round, lineJoin: .round))
+    }
+
+    static func shaft(_ ctx: GraphicsContext, _ a: CGPoint, _ b: CGPoint, _ color: Color, highlighted: Bool, opacity: Double = 1) {
+        var p = Path()
+        p.move(to: a)
+        p.addLine(to: b)
+        stroke(ctx, p, color, highlighted: highlighted, opacity: opacity)
+    }
+
+    /// Small puck where arrows start.
+    static func base(_ ctx: GraphicsContext, _ p: CGPoint, _ color: Color, radius r: CGFloat = 3.5) {
+        let dot = Path(ellipseIn: CGRect(x: p.x - r, y: p.y - r, width: 2 * r, height: 2 * r))
+        ctx.stroke(dot, with: .color(.black.opacity(0.3)), lineWidth: 2.5)
+        ctx.fill(dot, with: .color(color))
+    }
+}
+
+/// Arrowhead pointing right with softly rounded corners and a slightly swept-back base.
+private struct ArrowHead: SwiftUI.Shape {
+    func path(in rect: CGRect) -> Path {
+        let c = CGPoint(x: rect.midX, y: rect.midY), s = rect.width / 26
+        let tip = CGPoint(x: c.x + 10 * s, y: c.y)
+        let top = CGPoint(x: c.x - 6 * s, y: c.y - 7.5 * s), bottom = CGPoint(x: c.x - 6 * s, y: c.y + 7.5 * s)
+        let notch = CGPoint(x: c.x - 2.5 * s, y: c.y)
+        var p = Path()
+        p.move(to: notch)
+        p.addArc(tangent1End: top, tangent2End: tip, radius: 1.8 * s)
+        p.addArc(tangent1End: tip, tangent2End: bottom, radius: 1.6 * s)
+        p.addArc(tangent1End: bottom, tangent2End: notch, radius: 1.8 * s)
+        p.closeSubpath()
+        return p
+    }
+}
+
+/// Arrowhead of a manipulator; grows and gets a soft halo under the pointer or while dragged.
+private struct GizmoTip: View {
+    let color: Color
+    let angle: CGFloat
+    let active: Bool
+
+    var body: some View {
+        ZStack {
+            Circle()
+                .fill(color.opacity(active ? 0.22 : 0))
+                .frame(width: 30, height: 30)
+            ArrowHead()
+                .fill(color.gradient)
+                .overlay(ArrowHead().stroke(.white.opacity(0.85), lineWidth: 1.2))
+                .frame(width: Gizmo.headSize, height: Gizmo.headSize)
+                .shadow(color: .black.opacity(PanelStyle.fast ? 0 : 0.35), radius: 2.5, y: 1)
+                .rotationEffect(.radians(angle))
+                .scaleEffect(active ? 1.18 : 1)
+        }
+        .animation(Gizmo.animation, value: active)
+    }
+}
+
+/// Round knob in the same style (ring handles).
+private struct GizmoKnob: View {
+    let color: Color
+    let active: Bool
+
+    var body: some View {
+        ZStack {
+            Circle()
+                .fill(color.opacity(active ? 0.22 : 0))
+                .frame(width: 28, height: 28)
+            Circle()
+                .fill(color.gradient)
+                .overlay(Circle().strokeBorder(.white.opacity(0.9), lineWidth: 1.5))
+                .frame(width: 13, height: 13)
+                .shadow(color: .black.opacity(PanelStyle.fast ? 0 : 0.35), radius: 2.5, y: 1)
+                .scaleEffect(active ? 1.2 : 1)
+        }
+        .animation(Gizmo.animation, value: active)
+    }
+}
+
+/// Current value next to a manipulator, in the floating panels' material.
+private struct ValueBadge: View {
+    let text: String
+    var tint: Color? = nil
+
+    var body: some View {
+        HStack(spacing: 5) {
+            if let tint { Circle().fill(tint).frame(width: 6, height: 6) }
+            Text(text)
+                .font(.system(size: 11, weight: .semibold))
+                .monospacedDigit()
+        }
+        .padding(.horizontal, 8)
+        .padding(.vertical, 3.5)
+        .background(PanelStyle.fill, in: Capsule())
+        .overlay(Capsule().strokeBorder(.primary.opacity(0.1), lineWidth: 0.5))
+        .shadow(color: .black.opacity(PanelStyle.fast ? 0 : 0.18), radius: 4, y: 1)
+        .fixedSize()
+        .allowsHitTesting(false)
+    }
+}
+
+/// Hover and drag bookkeeping shared by all manipulator handles.
+private struct GizmoInteraction: ViewModifier {
+    let id: String
+    @Binding var focus: GizmoFocus?
+
+    func body(content: Content) -> some View {
+        content
+            .contentShape(Circle())
+            .onHover { inside in
+                if focus?.dragging == true { return }
+                if inside { focus = GizmoFocus(id: id, dragging: false) } else if focus?.id == id { focus = nil }
+            }
+    }
+}
+
+private extension View {
+    func gizmo(_ id: String, _ focus: Binding<GizmoFocus?>) -> some View { modifier(GizmoInteraction(id: id, focus: focus)) }
 }
 
 /// Arrow tip of the move manipulator; dragging shifts the bodies along X, Y or Z.
@@ -616,38 +785,27 @@ private struct MoveArrow: View {
     let axis: Int
     let color: Color
     let angle: CGFloat
+    @Binding var focus: GizmoFocus?
     @State private var start: Editor.MoveHandle?
-    @State private var hovering = false
 
     var body: some View {
+        let id = "move-\(axis)"
         ZStack {
-            Image(systemName: "arrowtriangle.right.fill")
-                .font(.system(size: hovering || start != nil ? 15 : 12))
-                .foregroundStyle(color)
-                .shadow(color: .black.opacity(0.25), radius: 2, y: 1)
-                .rotationEffect(.radians(angle))
+            GizmoTip(color: color, angle: angle, active: focus?.id == id)
             if start != nil {
-                Text(formatValue(handle.offsets[axis]))
-                    .font(.system(size: 11, weight: .semibold, design: .rounded))
-                    .padding(.horizontal, 7)
-                    .padding(.vertical, 3)
-                    .background(Capsule().fill(PanelStyle.fill))
-                    .fixedSize()
-                    .offset(x: 0, y: -20)
-                    .allowsHitTesting(false)
+                ValueBadge(text: formatValue(handle.offsets[axis]), tint: color).offset(y: -28)
             }
         }
-        .frame(width: 24, height: 24)
-        .contentShape(Circle())
-        .onHover { hovering = $0 }
+        .frame(width: 30, height: 30)
+        .gizmo(id, $focus)
         .gesture(
             DragGesture(minimumDistance: 1, coordinateSpace: .named("overlay"))
                 .onChanged { v in
-                    if start == nil { start = handle }
+                    if start == nil { start = handle; focus = GizmoFocus(id: id, dragging: true) }
                     guard let start, let value = editor.moveOffset(start, axis: axis, from: v.startLocation, to: v.location) else { return }
                     editor.setMoveOffset(axis: axis, value)
                 }
-                .onEnded { _ in start = nil }
+                .onEnded { _ in start = nil; focus = nil }
         )
         .help("Ziehen, um die Körper zu verschieben")
     }
@@ -659,39 +817,28 @@ private struct MoveRingKnob: View {
     let handle: Editor.MoveHandle
     let ring: Editor.MoveRing
     let color: Color
+    @Binding var focus: GizmoFocus?
     @State private var start: (handle: Editor.MoveHandle, ring: Editor.MoveRing)?
-    @State private var hovering = false
 
     var body: some View {
+        let id = "ring-\(ring.axis)"
         ZStack {
-            Circle()
-                .fill(color)
-                .frame(width: hovering || start != nil ? 14 : 11, height: hovering || start != nil ? 14 : 11)
-                .overlay(Circle().strokeBorder(.white, lineWidth: 1.5))
-                .shadow(color: .black.opacity(0.25), radius: 2, y: 1)
+            GizmoKnob(color: color, active: focus?.id == id)
             if start != nil {
-                Text(formatValue(handle.angle, kind: .angle))
-                    .font(.system(size: 11, weight: .semibold, design: .rounded))
-                    .padding(.horizontal, 7)
-                    .padding(.vertical, 3)
-                    .background(Capsule().fill(PanelStyle.fill))
-                    .fixedSize()
-                    .offset(x: 0, y: -20)
-                    .allowsHitTesting(false)
+                ValueBadge(text: formatValue(handle.angle, kind: .angle), tint: color).offset(y: -28)
             }
         }
-        .frame(width: 24, height: 24)
-        .contentShape(Circle())
-        .onHover { hovering = $0 }
+        .frame(width: 30, height: 30)
+        .gizmo(id, $focus)
         .gesture(
             DragGesture(minimumDistance: 1, coordinateSpace: .named("overlay"))
                 .onChanged { v in
-                    if start == nil { start = (handle, ring) }
+                    if start == nil { start = (handle, ring); focus = GizmoFocus(id: id, dragging: true) }
                     guard let start, let value = editor.moveAngle(start.handle, start.ring, from: v.startLocation, to: v.location,
                                                                   fine: NSEvent.modifierFlags.contains(.shift)) else { return }
                     editor.setMoveAngle(start.ring, value)
                 }
-                .onEnded { _ in start = nil }
+                .onEnded { _ in start = nil; focus = nil }
         )
         .help("Ziehen, um die Körper zu drehen")
     }
@@ -703,38 +850,27 @@ private struct HoleArrow: View {
     let handle: Editor.HoleHandle
     let axis: Int
     let angle: CGFloat
+    @Binding var focus: GizmoFocus?
     @State private var start: Editor.HoleHandle?
-    @State private var hovering = false
 
     var body: some View {
+        let id = "hole-\(handle.index)-\(axis)"
         ZStack {
-            Image(systemName: "arrowtriangle.right.fill")
-                .font(.system(size: hovering || start != nil ? 15 : 12))
-                .foregroundStyle(Color.accentColor)
-                .shadow(color: .black.opacity(0.25), radius: 2, y: 1)
-                .rotationEffect(.radians(angle))
+            GizmoTip(color: .accentColor, angle: angle, active: focus?.id == id)
             if start != nil {
-                Text(formatValue(handle.offsets[axis]))
-                    .font(.system(size: 11, weight: .semibold, design: .rounded))
-                    .padding(.horizontal, 7)
-                    .padding(.vertical, 3)
-                    .background(Capsule().fill(PanelStyle.fill))
-                    .fixedSize()
-                    .offset(x: 0, y: -20)
-                    .allowsHitTesting(false)
+                ValueBadge(text: formatValue(handle.offsets[axis])).offset(y: -28)
             }
         }
-        .frame(width: 24, height: 24)
-        .contentShape(Circle())
-        .onHover { hovering = $0 }
+        .frame(width: 30, height: 30)
+        .gizmo(id, $focus)
         .gesture(
             DragGesture(minimumDistance: 1, coordinateSpace: .named("overlay"))
                 .onChanged { v in
-                    if start == nil { start = handle }
+                    if start == nil { start = handle; focus = GizmoFocus(id: id, dragging: true) }
                     guard let start, let value = editor.holeOffset(start, axis: axis, from: v.startLocation, to: v.location) else { return }
                     editor.setHoleOffset(start.index, axis: axis, value)
                 }
-                .onEnded { _ in start = nil }
+                .onEnded { _ in start = nil; focus = nil }
         )
         .help("Ziehen, um die Bohrung zu verschieben")
     }
@@ -745,36 +881,24 @@ private struct EdgeArrow: View {
     let editor: Editor
     let handle: Editor.EdgeHandle
     let angle: CGFloat
+    @Binding var focus: GizmoFocus?
     @State private var start: Editor.EdgeHandle?
-    @State private var hovering = false
 
     var body: some View {
         ZStack {
-            Image(systemName: "arrowtriangle.right.fill")
-                .font(.system(size: hovering || start != nil ? 15 : 12))
-                .foregroundStyle(Color.accentColor)
-                .shadow(color: .black.opacity(0.25), radius: 2, y: 1)
-                .rotationEffect(.radians(angle))
-            Text(formatValue(handle.value))
-                .font(.system(size: 11, weight: .semibold, design: .rounded))
-                .padding(.horizontal, 7)
-                .padding(.vertical, 3)
-                .background(Capsule().fill(PanelStyle.fill))
-                .fixedSize()
-                .offset(x: 0, y: -20)
-                .allowsHitTesting(false)
+            GizmoTip(color: .accentColor, angle: angle, active: focus?.id == "edge")
+            ValueBadge(text: formatValue(handle.value)).offset(y: -28)
         }
-        .frame(width: 24, height: 24)
-        .contentShape(Circle())
-        .onHover { hovering = $0 }
+        .frame(width: 30, height: 30)
+        .gizmo("edge", $focus)
         .gesture(
             DragGesture(minimumDistance: 1, coordinateSpace: .named("overlay"))
                 .onChanged { v in
-                    if start == nil { start = handle }
+                    if start == nil { start = handle; focus = GizmoFocus(id: "edge", dragging: true) }
                     guard let start, let value = editor.edgeValue(start, from: v.startLocation, to: v.location) else { return }
                     editor.setEdgeValue(value)
                 }
-                .onEnded { _ in start = nil }
+                .onEnded { _ in start = nil; focus = nil }
         )
         .help("Ziehen, um die Größe zu ändern")
     }
@@ -784,30 +908,20 @@ private struct EdgeArrow: View {
 private struct ExtrudeHandle: View {
     let editor: Editor
     let handle: (origin: Vec3, direction: Vec3, distance: Double)
-    @State private var hovering = false
+    let angle: CGFloat
+    @Binding var focus: GizmoFocus?
 
     var body: some View {
         ZStack {
-            Circle()
-                .fill(Color.accentColor)
-                .frame(width: hovering ? 18 : 14, height: hovering ? 18 : 14)
-                .overlay(Circle().strokeBorder(.white, lineWidth: 2))
-                .shadow(color: .black.opacity(0.25), radius: 3, y: 1)
-            Text(formatValue(handle.distance))
-                .font(.system(size: 11, weight: .semibold, design: .rounded))
-                .padding(.horizontal, 7)
-                .padding(.vertical, 3)
-                .background(Capsule().fill(PanelStyle.fill))
-                .fixedSize()
-                .offset(x: 50, y: -16)
-                .allowsHitTesting(false)
+            GizmoTip(color: .accentColor, angle: angle, active: focus?.id == "extrude")
+            ValueBadge(text: formatValue(handle.distance)).offset(y: -28)
         }
         .frame(width: 30, height: 30)
-        .contentShape(Circle())
-        .onHover { hovering = $0 }
+        .gizmo("extrude", $focus)
         .gesture(
             DragGesture(minimumDistance: 1, coordinateSpace: .named("overlay"))
                 .onChanged { v in
+                    if focus?.dragging != true { focus = GizmoFocus(id: "extrude", dragging: true) }
                     guard case let .extrude(e)? = editor.commandFeature?.kind else { return }
                     let symmetric = e.extent == .symmetric
                     // Profile origin (handle origin is shifted back for symmetric extrusions).
@@ -818,6 +932,7 @@ private struct ExtrudeHandle: View {
                     let dist = symmetric ? 2 * t : t
                     if abs(dist) > 1e-9 { editor.setExtrudeDistance(dist) }
                 }
+                .onEnded { _ in focus = nil }
         )
         .help("Ziehen, um den Abstand zu ändern")
     }
