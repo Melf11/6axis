@@ -188,6 +188,23 @@ extension ModelBuilder {
 
         var tools: [Shape] = []
         let positions = try holePositions(h, state, &ev)
+        if let sides = h.sides, h.type == .simple, thread == nil {
+            guard RegularPolygon.sidesRange.contains(sides) else { throw KernelError("Die Eckenzahl muss zwischen 3 und 64 liegen") }
+            let polygon = RegularPolygon(sides: sides, rotation: try ev.evaluate(h.rotation ?? "0", kind: .angle))
+            let corners = polygon.corners(center: .zero, radius: r)
+            let segs = corners.indices.map { Segment2D.line(corners[$0], corners[($0 + 1) % corners.count]) }
+            for (o, d) in positions {
+                // The polygon's up is the world's up (or Y when drilling along Z), seen looking into the hole.
+                let up = abs(d.z) < 0.9 ? Vec3(0, 0, 1) : Vec3(0, 1, 0)
+                let v = simd_normalize(up - simd_dot(up, d) * d)
+                let pl = Plane(origin: o - d * eps, xDir: simd_cross(d, v), normal: -d)
+                guard let face = try Shape.sketchRegions(plane: pl, segments: segs).faces.first else { throw KernelError("Bohrung fehlgeschlagen") }
+                tools.append(try face.extruded(d * (depth + eps)))
+            }
+            state.tools[f.id] = FeatureTool(shapes: tools, operation: .cut, targets: [])
+            try combine(tools, op: .cut, targets: [], feature: f.id, &state)
+            return
+        }
         for (o, d) in positions {
             let u = simd_normalize(abs(d.x) < 0.9 ? simd_cross(d, Vec3(1, 0, 0)) : simd_cross(d, Vec3(0, 1, 0)))
             let pl = Plane(origin: o, xDir: u, normal: simd_cross(u, d))

@@ -1,6 +1,9 @@
 # English translations for Resources/Localizable.xcstrings (German source). Applied by
 # scripts/apply-translations.py; after that the catalog is the source of truth (edit it in Xcode or here).
 EN = {
+"%lld Elemente": "%lld items", "Die Eckenzahl muss zwischen 3 und 64 liegen": "The number of corners must be between 3 and 64",
+"Dreieck": "Triangle", "Ecken": "Corners", "Größe klicken oder Breite eintippen": "Click the size or type the width",
+"Rund": "Round", "Schlüsselweite": "Across flats", "Vieleck": "Polygon", "Viereck": "Square",
 "  · frei": "  · free", " – Einzelteile 1zu1": " – parts 1to1", " — bearbeitet": " — edited",
 "%@ bearbeiten": "Edit %@", "%@ erwartet ein Argument": "%@ expects one argument",
 "%@ – Doppelklick zum Bearbeiten": "%@ – double-click to edit", "%@ – Fehler: %@": "%@ – error: %@",

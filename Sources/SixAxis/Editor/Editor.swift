@@ -278,6 +278,9 @@ final class Editor {
     var command: ActiveCommand?
     var sketchId: UUID?
     var sketchTool: SketchTool = .select
+    /// Tool "Mittig": corners of the regular polygon it draws; nil = rectangle.
+    var centerToolSides: Int?
+    @ObservationIgnored var lastPropertyEdit: (key: String, time: CFTimeInterval)?
     var toolPoints: [SnapTarget] = []
     /// Typed values for the active drawing tool (e.g. width/height). Empty = follow the mouse.
     var toolInputs: [String] = ["", ""]
@@ -405,7 +408,7 @@ final class Editor {
         if empty != isDocumentEmpty { isDocumentEmpty = empty }
         if bodies != hasBodies { hasBodies = bodies }
         let now = CACurrentMediaTime()
-        guard command != nil && now - lastRebuildRequest < Self.seriesWindow else { return publishNow() }
+        guard isDragging && now - lastRebuildRequest < Self.seriesWindow else { return publishNow() }
         guard !publishPending else { return }
         publishPending = true
         schedulePublish(after: Self.seriesWindow)
@@ -416,7 +419,7 @@ final class Editor {
         DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak self] in
             guard let self else { return }
             let quiet = CACurrentMediaTime() - self.lastRebuildRequest
-            if self.command != nil && quiet < Self.seriesWindow {
+            if self.isDragging && quiet < Self.seriesWindow {
                 self.schedulePublish(after: Self.seriesWindow - quiet)
             } else {
                 self.publishPending = false
@@ -424,6 +427,9 @@ final class Editor {
             }
         }
     }
+
+    /// Changes may come in a quick series: a command with live preview, or sketch geometry being dragged.
+    private var isDragging: Bool { command != nil || dragState != nil }
 
     private func publishNow() {
         shownDoc = doc

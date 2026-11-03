@@ -49,6 +49,10 @@ extension SketchEdit {
                 guard let pa = sk.point(a), let pb = sk.point(b) else { return [] }
                 return [.seg(pa, pb)]
             case .arc, .circle:
+                if c.polygon != nil {
+                    let poly = sk.polyline(c)
+                    return zip(poly, poly.dropFirst()).map { .seg($0, $1) }
+                }
                 guard let pc = sk.center(of: c) else { return [] }
                 return [.circ(pc, sk.radius(of: c))]
             case .spline:
@@ -116,7 +120,29 @@ extension SketchEdit {
     /// Removes the part of `curveId` around `click` up to the nearest intersections with other curves
     /// (or its ends). New endpoints stay attached to the cutting curves.
     @discardableResult
+    /// Replaces a polygon circle by its lines, for what only works on real lines. Its dimensions go with the circle.
+    /// Returns the line nearest to `click`.
+    static func explodePolygon(_ sk: inout Sketch, curve curveId: Int, near click: Vec2) -> Int? {
+        guard let c = sk.curve(curveId), c.polygon != nil else { return nil }
+        let corners = sk.polygonCorners(c)
+        sk.delete(curveIds: [curveId])
+        let ids = corners.map { sk.addPoint($0) }
+        let lines = ids.indices.map { sk.addLine(ids[$0], ids[($0 + 1) % ids.count], construction: c.construction) }
+        func distance(_ i: Int) -> Double {
+            let a = corners[i], b = corners[(i + 1) % corners.count]
+            let t = max(0, min(1, simd_dot(click - a, b - a) / simd_length_squared(b - a)))
+            return simd_distance(click, a + t * (b - a))
+        }
+        return corners.indices.min { distance($0) < distance($1) }.map { lines[$0] }
+    }
+
     public static func trim(_ sk: inout Sketch, curve curveId: Int, at click: Vec2) -> TrimResult? {
+        var exploded = sk
+        if let line = explodePolygon(&exploded, curve: curveId, near: click) {
+            guard let result = trim(&exploded, curve: line, at: click) else { return nil }
+            sk = exploded
+            return result
+        }
         guard let c = sk.curve(curveId), let span = range(sk, c), let tc = parameter(sk, c, click) else { return nil }
         // Cut parameters with the curve that makes each cut (for attaching the new endpoint).
         var cuts: [(t: Double, p: Vec2, by: Int)] = []
@@ -241,6 +267,8 @@ extension SketchEdit {
 
     /// Polyline of the piece `trim` would remove (for highlighting under the cursor).
     public static func trimPreview(_ sk: Sketch, curve curveId: Int, at click: Vec2) -> [Vec2]? {
+        var exploded = sk
+        if let line = explodePolygon(&exploded, curve: curveId, near: click) { return trimPreview(exploded, curve: line, at: click) }
         guard let c = sk.curve(curveId), let span = range(sk, c), let tc = parameter(sk, c, click) else { return nil }
         var ts: [Double] = []
         for other in sk.curves where other.id != curveId && !other.construction {

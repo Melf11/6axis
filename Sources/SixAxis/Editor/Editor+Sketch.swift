@@ -5,6 +5,7 @@ import SixAxisCore
 
 extension Editor {
     var activeSketch: Sketch? { sketchId.flatMap { doc.feature($0)?.kind.sketch } }
+    var shownActiveSketch: Sketch? { sketchId.flatMap { shownDoc.feature($0)?.kind.sketch } }
     var activeSketchBuild: SketchBuild? { sketchId.flatMap { state.sketches[$0] } }
     var activePlane: Plane? { activeSketchBuild?.plane }
 
@@ -196,7 +197,7 @@ extension Editor {
         }
         let grid = gridSnapActive
         var pos = grid ? snapToGrid(raw) : raw
-        if grid, sketchTool == .circle, let c = toolPoints.first?.position, simd_distance(raw, c) > 1e-9 {
+        if grid, sketchTool == .circle || (sketchTool == .centerRectangle && centerToolSides != nil), let c = toolPoints.first?.position, simd_distance(raw, c) > 1e-9 {
             // Circles snap their radius to the grid step instead of the rim point.
             pos = c + simd_normalize(raw - c) * snapLength(simd_distance(raw, c))
         }
@@ -392,6 +393,7 @@ extension Editor {
     }
 
     func createRectangle(to s: SnapTarget) {
+        if sketchTool == .centerRectangle, let sides = centerToolSides { return createCircle(to: s, sides: sides) }
         guard let first = toolPoints.first else { return }
         let centered = sketchTool == .centerRectangle
         let a = first.position, b = s.position
@@ -428,7 +430,7 @@ extension Editor {
         createCircle(to: lockedSnap(raw))
     }
 
-    func createCircle(to s: SnapTarget) {
+    func createCircle(to s: SnapTarget, sides: Int? = nil) {
         guard let center = toolPoints.first else { return }
         let r = simd_distance(center.position, s.position)
         guard r > 1e-6 else { return }
@@ -437,7 +439,8 @@ extension Editor {
         mutateSketch { sk in
             let c = resolvePoint(center, &sk)
             let circle = sk.addCircle(center: c, radius: r)
-            if let p = s.point { sk.addConstraint(.pointOnCurve(point: p, curve: circle)) }
+            if let sides, let i = sk.curveIndex(circle) { sk.curves[i].polygon = RegularPolygon(sides: sides) }
+            if sides == nil, let p = s.point { sk.addConstraint(.pointOnCurve(point: p, curve: circle)) }
             if let diameter { sk.addConstraint(.diameter(curve: circle, value: diameter), labelOffset: dir * (r * 1.25)) }
         }
         toolPoints.removeAll()
@@ -1025,6 +1028,103 @@ extension Editor {
         mutateSketch { sk in
             for c in curves { if let i = sk.curveIndex(c) { sk.curves[i].construction.toggle() } }
         }
+    }
+
+    // MARK: - Properties of the selected curves
+
+    var selectedSketchCurves: [Int] {
+        selection.compactMap { p -> Int? in if case let .sketchCurve(_, c) = p { return c }; return nil }
+    }
+
+    func setConstruction(_ curves: [Int], _ on: Bool) {
+        mutateSketch { sk in
+            for c in curves { if let i = sk.curveIndex(c) { sk.curves[i].construction = on } }
+        }
+    }
+
+    /// Round again with nil. A turn set earlier stays when only the number of corners changes.
+    func setPolygonSides(_ curves: [Int], _ sides: Int?) {
+        mutateSketch { sk in
+            for c in curves {
+                guard let i = sk.curveIndex(c) else { continue }
+                sk.curves[i].polygon = sides.map { RegularPolygon(sides: $0, rotation: sk.curves[i].polygon?.rotation ?? 0) }
+            }
+        }
+    }
+
+    func setPolygonRotation(_ curves: [Int], _ degrees: Double) {
+        mutateSketch(undoable: isNewPropertyEdit("rotation")) { sk in
+            for c in curves { if let i = sk.curveIndex(c) { sk.curves[i].polygon?.rotation = degrees } }
+        }
+    }
+
+    /// The dimension of a line, circle or arc as the properties show it.
+    func sizeText(_ curve: SketchCurve, in sk: Sketch) -> String {
+        if let c = sizeConstraint(curve, in: sk), !isRadiusOnCircle(c.kind, curve), let v = c.kind.dimensionValue { return v }
+        switch curve.geometry {
+        case let .line(a, b): return plainNumber(simd_distance(sk.point(a) ?? .zero, sk.point(b) ?? .zero))
+        case .circle: return plainNumber(2 * sk.radius(of: curve))
+        default: return plainNumber(sk.radius(of: curve))
+        }
+    }
+
+    /// Changes the existing dimension of the curves or adds one, so the value is held like any other dimension.
+    func setSize(_ curves: [Int], _ value: String) {
+        guard let sk = activeSketch, (try? evaluator.value(value)) ?? 0 > 0 else { return }
+        let undoable = isNewPropertyEdit("size")
+        var missing: [ConstraintKind] = []
+        var offsets: [Vec2] = []
+        var changes: [(Int, ConstraintKind)] = []
+        for id in curves {
+            guard let curve = sk.curve(id) else { continue }
+            if let c = sizeConstraint(curve, in: sk) {
+                changes.append((c.id, isRadiusOnCircle(c.kind, curve) ? c.kind.withValue("(\(value)) / 2") : c.kind.withValue(value)))
+                continue
+            }
+            switch curve.geometry {
+            case let .line(a, b):
+                let d = (sk.point(b) ?? .zero) - (sk.point(a) ?? .zero)
+                missing.append(.length(line: id, value: value))
+                offsets.append(simd_length(d) > 1e-9 ? simd_normalize(Vec2(-d.y, d.x)) * dimensionOffsetDistance : .zero)
+            case .circle:
+                missing.append(.diameter(curve: id, value: value))
+                offsets.append(Vec2(0.88, 0.88) * sk.radius(of: curve))
+            case .arc:
+                missing.append(.radius(curve: id, value: value))
+                offsets.append(Vec2(0.88, 0.88) * sk.radius(of: curve))
+            case .spline, .text:
+                break
+            }
+        }
+        if !changes.isEmpty {
+            mutateSketch(undoable: undoable) { sk in
+                for (id, kind) in changes { if let k = sk.constraints.firstIndex(where: { $0.id == id }) { sk.constraints[k].kind = kind } }
+            }
+        }
+        for (kind, offset) in zip(missing, offsets) { addConstraintChecked(kind, labelOffset: offset) }
+    }
+
+    private func sizeConstraint(_ curve: SketchCurve, in sk: Sketch) -> SketchConstraint? {
+        sk.constraints.first { c in
+            switch c.kind {
+            case let .length(l, _): return l == curve.id
+            case let .diameter(k, _), let .radius(k, _): return k == curve.id
+            default: return false
+            }
+        }
+    }
+
+    private func isRadiusOnCircle(_ kind: ConstraintKind, _ curve: SketchCurve) -> Bool {
+        if case .radius = kind, case .circle = curve.geometry { return true }
+        return false
+    }
+
+    /// Typing "20" sends two changes: within two seconds they are one undo step.
+    private func isNewPropertyEdit(_ key: String) -> Bool {
+        let now = CACurrentMediaTime()
+        defer { lastPropertyEdit = (key, now) }
+        guard let last = lastPropertyEdit, last.key == key else { return true }
+        return now - last.time > 2
     }
 
     // MARK: - Dragging sketch geometry

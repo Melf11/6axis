@@ -35,6 +35,34 @@ public enum CurveGeometry: Codable, Hashable, Sendable {
     }
 }
 
+/// A regular polygon in place of a round shape: a circle in a sketch, the cross-section of a hole.
+/// The round shape's diameter is the width across flats: the circle fits exactly inside, so a square from
+/// Ø 20 measures 20 × 20 and a hexagon has that wrench size.
+public struct RegularPolygon: Codable, Hashable, Sendable {
+    public var sides: Int
+    /// Counter-clockwise, in degrees.
+    public var rotation: Double
+    public init(sides: Int, rotation: Double = 0) {
+        self.sides = sides
+        self.rotation = rotation
+    }
+
+    public static let sidesRange = 3...64
+
+    /// Corners counter-clockwise. Unrotated, even polygons stand on a flat side (a square lies along the axes),
+    /// odd ones point up.
+    public func corners(center: Vec2, radius r: Double) -> [Vec2] {
+        let n = max(3, sides)
+        let step = 2 * .pi / Double(n)
+        let start = (n % 2 == 0 ? step / 2 : .pi / 2) + rotation * .pi / 180
+        let R = r / cos(.pi / Double(n))
+        return (0..<n).map { i in
+            let t = start + Double(i) * step
+            return center + R * Vec2(cos(t), sin(t))
+        }
+    }
+}
+
 public struct SketchCurve: Codable, Hashable, Identifiable, Sendable {
     public var id: Int
     public var geometry: CurveGeometry
@@ -43,6 +71,9 @@ public struct SketchCurve: Codable, Hashable, Identifiable, Sendable {
     /// fit point to the outgoing Bézier control point (the incoming one mirrors it); its direction sets
     /// the tangent, its length how full the curve runs through the point. Missing = automatic.
     public var handles: [Int: Vec2]? = nil
+    /// Circles: drawn and built as this polygon. The circle stays underneath, so its centre, dimensions and
+    /// constraints keep working and it can be turned back any time. nil = round (format 10).
+    public var polygon: RegularPolygon? = nil
 
     public init(id: Int, geometry: CurveGeometry, construction: Bool = false) {
         self.id = id
@@ -400,6 +431,12 @@ public struct Sketch: Codable, Hashable, Sendable {
         }
     }
 
+    /// Corners of a circle drawn as a polygon; empty for anything else.
+    public func polygonCorners(_ curve: SketchCurve) -> [Vec2] {
+        guard let polygon = curve.polygon, case let .circle(c, r) = curve.geometry, let pc = point(c) else { return [] }
+        return polygon.corners(center: pc, radius: r)
+    }
+
     /// Segments for profile detection (construction geometry excluded).
     public func segments() -> [Segment2D] {
         curves.compactMap { c -> Segment2D? in
@@ -409,7 +446,7 @@ public struct Sketch: Codable, Hashable, Sendable {
                 guard let pa = point(a), let pb = point(b) else { return nil }
                 return .line(pa, pb)
             case let .circle(ci, r):
-                guard let pc = point(ci) else { return nil }
+                guard c.polygon == nil, let pc = point(ci) else { return nil }
                 return .circle(center: pc, radius: r)
             case let .arc(ci, s, e):
                 guard let pc = point(ci), let ps = point(s), let pe = point(e) else { return nil }
@@ -417,6 +454,9 @@ public struct Sketch: Codable, Hashable, Sendable {
             case .spline, .text:
                 return nil   // expanded below
             }
+        } + curves.filter { !$0.construction && $0.polygon != nil }.flatMap { c -> [Segment2D] in
+            let corners = polygonCorners(c)
+            return corners.indices.map { .line(corners[$0], corners[($0 + 1) % corners.count]) }
         } + curves.filter { !$0.construction && $0.isSpline }.flatMap { c -> [Segment2D] in
             guard case let .spline(ids, closed) = c.geometry else { return [] }
             return Spline.beziers(ids.compactMap { point($0) }, closed: closed, handles: ids.map { c.handles?[$0] })
@@ -442,6 +482,7 @@ public struct Sketch: Codable, Hashable, Sendable {
             return [point(a) ?? .zero, point(b) ?? .zero]
         case let .circle(c, r):
             let pc = point(c) ?? .zero
+            if curve.polygon != nil { return polygonCorners(curve) + polygonCorners(curve).prefix(1) }
             return (0...n).map { i in
                 let t = Double(i) / Double(n) * 2 * .pi
                 return pc + r * Vec2(cos(t), sin(t))

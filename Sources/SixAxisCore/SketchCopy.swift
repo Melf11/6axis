@@ -57,6 +57,7 @@ extension SketchEdit {
             let nr = r + s * d
             guard nr > 1e-9 else { return nil }
             let copy = sk.addCircle(center: ci, radius: nr)
+            if let k = sk.curveIndex(copy) { sk.curves[k].polygon = c.polygon }
             let g = sk.newId()
             return sk.addConstraint(.offset(curve: copy, source: c.id, value: text), labelOffset: Vec2(r + d, 0), group: g, factor: 1)
         }
@@ -174,6 +175,13 @@ extension SketchEdit {
                                : sk.addArc(center: mapped(ci), start: mapped(s), end: mapped(e), construction: c.construction)
             case let .spline(pts, closed): new = sk.addSpline(pts.map(mapped), closed: closed, construction: c.construction)
             case let .text(a, t, h, f): new = sk.addText(t, at: mapped(a), height: h, font: f, construction: c.construction)
+            }
+            if var polygon = c.polygon, let k = sk.curveIndex(new), let center = sk.center(of: c),
+               let corner = polygon.corners(center: center, radius: sk.radius(of: c)).first {
+                // A corner of the original lands on a corner of the copy, whatever the transformation is.
+                let before = corner - center, after = position(corner) - position(center)
+                polygon.rotation += (atan2(after.y, after.x) - atan2(before.y, before.x)) * 180 / .pi
+                sk.curves[k].polygon = polygon
             }
             if let h = c.handles, let k = sk.curveIndex(new) {
                 // Handles are vectors: transform the handle tip and subtract the transformed point.

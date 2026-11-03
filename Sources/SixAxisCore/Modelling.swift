@@ -188,6 +188,11 @@ public struct HoleFeature: Codable, Hashable, Sendable {
     /// Repeats every position as a grid along the face's (or sketch's) own X and Y – a row of shelf-pin
     /// holes, a hole grid on a panel. nil = single holes (format 9).
     public var grid: HoleGrid? = nil
+    /// Number of corners of an angular hole; `diameter` is then the width across flats. Only for plain holes
+    /// without a thread. nil = round (format 10).
+    public var sides: Int? = nil
+    /// Turn of an angular hole, counter-clockwise looking into the hole. nil = not turned (format 10).
+    public var rotation: String? = nil
     public init() {}
 }
 

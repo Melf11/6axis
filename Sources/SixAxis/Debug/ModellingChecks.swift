@@ -123,6 +123,24 @@ enum ModellingChecks {
         await settle(editor)
         check("hole: grid on the face", abs(volume(editor, plateF.id) - (full - 8 * .pi * 16 * 20)) < 1, "\(volume(editor, plateF.id))")
         await snap("m01-hole-grid")
+        // Angular: 8 square holes, 8 mm across flats, at the same positions.
+        editor.updateCommandFeature { k in if case var .hole(h) = k { h.sides = 4; k = .hole(h) } }
+        await settle(editor)
+        check("hole: square on the face", abs(volume(editor, plateF.id) - (full - 8 * 64 * 20)) < 1, "\(volume(editor, plateF.id))")
+        await snap("m01-hole-square")
+        // The smallest window: the dialog scrolls, and its buttons stay reachable.
+        if let win = NSApp.windows.first(where: { $0.identifier?.rawValue.hasPrefix("main") == true }), let content = win.contentView {
+            let before = win.frame
+            win.setContentSize(NSSize(width: 960, height: 620))
+            await settle(editor)
+            check("hole: tall dialog fits the smallest window", editor.dialogFrame.maxY <= content.bounds.height + 1,
+                  "dialog ends at \(Int(editor.dialogFrame.maxY)) of \(Int(content.bounds.height))")
+            await snap("m01-hole-small-window")
+            win.setFrame(before, display: true)
+            await settle(editor)
+        }
+        editor.updateCommandFeature { k in if case var .hole(h) = k { h.sides = nil; k = .hole(h) } }
+        await settle(editor)
         editor.updateCommandFeature { k in if case var .hole(h) = k { h.grid = nil; k = .hole(h) } }
         await settle(editor)
         await snap("m01-hole")

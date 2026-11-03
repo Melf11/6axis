@@ -4,22 +4,28 @@ import SixAxisCore
 /// Floating dialog for the active modeling command (Fusion's command dialog).
 struct CommandPanel: View {
     @Bindable var editor: Editor
+    /// Height of the dialog's content: it takes no more than that, and scrolls when the window is too low for it.
+    @State private var contentHeight: CGFloat = 0
 
     var body: some View {
         if let cmd = editor.command {
             VStack(alignment: .leading, spacing: 0) {
                 header(cmd)
                 Divider().opacity(0.5)
-                VStack(alignment: .leading, spacing: 12) {
-                    content(cmd)
-                    if let err = editor.commandError {
-                        Label(err, systemImage: "exclamationmark.triangle.fill")
-                            .font(.system(size: 11))
-                            .foregroundStyle(.red)
-                            .fixedSize(horizontal: false, vertical: true)
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 12) {
+                        content(cmd)
+                        if let err = editor.commandError {
+                            Label(err, systemImage: "exclamationmark.triangle.fill")
+                                .font(.system(size: 11))
+                                .foregroundStyle(.red)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
                     }
+                    .padding(14)
+                    .onGeometryChange(for: CGFloat.self, of: { $0.size.height }) { contentHeight = $0 }
                 }
-                .padding(14)
+                .frame(maxHeight: contentHeight)
                 if cmd.kind != .sketchPlane {
                     Divider().opacity(0.5)
                     footer

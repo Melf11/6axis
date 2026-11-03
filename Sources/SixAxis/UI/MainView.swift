@@ -30,6 +30,7 @@ struct MainView: View {
                             .onGeometryChange(for: CGRect.self, of: { $0.frame(in: .global) }) { editor.dialogFrame = $0 }
                         PatternPanel(editor: editor)
                         TextPanel(editor: editor)
+                        SketchPropertiesPanel(editor: editor)
                         InspectPanel(editor: editor)
                         CAMPanel(editor: editor)
                     }
@@ -286,6 +287,8 @@ private struct CommandPrompt: View {
             case .select: return String(localized: "Ziehen zum Verschieben · L Linie · R Rechteck · C Kreis · D Bemaßung")
             case .line: return n == 0 ? String(localized: "Startpunkt klicken · ⌘ = frei setzen") : String(localized: "Nächsten Punkt klicken · Tab für Maße · Esc beendet")
             case .rectangle: return n == 0 ? String(localized: "Erste Ecke klicken · ⌘ = frei setzen") : String(localized: "Gegenüberliegende Ecke klicken oder Maße eintippen")
+            case .centerRectangle where editor.centerToolSides != nil:
+                return n == 0 ? String(localized: "Mittelpunkt klicken") : String(localized: "Größe klicken oder Breite eintippen")
             case .centerRectangle: return n == 0 ? String(localized: "Mittelpunkt klicken") : String(localized: "Ecke klicken")
             case .circle: return n == 0 ? String(localized: "Mittelpunkt klicken · ⌘ = frei setzen") : String(localized: "Radius klicken oder Durchmesser eintippen")
             case .arc: return n == 0 ? String(localized: "Startpunkt klicken") : (n == 1 ? String(localized: "Endpunkt klicken") : String(localized: "Punkt auf dem Bogen klicken"))
