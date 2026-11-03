@@ -431,8 +431,12 @@ enum ModellingChecks {
         await settle(editor)
         let revision = editor.modelRevision
         var blocked: [Double] = []
+        var gaps: [Double] = []
+        var previous = CACurrentMediaTime()
         for k in 1...60 {
             let t = CACurrentMediaTime()
+            gaps.append((t - previous) * 1000)
+            previous = t
             editor.updateCommandFeature { kind in if case var .extrude(e) = kind { e.distance = "(\(e0.distance)) + \(k) mm"; kind = .extrude(e) } }
             blocked.append((CACurrentMediaTime() - t) * 1000)
             await pause(1.0 / 60)
@@ -440,7 +444,8 @@ enum ModellingChecks {
         let updates = editor.modelRevision &- revision
         await settle(editor)
         let median = blocked.dropFirst().sorted()[blocked.count / 2]
-        check("light drag: input not blocked", median < 3, "median \(String(format: "%.1f", median)) ms per change")
+        check("light drag: input not blocked", median < 3, "median \(String(format: "%.1f", median)) ms per change, \(Int(gaps.sorted()[gaps.count / 2])) ms between changes")
+        print("LIGHTDRAG median \(median) gap \(gaps.sorted()[gaps.count / 2]) max \(gaps.max() ?? 0) sync \(blocked.filter { $0 > 3 }.count)/60")
         check("light drag: preview follows", updates >= 40, "\(updates) of 60 changes shown")
         check("light drag: no rebuild hint", !editor.showsRebuilding)
         editor.cancelCommand()
