@@ -142,7 +142,7 @@ struct Ribbon: View {
         }
     }
 
-    private var hasBodies: Bool { !editor.state.bodyOrder.isEmpty }
+    private var hasBodies: Bool { editor.hasBodies }
 
     private func sketchMenuItem(_ t: SketchTool, _ symbol: String) -> some View {
         Button { editor.setSketchTool(t) } label: { Label(t.name, systemImage: symbol) }

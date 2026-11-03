@@ -159,6 +159,113 @@ final class ModellingTests: XCTestCase {
         }
     }
 
+    func testHoleGridOnFace() {
+        var doc = CADDocument()
+        var sk = Sketch(plane: .xy)
+        let c = [sk.addPoint(Vec2(0, 0)), sk.addPoint(Vec2(200, 0)), sk.addPoint(Vec2(200, 60)), sk.addPoint(Vec2(0, 60))]
+        for i in 0..<4 { sk.addLine(c[i], c[(i + 1) % 4]) }
+        let s = Feature(name: "S", kind: .sketch(sk))
+        var ex = ExtrudeFeature()
+        ex.profiles = [ProfileRef(sketch: s.id, sample: Vec2(5, 5))]
+        ex.distance = "19 mm"
+        let e = Feature(name: "E", kind: .extrude(ex))
+        doc.features = [s, e]
+        let top = topFace(build(doc), e.id)
+        var h = HoleFeature()
+        // Shelf-pin rows: 5 holes every 32 mm, two rows 20 mm apart.
+        h.points = [.faceOffset(top, x: "37", y: "20")]
+        h.extent = .depth
+        h.depth = "12 mm"
+        h.diameter = "5 mm"
+        var g = HoleGrid()
+        g.countX = "5"; g.spacingX = "32 mm"; g.countY = "2"; g.spacingY = "20 mm"
+        h.grid = g
+        doc.features.append(Feature(name: "B", kind: .hole(h)))
+        let holes = build(doc).bodies[e.id]!.faceInfos.compactMap { $0 }.filter { $0.surface == .cylinder }.map(\.axisOrigin)
+        XCTAssertEqual(holes.count, 10)
+        XCTAssertEqual(Set(holes.map { Int(($0.x).rounded()) }), [37, 69, 101, 133, 165])
+        XCTAssertEqual(Set(holes.map { Int(($0.y).rounded()) }), [20, 40])
+        // Too many holes is a clear error, not a frozen app.
+        g.countX = "100"; g.countY = "100"; h.grid = g
+        doc.features[2].kind = .hole(h)
+        let err = (try? ModelBuilder().build(doc).errors[doc.features[2].id]) ?? nil
+        XCTAssertTrue(err?.contains("Zu viele") == true, err ?? "no error")
+    }
+
+    func testWholeBodyEdgesAreFoundAtEveryRebuild() {
+        var doc = CADDocument()
+        let body = box(&doc)
+        XCTAssertEqual(build(doc).bodies[body]!.sharpEdges.count, 12)
+        // A hole before the fillet: its two rims are rounded as well.
+        var h = HoleFeature()
+        h.points = [.faceOffset(topFace(build(doc), body), x: "50", y: "30")]
+        h.extent = .through
+        h.diameter = "10 mm"
+        doc.features.append(Feature(name: "B", kind: .hole(h)))
+        XCTAssertEqual(build(doc).bodies[body]!.sharpEdges.count, 14, "seam of the hole is no corner")
+        var f = FilletFeature()
+        f.bodies = [body]
+        doc.features.append(Feature(name: "R", kind: .fillet(f)))
+        let rounded = build(doc).bodies[body]!
+        XCTAssertLessThan(rounded.shape.volume, 100 * 60 * 20 - .pi * 25 * 20)
+        XCTAssertEqual(rounded.sharpEdges.count, 0, "everything flows tangentially now")
+        // Rounding the rounded body again finds nothing to do, with a clear message.
+        doc.features.append(Feature(name: "R2", kind: .fillet(f)))
+        let err = ModelBuilder().build(doc).errors[doc.features.last!.id]
+        XCTAssertTrue(err?.contains("keine Kanten") == true, err ?? "no error")
+    }
+
+    func testWholeBodyChamferOnEveryShape() {
+        func extruded(_ draw: (inout Sketch) -> Void, sample: Vec2, height: String) -> (CADDocument, UUID) {
+            var doc = CADDocument(); var sk = Sketch(plane: .xy)
+            draw(&sk)
+            let s = Feature(name: "S", kind: .sketch(sk)); var ex = ExtrudeFeature()
+            ex.profiles = [ProfileRef(sketch: s.id, sample: sample)]; ex.distance = height
+            let e = Feature(name: "E", kind: .extrude(ex)); doc.features = [s, e]
+            return (doc, e.id)
+        }
+        func wholeBody(_ doc: CADDocument, _ body: UUID, _ value: String) -> (fillet: BuiltBody?, chamfer: BuiltBody?, errors: [String]) {
+            var fd = doc, cd = doc
+            var f = FilletFeature(); f.bodies = [body]; f.radius = value
+            fd.features.append(Feature(name: "R", kind: .fillet(f)))
+            var c = ChamferFeature(); c.bodies = [body]; c.distance = value
+            cd.features.append(Feature(name: "F", kind: .chamfer(c)))
+            let a = ModelBuilder().build(fd), b = ModelBuilder().build(cd)
+            return (a.bodies[body], b.bodies[body], Array(a.errors.values) + Array(b.errors.values))
+        }
+        // Box: exact volume of a 1 mm chamfer on all 12 edges (each edge d²/2·L, corners give back 2/3·d³ each).
+        var boxDoc = CADDocument(); let b = box(&boxDoc)
+        let chamfered = wholeBody(boxDoc, b, "1 mm")
+        XCTAssertEqual(chamfered.errors, [])
+        XCTAssertEqual(chamfered.chamfer!.shape.volume, 120000 - 360 + 8 * 2.0 / 3, accuracy: 1e-3)
+        // Cylinder: only the two rims, the seam is no corner.
+        let (cyl, cylBody) = extruded({ $0.addCircle(center: $0.addPoint(Vec2(0, 0)), radius: 20) }, sample: Vec2(1, 1), height: "30 mm")
+        XCTAssertEqual(ModelBuilder().build(cyl).bodies[cylBody]!.sharpEdges.count, 2)
+        XCTAssertEqual(wholeBody(cyl, cylBody, "3 mm").errors, [])
+        // L shape: inner edge (material is added there) as well.
+        let (l, lBody) = extruded({ sk in
+            let pts = [Vec2(0, 0), Vec2(60, 0), Vec2(60, 20), Vec2(20, 20), Vec2(20, 60), Vec2(0, 60)].map { sk.addPoint($0) }
+            for i in 0..<6 { sk.addLine(pts[i], pts[(i + 1) % 6]) }
+        }, sample: Vec2(5, 5), height: "15 mm")
+        XCTAssertEqual(ModelBuilder().build(l).bodies[lBody]!.sharpEdges.count, 18)
+        XCTAssertEqual(wholeBody(l, lBody, "3 mm").errors, [])
+        // Printed box with 2 mm walls: fine below half the wall.
+        let storage = Examples.storageBox()
+        let storageBody = ModelBuilder().build(storage).bodyOrder[0]
+        XCTAssertEqual(wholeBody(storage, storageBody, "0.5 mm").errors, [])
+    }
+
+    /// OCCT also "succeeds" with broken solids when a value does not fit (a 12 mm fillet on a
+    /// 20 mm thick box came out larger than the box). The whole-body path refuses those.
+    func testWholeBodyValueTooLargeIsAnError() {
+        var doc = CADDocument()
+        let body = box(&doc)
+        var f = FilletFeature(); f.bodies = [body]; f.radius = "12 mm"
+        doc.features.append(Feature(name: "R", kind: .fillet(f)))
+        let err = ModelBuilder().build(doc).errors[doc.features.last!.id]
+        XCTAssertTrue(err?.contains("zu groß") == true, err ?? "no error")
+    }
+
     func testHoleFollowsSketchPoint() {
         var doc = CADDocument()
         doc.parameters = [UserParameter(name: "x", expression: "20 mm")]

@@ -34,6 +34,15 @@ final class FileFormatTests: XCTestCase {
         }
     }
 
+    func testHolesFrom210StaySingle() throws {
+        let doc = try CADDocument.decode(Data(contentsOf: Self.fixtures.appendingPathComponent("2.1.0-Bohrungen.6axis")))
+        guard case let .hole(h)? = doc.features.last?.kind else { return XCTFail("no hole") }
+        XCTAssertNil(h.grid)
+        let plate = try XCTUnwrap(doc.features.first { $0.name == "Platte" }?.id)
+        // Volume printed by 2.1.0 when the file was written.
+        XCTAssertEqual(try XCTUnwrap(ModelBuilder().build(doc).bodies[plate]?.shape.volume), 227528.76110196154, accuracy: 1e-3)
+    }
+
     func testNewerFormatIsRefused() {
         let data = Data(#"{"formatVersion": 99, "features": []}"#.utf8)
         XCTAssertThrowsError(try CADDocument.decode(data)) { error in

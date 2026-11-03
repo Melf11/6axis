@@ -5,6 +5,8 @@ import SixAxisCore
 
 extension Editor {
     var commandFeature: Feature? { command?.featureId.flatMap { doc.feature($0) } }
+    /// The same for the dialog, which follows a drag less often than the model does.
+    var shownCommandFeature: Feature? { command?.featureId.flatMap { shownDoc.feature($0) } }
 
     /// Model state just before the command's feature (cached by the builder, so cheap).
     var stateBeforeCommand: ModelState {
@@ -14,9 +16,9 @@ extension Editor {
 
     /// Error of the command's feature – not before the user gave the inputs a fresh command needs.
     var commandError: String? {
-        guard let cmd = command, let f = commandFeature else { return nil }
+        guard let cmd = command, let f = shownCommandFeature else { return nil }
         if cmd.isNew && !hasInputs(f) { return nil }
-        return state.errors[f.id]
+        return shownState.errors[f.id]
     }
 
     // MARK: - Begin / end
@@ -45,6 +47,12 @@ extension Editor {
         if let editing, let idx = doc.index(of: editing) {
             doc.rollback = idx + 1 == doc.features.count ? nil : idx + 1
             command = ActiveCommand(kind: kind, featureId: editing, isNew: false, snapshot: snapshot)
+            // A fillet or chamfer of whole bodies opens on its body row.
+            switch doc.feature(editing)?.kind {
+            case let .fillet(f)? where f.edges.isEmpty && f.bodies != nil: command?.activeInput = 1
+            case let .chamfer(c)? where c.edges.isEmpty && c.bodies != nil: command?.activeInput = 1
+            default: break
+            }
             selection.removeAll()
             rebuild()
             return
@@ -69,10 +77,12 @@ extension Editor {
         case .fillet:
             var f = FilletFeature()
             f.edges = selectedEdges()
+            f.bodies = selectedWholeBodies()
             featureKind = .fillet(f)
         case .chamfer:
             var c = ChamferFeature()
             c.edges = selectedEdges()
+            c.bodies = selectedWholeBodies()
             featureKind = .chamfer(c)
         case .shell:
             var s = ShellFeature()
@@ -96,6 +106,7 @@ extension Editor {
         var cmd = ActiveCommand(kind: kind, featureId: f.id, isNew: true, snapshot: snapshot)
         if kind == .revolve, case let .revolve(r) = featureKind, !r.profiles.isEmpty, r.axis == nil { cmd.activeInput = 1 }
         if makeModellingFeature(kind) != nil { cmd.activeInput = firstInput(featureKind) }
+        if selectedWholeBodies() != nil, kind == .fillet || kind == .chamfer { cmd.activeInput = 1 }
         command = cmd
         selection.removeAll()
         rebuild()
@@ -143,8 +154,8 @@ extension Editor {
         switch f.kind {
         case let .extrude(e): return !e.profiles.isEmpty || !e.faces.isEmpty
         case let .revolve(r): return !r.profiles.isEmpty
-        case let .fillet(x): return !x.edges.isEmpty
-        case let .chamfer(x): return !x.edges.isEmpty
+        case let .fillet(x): return !x.edges.isEmpty || x.bodies?.isEmpty == false
+        case let .chamfer(x): return !x.edges.isEmpty || x.bodies?.isEmpty == false
         case let .shell(x): return !x.faces.isEmpty || x.body != nil
         default: return hasModellingInputs(f.kind)
         }
@@ -181,6 +192,12 @@ extension Editor {
             guard case let .edge(b, i) = p, let ref = state.bodies[b]?.edgeRef(i) else { return nil }
             return BodyEdgeRef(body: b, edge: ref)
         }
+    }
+
+    /// Bodies selected as a whole (fillet and chamfer then work on all their edges); nil if none.
+    func selectedWholeBodies() -> [UUID]? {
+        let bodies = selection.compactMap { p -> UUID? in if case let .body(b) = p { return b } else { return nil } }
+        return bodies.isEmpty ? nil : bodies
     }
 
     func singleProfileOfLatestSketch() -> ProfileRef? {
@@ -258,6 +275,9 @@ extension Editor {
             if case .profile = p { return true }
             return false
         case .fillet, .chamfer:
+            if cmd.activeInput == 1 {
+                switch p { case .face, .body: return true; default: return false }
+            }
             if case .edge = p { return true }
             return false
         case .shell:
@@ -295,6 +315,19 @@ extension Editor {
             }
             if cmd.activeInput == 0, case .revolve(let r)? = commandFeature?.kind, r.axis == nil { command?.activeInput = 1 }
         case .fillet, .chamfer:
+            if cmd.activeInput == 1 {
+                guard let b = p.bodyId else { return }
+                func toggle(_ bodies: [UUID]?) -> [UUID]? {
+                    var list = bodies ?? []
+                    if let j = list.firstIndex(of: b) { list.remove(at: j) } else { list.append(b) }
+                    return list.isEmpty ? nil : list
+                }
+                updateCommandFeature { k in
+                    if case var .fillet(f) = k { f.bodies = toggle(f.bodies); k = .fillet(f) }
+                    if case var .chamfer(c) = k { c.bodies = toggle(c.bodies); k = .chamfer(c) }
+                }
+                return
+            }
             guard case let .edge(b, i) = p else { return }
             let pre = stateBeforeCommand
             guard let mid = state.bodies[b]?.edgeInfo(at: i)?.midpoint, let preBody = pre.bodies[b],
@@ -363,6 +396,7 @@ extension Editor {
     }
 
     func setExtrudeDistance(_ d: Double) {
+        noteHandleDrag()
         updateCommandFeature { k in
             guard case var .extrude(e) = k else { return }
             e.distance = plainNumber(d)
@@ -425,6 +459,7 @@ extension Editor {
     }
 
     func setHoleOffset(_ i: Int, axis: Int, _ v: Double) {
+        noteHandleDrag()
         updateCommandFeature { k in
             guard case var .hole(h) = k, h.points.indices.contains(i), case let .faceOffset(r, x, y) = h.points[i] else { return }
             h.points[i] = axis == 0 ? .faceOffset(r, x: plainNumber(v), y: y) : .faceOffset(r, x: x, y: plainNumber(v))
@@ -447,14 +482,16 @@ extension Editor {
 
     var edgeHandle: EdgeHandle? {
         guard let cmd = command, cmd.kind == .fillet || cmd.kind == .chamfer, let kind = commandFeature?.kind else { return nil }
-        let edges: [BodyEdgeRef], expr: String
+        let edges: [BodyEdgeRef], bodies: [UUID]?, expr: String
         switch kind {
-        case let .fillet(f): (edges, expr) = (f.edges, f.radius)
-        case let .chamfer(c): (edges, expr) = (c.edges, c.distance)
+        case let .fillet(f): (edges, bodies, expr) = (f.edges, f.bodies, f.radius)
+        case let .chamfer(c): (edges, bodies, expr) = (c.edges, c.bodies, c.distance)
         default: return nil
         }
-        guard let e = edges.first, let body = stateBeforeCommand.bodies[e.body], let idx = body.resolve(e.edge),
-              let mid = body.edgeInfo(at: idx)?.midpoint else { return nil }
+        // On the first chosen edge, or the first edge of the first whole body.
+        let target = edges.first.flatMap { e in stateBeforeCommand.bodies[e.body].flatMap { b in b.resolve(e.edge).map { (b, $0) } } }
+            ?? bodies?.first.flatMap { id in stateBeforeCommand.bodies[id].flatMap { b in b.sharpEdges.first.map { (b, $0) } } }
+        guard let (body, idx) = target, let mid = body.edgeInfo(at: idx)?.midpoint else { return nil }
         let normals = body.edgeFaceNormals(idx)
         guard let n0 = normals.first else { return nil }
         let value = (try? evaluator.value(expr)) ?? 0
@@ -479,6 +516,7 @@ extension Editor {
     }
 
     func setEdgeValue(_ v: Double) {
+        noteHandleDrag()
         updateCommandFeature { k in
             if case var .fillet(f) = k { f.radius = plainNumber(v); k = .fillet(f) }
             if case var .chamfer(c) = k { c.distance = plainNumber(v); k = .chamfer(c) }
@@ -565,6 +603,7 @@ extension Editor {
     }
 
     func setMoveOffset(axis: Int, _ v: Double) {
+        noteHandleDrag()
         updateCommandFeature { k in
             guard case var .move(m) = k else { return }
             switch axis {
@@ -593,6 +632,7 @@ extension Editor {
     }
 
     func setMoveAngle(_ ring: MoveRing, _ v: Double) {
+        noteHandleDrag()
         updateCommandFeature { k in
             guard case var .move(m) = k else { return }
             m.axis = ring.axis

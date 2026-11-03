@@ -115,27 +115,46 @@ extension ModelBuilder {
     func holePositions(_ h: HoleFeature, _ state: ModelState, _ ev: inout Evaluator) throws -> [(Vec3, Vec3)] {
         guard !h.points.isEmpty else { throw KernelError("Keine Position gewählt") }
         var positions: [(Vec3, Vec3)] = []
+        var grid: (nx: Int, sx: Double, ny: Int, sy: Double)?
+        if let g = h.grid {
+            let nx = Int(try ev.evaluate(g.countX).rounded()), ny = Int(try ev.evaluate(g.countY).rounded())
+            guard nx >= 1, ny >= 1 else { throw KernelError("Anzahl muss mindestens 1 sein") }
+            guard nx * ny * h.points.count <= HoleGrid.maxHoles else { throw KernelError("Zu viele Bohrungen (höchstens \(HoleGrid.maxHoles))") }
+            grid = (nx, nx > 1 ? try ev.evaluate(g.spacingX) : 0, ny, ny > 1 ? try ev.evaluate(g.spacingY) : 0)
+        }
         for pt in h.points {
             var origin: Vec3, normal: Vec3
+            /// In-plane X/Y of the position (the face's frame, or the sketch's axes).
+            var plane: Plane
             switch pt {
             case let .sketchPoint(sid, pid):
                 guard let sb = state.sketches[sid], let p = sb.sketch.point(pid) else { throw KernelError("Skizzenpunkt nicht mehr gefunden") }
                 origin = sb.plane.point(p)
                 normal = sb.plane.normal
+                plane = sb.plane
             case let .face(bf, position):
                 guard let body = state.bodies[bf.body], let idx = body.resolve(bf.face), let info = body.faceInfos[idx], info.isPlanar else {
                     throw KernelError("Fläche nicht mehr gefunden")
                 }
                 normal = info.normal
                 origin = position - simd_dot(position - info.origin, normal) * normal
+                plane = Plane.forFace(point: info.origin, normal: normal)
             case let .faceOffset(bf, x, y):
                 guard let body = state.bodies[bf.body], let idx = body.resolve(bf.face), let frame = FaceFrame.of(body, face: idx) else {
                     throw KernelError("Fläche nicht mehr gefunden")
                 }
                 normal = frame.plane.normal
                 origin = frame.point(try ev.evaluate(x), try ev.evaluate(y))
+                plane = frame.plane
             }
-            positions.append((origin, h.flip ? normal : -normal))
+            let dir = h.flip ? normal : -normal
+            guard let grid else { positions.append((origin, dir)); continue }
+            let ex = plane.point(Vec2(1, 0)) - plane.point(.zero), ey = plane.point(Vec2(0, 1)) - plane.point(.zero)
+            for j in 0..<grid.ny {
+                for i in 0..<grid.nx {
+                    positions.append((origin + ex * (Double(i) * grid.sx) + ey * (Double(j) * grid.sy), dir))
+                }
+            }
         }
         return positions
     }

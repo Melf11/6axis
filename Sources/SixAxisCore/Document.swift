@@ -215,12 +215,16 @@ public struct RevolveFeature: Codable, Hashable, Sendable {
 
 public struct FilletFeature: Codable, Hashable, Sendable {
     public var edges: [BodyEdgeRef] = []
+    /// Bodies rounded on all their edges, found anew at every rebuild (format 9).
+    public var bodies: [UUID]? = nil
     public var radius: String = "1 mm"
     public init() {}
 }
 
 public struct ChamferFeature: Codable, Hashable, Sendable {
     public var edges: [BodyEdgeRef] = []
+    /// Bodies chamfered on all their edges, found anew at every rebuild (format 9).
+    public var bodies: [UUID]? = nil
     public var distance: String = "1 mm"
     public init() {}
 }
@@ -376,7 +380,7 @@ public struct CADDocument: Codable, Hashable, Sendable {
     /// 7 – 2.0: machining setup (tools, operations)
     /// 8 – 2.1: move turns about the bodies' centre (`MoveFeature.aroundCenter`); older apps must refuse
     ///     such files, they would turn about the origin
-    public static let currentFormatVersion = 8
+    public static let currentFormatVersion = 9
 
     public var formatVersion = CADDocument.currentFormatVersion
     public var features: [Feature] = []
@@ -455,6 +459,7 @@ public struct CADDocument: Codable, Hashable, Sendable {
         5: { $0 },   // 5 → 6: only additions
         6: { $0 },   // 6 → 7: only additions
         7: { $0 },   // 7 → 8: moves without "aroundCenter" keep turning about the axis itself
+        8: { $0 },   // 8 → 9: only additions (hole grid, fillet/chamfer of whole bodies)
     ]
 }
 

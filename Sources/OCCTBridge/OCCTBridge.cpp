@@ -29,6 +29,7 @@
 #include <BRepBuilderAPI_MakeEdge.hxx>
 #include <BRepBuilderAPI_MakeFace.hxx>
 #include <BRepBuilderAPI_Transform.hxx>
+#include <BRepCheck_Analyzer.hxx>
 #include <BRepClass_FaceClassifier.hxx>
 #include <BRepFilletAPI_MakeChamfer.hxx>
 #include <BRepFilletAPI_MakeFillet.hxx>
@@ -61,6 +62,7 @@
 #include <StlAPI_Writer.hxx>
 #include <TopExp.hxx>
 #include <TopExp_Explorer.hxx>
+#include <TopTools_IndexedDataMapOfShapeListOfShape.hxx>
 #include <TopTools_IndexedMapOfShape.hxx>
 #include <TopoDS.hxx>
 #include <TopoDS_Compound.hxx>
@@ -470,6 +472,61 @@ OBShape *ob_fuse_all(const OBShape *const *shapes, int32_t count) {
 
 OBShape *ob_unify(const OBShape *s) {
     return guarded("Vereinfachen", [&]() -> OBShape * { return wrap(unify(s->shape), "Vereinfachen ergab nichts"); });
+}
+
+/// Outward normal of a face at a parameter of an edge lying on it; false where the surface is degenerate.
+static bool normalOnEdge(const TopoDS_Edge &e, const TopoDS_Face &f, double t, gp_Vec &n) {
+    double first, last;
+    Handle(Geom2d_Curve) c = BRep_Tool::CurveOnSurface(e, f, first, last);
+    if (c.IsNull()) return false;
+    gp_Pnt2d uv = c->Value(t);
+    gp_Pnt p;
+    gp_Vec du, dv;
+    BRepAdaptor_Surface(f).D1(uv.X(), uv.Y(), p, du, dv);
+    n = du.Crossed(dv);
+    if (n.Magnitude() < 1e-12) return false;
+    n.Normalize();
+    if (f.Orientation() == TopAbs_REVERSED) n.Reverse();
+    return true;
+}
+
+int32_t ob_shape_is_valid(const OBShape *s) {
+    if (!s) return 0;
+    try {
+        return BRepCheck_Analyzer(s->shape).IsValid() ? 1 : 0;
+    } catch (const Standard_Failure &) {
+        return 0;
+    }
+}
+
+int32_t ob_shape_sharp_edges(const OBShape *s, int32_t *out, int32_t capacity) {
+    if (!s) return 0;
+    int32_t found = 0;
+    try {
+        TopTools_IndexedDataMapOfShapeListOfShape ancestors;
+        TopExp::MapShapesAndAncestors(s->shape, TopAbs_EDGE, TopAbs_FACE, ancestors);
+        const double tangent = std::cos(1.0 * M_PI / 180);
+        for (int i = 1; i <= s->edges.Extent() && found < capacity; i++) {
+            TopoDS_Edge e = TopoDS::Edge(s->edges(i));
+            if (BRep_Tool::Degenerated(e) || !ancestors.Contains(e)) continue;
+            const TopTools_ListOfShape &faces = ancestors.FindFromKey(e);
+            if (faces.Extent() != 2) continue;
+            TopoDS_Face a = TopoDS::Face(faces.First()), b = TopoDS::Face(faces.Last());
+            if (a.IsSame(b) || BRep_Tool::IsClosed(e, a) || BRep_Tool::IsClosed(e, b)) continue;
+            double first, last;
+            BRep_Tool::Range(e, first, last);
+            bool sharp = false;
+            for (int k = 0; k < 5 && !sharp; k++) {
+                double t = first + (last - first) * (k + 0.5) / 5;
+                gp_Vec na, nb;
+                sharp = normalOnEdge(e, a, t, na) && normalOnEdge(e, b, t, nb) && na.Dot(nb) < tangent;
+            }
+            if (sharp) out[found++] = i - 1;
+        }
+    } catch (const Standard_Failure &) {
+        return found;
+    }
+    return found;
 }
 
 OBShape *ob_fillet(const OBShape *s, const int32_t *edges, int32_t count, double radius) {

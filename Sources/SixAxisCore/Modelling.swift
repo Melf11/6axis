@@ -185,7 +185,22 @@ public struct HoleFeature: Codable, Hashable, Sendable {
     public var threadModeled: Bool = true
     /// Drill in the direction of the face/sketch normal instead of against it.
     public var flip: Bool = false
+    /// Repeats every position as a grid along the face's (or sketch's) own X and Y – a row of shelf-pin
+    /// holes, a hole grid on a panel. nil = single holes (format 9).
+    public var grid: HoleGrid? = nil
     public init() {}
+}
+
+/// Rows and columns of a hole grid, counted from each chosen position towards +X and +Y of the face.
+public struct HoleGrid: Codable, Hashable, Sendable {
+    public var countX: String = "5"
+    public var spacingX: String = "32 mm"
+    public var countY: String = "1"
+    public var spacingY: String = "32 mm"
+    public init() {}
+
+    /// Hard limit so a typo (500 × 500) cannot freeze the app.
+    public static let maxHoles = 2000
 }
 
 // MARK: - Patterns

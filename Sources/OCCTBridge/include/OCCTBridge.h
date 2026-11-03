@@ -113,6 +113,10 @@ OBShape *ob_boolean(const OBShape *a, const OBShape *b, int32_t op);
 /// Fuses all shapes in one general-fuse operation (much faster than pairwise fusing many tools).
 OBShape *ob_fuse_all(const OBShape *const *shapes, int32_t count);
 OBShape *ob_unify(const OBShape *s);
+/// Whether the shape passes OCCT's geometry and topology check.
+int32_t ob_shape_is_valid(const OBShape *s);
+/// Edges with a real corner between two different faces (no seams, degenerate or tangent edges). Returns the count.
+int32_t ob_shape_sharp_edges(const OBShape *s, int32_t *out, int32_t capacity);
 OBShape *ob_fillet(const OBShape *s, const int32_t *edges, int32_t count, double radius);
 OBShape *ob_chamfer(const OBShape *s, const int32_t *edges, int32_t count, double distance);
 OBShape *ob_shell(const OBShape *s, const int32_t *faces, int32_t count, double thickness);

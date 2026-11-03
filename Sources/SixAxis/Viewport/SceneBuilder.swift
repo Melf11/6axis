@@ -472,6 +472,11 @@ struct SceneBuilder {
                     case .edge, .cylinder: break
                     }
                 }
+            // Whole bodies are tinted like any selected body; the preview itself shows the rounded edges.
+            case let .fillet(x):
+                for b in x.bodies ?? [] { sel += bodyFaceIds[b] ?? [] }
+            case let .chamfer(x):
+                for b in x.bodies ?? [] { sel += bodyFaceIds[b] ?? [] }
             default: break
             }
         }

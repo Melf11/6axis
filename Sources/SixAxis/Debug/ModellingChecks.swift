@@ -113,6 +113,18 @@ enum ModellingChecks {
             for i in h.points.indices { if case let .faceOffset(r, _, _) = h.points[i] { h.points[i] = .faceOffset(r, x: i == 0 ? "30" : "70", y: "30") } }
             k = .hole(h)
         }
+        // Grid: each position repeated 2 × 2 every 15 mm along the face → 8 holes in the preview.
+        editor.updateCommandFeature { k in
+            guard case var .hole(h) = k else { return }
+            var g = HoleGrid(); g.countX = "2"; g.spacingX = "15 mm"; g.countY = "2"; g.spacingY = "15 mm"
+            h.grid = g
+            k = .hole(h)
+        }
+        await settle(editor)
+        check("hole: grid on the face", abs(volume(editor, plateF.id) - (full - 8 * .pi * 16 * 20)) < 1, "\(volume(editor, plateF.id))")
+        await snap("m01-hole-grid")
+        editor.updateCommandFeature { k in if case var .hole(h) = k { h.grid = nil; k = .hole(h) } }
+        await settle(editor)
         await snap("m01-hole")
         let holeId = editor.command?.featureId
         editor.commitCommand()
@@ -160,6 +172,28 @@ enum ModellingChecks {
             editor.cancelCommand()
             await settle(editor)
         }
+
+        // Whole body: selected beforehand, all its edges are rounded; a click on the body removes it again.
+        let beforeWhole = volume(editor, plateF.id)
+        editor.selection = [.body(plateF.id)]
+        editor.beginCommand(.fillet)
+        await settle(editor)
+        if case let .fillet(f)? = editor.commandFeature?.kind {
+            check("fillet: whole body from the selection", f.bodies == [plateF.id] && editor.command?.activeInput == 1 && f.edges.isEmpty)
+        } else {
+            check("fillet: whole body from the selection", false)
+        }
+        check("fillet: all edges of the body", volume(editor, plateF.id) < beforeWhole - 100 && editor.state.errors.isEmpty && editor.edgeHandle != nil,
+              "\(beforeWhole) → \(volume(editor, plateF.id)) \(editor.state.errors.values)")
+        await snap("m02-fillet-body")
+        await click(editor, Vec3(95, 5, 20))
+        await settle(editor)
+        if case let .fillet(f)? = editor.commandFeature?.kind {
+            check("fillet: click on the body removes it", f.bodies == nil, "\(String(describing: f.bodies))")
+        }
+        editor.cancelCommand()
+        await settle(editor)
+        check("fillet: cancel restores the body", abs(volume(editor, plateF.id) - beforeWhole) < 1e-6)
 
         // Offset plane from the top face, then a sketch on it by clicking the plane.
         editor.beginPlane(.offset)
@@ -383,6 +417,58 @@ enum ModellingChecks {
 
         await titleBarChecks()
         await dragHeavyPreview(editor)
+        await dragLightPreview(editor)
+    }
+
+    /// Dragging the extrude arrow on an ordinary model (the cabinet): a change per mouse event must not wait
+    /// for the rebuild on the main thread, the preview still shows nearly every step, and the window keeps up
+    /// because the panels (which SwiftUI lays out expensively) wait until the drag pauses.
+    static func dragLightPreview(_ editor: Editor) async {
+        editor.openExample(Examples.all[0])
+        await settle(editor)
+        guard let f = editor.doc.features.last(where: { if case .extrude = $0.kind { return true }; return false }),
+              case let .extrude(e0) = f.kind else { return check("light drag: cabinet has an extrusion", false) }
+        editor.editFeature(f.id)
+        await settle(editor)
+        // The same pace without changes: what the timer of this machine needs by itself.
+        var idleGaps: [Double] = []
+        var previous = CACurrentMediaTime()
+        for _ in 1...30 {
+            await pause(1.0 / 60)
+            let t = CACurrentMediaTime()
+            idleGaps.append((t - previous) * 1000)
+            previous = t
+        }
+        let idleGap = idleGaps.sorted()[idleGaps.count / 2]
+        let revision = editor.modelRevision
+        var blocked: [Double] = []
+        var gaps: [Double] = []
+        previous = CACurrentMediaTime()
+        var panelsWaited = true
+        for k in 1...60 {
+            let t = CACurrentMediaTime()
+            if k > 1 { gaps.append((t - previous) * 1000) }
+            previous = t
+            editor.setExtrudeDistance(Double(10 + k))
+            blocked.append((CACurrentMediaTime() - t) * 1000)
+            if k > 1 && editor.shownDoc == editor.doc { panelsWaited = false }
+            await pause(1.0 / 60)
+        }
+        let updates = editor.modelRevision &- revision
+        await settle(editor)
+        let median = blocked.sorted()[blocked.count / 2]
+        let gap = gaps.sorted()[gaps.count / 2]
+        let extra = gap - idleGap
+        print("LIGHTDRAG blocked \(String(format: "%.1f", median)) ms, \(String(format: "%.1f", gap)) ms between changes, \(String(format: "%.1f", idleGap)) ms without changes")
+        check("light drag: input not blocked", median < 3, "median \(String(format: "%.1f", median)) ms per change")
+        // A change may cost at most one frame at 60 Hz on top of the pace itself; otherwise the main thread falls behind.
+        check("light drag: main thread keeps up", extra < 16.7, "\(String(format: "%.1f", gap)) ms between changes, \(String(format: "%.1f", idleGap)) ms without changes")
+        check("light drag: panels wait for a pause", panelsWaited)
+        check("light drag: panels show the result afterwards", editor.shownDoc == editor.doc)
+        check("light drag: preview follows", updates >= 40, "\(updates) of 60 changes shown")
+        check("light drag: no rebuild hint", !editor.showsRebuilding)
+        editor.cancelCommand()
+        await settle(editor)
     }
 
     /// Dragging a live preview on a model whose rebuild takes longer than a frame (#10): the input must not

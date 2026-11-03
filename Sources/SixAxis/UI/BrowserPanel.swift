@@ -45,16 +45,16 @@ struct BrowserPanel: View {
                             ForEach(construction) { f in constructionRow(f) }
                         }
                     }
-                    if !editor.doc.components.isEmpty {
-                        section(String(localized: "Komponenten"), count: editor.doc.components.count, open: $componentsOpen)
+                    if !editor.shownDoc.components.isEmpty {
+                        section(String(localized: "Komponenten"), count: editor.shownDoc.components.count, open: $componentsOpen)
                         if componentsOpen {
-                            let counts = editor.state.instanceCounts(editor.doc.components)
-                            ForEach(editor.doc.components) { c in componentRow(c, count: counts[c.id] ?? 0) }
+                            let counts = editor.shownState.instanceCounts(editor.shownDoc.components)
+                            ForEach(editor.shownDoc.components) { c in componentRow(c, count: counts[c.id] ?? 0) }
                         }
                     }
-                    section(String(localized: "Körper"), count: editor.state.bodyOrder.count, open: $bodiesOpen)
+                    section(String(localized: "Körper"), count: editor.shownState.bodyOrder.count, open: $bodiesOpen)
                     if bodiesOpen {
-                        ForEach(editor.state.bodyOrder, id: \.self) { id in
+                        ForEach(editor.shownState.bodyOrder, id: \.self) { id in
                             bodyRow(id)
                         }
                     }
@@ -79,7 +79,7 @@ struct BrowserPanel: View {
     }
 
     private var sketches: [Feature] {
-        editor.doc.features.prefix(editor.doc.activeCount).filter { if case .sketch = $0.kind { return true }; return false }
+        editor.shownDoc.features.prefix(editor.shownDoc.activeCount).filter { if case .sketch = $0.kind { return true }; return false }
     }
 
     private func operationRow(_ op: CAMOperation) -> some View {
@@ -143,19 +143,19 @@ struct BrowserPanel: View {
 
     /// Construction planes and axes (shown and hidden like sketches).
     private var construction: [Feature] {
-        editor.doc.features.prefix(editor.doc.activeCount).filter {
+        editor.shownDoc.features.prefix(editor.shownDoc.activeCount).filter {
             switch $0.kind { case .plane, .axis: return true; default: return false }
         }
     }
 
     private func constructionRow(_ f: Feature) -> some View {
-        let visible = !editor.doc.hiddenSketches.contains(f.id)
+        let visible = !editor.shownDoc.hiddenSketches.contains(f.id)
         return HStack(spacing: 6) {
             eyeButton(visible) { editor.toggleSketchVisibility(f.id) }
             Image(systemName: f.kind.symbol).font(.system(size: 11)).foregroundStyle(.purple)
             Text(f.name).font(.system(size: 12)).lineLimit(1)
             Spacer()
-            if editor.state.errors[f.id] != nil {
+            if editor.shownState.errors[f.id] != nil {
                 Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(.orange).font(.system(size: 10))
             }
         }
@@ -204,7 +204,7 @@ struct BrowserPanel: View {
     private func bodyRow(_ id: UUID) -> some View {
         let selected = editor.selection.contains(.body(id))
         return HStack(spacing: 6) {
-            eyeButton(editor.doc.isBodyVisible(id)) { editor.toggleBodyVisibility(id) }
+            eyeButton(editor.shownDoc.isBodyVisible(id)) { editor.toggleBodyVisibility(id) }
             Image(systemName: "cube.fill").font(.system(size: 11)).foregroundStyle(Color.accentColor.opacity(0.85))
             if renaming == id {
                 TextField("", text: $renameText)
@@ -213,13 +213,13 @@ struct BrowserPanel: View {
                     .onSubmit { editor.renameBody(id, to: renameText); renaming = nil }
                     .onExitCommand { renaming = nil }
             } else {
-                Text(editor.doc.bodyName(id)).font(.system(size: 12)).lineLimit(1)
-                if let m = editor.doc.bodies[id]?.material, !m.isEmpty {
+                Text(editor.shownDoc.bodyName(id)).font(.system(size: 12)).lineLimit(1)
+                if let m = editor.shownDoc.bodies[id]?.material, !m.isEmpty {
                     Text(m).font(.system(size: 10)).foregroundStyle(.tertiary).lineLimit(1)
                 }
             }
             Spacer()
-            if editor.state.errors.isEmpty == false, let src = editor.state.bodies[id]?.sourceFeature, editor.state.errors[src] != nil {
+            if editor.shownState.errors.isEmpty == false, let src = editor.shownState.bodies[id]?.sourceFeature, editor.shownState.errors[src] != nil {
                 Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(.orange).font(.system(size: 10))
             }
         }
@@ -230,13 +230,18 @@ struct BrowserPanel: View {
         .contentShape(Rectangle())
         .onTapGesture(count: 2) { renameText = editor.doc.bodyName(id); renaming = id }
         .onTapGesture {
-            editor.selection = selected ? [] : [.body(id)]
+            // A command waiting for bodies takes the click, like a click on the body in the viewport.
+            if editor.command != nil, editor.accepts(.body(id)) {
+                editor.commandClick(.body(id))
+            } else {
+                editor.selection = selected ? [] : [.body(id)]
+            }
             editor.requestRedraw()
         }
         .contextMenu {
             Button("Umbenennen") { renameText = editor.doc.bodyName(id); renaming = id }
             Button("Material & Faserrichtung …") { materialFor = id }
-            Button(editor.doc.isBodyVisible(id) ? String(localized: "Ausblenden") : String(localized: "Einblenden")) { editor.toggleBodyVisibility(id) }
+            Button(editor.shownDoc.isBodyVisible(id) ? String(localized: "Ausblenden") : String(localized: "Einblenden")) { editor.toggleBodyVisibility(id) }
             Divider()
             Button("Als STL exportieren …") { editor.selection = [.body(id)]; editor.exportSTL() }
             Button("Als STEP exportieren …") { editor.selection = [.body(id)]; editor.exportSTEP() }
@@ -247,14 +252,14 @@ struct BrowserPanel: View {
     }
 
     private func sketchRow(_ f: Feature) -> some View {
-        let visible = !editor.doc.hiddenSketches.contains(f.id)
+        let visible = !editor.shownDoc.hiddenSketches.contains(f.id)
         let editing = editor.sketchId == f.id
         return HStack(spacing: 6) {
             eyeButton(visible) { editor.toggleSketchVisibility(f.id) }
             Image(systemName: "pencil.and.outline").font(.system(size: 11)).foregroundStyle(.orange)
             Text(f.name).font(.system(size: 12, weight: editing ? .semibold : .regular)).lineLimit(1)
             Spacer()
-            if editor.state.errors[f.id] != nil {
+            if editor.shownState.errors[f.id] != nil {
                 Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(.orange).font(.system(size: 10))
             }
         }
@@ -314,7 +319,7 @@ struct BodyMaterialSheet: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            Text(editor.doc.bodyName(bodyId)).font(.title3.weight(.semibold)).padding(16)
+            Text(editor.shownDoc.bodyName(bodyId)).font(.title3.weight(.semibold)).padding(16)
             Form {
                 HStack {
                     TextField("Material", text: $material, prompt: Text("z. B. Eiche massiv"))

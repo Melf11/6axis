@@ -19,7 +19,7 @@ struct TimelineBar: View {
 
             Rectangle().fill(.primary.opacity(0.1)).frame(width: 1, height: 26)
 
-            if editor.doc.features.isEmpty {
+            if editor.shownDoc.features.isEmpty {
                 Text("Zeitleiste – hier erscheinen deine Konstruktionsschritte")
                     .font(.system(size: 11))
                     .foregroundStyle(.tertiary)
@@ -28,20 +28,20 @@ struct TimelineBar: View {
                 ScrollViewReader { proxy in
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 3) {
-                            ForEach(Array(editor.doc.features.enumerated()), id: \.element.id) { index, f in
+                            ForEach(Array(editor.shownDoc.features.enumerated()), id: \.element.id) { index, f in
                                 chip(f, index: index)
                                     .id(f.id)
-                                if index + 1 == editor.doc.activeCount && editor.doc.activeCount < editor.doc.features.count {
+                                if index + 1 == editor.shownDoc.activeCount && editor.shownDoc.activeCount < editor.shownDoc.features.count {
                                     marker
                                 }
                             }
-                            if editor.doc.activeCount == editor.doc.features.count { marker }
+                            if editor.shownDoc.activeCount == editor.shownDoc.features.count { marker }
                         }
                         .padding(.horizontal, 2)
                         .padding(.vertical, 2)
                     }
                     .frame(maxWidth: 560)
-                    .onChange(of: editor.doc.features.count) {
+                    .onChange(of: editor.shownDoc.features.count) {
                         if let last = editor.doc.features.last { withAnimation { proxy.scrollTo(last.id, anchor: .trailing) } }
                     }
                 }
@@ -61,8 +61,8 @@ struct TimelineBar: View {
     }
 
     private func chip(_ f: Feature, index: Int) -> some View {
-        let active = index < editor.doc.activeCount
-        let error = editor.state.errors[f.id]
+        let active = index < editor.shownDoc.activeCount
+        let error = editor.shownState.errors[f.id]
         let editing = editor.command?.featureId == f.id || editor.sketchId == f.id
         let selected = editor.timelineSelection == f.id
         return ZStack(alignment: .bottomTrailing) {

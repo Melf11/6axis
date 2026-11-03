@@ -27,6 +27,7 @@ struct MainView: View {
                     VStack(alignment: .trailing, spacing: 12) {
                         ViewCube(editor: editor)
                         CommandPanel(editor: editor)
+                            .onGeometryChange(for: CGRect.self, of: { $0.frame(in: .global) }) { editor.dialogFrame = $0 }
                         PatternPanel(editor: editor)
                         TextPanel(editor: editor)
                         InspectPanel(editor: editor)
@@ -41,7 +42,7 @@ struct MainView: View {
             .animation(.snappy(duration: 0.22), value: editor.command?.kind)
             .animation(.snappy(duration: 0.22), value: editor.browserVisible)
 
-            if editor.doc.features.isEmpty && editor.sketchId == nil && editor.command == nil {
+            if editor.isDocumentEmpty && editor.sketchId == nil && editor.command == nil {
                 WelcomeCard(editor: editor)
                     .transition(.opacity.combined(with: .scale(scale: 0.96)))
             }
@@ -76,7 +77,7 @@ struct MainView: View {
         }
         .ignoresSafeArea()
         .animation(.snappy(duration: 0.2), value: editor.toast)
-        .animation(.snappy(duration: 0.25), value: editor.doc.features.isEmpty)
+        .animation(.snappy(duration: 0.25), value: editor.isDocumentEmpty)
         .animation(.snappy(duration: 0.15), value: editor.showCommandPalette)
         .animation(.snappy(duration: 0.15), value: editor.markingMenu)
         .sheet(isPresented: $editor.showParameters) { ParametersSheet(editor: editor) }
@@ -189,7 +190,7 @@ private struct BottomBar: View {
                     .frame(height: 24)
                     .floatingPanel(radius: 12)
                 }
-                if editor.isRebuilding {
+                if editor.showsRebuilding {
                     HStack(spacing: 6) {
                         ProgressView().controlSize(.mini)
                         Text("Berechne Modell …")
@@ -200,14 +201,7 @@ private struct BottomBar: View {
                     .floatingPanel(radius: 12)
                     .transition(.opacity)
                 }
-                Text(prompt)
-                    .font(.system(size: 11))
-                    .lineLimit(1)
-                    .fixedSize()
-                    .foregroundStyle(.secondary)
-                    .padding(.horizontal, 10)
-                    .frame(height: 24)
-                    .floatingPanel(radius: 12)
+                CommandPrompt(editor: editor)
             }
             .frame(maxWidth: 440, alignment: .leading)
 
@@ -215,14 +209,19 @@ private struct BottomBar: View {
             TimelineBar(editor: editor)
             Spacer(minLength: 0)
 
-            physicalInfo
+            PhysicalInfo(editor: editor)
                 .frame(maxWidth: 320, alignment: .trailing)
         }
         .padding(12)
     }
 
-    @ViewBuilder
-    private var physicalInfo: some View {
+}
+
+/// Volume and weight. A view of its own: they change during a drag, the rest of the bottom bar does not.
+private struct PhysicalInfo: View {
+    let editor: Editor
+
+    var body: some View {
         if let p = editor.physicalSummary {
             let cm3 = p.volume / 1000
             let settings = AppSettings.shared
@@ -242,6 +241,22 @@ private struct BottomBar: View {
             .help(String(format: String(localized: "Oberfläche: %.1f cm²"), p.area / 100))
         }
     }
+}
+
+/// What to do next. A view of its own, because it reads the command's feature, which changes during a drag.
+private struct CommandPrompt: View {
+    let editor: Editor
+
+    var body: some View {
+        Text(prompt)
+            .font(.system(size: 11))
+            .lineLimit(1)
+            .fixedSize()
+            .foregroundStyle(.secondary)
+            .padding(.horizontal, 10)
+            .frame(height: 24)
+            .floatingPanel(radius: 12)
+    }
 
     private var prompt: String {
         if let cmd = editor.command {
@@ -249,7 +264,9 @@ private struct BottomBar: View {
             case .sketchPlane: return String(localized: "Ebene oder ebene Fläche für die Skizze wählen")
             case .extrude: return String(localized: "Profile oder Flächen wählen · Pfeil ziehen · ↩ bestätigt")
             case .revolve: return cmd.activeInput == 1 ? String(localized: "Drehachse wählen (Linie, Kante oder Achse)") : String(localized: "Profile wählen")
-            case .fillet, .chamfer: return String(localized: "Kanten wählen · Pfeil ziehen · ↩ bestätigt")
+            case .fillet, .chamfer:
+                return cmd.activeInput == 1 ? String(localized: "Körper anklicken: alle seine Kanten · Pfeil ziehen · ↩ bestätigt")
+                                            : String(localized: "Kanten wählen · Pfeil ziehen · ↩ bestätigt")
             case .shell: return String(localized: "Flächen wählen, die offen sein sollen")
             default:
                 switch editor.modellingInput {
@@ -289,7 +306,7 @@ private struct BottomBar: View {
             case let .constraint(ct): return String(localized: "\(ct.name): Objekte wählen")
             }
         }
-        return editor.state.bodyOrder.isEmpty
+        return !editor.hasBodies
             ? String(localized: "Starte mit „Skizze“ (oder drücke L, R, C) · S öffnet die Befehlssuche")
             : String(localized: "Wähle Geometrie · Rechtsklick für Schnellmenü · S für Befehlssuche")
     }

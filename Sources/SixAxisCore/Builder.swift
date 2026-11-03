@@ -23,6 +23,16 @@ public final class BuiltBody: @unchecked Sendable {
         if !boundsDone { cachedBounds = shape.exactBoundingBox; boundsDone = true }
         return cachedBounds
     }
+    /// The edges a fillet or chamfer of the whole body works on, cached and locked like `exactBounds`.
+    public var sharpEdges: [Int] {
+        boundsLock.lock()
+        defer { boundsLock.unlock() }
+        if let cachedSharpEdges { return cachedSharpEdges }
+        let edges = shape.sharpEdges
+        cachedSharpEdges = edges
+        return edges
+    }
+    private var cachedSharpEdges: [Int]?
     private let boundsLock = NSLock()
     private var cachedBounds: (min: Vec3, max: Vec3)?
     private var boundsDone = false
@@ -32,6 +42,10 @@ public final class BuiltBody: @unchecked Sendable {
         let size = simd_length(bb.max - bb.min)
         return try? shape.mesh(linearDeflection: max(0.005, size * 0.0008), angularDeflection: 0.25)
     }()
+
+    /// Cached: the status bar shows these with every change, and the kernel takes a while on larger bodies.
+    public private(set) lazy var volume: Double = shape.volume
+    public private(set) lazy var area: Double = shape.area
 
     public private(set) lazy var faceInfos: [FaceInfo?] = (0..<shape.faceCount).map { shape.faceInfo($0) }
     public private(set) lazy var edgeInfos: [EdgeInfo?] = (0..<shape.edgeCount).map { shape.edgeInfo($0) }
@@ -239,6 +253,8 @@ public struct ModelState: @unchecked Sendable {
             _ = body.mesh
             _ = body.faceInfos
             _ = body.edgeInfos
+            _ = body.volume
+            _ = body.area
         }
         cutPreview = nil
         guard let feature, let tool = tools[feature], tool.operation == .cut else { return }
@@ -331,10 +347,10 @@ public final class ModelBuilder: @unchecked Sendable {
                 try applyRevolve(f, r, &state, &evaluator)
             case let .fillet(fi):
                 let r = try evaluator.evaluate(fi.radius)
-                try modifyEdges(fi.edges, &state, f.id) { try $0.filleted(edges: $1, radius: r) }
+                try modifyEdges(fi.edges, wholeBodies: fi.bodies ?? [], &state, f.id) { try $0.filleted(edges: $1, radius: r) }
             case let .chamfer(c):
                 let d = try evaluator.evaluate(c.distance)
-                try modifyEdges(c.edges, &state, f.id) { try $0.chamfered(edges: $1, distance: d) }
+                try modifyEdges(c.edges, wholeBodies: c.bodies ?? [], &state, f.id) { try $0.chamfered(edges: $1, distance: d) }
             case let .shell(s):
                 try applyShell(f, s, &state, &evaluator)
             case let .importStep(imp):
@@ -522,15 +538,20 @@ public final class ModelBuilder: @unchecked Sendable {
         }
     }
 
-    func modifyEdges(_ edges: [BodyEdgeRef], _ state: inout ModelState, _ feature: UUID,
+    func modifyEdges(_ edges: [BodyEdgeRef], wholeBodies: [UUID], _ state: inout ModelState, _ feature: UUID,
                      _ op: (Shape, [Int]) throws -> Shape) throws {
-        guard !edges.isEmpty else { throw KernelError("Keine Kanten ausgewählt") }
+        guard !edges.isEmpty || !wholeBodies.isEmpty else { throw KernelError("Keine Kanten ausgewählt") }
         let byBody = Dictionary(grouping: edges, by: \.body)
-        for (bodyId, refs) in byBody {
+        for bodyId in Set(byBody.keys).union(wholeBodies) {
             guard let body = state.bodies[bodyId] else { throw KernelError("Körper nicht mehr vorhanden") }
-            let idx = Array(Set(refs.compactMap { body.resolve($0.edge) })).sorted()
-            guard !idx.isEmpty else { throw KernelError("Kanten nicht mehr gefunden") }
-            state.setBody(BuiltBody(id: bodyId, shape: try op(body.shape, idx), sourceFeature: feature))
+            // Whole bodies are resolved here, so new edges (a later hole in an earlier step) are included.
+            let whole = wholeBodies.contains(bodyId)
+            let idx = whole ? body.sharpEdges : Array(Set((byBody[bodyId] ?? []).compactMap { body.resolve($0.edge) })).sorted()
+            guard !idx.isEmpty else { throw KernelError(whole ? "Der Körper hat keine Kanten" : "Kanten nicht mehr gefunden") }
+            let result = try op(body.shape, idx)
+            // OCCT also returns broken solids when a value does not fit between the edges.
+            if whole && !result.isValid { throw KernelError("Der Wert ist zu groß für diesen Körper") }
+            state.setBody(BuiltBody(id: bodyId, shape: result, sourceFeature: feature))
         }
     }
 

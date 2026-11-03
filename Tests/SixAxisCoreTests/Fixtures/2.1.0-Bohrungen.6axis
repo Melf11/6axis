@@ -1,0 +1,219 @@
+{
+  "bodies" : [
+
+  ],
+  "components" : [
+
+  ],
+  "features" : [
+    {
+      "id" : "748B446E-90AE-4BE6-8A2B-43BE7CF31155",
+      "kind" : {
+        "sketch" : {
+          "_0" : {
+            "constraints" : [
+
+            ],
+            "curves" : [
+              {
+                "construction" : false,
+                "geometry" : {
+                  "line" : {
+                    "end" : 2,
+                    "start" : 1
+                  }
+                },
+                "id" : 5
+              },
+              {
+                "construction" : false,
+                "geometry" : {
+                  "line" : {
+                    "end" : 3,
+                    "start" : 2
+                  }
+                },
+                "id" : 6
+              },
+              {
+                "construction" : false,
+                "geometry" : {
+                  "line" : {
+                    "end" : 4,
+                    "start" : 3
+                  }
+                },
+                "id" : 7
+              },
+              {
+                "construction" : false,
+                "geometry" : {
+                  "line" : {
+                    "end" : 1,
+                    "start" : 4
+                  }
+                },
+                "id" : 8
+              }
+            ],
+            "nextId" : 9,
+            "plane" : {
+              "xy" : {
+
+              }
+            },
+            "points" : [
+              {
+                "fixed" : true,
+                "id" : 0,
+                "position" : [
+                  0,
+                  0
+                ]
+              },
+              {
+                "fixed" : false,
+                "id" : 1,
+                "position" : [
+                  0,
+                  0
+                ]
+              },
+              {
+                "fixed" : false,
+                "id" : 2,
+                "position" : [
+                  200,
+                  0
+                ]
+              },
+              {
+                "fixed" : false,
+                "id" : 3,
+                "position" : [
+                  200,
+                  60
+                ]
+              },
+              {
+                "fixed" : false,
+                "id" : 4,
+                "position" : [
+                  0,
+                  60
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "name" : "Seite",
+      "suppressed" : false
+    },
+    {
+      "id" : "C5BF6A12-FEB1-4D43-A267-EFDAC60DBB0C",
+      "kind" : {
+        "extrude" : {
+          "_0" : {
+            "distance" : "19 mm",
+            "distance2" : "10 mm",
+            "extent" : "oneSide",
+            "faces" : [
+
+            ],
+            "operation" : "newBody",
+            "profiles" : [
+              {
+                "sample" : [
+                  5,
+                  5
+                ],
+                "sketch" : "748B446E-90AE-4BE6-8A2B-43BE7CF31155"
+              }
+            ],
+            "targets" : [
+
+            ]
+          }
+        }
+      },
+      "name" : "Platte",
+      "suppressed" : false
+    },
+    {
+      "id" : "E141A3AE-DFDB-4BEF-B3B1-BDC1882BED56",
+      "kind" : {
+        "hole" : {
+          "_0" : {
+            "countersinkAngle" : "90",
+            "depth" : "12 mm",
+            "diameter" : "5 mm",
+            "extent" : "depth",
+            "flip" : false,
+            "headDepth" : "5 mm",
+            "headDiameter" : "10 mm",
+            "points" : [
+              {
+                "faceOffset" : {
+                  "_0" : {
+                    "body" : "C5BF6A12-FEB1-4D43-A267-EFDAC60DBB0C",
+                    "face" : {
+                      "centroid" : [
+                        100,
+                        30,
+                        19
+                      ],
+                      "count" : 6,
+                      "index" : 5,
+                      "normal" : [
+                        0,
+                        0,
+                        1
+                      ]
+                    }
+                  },
+                  "x" : "37",
+                  "y" : "30"
+                }
+              },
+              {
+                "faceOffset" : {
+                  "_0" : {
+                    "body" : "C5BF6A12-FEB1-4D43-A267-EFDAC60DBB0C",
+                    "face" : {
+                      "centroid" : [
+                        100,
+                        30,
+                        19
+                      ],
+                      "count" : 6,
+                      "index" : 5,
+                      "normal" : [
+                        0,
+                        0,
+                        1
+                      ]
+                    }
+                  },
+                  "x" : "163",
+                  "y" : "30"
+                }
+              }
+            ],
+            "threadModeled" : true,
+            "type" : "simple"
+          }
+        }
+      },
+      "name" : "Bohrungen",
+      "suppressed" : false
+    }
+  ],
+  "formatVersion" : 8,
+  "hiddenSketches" : [
+
+  ],
+  "parameters" : [
+
+  ]
+}
