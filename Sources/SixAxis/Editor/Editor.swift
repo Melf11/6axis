@@ -190,23 +190,38 @@ enum Inference: Equatable { case horizontal, vertical }
 @Observable
 final class Editor {
     // Document
-    var doc = CADDocument()
+    var doc = CADDocument() { didSet { publishForPanels() } }
     var fileURL: URL?
     var isDirty = false
-    private(set) var state = ModelState()
+    private(set) var state = ModelState() { didSet { publishForPanels() } }
+    /// `doc` and `state` as the panels show them (browser, timeline, totals, dialog). They follow at once, except
+    /// during a drag, when they wait for a pause: laying out the window would interrupt the drag. The model and the
+    /// handle with its value badge follow every change.
+    private(set) var shownDoc = CADDocument()
+    private(set) var shownState = ModelState()
+    /// Change only when their value does, so the views reading them are not redrawn with every change.
+    private(set) var isDocumentEmpty = true
+    private(set) var hasBodies = false
+    @ObservationIgnored private var publishPending = false
     @ObservationIgnored let builder = ModelBuilder()
     /// True while a slow rebuild runs in the background (the UI shows "Berechne …").
     private(set) var isRebuilding = false {
         didSet {
             // The "Berechne Modell …" hint only for rebuilds that really take a while – a drag would make it flicker.
-            if !isRebuilding { showsRebuilding = false; return }
+            rebuildingRun &+= 1
+            if !isRebuilding { if showsRebuilding { showsRebuilding = false }; return }
             guard !oldValue else { return }
+            let run = rebuildingRun
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) { [weak self] in
-                if let self, self.isRebuilding { self.showsRebuilding = true }
+                if let self, self.rebuildingRun == run { self.showsRebuilding = true }
             }
         }
     }
     private(set) var showsRebuilding = false
+    /// Counts the starts and ends of rebuilding: the hint is for one rebuild taking long, not for many short ones.
+    @ObservationIgnored private var rebuildingRun = 0
+    /// Changes this close together count as a drag. Generous, because a slower Mac sends them less often.
+    private static let seriesWindow: CFTimeInterval = 0.25
     /// When the last rebuild was requested: changes in quick succession (a drag) do not wait for their result.
     private var lastRebuildRequest: CFTimeInterval = 0
     @ObservationIgnored private let rebuildQueue = DispatchQueue(label: "app.6axis.rebuild", qos: .userInitiated)
@@ -336,6 +351,7 @@ final class Editor {
     // MARK: - Document & undo
 
     var evaluator: Evaluator { Evaluator(parameters: doc.parameters) }
+    var shownEvaluator: Evaluator { Evaluator(parameters: shownDoc.parameters) }
 
     /// Rebuilds the model on a background queue. Results that arrive within a short budget are applied
     /// immediately (small models behave synchronously, e.g. live previews while dragging); slower
@@ -349,9 +365,10 @@ final class Editor {
         // Waiting for the result blocks the main thread for the whole rebuild. Fine for a single change (a typed
         // value shows at once), but not while a drag sends a change per mouse event: then input and drawing
         // starve and the preview feels sluggish. So during a quick series of changes, and while an earlier
-        // rebuild still runs, the result arrives asynchronously (one frame later at most).
+        // rebuild still runs, the result arrives asynchronously (one frame later at most). The window is generous:
+        // on a slow Mac drawing a frame can take 100 ms and more, and changes arrive only that often.
         let now = CACurrentMediaTime()
-        let series = command != nil && now - lastRebuildRequest < 0.1
+        let series = command != nil && now - lastRebuildRequest < Self.seriesWindow
         lastRebuildRequest = now
         let busy = latest.isRunning || series
         latest.start(generation)
@@ -372,9 +389,45 @@ final class Editor {
         }
         if !busy, result.done.wait(timeout: .now() + .milliseconds(80)) == .success, let state = result.state {
             apply(state, generation: generation)
-        } else {
+        } else if !isRebuilding {
             isRebuilding = true
         }
+    }
+
+    /// A handle is being dragged. Its first change already counts as part of the series, so the drag does not
+    /// start with a wait for the rebuild and a layout of the panels.
+    func noteHandleDrag() {
+        lastRebuildRequest = CACurrentMediaTime()
+    }
+
+    private func publishForPanels() {
+        let empty = doc.features.isEmpty, bodies = !state.bodyOrder.isEmpty
+        if empty != isDocumentEmpty { isDocumentEmpty = empty }
+        if bodies != hasBodies { hasBodies = bodies }
+        let now = CACurrentMediaTime()
+        guard command != nil && now - lastRebuildRequest < Self.seriesWindow else { return publishNow() }
+        guard !publishPending else { return }
+        publishPending = true
+        schedulePublish(after: Self.seriesWindow)
+    }
+
+    /// Publishes once the changes pause, so also after the last one of a drag.
+    private func schedulePublish(after delay: CFTimeInterval) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak self] in
+            guard let self else { return }
+            let quiet = CACurrentMediaTime() - self.lastRebuildRequest
+            if self.command != nil && quiet < Self.seriesWindow {
+                self.schedulePublish(after: Self.seriesWindow - quiet)
+            } else {
+                self.publishPending = false
+                self.publishNow()
+            }
+        }
+    }
+
+    private func publishNow() {
+        shownDoc = doc
+        shownState = state
     }
 
     private func apply(_ newState: ModelState, generation: Int) {
@@ -382,7 +435,8 @@ final class Editor {
         // meanwhile are still shown, so a preview follows a drag that outpaces the rebuilds.
         guard generation > appliedGeneration else { return }
         appliedGeneration = generation
-        isRebuilding = generation != rebuildGeneration
+        let stillRunning = generation != rebuildGeneration
+        if stillRunning != isRebuilding { isRebuilding = stillRunning }
         state = newState
         assignBodyNames()
         sceneVersion &+= 1
@@ -756,7 +810,8 @@ final class Editor {
     /// and a material label (single material name, or "gemischt").
     var physicalSummary: (title: String, volume: Double, area: Double, mass: Double?, material: String?)? {
         let selectedBodies = Set(selection.compactMap(\.bodyId))
-        let bodies = state.orderedBodies.filter {
+        let doc = shownDoc
+        let bodies = shownState.orderedBodies.filter {
             selectedBodies.isEmpty ? doc.isBodyVisible($0.id) : selectedBodies.contains($0.id)
         }
         guard !bodies.isEmpty else { return nil }
@@ -766,10 +821,10 @@ final class Editor {
         var mass: Double?
         var label: String?
         if densities.allSatisfy({ $0 != nil }) {
-            mass = zip(bodies, densities).reduce(0) { $0 + $1.0.shape.volume / 1000 * $1.1! }
+            mass = zip(bodies, densities).reduce(0) { $0 + $1.0.volume / 1000 * $1.1! }
             label = Set(materials).count == 1 ? materials[0] : "gemischt"
         }
-        return (title, bodies.reduce(0) { $0 + $1.shape.volume }, bodies.reduce(0) { $0 + $1.shape.area }, mass, label)
+        return (title, bodies.reduce(0) { $0 + $1.volume }, bodies.reduce(0) { $0 + $1.area }, mass, label)
     }
 }
 

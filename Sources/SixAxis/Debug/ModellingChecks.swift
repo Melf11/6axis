@@ -421,7 +421,8 @@ enum ModellingChecks {
     }
 
     /// Dragging the extrude arrow on an ordinary model (the cabinet): a change per mouse event must not wait
-    /// for the rebuild on the main thread, and the preview still shows nearly every step.
+    /// for the rebuild on the main thread, the preview still shows nearly every step, and the window keeps up
+    /// because the panels (which SwiftUI lays out expensively) wait until the drag pauses.
     static func dragLightPreview(_ editor: Editor) async {
         editor.openExample(Examples.all[0])
         await settle(editor)
@@ -433,19 +434,26 @@ enum ModellingChecks {
         var blocked: [Double] = []
         var gaps: [Double] = []
         var previous = CACurrentMediaTime()
+        var panelsWaited = true
         for k in 1...60 {
             let t = CACurrentMediaTime()
-            gaps.append((t - previous) * 1000)
+            if k > 1 { gaps.append((t - previous) * 1000) }
             previous = t
-            editor.updateCommandFeature { kind in if case var .extrude(e) = kind { e.distance = "(\(e0.distance)) + \(k) mm"; kind = .extrude(e) } }
+            editor.setExtrudeDistance(Double(10 + k))
             blocked.append((CACurrentMediaTime() - t) * 1000)
+            if k > 1 && editor.shownDoc == editor.doc { panelsWaited = false }
             await pause(1.0 / 60)
         }
         let updates = editor.modelRevision &- revision
         await settle(editor)
-        let median = blocked.dropFirst().sorted()[blocked.count / 2]
-        check("light drag: input not blocked", median < 3, "median \(String(format: "%.1f", median)) ms per change, \(Int(gaps.sorted()[gaps.count / 2])) ms between changes")
-        print("LIGHTDRAG median \(median) gap \(gaps.sorted()[gaps.count / 2]) max \(gaps.max() ?? 0) sync \(blocked.filter { $0 > 3 }.count)/60")
+        let median = blocked.sorted()[blocked.count / 2]
+        let gap = gaps.sorted()[gaps.count / 2]
+        print("LIGHTDRAG blocked \(String(format: "%.1f", median)) ms, \(String(format: "%.1f", gap)) ms between changes")
+        check("light drag: input not blocked", median < 3, "median \(String(format: "%.1f", median)) ms per change")
+        // The test paces itself at 60 changes per second: a longer gap means the main thread could not keep up.
+        check("light drag: main thread keeps up", gap < 33, "median \(String(format: "%.1f", gap)) ms between changes")
+        check("light drag: panels wait for a pause", panelsWaited)
+        check("light drag: panels show the result afterwards", editor.shownDoc == editor.doc)
         check("light drag: preview follows", updates >= 40, "\(updates) of 60 changes shown")
         check("light drag: no rebuild hint", !editor.showsRebuilding)
         editor.cancelCommand()

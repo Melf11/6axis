@@ -5,6 +5,8 @@ import SixAxisCore
 
 extension Editor {
     var commandFeature: Feature? { command?.featureId.flatMap { doc.feature($0) } }
+    /// The same for the dialog, which follows a drag less often than the model does.
+    var shownCommandFeature: Feature? { command?.featureId.flatMap { shownDoc.feature($0) } }
 
     /// Model state just before the command's feature (cached by the builder, so cheap).
     var stateBeforeCommand: ModelState {
@@ -14,9 +16,9 @@ extension Editor {
 
     /// Error of the command's feature – not before the user gave the inputs a fresh command needs.
     var commandError: String? {
-        guard let cmd = command, let f = commandFeature else { return nil }
+        guard let cmd = command, let f = shownCommandFeature else { return nil }
         if cmd.isNew && !hasInputs(f) { return nil }
-        return state.errors[f.id]
+        return shownState.errors[f.id]
     }
 
     // MARK: - Begin / end
@@ -394,6 +396,7 @@ extension Editor {
     }
 
     func setExtrudeDistance(_ d: Double) {
+        noteHandleDrag()
         updateCommandFeature { k in
             guard case var .extrude(e) = k else { return }
             e.distance = plainNumber(d)
@@ -456,6 +459,7 @@ extension Editor {
     }
 
     func setHoleOffset(_ i: Int, axis: Int, _ v: Double) {
+        noteHandleDrag()
         updateCommandFeature { k in
             guard case var .hole(h) = k, h.points.indices.contains(i), case let .faceOffset(r, x, y) = h.points[i] else { return }
             h.points[i] = axis == 0 ? .faceOffset(r, x: plainNumber(v), y: y) : .faceOffset(r, x: x, y: plainNumber(v))
@@ -512,6 +516,7 @@ extension Editor {
     }
 
     func setEdgeValue(_ v: Double) {
+        noteHandleDrag()
         updateCommandFeature { k in
             if case var .fillet(f) = k { f.radius = plainNumber(v); k = .fillet(f) }
             if case var .chamfer(c) = k { c.distance = plainNumber(v); k = .chamfer(c) }
@@ -598,6 +603,7 @@ extension Editor {
     }
 
     func setMoveOffset(axis: Int, _ v: Double) {
+        noteHandleDrag()
         updateCommandFeature { k in
             guard case var .move(m) = k else { return }
             switch axis {
@@ -626,6 +632,7 @@ extension Editor {
     }
 
     func setMoveAngle(_ ring: MoveRing, _ v: Double) {
+        noteHandleDrag()
         updateCommandFeature { k in
             guard case var .move(m) = k else { return }
             m.axis = ring.axis

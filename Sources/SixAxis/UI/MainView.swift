@@ -42,7 +42,7 @@ struct MainView: View {
             .animation(.snappy(duration: 0.22), value: editor.command?.kind)
             .animation(.snappy(duration: 0.22), value: editor.browserVisible)
 
-            if editor.doc.features.isEmpty && editor.sketchId == nil && editor.command == nil {
+            if editor.isDocumentEmpty && editor.sketchId == nil && editor.command == nil {
                 WelcomeCard(editor: editor)
                     .transition(.opacity.combined(with: .scale(scale: 0.96)))
             }
@@ -77,7 +77,7 @@ struct MainView: View {
         }
         .ignoresSafeArea()
         .animation(.snappy(duration: 0.2), value: editor.toast)
-        .animation(.snappy(duration: 0.25), value: editor.doc.features.isEmpty)
+        .animation(.snappy(duration: 0.25), value: editor.isDocumentEmpty)
         .animation(.snappy(duration: 0.15), value: editor.showCommandPalette)
         .animation(.snappy(duration: 0.15), value: editor.markingMenu)
         .sheet(isPresented: $editor.showParameters) { ParametersSheet(editor: editor) }
@@ -201,14 +201,7 @@ private struct BottomBar: View {
                     .floatingPanel(radius: 12)
                     .transition(.opacity)
                 }
-                Text(prompt)
-                    .font(.system(size: 11))
-                    .lineLimit(1)
-                    .fixedSize()
-                    .foregroundStyle(.secondary)
-                    .padding(.horizontal, 10)
-                    .frame(height: 24)
-                    .floatingPanel(radius: 12)
+                CommandPrompt(editor: editor)
             }
             .frame(maxWidth: 440, alignment: .leading)
 
@@ -216,14 +209,19 @@ private struct BottomBar: View {
             TimelineBar(editor: editor)
             Spacer(minLength: 0)
 
-            physicalInfo
+            PhysicalInfo(editor: editor)
                 .frame(maxWidth: 320, alignment: .trailing)
         }
         .padding(12)
     }
 
-    @ViewBuilder
-    private var physicalInfo: some View {
+}
+
+/// Volume and weight. A view of its own: they change during a drag, the rest of the bottom bar does not.
+private struct PhysicalInfo: View {
+    let editor: Editor
+
+    var body: some View {
         if let p = editor.physicalSummary {
             let cm3 = p.volume / 1000
             let settings = AppSettings.shared
@@ -242,6 +240,22 @@ private struct BottomBar: View {
             .floatingPanel(radius: 10)
             .help(String(format: String(localized: "Oberfläche: %.1f cm²"), p.area / 100))
         }
+    }
+}
+
+/// What to do next. A view of its own, because it reads the command's feature, which changes during a drag.
+private struct CommandPrompt: View {
+    let editor: Editor
+
+    var body: some View {
+        Text(prompt)
+            .font(.system(size: 11))
+            .lineLimit(1)
+            .fixedSize()
+            .foregroundStyle(.secondary)
+            .padding(.horizontal, 10)
+            .frame(height: 24)
+            .floatingPanel(radius: 12)
     }
 
     private var prompt: String {
@@ -292,7 +306,7 @@ private struct BottomBar: View {
             case let .constraint(ct): return String(localized: "\(ct.name): Objekte wählen")
             }
         }
-        return editor.state.bodyOrder.isEmpty
+        return !editor.hasBodies
             ? String(localized: "Starte mit „Skizze“ (oder drücke L, R, C) · S öffnet die Befehlssuche")
             : String(localized: "Wähle Geometrie · Rechtsklick für Schnellmenü · S für Befehlssuche")
     }

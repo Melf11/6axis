@@ -59,7 +59,7 @@ struct CommandPanel: View {
 
     @ViewBuilder
     private func content(_ cmd: ActiveCommand) -> some View {
-        switch (cmd.kind, editor.commandFeature?.kind) {
+        switch (cmd.kind, editor.shownCommandFeature?.kind) {
         case (.sketchPlane, _):
             sketchPlaneContent
         case let (.extrude, .extrude(e)?):
@@ -263,6 +263,9 @@ struct ExpressionField: View {
     let editor: Editor
     let onChange: (String) -> Void
     @State private var draft = ""
+    /// What this field last sent: the dialog follows late during a series of changes, and that echo must not
+    /// replace what is being typed meanwhile.
+    @State private var sent: String?
     @FocusState private var focused: Bool
 
     var body: some View {
@@ -274,9 +277,9 @@ struct ExpressionField: View {
                     .focused($focused)
                     .onSubmit { onChange(draft); editor.commitCommand() }
                     .onChange(of: draft) { _, new in
-                        if (try? editor.evaluator.value(new, kind: kind)) != nil, new != text { onChange(new) }
+                        if (try? editor.shownEvaluator.value(new, kind: kind)) != nil, new != text { sent = new; onChange(new) }
                     }
-                if let v = try? editor.evaluator.value(draft, kind: kind) {
+                if let v = try? editor.shownEvaluator.value(draft, kind: kind) {
                     if Double(draft.replacingOccurrences(of: ",", with: ".")) == nil {
                         Text("= " + formatValue(v, kind: kind)).font(.system(size: 10)).foregroundStyle(.secondary)
                     }
@@ -286,7 +289,7 @@ struct ExpressionField: View {
             }
         }
         .onAppear { draft = text }
-        .onChange(of: text) { _, new in if !focused || (try? editor.evaluator.value(draft, kind: kind)) == nil { draft = new } }
+        .onChange(of: text) { _, new in if !focused || (new != sent && (try? editor.shownEvaluator.value(draft, kind: kind)) == nil) { draft = new } }
         .onChange(of: focused) { _, f in if !f { draft = text } }
     }
 }

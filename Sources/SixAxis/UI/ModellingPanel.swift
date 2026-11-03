@@ -5,7 +5,7 @@ import SixAxisCore
 extension CommandPanel {
     @ViewBuilder
     func modellingContent(_ cmd: ActiveCommand) -> some View {
-        switch editor.commandFeature?.kind {
+        switch editor.shownCommandFeature?.kind {
         case let .plane(p)?: planeContent(p, cmd)
         case let .axis(a)?: axisContent(a, cmd)
         case let .hole(h)?: holeContent(h)

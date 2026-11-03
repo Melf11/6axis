@@ -43,6 +43,10 @@ public final class BuiltBody: @unchecked Sendable {
         return try? shape.mesh(linearDeflection: max(0.005, size * 0.0008), angularDeflection: 0.25)
     }()
 
+    /// Cached: the status bar shows these with every change, and the kernel takes a while on larger bodies.
+    public private(set) lazy var volume: Double = shape.volume
+    public private(set) lazy var area: Double = shape.area
+
     public private(set) lazy var faceInfos: [FaceInfo?] = (0..<shape.faceCount).map { shape.faceInfo($0) }
     public private(set) lazy var edgeInfos: [EdgeInfo?] = (0..<shape.edgeCount).map { shape.edgeInfo($0) }
 
@@ -249,6 +253,8 @@ public struct ModelState: @unchecked Sendable {
             _ = body.mesh
             _ = body.faceInfos
             _ = body.edgeInfos
+            _ = body.volume
+            _ = body.area
         }
         cutPreview = nil
         guard let feature, let tool = tools[feature], tool.operation == .cut else { return }
