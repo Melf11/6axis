@@ -111,6 +111,9 @@ struct ViewportOverlay: View {
             if !editor.hasLockedInput, let inf = editor.inference, let s = screen((p0 + e) / 2) {
                 badge(ctx, inf == .horizontal ? "H" : "V", at: CGPoint(x: s.x, y: s.y - 14))
             }
+        case .centerRectangle where editor.centerToolSides != nil:
+            let corners = RegularPolygon(sides: editor.centerToolSides ?? 4).corners(center: p0, radius: simd_distance(p0, e))
+            ctx.stroke(path(corners + corners.prefix(1)), with: .color(accent), style: style)
         case .rectangle, .centerRectangle:
             let lo = editor.sketchTool == .centerRectangle ? p0 - (e - p0) : p0
             ctx.stroke(path([lo, Vec2(e.x, lo.y), e, Vec2(lo.x, e.y), lo]), with: .color(accent), style: style)
@@ -214,6 +217,8 @@ struct ViewportOverlay: View {
             let lengthPos = away(mid, from: side, by: -30) ?? .zero
             let anglePos = away(p0, from: e, by: 48) ?? .zero
             return [lengthPos, anglePos]
+        case .centerRectangle where editor.centerToolSides != nil:
+            return [away(e, from: p0, by: 70) ?? .zero]
         case .rectangle, .centerRectangle:
             let lo = editor.sketchTool == .centerRectangle ? p0 - (e - p0) : p0
             let center = (lo + e) / 2

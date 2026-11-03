@@ -537,4 +537,160 @@ final class ModellingTests: XCTestCase {
         XCTAssertEqual(back, doc)
         XCTAssertGreaterThanOrEqual(CADDocument.currentFormatVersion, 5)
     }
+
+    // MARK: Angular holes and polygons
+
+    func testAngularHoleRemovesItsArea() {
+        for (sides, rotation) in [(3, "0"), (4, "0"), (4, "45"), (6, "0"), (9, "12")] {
+            var doc = CADDocument()
+            let e = box(&doc)
+            let top = topFace(build(doc), e)
+            var h = HoleFeature()
+            h.points = [.faceOffset(top, x: "50", y: "30")]
+            h.extent = .through
+            h.diameter = "10 mm"
+            h.sides = sides
+            h.rotation = rotation
+            doc.features.append(Feature(name: "B", kind: .hole(h)))
+            let body = build(doc).bodies[e]!
+            let n = Double(sides)
+            XCTAssertEqual(body.shape.volume, 120000 - n * 25 * tan(.pi / n) * 20, accuracy: 1e-3, "\(sides) corners")
+            XCTAssertEqual(body.faceInfos.count, 6 + sides, "\(sides) corners")
+        }
+    }
+
+    func testSquareHoleLiesAlongTheFaceAndTurns() {
+        func inner(_ rotation: String) -> [Vec3] {
+            var doc = CADDocument()
+            let e = box(&doc)
+            var h = HoleFeature()
+            h.points = [.faceOffset(topFace(build(doc), e), x: "50", y: "30")]
+            h.extent = .through
+            h.sides = 4
+            h.rotation = rotation
+            doc.features.append(Feature(name: "B", kind: .hole(h)))
+            return build(doc).bodies[e]!.faceInfos.compactMap { $0 }.filter { abs($0.normal.z) < 0.5 && $0.centroid.x > 40 && $0.centroid.x < 60 && $0.centroid.y > 20 && $0.centroid.y < 40 }.map(\.normal)
+        }
+        XCTAssertEqual(inner("0").count, 4)
+        for n in inner("0") { XCTAssertEqual(max(abs(n.x), abs(n.y)), 1, accuracy: 1e-6) }
+        for n in inner("45") { XCTAssertEqual(abs(n.x), 0.7071, accuracy: 1e-3) }
+    }
+
+    func testAngularOnlyForPlainHolesWithoutThread() {
+        func volume(_ change: (inout HoleFeature) -> Void) -> Double {
+            var doc = CADDocument()
+            let e = box(&doc)
+            var h = HoleFeature()
+            h.points = [.faceOffset(topFace(build(doc), e), x: "50", y: "30")]
+            change(&h)
+            doc.features.append(Feature(name: "B", kind: .hole(h)))
+            return build(doc).bodies[e]!.shape.volume
+        }
+        let counterbore = volume { $0.type = .counterbore }
+        XCTAssertEqual(volume { $0.type = .counterbore; $0.sides = 4 }, counterbore, accuracy: 1e-6)
+        let thread = volume { $0.thread = "M8"; $0.threadModeled = false }
+        XCTAssertEqual(volume { $0.thread = "M8"; $0.threadModeled = false; $0.sides = 4 }, thread, accuracy: 1e-6)
+    }
+
+    func testTooFewCornersIsAnError() {
+        var doc = CADDocument()
+        let e = box(&doc)
+        var h = HoleFeature()
+        h.points = [.faceOffset(topFace(build(doc), e), x: "50", y: "30")]
+        h.sides = 2
+        doc.features.append(Feature(name: "B", kind: .hole(h)))
+        XCTAssertFalse(ModelBuilder().build(doc).errors.isEmpty)
+    }
+
+    /// Disc from a sketch circle (Ø 20, centre 30/30), extruded 10 mm, with the corners given.
+    private func disc(sides: Int?, diameter: String = "20 mm") -> (CADDocument, UUID) {
+        var doc = CADDocument()
+        var sk = Sketch(plane: .xy)
+        let circle = sk.addCircle(center: sk.addPoint(Vec2(30, 30)), radius: 10)
+        sk.curves[sk.curveIndex(circle)!].polygon = sides.map { RegularPolygon(sides: $0) }
+        sk.addConstraint(.diameter(curve: circle, value: diameter))
+        _ = SketchSolver(evaluator: Evaluator(parameters: [])).solve(&sk)
+        let s = Feature(name: "S", kind: .sketch(sk))
+        var ex = ExtrudeFeature()
+        ex.profiles = [ProfileRef(sketch: s.id, sample: Vec2(30, 30))]
+        ex.distance = "10 mm"
+        let e = Feature(name: "E", kind: .extrude(ex))
+        doc.features = [s, e]
+        return (doc, e.id)
+    }
+
+    func testCircleTurnsIntoPolygonAndBack() {
+        let (round, id) = disc(sides: nil)
+        XCTAssertEqual(build(round).bodies[id]!.shape.volume, .pi * 100 * 10, accuracy: 1e-6)
+        for sides in [3, 4, 5, 6, 8] {
+            let (doc, id) = disc(sides: sides)
+            let n = Double(sides)
+            XCTAssertEqual(build(doc).bodies[id]!.shape.volume, n * 100 * tan(.pi / n) * 10, accuracy: 1e-6, "\(sides) corners")
+        }
+    }
+
+    func testPolygonFollowsTheDimensionOfTheCircle() {
+        let (doc, id) = disc(sides: 4, diameter: "30 mm")
+        XCTAssertEqual(build(doc).bodies[id]!.shape.volume, 30 * 30 * 10, accuracy: 1e-6)
+    }
+
+    func testPolygonInAPlateKeepsThePlateProfile() {
+        var doc = CADDocument()
+        var sk = Sketch(plane: .xy)
+        let c = [sk.addPoint(Vec2(0, 0)), sk.addPoint(Vec2(100, 0)), sk.addPoint(Vec2(100, 60)), sk.addPoint(Vec2(0, 60))]
+        for i in 0..<4 { sk.addLine(c[i], c[(i + 1) % 4]) }
+        let circle = sk.addCircle(center: sk.addPoint(Vec2(30, 30)), radius: 10)
+        let s = Feature(name: "S", kind: .sketch(sk))
+        var ex = ExtrudeFeature()
+        ex.profiles = [ProfileRef(sketch: s.id, sample: Vec2(70, 30))]
+        ex.distance = "10 mm"
+        let e = Feature(name: "E", kind: .extrude(ex))
+        doc.features = [s, e]
+        sk.curves[sk.curveIndex(circle)!].polygon = RegularPolygon(sides: 6)
+        doc.update(s.id) { $0.kind = .sketch(sk) }
+        XCTAssertEqual(build(doc).bodies[e.id]!.shape.volume, (6000 - 6 * 100 * tan(.pi / 6)) * 10, accuracy: 1e-6)
+    }
+
+    func testPolygonCornersFollowMirrorAndPattern() throws {
+        var sk = Sketch(plane: .xy)
+        let circle = sk.addCircle(center: sk.addPoint(Vec2(30, 10)), radius: 10)
+        sk.curves[sk.curveIndex(circle)!].polygon = RegularPolygon(sides: 3, rotation: 10)
+        let axis = sk.addLine(sk.addPoint(Vec2(0, -50)), sk.addPoint(Vec2(0, 50)), construction: true)
+        let mirrored = try XCTUnwrap(SketchEdit.mirror(&sk, curves: [circle], axis: axis).first)
+        let original = sk.polygonCorners(sk.curve(circle)!), copy = sk.polygonCorners(sk.curve(mirrored)!)
+        XCTAssertEqual(copy.count, 3)
+        for p in original {
+            XCTAssertTrue(copy.contains { simd_distance($0, Vec2(-p.x, p.y)) < 1e-6 }, "\(p) not mirrored in \(copy)")
+        }
+    }
+
+    func testOffsetOfPolygonStaysAPolygon() throws {
+        var sk = Sketch(plane: .xy)
+        let circle = sk.addCircle(center: sk.addPoint(Vec2(0, 0)), radius: 10)
+        sk.curves[sk.curveIndex(circle)!].polygon = RegularPolygon(sides: 4)
+        XCTAssertNotNil(SketchEdit.offset(&sk, chainFrom: circle, distance: 5, side: 1, text: "5 mm"))
+        let copy = try XCTUnwrap(sk.curves.last)
+        XCTAssertEqual(copy.polygon?.sides, 4)
+        XCTAssertEqual(sk.radius(of: copy), 15, accuracy: 1e-9)
+    }
+
+    func testTrimTurnsThePolygonIntoLines() throws {
+        var sk = Sketch(plane: .xy)
+        let circle = sk.addCircle(center: sk.addPoint(Vec2(0, 0)), radius: 10)
+        sk.curves[sk.curveIndex(circle)!].polygon = RegularPolygon(sides: 4)
+        sk.addLine(sk.addPoint(Vec2(-20, 0)), sk.addPoint(Vec2(20, 0)))
+        // The right side (x = 10) is cut by the line at y = 0; click its upper half.
+        let result = SketchEdit.trim(&sk, curve: circle, at: Vec2(10, 5))
+        XCTAssertNotNil(result)
+        XCTAssertNil(sk.curve(circle))
+        XCTAssertEqual(sk.curves.filter(\.isLine).count, 5)
+    }
+
+    func testTrimWithoutResultLeavesThePolygon() {
+        var sk = Sketch(plane: .xy)
+        let circle = sk.addCircle(center: sk.addPoint(Vec2(0, 0)), radius: 10)
+        sk.curves[sk.curveIndex(circle)!].polygon = RegularPolygon(sides: 4)
+        XCTAssertNotNil(SketchEdit.trimPreview(sk, curve: circle, at: Vec2(10, 5)))
+        XCTAssertNotNil(sk.curve(circle), "the preview must not change the sketch")
+    }
 }

@@ -359,5 +359,66 @@ enum SketchChecks {
         check("projected outline is a profile", (editor.activeSketchBuild?.regions.count ?? 0) >= 1)
         editor.finishSketch()
         await pause()
+        await polygonChecks(editor)
+    }
+
+    /// Tool "Mittig" with corners, and a circle turned into polygons through the properties.
+    static func polygonChecks(_ editor: Editor) async {
+        func shot(_ name: String) async {
+            if let dir = ProcessInfo.processInfo.environment["SIXAXIS_SNAPSHOTS"] { await DemoScript.snap(editor, name, URL(fileURLWithPath: dir)) }
+        }
+        editor.newDocument()
+        editor.beginSketch(on: .xy)
+        await pause(0.8)
+        await view(editor)
+        // Mittig with six corners: centre, then a point at distance 10 → wrench size 20.
+        editor.setSketchTool(.centerRectangle)
+        editor.centerToolSides = 6
+        click(editor, Vec2(20, 20))
+        await shot("sketch-polygon-tool")
+        click(editor, Vec2(30, 20))
+        await pause()
+        let made = editor.activeSketch?.curves.first
+        check("polygon tool: one curve with six corners", editor.activeSketch?.curves.count == 1 && made?.polygon?.sides == 6, "\(String(describing: made))")
+        check("polygon tool: is a profile", editor.activeSketchBuild?.regions.count == 1)
+        editor.centerToolSides = nil
+        click(editor, Vec2(60, 25))
+        click(editor, Vec2(70, 35))
+        await pause()
+        check("Mittig without corners stays a rectangle", editor.activeSketch?.curves.filter(\.isLine).count == 4 + 1, "\(editor.activeSketch?.curves.count ?? 0) curves")
+
+        // A circle: select it, turn it into a square, set its size, back to round.
+        editor.setSketchTool(.circle)
+        click(editor, Vec2(20, 60))
+        click(editor, Vec2(30, 60))
+        editor.setSketchTool(.select)
+        await pause()
+        guard let circle = editor.activeSketch?.curves.last, let cid = Optional(circle.id) else { return check("polygon: circle created", false) }
+        click(editor, Vec2(30, 60))
+        await pause()
+        check("properties: click selects the circle", editor.selectedSketchCurves == [cid], "\(editor.selectedSketchCurves)")
+        await shot("sketch-properties-circle")
+        editor.setPolygonSides([cid], 4)
+        editor.setSize([cid], "30 mm")
+        await pause()
+        await shot("sketch-properties-square")
+        if let sk = editor.activeSketch, let c = sk.curve(cid) {
+            check("properties: square keeps its centre", sk.center(of: c).map { simd_distance($0, Vec2(20, 60)) < 1e-6 } ?? false)
+            check("properties: size is the width across flats", abs(sk.radius(of: c) - 15) < 1e-6 && abs((sk.polygonCorners(c).map(\.x).max() ?? 0) - 35) < 1e-6, "\(sk.polygonCorners(c))")
+            check("properties: the size is a dimension", editor.sizeText(c, in: sk) == "30 mm", editor.sizeText(c, in: sk))
+        }
+        // The square's corner sticks out beyond the circle: picking follows the polygon.
+        editor.selection.removeAll()
+        click(editor, Vec2(34, 74))
+        await pause()
+        check("properties: a corner of the polygon can be clicked", editor.selectedSketchCurves == [cid], "\(editor.selectedSketchCurves)")
+        editor.undo()
+        editor.undo()
+        await pause()
+        check("properties: undo takes back size and shape", editor.activeSketch?.curve(cid)?.polygon == nil, "\(String(describing: editor.activeSketch?.curve(cid)))")
+        editor.setConstruction([cid], true)
+        check("properties: construction", editor.activeSketch?.curve(cid)?.construction == true)
+        editor.finishSketch()
+        await pause()
     }
 }

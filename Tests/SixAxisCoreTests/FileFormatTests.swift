@@ -43,6 +43,29 @@ final class FileFormatTests: XCTestCase {
         XCTAssertEqual(try XCTUnwrap(ModelBuilder().build(doc).bodies[plate]?.shape.volume), 227528.76110196154, accuracy: 1e-3)
     }
 
+    func testCirclesAndHolesFrom220StayRound() throws {
+        let doc = try CADDocument.decode(Data(contentsOf: Self.fixtures.appendingPathComponent("2.2.0-Kreis.6axis")))
+        guard case let .hole(h)? = doc.features.last?.kind, case let .sketch(sk)? = doc.features.first?.kind else { return XCTFail("no hole or sketch") }
+        XCTAssertNil(h.sides)
+        XCTAssertTrue(sk.curves.allSatisfy { $0.polygon == nil })
+        let plate = try XCTUnwrap(doc.features.first { $0.name == "Platte" }?.id)
+        // Volume printed by 2.2.0 when the file was written.
+        XCTAssertEqual(try XCTUnwrap(ModelBuilder().build(doc).bodies[plate]?.shape.volume), 112711.50504367168, accuracy: 1e-6)
+    }
+
+    func testPolygonRoundTrip() throws {
+        var doc = CADDocument()
+        var sk = Sketch(plane: .xy)
+        let circle = sk.addCircle(center: sk.addPoint(Vec2(0, 0)), radius: 5)
+        sk.curves[sk.curveIndex(circle)!].polygon = RegularPolygon(sides: 6, rotation: 15)
+        doc.features.append(Feature(name: "S", kind: .sketch(sk)))
+        var h = HoleFeature()
+        h.sides = 8
+        h.rotation = "22.5"
+        doc.features.append(Feature(name: "B", kind: .hole(h)))
+        XCTAssertEqual(try CADDocument.decode(doc.encoded()).features, doc.features)
+    }
+
     func testNewerFormatIsRefused() {
         let data = Data(#"{"formatVersion": 99, "features": []}"#.utf8)
         XCTAssertThrowsError(try CADDocument.decode(data)) { error in

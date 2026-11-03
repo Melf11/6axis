@@ -135,6 +135,9 @@ extension CommandPanel {
                 ForEach(HoleType.allCases, id: \.self) { Text($0.displayName).tag($0) }
             }
             .pickerStyle(.segmented).labelsHidden()
+            if h.type == .simple && thread == nil {
+                PolygonPicker(sides: h.sides, roundTitle: String(localized: "Rund")) { v in set { $0.sides = v } }
+            }
             LabeledRow(String(localized: "Gewinde")) {
                 Picker("", selection: Binding(get: { h.thread ?? "" }, set: { v in set { $0.thread = v.isEmpty ? nil : v } })) {
                     Text("Ohne").tag("")
@@ -146,7 +149,11 @@ extension CommandPanel {
                 hint(String(localized: "Kernloch Ø \(formatValue(thread.tapDrill, kind: .length))"))
                 toggle(String(localized: "Gewinde modellieren (für den 3D-Druck)"), h.threadModeled) { v in set { $0.threadModeled = v } }
             } else {
-                field(String(localized: "Durchmesser"), h.diameter) { v in set { $0.diameter = v } }
+                let angular = h.type == .simple && h.sides != nil
+                field(angular ? String(localized: "Schlüsselweite") : String(localized: "Durchmesser"), h.diameter) { v in set { $0.diameter = v } }
+                if angular {
+                    field(String(localized: "Drehung"), h.rotation ?? "0", kind: .angle) { v in set { $0.rotation = v } }
+                }
             }
             LabeledRow(String(localized: "Ende")) {
                 Picker("", selection: Binding(get: { h.extent }, set: { v in set { $0.extent = v } })) {

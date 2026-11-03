@@ -171,6 +171,16 @@
     "%lld %%": {
       "shouldTranslate": false
     },
+    "%lld Elemente": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld items"
+          }
+        }
+      }
+    },
     "%lld Freiheitsgrade": {
       "localizations": {
         "en": {
@@ -2126,6 +2136,16 @@
         }
       }
     },
+    "Die Eckenzahl muss zwischen 3 und 64 liegen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The number of corners must be between 3 and 64"
+          }
+        }
+      }
+    },
     "Die GitHub-Anmeldung ist abgelaufen – bitte neu anmelden.": {
       "localizations": {
         "en": {
@@ -2624,6 +2644,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Front left corner, bottom (table)"
+          }
+        }
+      }
+    },
+    "Ecken": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Corners"
+          }
+        }
+      }
+    },
+    "Eckig": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Angular"
           }
         }
       }
@@ -3854,6 +3894,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Size"
+          }
+        }
+      }
+    },
+    "Größe klicken oder Breite eintippen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Click the size or type the width"
           }
         }
       }
@@ -6807,6 +6857,16 @@
         }
       }
     },
+    "Rund": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Round"
+          }
+        }
+      }
+    },
     "Rückfrage": {
       "localizations": {
         "en": {
@@ -7077,6 +7137,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Close (Esc)"
+          }
+        }
+      }
+    },
+    "Schlüsselweite": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Across flats"
           }
         }
       }
@@ -8806,6 +8876,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Manage"
+          }
+        }
+      }
+    },
+    "Vieleck": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Polygon"
           }
         }
       }

@@ -15,6 +15,7 @@ extension Editor {
         guard sketchId != nil, !toolPoints.isEmpty else { return [] }
         switch sketchTool {
         case .line: return [ToolInputSpec(label: String(localized: "Länge"), kind: .length), ToolInputSpec(label: String(localized: "Winkel"), kind: .angle)]
+        case .centerRectangle where centerToolSides != nil: return [ToolInputSpec(label: String(localized: "Breite"), kind: .length)]
         case .rectangle, .centerRectangle: return [ToolInputSpec(label: String(localized: "Breite"), kind: .length), ToolInputSpec(label: String(localized: "Höhe"), kind: .length)]
         case .circle: return [ToolInputSpec(label: "⌀", kind: .length)]
         case .arc:
@@ -75,6 +76,10 @@ extension Editor {
             if let a = toolInputValue(1) { dir = Vec2(cos(a * .pi / 180), sin(a * .pi / 180)) }
             let len = toolInputValue(0) ?? (toolInputValue(1) != nil ? max(simd_dot(d, dir), 0) : simd_length(d))
             return p0 + dir * len
+        case .centerRectangle where centerToolSides != nil:
+            guard let width = toolInputValue(0) else { return cursor }
+            let dir = simd_length(d) > 1e-12 ? simd_normalize(d) : Vec2(1, 0)
+            return p0 + dir * width / 2
         case .rectangle:
             let w = toolInputValue(0) ?? abs(d.x), h = toolInputValue(1) ?? abs(d.y)
             return p0 + Vec2(sign(d.x) * w, sign(d.y) * h)
@@ -109,6 +114,7 @@ extension Editor {
             if a < 0 { a += 360 }
             return [simd_length(d), a]
         case .rectangle: return [abs(d.x), abs(d.y)]
+        case .centerRectangle where centerToolSides != nil: return [2 * simd_length(d)]
         case .centerRectangle: return [2 * abs(d.x), 2 * abs(d.y)]
         case .circle: return [2 * simd_length(d)]
         default: return []

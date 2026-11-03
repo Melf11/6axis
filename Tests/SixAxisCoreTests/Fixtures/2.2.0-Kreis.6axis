@@ -1,0 +1,250 @@
+{
+  "bodies" : [
+
+  ],
+  "components" : [
+
+  ],
+  "features" : [
+    {
+      "id" : "258E47EB-5906-4ECE-9EC5-2491C74FA57C",
+      "kind" : {
+        "sketch" : {
+          "_0" : {
+            "constraints" : [
+              {
+                "id" : 11,
+                "kind" : {
+                  "diameter" : {
+                    "curve" : 10,
+                    "value" : "20 mm"
+                  }
+                },
+                "labelOffset" : [
+                  0,
+                  0
+                ]
+              }
+            ],
+            "curves" : [
+              {
+                "construction" : false,
+                "geometry" : {
+                  "line" : {
+                    "end" : 2,
+                    "start" : 1
+                  }
+                },
+                "id" : 5
+              },
+              {
+                "construction" : false,
+                "geometry" : {
+                  "line" : {
+                    "end" : 3,
+                    "start" : 2
+                  }
+                },
+                "id" : 6
+              },
+              {
+                "construction" : false,
+                "geometry" : {
+                  "line" : {
+                    "end" : 4,
+                    "start" : 3
+                  }
+                },
+                "id" : 7
+              },
+              {
+                "construction" : false,
+                "geometry" : {
+                  "line" : {
+                    "end" : 1,
+                    "start" : 4
+                  }
+                },
+                "id" : 8
+              },
+              {
+                "construction" : false,
+                "geometry" : {
+                  "circle" : {
+                    "center" : 9,
+                    "radius" : 10
+                  }
+                },
+                "id" : 10
+              }
+            ],
+            "nextId" : 12,
+            "plane" : {
+              "xy" : {
+
+              }
+            },
+            "points" : [
+              {
+                "fixed" : true,
+                "id" : 0,
+                "position" : [
+                  0,
+                  0
+                ]
+              },
+              {
+                "fixed" : false,
+                "id" : 1,
+                "position" : [
+                  0,
+                  0
+                ]
+              },
+              {
+                "fixed" : false,
+                "id" : 2,
+                "position" : [
+                  100,
+                  0
+                ]
+              },
+              {
+                "fixed" : false,
+                "id" : 3,
+                "position" : [
+                  100,
+                  60
+                ]
+              },
+              {
+                "fixed" : false,
+                "id" : 4,
+                "position" : [
+                  0,
+                  60
+                ]
+              },
+              {
+                "fixed" : false,
+                "id" : 9,
+                "position" : [
+                  30,
+                  30
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "name" : "Skizze",
+      "suppressed" : false
+    },
+    {
+      "id" : "B48F2A11-8E83-4E12-989F-8376C47CE300",
+      "kind" : {
+        "extrude" : {
+          "_0" : {
+            "distance" : "20 mm",
+            "distance2" : "10 mm",
+            "extent" : "oneSide",
+            "faces" : [
+
+            ],
+            "operation" : "newBody",
+            "profiles" : [
+              {
+                "sample" : [
+                  70,
+                  30
+                ],
+                "sketch" : "258E47EB-5906-4ECE-9EC5-2491C74FA57C"
+              }
+            ],
+            "targets" : [
+
+            ]
+          }
+        }
+      },
+      "name" : "Platte",
+      "suppressed" : false
+    },
+    {
+      "id" : "7D7E927E-3E89-4260-B3D7-DC045FE3E59F",
+      "kind" : {
+        "sketch" : {
+          "_0" : {
+            "constraints" : [
+
+            ],
+            "curves" : [
+
+            ],
+            "nextId" : 2,
+            "plane" : {
+              "xy" : {
+
+              }
+            },
+            "points" : [
+              {
+                "fixed" : true,
+                "id" : 0,
+                "position" : [
+                  0,
+                  0
+                ]
+              },
+              {
+                "fixed" : false,
+                "id" : 1,
+                "position" : [
+                  70,
+                  30
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "name" : "Punkte",
+      "suppressed" : false
+    },
+    {
+      "id" : "4E988C61-C950-4BBC-A4D8-9243FFB6DF55",
+      "kind" : {
+        "hole" : {
+          "_0" : {
+            "countersinkAngle" : "90",
+            "depth" : "10 mm",
+            "diameter" : "8 mm",
+            "extent" : "through",
+            "flip" : true,
+            "headDepth" : "5 mm",
+            "headDiameter" : "10 mm",
+            "points" : [
+              {
+                "sketchPoint" : {
+                  "point" : 1,
+                  "sketch" : "7D7E927E-3E89-4260-B3D7-DC045FE3E59F"
+                }
+              }
+            ],
+            "threadModeled" : true,
+            "type" : "simple"
+          }
+        }
+      },
+      "name" : "Bohrung",
+      "suppressed" : false
+    }
+  ],
+  "formatVersion" : 9,
+  "hiddenSketches" : [
+
+  ],
+  "parameters" : [
+
+  ]
+}
