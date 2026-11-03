@@ -2388,16 +2388,6 @@
         }
       }
     },
-    "Dreieck": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Triangle"
-          }
-        }
-      }
-    },
     "Drucken": {
       "localizations": {
         "en": {
@@ -2664,6 +2654,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Corners"
+          }
+        }
+      }
+    },
+    "Eckig": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Angular"
           }
         }
       }
@@ -8886,16 +8886,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Polygon"
-          }
-        }
-      }
-    },
-    "Viereck": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Square"
           }
         }
       }

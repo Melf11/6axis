@@ -1,49 +1,27 @@
 import SwiftUI
 import SixAxisCore
 
-/// Round, triangle, square or a polygon with any number of corners. nil = the round choice (or the rectangle).
+/// Round (or rectangle, see `roundTitle`) or angular with a number of corners. nil = round.
 struct PolygonPicker: View {
     let sides: Int?
     let roundTitle: String
     let onChange: (Int?) -> Void
-    private static let manySides = 6
-
-    private enum Choice: Hashable { case round, triangle, square, many }
-
-    private var choice: Choice {
-        switch sides {
-        case nil: return .round
-        case 3?: return .triangle
-        case 4?: return .square
-        default: return .many
-        }
-    }
+    private static let defaultSides = 4
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Picker("", selection: Binding(get: { choice }, set: { choose($0) })) {
-                Text(roundTitle).tag(Choice.round)
-                Text("Dreieck").tag(Choice.triangle)
-                Text("Viereck").tag(Choice.square)
-                Text("Vieleck").tag(Choice.many)
+            Picker("", selection: Binding(get: { sides != nil }, set: { onChange($0 ? Self.defaultSides : nil) })) {
+                Text(roundTitle).tag(false)
+                Text("Eckig").tag(true)
             }
             .pickerStyle(.segmented).labelsHidden()
-            if let sides, choice == .many {
+            if let sides {
                 LabeledRow(String(localized: "Ecken")) {
                     Stepper(value: Binding(get: { sides }, set: { onChange($0) }), in: RegularPolygon.sidesRange) {
                         Text("\(sides)").font(.system(size: 12, design: .monospaced))
                     }
                 }
             }
-        }
-    }
-
-    private func choose(_ new: Choice) {
-        switch new {
-        case .round: onChange(nil)
-        case .triangle: onChange(3)
-        case .square: onChange(4)
-        case .many: onChange(Self.manySides)
         }
     }
 }
@@ -107,14 +85,7 @@ struct SketchPropertiesPanel: View {
 
     private func title(_ curves: [SketchCurve], allCircles: Bool, allLines: Bool, allArcs: Bool) -> String {
         if curves.count > 1 { return String(localized: "\(curves.count) Elemente") }
-        if allCircles {
-            switch curves.first?.polygon?.sides {
-            case nil: return String(localized: "Kreis")
-            case 3?: return String(localized: "Dreieck")
-            case 4?: return String(localized: "Viereck")
-            default: return String(localized: "Vieleck")
-            }
-        }
+        if allCircles { return curves.first?.polygon == nil ? String(localized: "Kreis") : String(localized: "Vieleck") }
         if allLines { return String(localized: "Linie") }
         if allArcs { return String(localized: "Bogen") }
         return curves.first?.isText == true ? String(localized: "Text") : String(localized: "Spline")
