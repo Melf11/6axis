@@ -430,10 +430,20 @@ enum ModellingChecks {
               case let .extrude(e0) = f.kind else { return check("light drag: cabinet has an extrusion", false) }
         editor.editFeature(f.id)
         await settle(editor)
+        // The same pace without changes: what the timer of this machine needs by itself.
+        var idleGaps: [Double] = []
+        var previous = CACurrentMediaTime()
+        for _ in 1...30 {
+            await pause(1.0 / 60)
+            let t = CACurrentMediaTime()
+            idleGaps.append((t - previous) * 1000)
+            previous = t
+        }
+        let idleGap = idleGaps.sorted()[idleGaps.count / 2]
         let revision = editor.modelRevision
         var blocked: [Double] = []
         var gaps: [Double] = []
-        var previous = CACurrentMediaTime()
+        previous = CACurrentMediaTime()
         var panelsWaited = true
         for k in 1...60 {
             let t = CACurrentMediaTime()
@@ -448,10 +458,11 @@ enum ModellingChecks {
         await settle(editor)
         let median = blocked.sorted()[blocked.count / 2]
         let gap = gaps.sorted()[gaps.count / 2]
-        print("LIGHTDRAG blocked \(String(format: "%.1f", median)) ms, \(String(format: "%.1f", gap)) ms between changes")
+        let extra = gap - idleGap
+        print("LIGHTDRAG blocked \(String(format: "%.1f", median)) ms, \(String(format: "%.1f", gap)) ms between changes, \(String(format: "%.1f", idleGap)) ms without changes")
         check("light drag: input not blocked", median < 3, "median \(String(format: "%.1f", median)) ms per change")
-        // The test paces itself at 60 changes per second: a longer gap means the main thread could not keep up.
-        check("light drag: main thread keeps up", gap < 33, "median \(String(format: "%.1f", gap)) ms between changes")
+        // A change may cost at most one frame at 60 Hz on top of the pace itself; otherwise the main thread falls behind.
+        check("light drag: main thread keeps up", extra < 16.7, "\(String(format: "%.1f", gap)) ms between changes, \(String(format: "%.1f", idleGap)) ms without changes")
         check("light drag: panels wait for a pause", panelsWaited)
         check("light drag: panels show the result afterwards", editor.shownDoc == editor.doc)
         check("light drag: preview follows", updates >= 40, "\(updates) of 60 changes shown")
