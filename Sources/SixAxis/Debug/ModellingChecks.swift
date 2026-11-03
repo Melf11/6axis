@@ -173,6 +173,28 @@ enum ModellingChecks {
             await settle(editor)
         }
 
+        // Whole body: selected beforehand, all its edges are rounded; a click on the body removes it again.
+        let beforeWhole = volume(editor, plateF.id)
+        editor.selection = [.body(plateF.id)]
+        editor.beginCommand(.fillet)
+        await settle(editor)
+        if case let .fillet(f)? = editor.commandFeature?.kind {
+            check("fillet: whole body from the selection", f.bodies == [plateF.id] && editor.command?.activeInput == 1 && f.edges.isEmpty)
+        } else {
+            check("fillet: whole body from the selection", false)
+        }
+        check("fillet: all edges of the body", volume(editor, plateF.id) < beforeWhole - 100 && editor.state.errors.isEmpty && editor.edgeHandle != nil,
+              "\(beforeWhole) → \(volume(editor, plateF.id)) \(editor.state.errors.values)")
+        await snap("m02-fillet-body")
+        await click(editor, Vec3(95, 5, 20))
+        await settle(editor)
+        if case let .fillet(f)? = editor.commandFeature?.kind {
+            check("fillet: click on the body removes it", f.bodies == nil, "\(String(describing: f.bodies))")
+        }
+        editor.cancelCommand()
+        await settle(editor)
+        check("fillet: cancel restores the body", abs(volume(editor, plateF.id) - beforeWhole) < 1e-6)
+
         // Offset plane from the top face, then a sketch on it by clicking the plane.
         editor.beginPlane(.offset)
         await click(editor, Vec3(95, 5, 20))

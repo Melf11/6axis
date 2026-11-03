@@ -180,6 +180,15 @@ public final class Shape: @unchecked Sendable {
         try Shape.wrap(ob_boolean(handle, other.handle, op.rawValue), "Boolesche Operation fehlgeschlagen")
     }
 
+    public var isValid: Bool { ob_shape_is_valid(handle) != 0 }
+
+    /// Edges with a real corner: what "all edges of the body" means for a fillet or chamfer.
+    public var sharpEdges: [Int] {
+        var out = [Int32](repeating: 0, count: edgeCount)
+        let n = Int(ob_shape_sharp_edges(handle, &out, Int32(out.count)))
+        return out.prefix(n).map(Int.init)
+    }
+
     public func filleted(edges: [Int], radius: Double) throws -> Shape {
         let e = edges.map { Int32($0) }
         return try Shape.wrap(ob_fillet(handle, e, Int32(e.count), radius), "Abrundung fehlgeschlagen")

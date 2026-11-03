@@ -2056,6 +2056,26 @@
         }
       }
     },
+    "Der Körper hat keine Kanten": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The body has no edges"
+          }
+        }
+      }
+    },
+    "Der Wert ist zu groß für diesen Körper": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The value is too large for this body"
+          }
+        }
+      }
+    },
     "Design": {
       "localizations": {
         "en": {
@@ -3578,6 +3598,16 @@
         }
       }
     },
+    "Ganzer Körper": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Whole body"
+          }
+        }
+      }
+    },
     "Gegenüberliegende Ecke klicken oder Maße eintippen": {
       "localizations": {
         "en": {
@@ -4980,6 +5010,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Click bodies · ↩ confirms"
+          }
+        }
+      }
+    },
+    "Körper anklicken: alle seine Kanten · Pfeil ziehen · ↩ bestätigt": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Click a body: all its edges · drag the arrow · ↩ confirms"
           }
         }
       }

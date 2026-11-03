@@ -67,15 +67,19 @@ struct CommandPanel: View {
         case let (.revolve, .revolve(r)?):
             revolveContent(r, cmd)
         case let (.fillet, .fillet(f)?):
-            selectionRow(String(localized: "Kanten"), count: f.edges.count, symbol: "line.diagonal", active: true) {
+            edgeTargets(cmd, edges: f.edges.count, bodies: f.bodies?.count ?? 0) {
                 editor.updateCommandFeature { k in if case var .fillet(x) = k { x.edges = []; k = .fillet(x) } }
+            } clearBodies: {
+                editor.updateCommandFeature { k in if case var .fillet(x) = k { x.bodies = nil; k = .fillet(x) } }
             }
             ExpressionField(label: String(localized: "Radius"), text: f.radius, kind: .length, editor: editor) { v in
                 editor.updateCommandFeature { k in if case var .fillet(x) = k { x.radius = v; k = .fillet(x) } }
             }
         case let (.chamfer, .chamfer(c)?):
-            selectionRow(String(localized: "Kanten"), count: c.edges.count, symbol: "line.diagonal", active: true) {
+            edgeTargets(cmd, edges: c.edges.count, bodies: c.bodies?.count ?? 0) {
                 editor.updateCommandFeature { k in if case var .chamfer(x) = k { x.edges = []; k = .chamfer(x) } }
+            } clearBodies: {
+                editor.updateCommandFeature { k in if case var .chamfer(x) = k { x.bodies = nil; k = .chamfer(x) } }
             }
             ExpressionField(label: String(localized: "Abstand"), text: c.distance, kind: .length, editor: editor) { v in
                 editor.updateCommandFeature { k in if case var .chamfer(x) = k { x.distance = v; k = .chamfer(x) } }
@@ -188,6 +192,17 @@ struct CommandPanel: View {
                     .buttonStyle(.plain)
                 }
             }
+        }
+    }
+
+    /// Fillet and chamfer: single edges, or whole bodies with all their edges.
+    @ViewBuilder
+    private func edgeTargets(_ cmd: ActiveCommand, edges: Int, bodies: Int, clearEdges: @escaping () -> Void, clearBodies: @escaping () -> Void) -> some View {
+        selectionRow(String(localized: "Kanten"), count: edges, symbol: "line.diagonal", active: cmd.activeInput == 0, clear: clearEdges) {
+            editor.setActiveInput(0)
+        }
+        selectionRow(String(localized: "Ganzer Körper"), count: bodies, symbol: "cube", active: cmd.activeInput == 1, clear: clearBodies) {
+            editor.setActiveInput(1)
         }
     }
 

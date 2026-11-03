@@ -230,7 +230,12 @@ struct BrowserPanel: View {
         .contentShape(Rectangle())
         .onTapGesture(count: 2) { renameText = editor.doc.bodyName(id); renaming = id }
         .onTapGesture {
-            editor.selection = selected ? [] : [.body(id)]
+            // A command waiting for bodies takes the click, like a click on the body in the viewport.
+            if editor.command != nil, editor.accepts(.body(id)) {
+                editor.commandClick(.body(id))
+            } else {
+                editor.selection = selected ? [] : [.body(id)]
+            }
             editor.requestRedraw()
         }
         .contextMenu {
