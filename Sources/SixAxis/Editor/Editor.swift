@@ -300,7 +300,7 @@ final class Editor {
     var lastSolve: SolveResult?
     var editingDimension: Int?
     var dimensionFirst: Pick?
-    var dimensionSecond: Pick?
+    @ObservationIgnored var lastSketchPan: CFTimeInterval = 0
     @ObservationIgnored var chainStart: Int?
     @ObservationIgnored var sketchRollbackBefore: Int?
     var constraintPicks: [Pick] = []

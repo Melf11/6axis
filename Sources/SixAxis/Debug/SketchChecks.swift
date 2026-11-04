@@ -362,6 +362,7 @@ enum SketchChecks {
         await textEnterCheck(editor)
         await polygonChecks(editor)
         await viewLockChecks(editor)
+        await dimensionToolChecks(editor)
         await smartGuideChecks(editor)
         await connectChecks(editor)
     }
@@ -502,6 +503,7 @@ enum SketchChecks {
             // The sketch as a drawing sheet, in all three formats.
             if let dir = ProcessInfo.processInfo.environment["SIXAXIS_SNAPSHOTS"], let build = editor.activeSketchBuild,
                let page = SketchDrawing.page(build, title: "Skizze1") {
+                try? FileManager.default.createDirectory(atPath: dir, withIntermediateDirectories: true)
                 for format in [Editor.SketchDrawingFormat.pdf, .svg, .dxf] {
                     let url = URL(fileURLWithPath: dir).appendingPathComponent("sketch-drawing." + format.rawValue)
                     try? Editor.write(page, as: format, to: url, title: "Skizze1")
@@ -514,7 +516,65 @@ enum SketchChecks {
         await pause(0.4)
     }
 
-/// Resting on a point notes it, the cursor lines up with it; lines snap to the usual angles; ⌘ turns it all off.
+    /// Two clicks make a dimension; a line and a click place its length; the fine grid leaves a moving view.
+    static func dimensionToolChecks(_ editor: Editor) async {
+        let settings = AppSettings.shared
+        settings.lockSketchView = true
+        editor.newDocument()
+        editor.beginSketch(on: .xy)
+        await pause(0.8)
+        await view(editor)
+        func dims() -> [ConstraintKind] { editor.activeSketch?.constraints.map(\.kind).filter(\.isDimension) ?? [] }
+        editor.setSketchTool(.line)
+        click(editor, Vec2(0, 0))
+        click(editor, Vec2(60, 0))
+        editor.cancelSketchTool()
+        click(editor, Vec2(10, 20))
+        click(editor, Vec2(40, 35))
+        editor.cancelSketchTool()
+        editor.setSketchTool(.dimension)
+        await pause()
+        click(editor, Vec2(0, 0))
+        check("dimension: one click only marks the point", dims().isEmpty && editor.dimensionFirst != nil, "\(dims())")
+        if let dir = ProcessInfo.processInfo.environment["SIXAXIS_SNAPSHOTS"] {
+            if let pt = screen(editor, Vec2(50, -15)) { editor.updateHover(at: pt) }
+            await DemoScript.snap(editor, "sketch-dimension-preview", URL(fileURLWithPath: dir))
+        }
+        click(editor, Vec2(60, 0))
+        await pause()
+        check("dimension: the second point makes it at once", dims().count == 1, "\(dims())")
+        check("dimension: along the axis when they lie on one", { if case .horizontalDistance? = dims().last { return true }; return false }(), "\(dims())")
+        check("dimension: its value can be typed at once", editor.editingDimension != nil)
+        check("dimension: nothing is left pending", editor.dimensionFirst == nil)
+        editor.editingDimension = nil
+        await pause()
+        click(editor, Vec2(10, 20))
+        click(editor, Vec2(40, 35))
+        await pause()
+        check("dimension: slanted points give the true distance", { if case .distance? = dims().last { return true }; return false }(), "\(dims())")
+        editor.editingDimension = nil
+        await pause()
+        // A line, then a click beside it.
+        click(editor, Vec2(25, 27.5))
+        check("dimension: a line waits for the place", dims().count == 2 && editor.dimensionFirst != nil, "\(dims())")
+        click(editor, Vec2(10, 45))
+        await pause()
+        check("dimension: a line and a click give its length", { if case .length? = dims().last { return true }; return false }(), "\(dims())")
+        editor.editingDimension = nil
+        editor.cancelSketchTool()
+
+        // The fine grid is off while the view moves and returns afterwards.
+        editor.pan(dx: 3, dy: 0)
+        check("grid: fine lines off while moving", editor.fineGridOpacity == 0, "\(editor.fineGridOpacity)")
+        await pause(0.5)
+        check("grid: fine lines back afterwards", editor.fineGridOpacity == 1, "\(editor.fineGridOpacity)")
+        editor.finishSketch()
+        await pause(0.4)
+        editor.pan(dx: 3, dy: 0)
+        check("grid: stays on outside a sketch", editor.fineGridOpacity == 1)
+    }
+
+    /// Resting on a point notes it, the cursor lines up with it; lines snap to the usual angles; ⌘ turns it all off.
     static func smartGuideChecks(_ editor: Editor) async {
         let settings = AppSettings.shared
         let grid = settings.snapToGrid

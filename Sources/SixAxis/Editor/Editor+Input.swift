@@ -136,8 +136,16 @@ extension Editor {
         requestRedraw()
     }
 
+    /// Fine grid lines moving straight across the screen smear, above all on dark ground: while a sketch's view
+    /// moves they are off, and they fade back in when it stops.
+    var fineGridOpacity: Float {
+        let rest = CACurrentMediaTime() - lastSketchPan - 0.12
+        return rest >= 0.25 ? 1 : Float(max(0, rest / 0.25))
+    }
+
     func pan(dx: CGFloat, dy: CGFloat) {
         cameraAnimation = nil
+        if sketchId != nil { lastSketchPan = CACurrentMediaTime() }
         camera.pan(dx: Float(dx), dy: Float(dy))
         let plane = activePlane ?? .xy
         let t = camera.target

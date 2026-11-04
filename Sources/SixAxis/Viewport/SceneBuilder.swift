@@ -325,7 +325,7 @@ struct SceneBuilder {
         // The ground grid stays behind bodies standing on it; a sketch grid lies in front of the
         // face it was started on, otherwise that face would hide it.
         let bias: Float = editor.activePlane == nil ? -0.002 : 0.0008
-        scene.lines.append(LineBatch(instances: minor, width: 1 * scale, depthBias: bias, depth: .readOnly, pickable: false))
+        scene.lines.append(LineBatch(instances: minor, width: 1 * scale, depthBias: bias, depth: .readOnly, pickable: false, fine: true))
         scene.lines.append(LineBatch(instances: majorLines, width: 1 * scale, depthBias: bias, depth: .readOnly, pickable: false))
     }
 

@@ -306,7 +306,6 @@ extension Editor {
             toolPoints.removeAll()
             resetToolInputs()
             dimensionFirst = nil
-            dimensionSecond = nil
             constraintPicks.removeAll()
         } else if sketchTool != .select {
             sketchTool = .select
@@ -771,20 +770,12 @@ extension Editor {
         }()
 
         if let first = dimensionFirst {
-            if let p = picked, p != first, dimensionSecond == nil {
-                // Two entities chosen: point-point waits for placement, others are created right away.
-                if case .sketchPoint = first, case .sketchPoint = p {
-                    dimensionSecond = p
-                    return
-                }
+            dimensionFirst = nil
+            if let p = picked, p != first {
                 createDimension(first, p, placement: pos, sk)
-            } else if let second = dimensionSecond {
-                createDimension(first, second, placement: pos, sk)
             } else if case let .sketchCurve(_, cid) = first, let c = sk.curve(cid), c.isLine {
                 createLengthDimension(cid, placement: pos, sk)
             }
-            dimensionFirst = nil
-            dimensionSecond = nil
             return
         }
 
@@ -821,20 +812,28 @@ extension Editor {
     private func createDimension(_ p1: Pick, _ p2: Pick, placement: Vec2, _ sk: Sketch) {
         var kind: ConstraintKind?
         var anchor = Vec2.zero
+        var place = placement
         switch (p1, p2) {
         case let (.sketchPoint(_, a), .sketchPoint(_, b)):
             guard let pa = sk.point(a), let pb = sk.point(b) else { return }
+            // The second point completes it at once: the true distance, or along an axis when they lie on one
+            // or with ⇧ (horizontal) or ⌥ (vertical). The label goes outside the sketch.
             anchor = (pa + pb) / 2
-            let lo = simd_min(pa, pb), hi = simd_max(pa, pb)
-            let margin = 2 * Double(camera.worldPerPoint)
-            let outsideY = placement.y > hi.y + margin || placement.y < lo.y - margin
-            let outsideX = placement.x > hi.x + margin || placement.x < lo.x - margin
-            if outsideY && !outsideX {
-                kind = .horizontalDistance(a, b, value: plainNumber(abs(pb.x - pa.x)))
-            } else if outsideX && !outsideY {
-                kind = .verticalDistance(a, b, value: plainNumber(abs(pb.y - pa.y)))
+            let flags = NSEvent.modifierFlags
+            let d = pb - pa
+            let tiny = 1e-6
+            let horizontal = flags.contains(.shift) || (abs(d.y) < tiny && !flags.contains(.option))
+            let vertical = !horizontal && (flags.contains(.option) || abs(d.x) < tiny)
+            var normal = horizontal ? Vec2(0, 1) : (vertical ? Vec2(1, 0) : simd_normalize(Vec2(-d.y, d.x)))
+            let solid = sk.points.filter { $0.id != Sketch.originId }.map(\.position)
+            if let first = solid.first, simd_dot(anchor - solid.reduce(first, +) / Double(solid.count + 1), normal) < 0 { normal = -normal }
+            place = anchor + normal * dimensionOffsetDistance
+            if horizontal {
+                kind = .horizontalDistance(a, b, value: plainNumber(abs(d.x)))
+            } else if vertical {
+                kind = .verticalDistance(a, b, value: plainNumber(abs(d.y)))
             } else {
-                kind = .distance(a, b, value: plainNumber(simd_distance(pa, pb)))
+                kind = .distance(a, b, value: plainNumber(simd_length(d)))
             }
         case let (.sketchPoint(_, p), .sketchCurve(_, l)), let (.sketchCurve(_, l), .sketchPoint(_, p)):
             guard let c = sk.curve(l), case let .line(a, b) = c.geometry, let pp = sk.point(p),
@@ -863,7 +862,7 @@ extension Editor {
         default:
             return
         }
-        if let kind, let id = addConstraintChecked(kind, labelOffset: placement - (dimensionAnchor(kind, sk) ?? anchor)) {
+        if let kind, let id = addConstraintChecked(kind, labelOffset: place - (dimensionAnchor(kind, sk) ?? anchor)) {
             editingDimension = id
         }
     }

@@ -206,6 +206,7 @@ vertex LineOut line_vs(uint vid [[vertex_id]], uint iid [[instance_id]],
     c.xy += off / half_vp * c.w;
     o.position = c;
     o.color = l.color == 0 ? d.color : unpack_unorm4x8_to_float(l.color);
+    if (l.color != 0) { o.color.a *= d.color.a; }
     o.along = t * len;
     o.id = l.id;
     // Bit 16: the batch is cut by the section plane (body edges).

@@ -13,6 +13,7 @@ struct ViewportOverlay: View {
             Canvas { ctx, _ in
                 drawToolPreview(ctx)
                 drawDropMarker(ctx)
+                drawDimensionPreview(ctx)
                 drawDimensions(ctx)
                 drawExtrudeArrow(ctx)
                 drawHoleArrows(ctx)
@@ -190,6 +191,34 @@ struct ViewportOverlay: View {
         let rect = CGRect(x: s.x + 14, y: s.y + 10, width: size.width + 12, height: size.height + 4)
         ctx.fill(Path(roundedRect: rect, cornerRadius: 5), with: .color(accent))
         ctx.draw(t, at: CGPoint(x: rect.midX, y: rect.midY))
+    }
+
+    /// The dimension being set follows the mouse, so it is clear what the next click does.
+    private func drawDimensionPreview(_ ctx: GraphicsContext) {
+        guard editor.sketchTool == .dimension, let first = editor.dimensionFirst, let sk = editor.activeSketch,
+              let cursor = editor.cursor?.position, let c = screen(cursor) else { return }
+        switch first {
+        case let .sketchPoint(_, id):
+            guard let p = sk.point(id), let s = screen(p) else { return }
+            var line = Path()
+            line.move(to: s)
+            line.addLine(to: c)
+            ctx.stroke(line, with: .color(accent), style: StrokeStyle(lineWidth: 1.2, dash: [4, 3]))
+            ctx.stroke(Path(ellipseIn: CGRect(x: s.x - 6, y: s.y - 6, width: 12, height: 12)), with: .color(accent), lineWidth: 2)
+            guideLabel(ctx, formatValue(simd_distance(p, cursor)), at: CGPoint(x: (s.x + c.x) / 2, y: (s.y + c.y) / 2 - 12))
+        case let .sketchCurve(_, id):
+            guard let curve = sk.curve(id), curve.isLine else { return }
+            let line = sk.polyline(curve)
+            var path = Path()
+            for (i, p) in line.enumerated() {
+                guard let s = screen(p) else { continue }
+                if i == 0 { path.move(to: s) } else { path.addLine(to: s) }
+            }
+            ctx.stroke(path, with: .color(accent), lineWidth: 2.5)
+            guideLabel(ctx, formatValue(sk.length(of: curve)), at: CGPoint(x: c.x + 30, y: c.y - 14))
+        default:
+            break
+        }
     }
 
     /// Where a dragged point will connect when it is let go.

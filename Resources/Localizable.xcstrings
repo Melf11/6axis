@@ -1499,6 +1499,7 @@
       }
     },
     "Bemaßung platzieren": {
+      "extractionState": "stale",
       "localizations": {
         "en": {
           "stringUnit": {
@@ -4860,6 +4861,16 @@
         }
       }
     },
+    "Klick platziert die Länge · zweites Objekt für Abstand oder Winkel": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A click places the length · a second object for a distance or angle"
+          }
+        }
+      }
+    },
     "Klicke Flächen an, die offen sein sollen.": {
       "localizations": {
         "en": {
@@ -5388,6 +5399,7 @@
       }
     },
     "Linie, Kreis oder Punkt wählen": {
+      "extractionState": "stale",
       "localizations": {
         "en": {
           "stringUnit": {
@@ -6793,6 +6805,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Click a point on the arc"
+          }
+        }
+      }
+    },
+    "Punkt, Linie oder Kreis wählen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choose a point, line or circle"
           }
         }
       }
@@ -10169,7 +10191,18 @@
         }
       }
     },
+    "Zweiten Punkt wählen: das Maß erscheint · ⇧ waagerecht · ⌥ senkrecht": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choose the second point: the dimension appears · ⇧ horizontal · ⌥ vertical"
+          }
+        }
+      }
+    },
     "Zweites Objekt wählen oder Bemaßung platzieren": {
+      "extractionState": "stale",
       "localizations": {
         "en": {
           "stringUnit": {

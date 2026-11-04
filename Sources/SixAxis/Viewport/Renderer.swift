@@ -96,6 +96,8 @@ struct LineBatch {
     var depthBias: Float = 0.0015
     var depth: DepthMode = .readOnly
     var pickable = true
+    /// The fine lines of the grid: they fade out while the view moves.
+    var fine = false
     /// Cut by the section plane (body edges; not grid, axes or sketches).
     var clipped = false
 }
@@ -174,12 +176,13 @@ final class Renderer: NSObject, MTKViewDelegate {
     private var depthStates: [DepthMode: MTLDepthStencilState] = [:]
 
     private struct GPUMesh { let vb: MTLBuffer; let ib: MTLBuffer; let count: Int; let color: SIMD4<Float>; let translucent: Bool }
-    private struct GPUInstances { let buffer: MTLBuffer; let count: Int; var u: DrawUniforms; let depth: DepthMode; let pickable: Bool }
+    private struct GPUInstances { let buffer: MTLBuffer; let count: Int; var u: DrawUniforms; let depth: DepthMode; let pickable: Bool; var fine = false }
 
     private var gpuMeshes: [GPUMesh] = []
     private var gpuFills: [GPUInstances] = []
     private var gpuLines: [GPUInstances] = []
     private var gpuGridLines: [GPUInstances] = []
+    private var fineGridOpacity: Float = 1
     private var gpuPoints: [GPUInstances] = []
 
     private var pickTexture: MTLTexture?
@@ -260,7 +263,8 @@ final class Renderer: NSObject, MTKViewDelegate {
     /// thread (up to a second when the display sleeps), so at this limit frames are skipped instead.
     private var inFlight = 0
     private var lastSubmit: CFTimeInterval = 0
-    private let maxInFlight = 2
+    /// Frames on their way to the screen. Two are too few for a 120 Hz display: a pan then stays near 70 frames per second.
+    private let maxInFlight = 3
 
     struct FrameState {
         var camera: Camera
@@ -270,6 +274,8 @@ final class Renderer: NSObject, MTKViewDelegate {
         var animating: Bool
         /// Section view: plane normal and offset (points beyond are cut away).
         var clip: SIMD4<Float>? = nil
+        /// Opacity of the grid's fine lines.
+        var fineGrid: Float = 1
     }
 
     init?(device: MTLDevice) {
@@ -368,7 +374,7 @@ final class Renderer: NSObject, MTKViewDelegate {
             guard !l.instances.isEmpty else { return nil }
             let b = l.instances.withUnsafeBytes { device.makeBuffer(bytes: $0.baseAddress!, length: $0.count, options: .storageModeShared) }
             guard let b else { return nil }
-            return GPUInstances(buffer: b, count: l.instances.count, u: DrawUniforms(color: l.color, width: l.width, depthBias: l.depthBias), depth: l.depth, pickable: l.pickable)
+            return GPUInstances(buffer: b, count: l.instances.count, u: DrawUniforms(color: l.color, width: l.width, depthBias: l.depthBias), depth: l.depth, pickable: l.pickable, fine: l.fine)
         }
     }
 
@@ -509,6 +515,7 @@ final class Renderer: NSObject, MTKViewDelegate {
         guard changed || animating else { return }   // idle frames cost nothing
         guard let frame = frameProvider?() else { return }
         animating = frame.animating
+        fineGridOpacity = frame.fineGrid
         let size = view.drawableSize
         let w = Int(size.width), h = Int(size.height)
         guard w > 0, h > 0 else { return }
@@ -618,6 +625,10 @@ final class Renderer: NSObject, MTKViewDelegate {
         func instances(_ list: [GPUInstances], pipeline: MTLRenderPipelineState, vertexCount: Int, instanced: Bool) {
             enc.setRenderPipelineState(pipeline)
             for var item in list where !pick || item.pickable {
+                if item.fine {
+                    if fineGridOpacity <= 0 { continue }
+                    item.u.color.w = fineGridOpacity
+                }
                 enc.setDepthStencilState(depthStates[item.depth])
                 enc.setVertexBuffer(item.buffer, offset: 0, index: 0)
                 enc.setVertexBytes(&item.u, length: MemoryLayout<DrawUniforms>.stride, index: 2)

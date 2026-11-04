@@ -318,8 +318,11 @@ private struct CommandPrompt: View {
             case .sketchChamfer: return String(localized: "Ecke anklicken, dann Fasenlänge eintippen")
             case .spline: return n == 0 ? String(localized: "Ersten Punkt klicken – auch an vorhandene Ecken") : String(localized: "Weitere Punkte klicken · Startpunkt schließt · Doppelklick, ↩ oder Esc beendet")
             case .dimension:
-                if editor.dimensionSecond != nil { return String(localized: "Bemaßung platzieren") }
-                return editor.dimensionFirst == nil ? String(localized: "Linie, Kreis oder Punkt wählen") : String(localized: "Zweites Objekt wählen oder Bemaßung platzieren")
+                switch editor.dimensionFirst {
+                case nil: return String(localized: "Punkt, Linie oder Kreis wählen")
+                case .sketchCurve?: return String(localized: "Klick platziert die Länge · zweites Objekt für Abstand oder Winkel")
+                default: return String(localized: "Zweiten Punkt wählen: das Maß erscheint · ⇧ waagerecht · ⌥ senkrecht")
+                }
             case let .constraint(ct): return String(localized: "\(ct.name): Objekte wählen")
             }
         }
