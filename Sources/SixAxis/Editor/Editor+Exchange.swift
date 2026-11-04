@@ -45,6 +45,43 @@ extension Editor {
         fileURL?.deletingPathExtension().lastPathComponent ?? String(localized: "Design")
     }
 
+    enum SketchDrawingFormat: String { case pdf, svg, dxf }
+
+    /// The sketch a drawing is exported from: the given one, the one being edited, or the last one.
+    private func sketchForDrawing(_ id: UUID?) -> SketchBuild? {
+        if let id = id ?? sketchId { return state.sketches[id] }
+        return doc.features.reversed().lazy.compactMap { self.state.sketches[$0.id] }.first
+    }
+
+    var hasSketchForDrawing: Bool { sketchForDrawing(nil) != nil }
+
+    /// A sketch as a drawing sheet with all its measures, for printing or for planning with someone else.
+    func exportSketchDrawing(_ id: UUID? = nil, as format: SketchDrawingFormat) {
+        guard let build = sketchForDrawing(id), let name = doc.feature(build.featureId)?.name,
+              let page = SketchDrawing.page(build, title: name) else {
+            showToast(String(localized: "Die Skizze ist noch leer"))
+            return
+        }
+        let panel = NSSavePanel()
+        panel.allowedContentTypes = [UTType(filenameExtension: format.rawValue) ?? .data]
+        panel.nameFieldStringValue = name + "." + format.rawValue
+        guard panel.runModal() == .OK, let url = panel.url else { return }
+        do {
+            try Self.write(page, as: format, to: url, title: name)
+            showToast(String(localized: "Zeichnung exportiert: \(url.lastPathComponent)"))
+        } catch {
+            showToast(error.localizedDescription)
+        }
+    }
+
+    static func write(_ page: DrawingPage, as format: SketchDrawingFormat, to url: URL, title: String) throws {
+        switch format {
+        case .pdf: try DrawingRenderer.writePDF(page, to: url, title: title)
+        case .svg: try page.svg().write(to: url, atomically: true, encoding: .utf8)
+        case .dxf: try page.dxf().write(to: url, atomically: true, encoding: .utf8)
+        }
+    }
+
     func exportSTL() {
         guard let shape = exportShape() else { return }
         let panel = NSSavePanel()

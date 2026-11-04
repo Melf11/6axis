@@ -499,6 +499,15 @@ enum SketchChecks {
             check("profile: a click selects it", editor.selection == [.profile(id, right.index)], "\(editor.selection)")
             check("profile: a neighbour shows its own area", editor.selectionMeasure?.detail.contains("12.00 cm²") == true, "\(String(describing: editor.selectionMeasure))")
             if let dir = ProcessInfo.processInfo.environment["SIXAXIS_SNAPSHOTS"] { await DemoScript.snap(editor, "sketch-neighbours", URL(fileURLWithPath: dir)) }
+            // The sketch as a drawing sheet, in all three formats.
+            if let dir = ProcessInfo.processInfo.environment["SIXAXIS_SNAPSHOTS"], let build = editor.activeSketchBuild,
+               let page = SketchDrawing.page(build, title: "Skizze1") {
+                for format in [Editor.SketchDrawingFormat.pdf, .svg, .dxf] {
+                    let url = URL(fileURLWithPath: dir).appendingPathComponent("sketch-drawing." + format.rawValue)
+                    try? Editor.write(page, as: format, to: url, title: "Skizze1")
+                    check("drawing: \(format.rawValue) written", ((try? Data(contentsOf: url))?.count ?? 0) > 200)
+                }
+            }
             editor.selection.removeAll()
         }
         editor.finishSketch()

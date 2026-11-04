@@ -271,6 +271,11 @@ struct BrowserPanel: View {
         .onTapGesture(count: 2) { editor.editFeature(f.id) }
         .contextMenu {
             Button("Skizze bearbeiten") { editor.editFeature(f.id) }
+            Menu("Als Zeichnung exportieren") {
+                Button("PDF (mit allen Maßen) …") { editor.exportSketchDrawing(f.id, as: .pdf) }
+                Button("SVG …") { editor.exportSketchDrawing(f.id, as: .svg) }
+                Button("DXF …") { editor.exportSketchDrawing(f.id, as: .dxf) }
+            }
             Button(visible ? String(localized: "Ausblenden") : String(localized: "Einblenden")) { editor.toggleSketchVisibility(f.id) }
             Divider()
             Button("Löschen", role: .destructive) { editor.deleteFeature(f.id) }

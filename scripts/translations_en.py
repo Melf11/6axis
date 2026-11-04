@@ -1,6 +1,10 @@
 # English translations for Resources/Localizable.xcstrings (German source). Applied by
 # scripts/apply-translations.py; after that the catalog is the source of truth (edit it in Xcode or here).
 EN = {
+"Als Zeichnung exportieren": "Export as drawing", "PDF (mit allen Maßen) …": "PDF (with all measures) …", "SVG …": "SVG …", "DXF …": "DXF …",
+"Skizze als Zeichnung (PDF) …": "Sketch as drawing (PDF) …", "Skizze als Zeichnung (SVG) …": "Sketch as drawing (SVG) …", "Skizze als Zeichnung (DXF) …": "Sketch as drawing (DXF) …",
+"Skizze als Zeichnung exportieren": "Export sketch as drawing", "Die Skizze ist noch leer": "The sketch is still empty", "Zeichnung exportiert: %@": "Drawing exported: %@",
+"%lld-Eck, Schlüsselweite %@": "%lld-gon, across flats %@", "Fläche %lld": "Area %lld", "Maßstab %@ · Maße in mm · Skizze %@ × %@": "Scale %@ · dimensions in mm · sketch %@ × %@", "6axis · %@": "6axis · %@",
 "Umfang": "Perimeter", "Volumen": "Volume",
 "Maße unten rechts": "Measures at the bottom right", "Länge von Linien und Kanten": "Length of lines and edges", "Gewicht": "Weight",
 "Einheit der Fläche": "Area unit", "Automatisch": "Automatic",

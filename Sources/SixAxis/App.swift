@@ -117,6 +117,10 @@ struct AppCommands: Commands {
                 Button("STL (3D-Druck) …") { editor.exportSTL() }.keyboardShortcut("e")
                 Button("3MF (3D-Druck, mit Einheiten) …") { editor.export3MF() }
                 Button("STEP …") { editor.exportSTEP() }
+                Divider()
+                Button("Skizze als Zeichnung (PDF) …") { editor.exportSketchDrawing(as: .pdf) }
+                Button("Skizze als Zeichnung (SVG) …") { editor.exportSketchDrawing(as: .svg) }
+                Button("Skizze als Zeichnung (DXF) …") { editor.exportSketchDrawing(as: .dxf) }
             }
             Button("Im Slicer öffnen") { editor.openInSlicer() }.keyboardShortcut("p", modifiers: [.command, .shift])
         }

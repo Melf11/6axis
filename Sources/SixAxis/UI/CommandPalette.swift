@@ -57,6 +57,7 @@ extension Editor {
                 NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
             },
             EditorCommand(id: "params", title: String(localized: "Parameter ändern"), symbol: "function", keywords: "parameters variablen", available: true) { self.showParameters = true },
+            EditorCommand(id: "sketchDrawing", title: String(localized: "Skizze als Zeichnung exportieren"), symbol: "doc.text", keywords: "skizze zeichnung pdf export 2d plan", available: hasSketchForDrawing) { self.exportSketchDrawing(as: .pdf) },
             EditorCommand(id: "drawing", title: String(localized: "Technische Zeichnung"), symbol: "doc.richtext", shortcut: "⇧⌘D", keywords: "zeichnung drawing 3-tafel ansicht bemaßung pdf", available: hasBodies) { self.openDrawingWindow() },
             EditorCommand(id: "component", title: String(localized: "Komponente aus Auswahl"), symbol: "shippingbox", keywords: "component komponente bauteil baugruppe gruppe", available: hasBodies && !inSketch) { self.createComponent() },
             EditorCommand(id: "joint", title: String(localized: "Gelenk"), symbol: "link", keywords: "joint gelenk scharnier tür schubkasten auszug drehen schieben starr", available: !doc.components.isEmpty && !inSketch) { self.beginCommand(.joint) },

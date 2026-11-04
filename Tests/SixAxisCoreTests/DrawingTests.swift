@@ -395,4 +395,61 @@ final class DrawingChamferSlopeTests: XCTestCase {
         for t in ["100", "30", "60"] { XCTAssertTrue(texts.contains(t), "missing \(t)") }
         XCTAssertTrue(page.dimensions.contains { $0.id.hasPrefix("front.angle.17") })
     }
+
+    // MARK: Sketch as a drawing
+
+    /// Plate 100 × 60 with a square and a round hole, and a helper line.
+    private func sketchBuild(width: Double = 100, height: Double = 60) throws -> SketchBuild {
+        var sk = Sketch(plane: .xy)
+        let c = [sk.addPoint(Vec2(0, 0)), sk.addPoint(Vec2(width, 0)), sk.addPoint(Vec2(width, height)), sk.addPoint(Vec2(0, height))]
+        for i in 0..<4 { sk.addLine(c[i], c[(i + 1) % 4]) }
+        let square = sk.addCircle(center: sk.addPoint(Vec2(width / 4, height / 2)), radius: height / 10)
+        sk.curves[sk.curveIndex(square)!].polygon = RegularPolygon(sides: 4)
+        sk.addCircle(center: sk.addPoint(Vec2(width * 3 / 4, height / 2)), radius: height / 6)
+        sk.addLine(sk.addPoint(Vec2(0, 0)), sk.addPoint(Vec2(width, height)), construction: true)
+        var doc = CADDocument()
+        let f = Feature(name: "S", kind: .sketch(sk))
+        doc.features = [f]
+        return try XCTUnwrap(ModelBuilder().build(doc).sketches[f.id])
+    }
+
+    func testSketchDrawingHasAllMeasures() throws {
+        let page = try XCTUnwrap(SketchDrawing.page(try sketchBuild(), title: "Platte"))
+        let texts = page.texts.map(\.text)
+        XCTAssertEqual(page.scale.label, "2:1", "the largest scale that fits")
+        XCTAssertEqual(texts.filter { $0 == "100 mm" }.count, 3, "two edges and the overall width")
+        XCTAssertEqual(texts.filter { $0 == "60 mm" }.count, 3, "two edges and the overall height")
+        XCTAssertTrue(texts.contains("Ø 20 mm"), "\(texts)")
+        XCTAssertTrue(texts.contains { $0.contains("4") && $0.contains("12 mm") }, "the square, \(texts)")
+        XCTAssertTrue(texts.contains("Platte"))
+        XCTAssertTrue(texts.contains { $0.contains("cm²") }, "\(texts)")
+        XCTAssertFalse(texts.contains { $0.contains("116.619") }, "a helper line has no measure")
+        XCTAssertEqual(page.arrows.count, 4)
+        XCTAssertTrue(page.lines.contains { if case .hidden = $0.style { return true }; return false }, "the helper line is dashed")
+    }
+
+    func testSketchDrawingStaysOnTheSheet() throws {
+        for (w, h, label) in [(100.0, 60.0, "2:1"), (2000.0, 800.0, "1:10"), (60.0, 180.0, "1:1"), (90000.0, 3000.0, "1:368")] {
+            let page = try XCTUnwrap(SketchDrawing.page(try sketchBuild(width: w, height: h), title: "T"))
+            XCTAssertEqual(page.scale.label, label, "\(w) × \(h)")
+            for p in page.lines.flatMap(\.points) {
+                XCTAssertTrue(p.x >= 0 && p.y >= 0 && p.x <= page.sheet.width && p.y <= page.sheet.height, "\(p) off the sheet for \(w) × \(h)")
+            }
+            XCTAssertEqual(page.sheet.height > page.sheet.width, h > w, "the sheet follows the sketch")
+        }
+    }
+
+    func testEmptySketchHasNoDrawing() throws {
+        var doc = CADDocument()
+        let f = Feature(name: "S", kind: .sketch(Sketch(plane: .xy)))
+        doc.features = [f]
+        XCTAssertNil(SketchDrawing.page(try XCTUnwrap(ModelBuilder().build(doc).sketches[f.id]), title: "T"))
+    }
+
+    func testSketchDrawingFormats() throws {
+        let page = try XCTUnwrap(SketchDrawing.page(try sketchBuild(), title: "Platte"))
+        XCTAssertTrue(page.svg().contains("<svg"))
+        XCTAssertTrue(page.svg().contains("Platte"))
+        XCTAssertTrue(page.dxf().contains("Platte"))
+    }
 }

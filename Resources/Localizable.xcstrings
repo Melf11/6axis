@@ -241,6 +241,22 @@
         }
       }
     },
+    "%lld-Eck, Schlüsselweite %@": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$lld-Eck, Schlüsselweite %2$@"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld-gon, across flats %@"
+          }
+        }
+      }
+    },
     "%lld×": {
       "localizations": {
         "en": {
@@ -380,6 +396,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "6axis is up to date"
+          }
+        }
+      }
+    },
+    "6axis · %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "6axis · %@"
           }
         }
       }
@@ -794,6 +820,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Export as STL …"
+          }
+        }
+      }
+    },
+    "Als Zeichnung exportieren": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Export as drawing"
           }
         }
       }
@@ -1949,6 +1985,16 @@
         }
       }
     },
+    "DXF …": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DXF …"
+          }
+        }
+      }
+    },
     "Darstellung": {
       "localizations": {
         "en": {
@@ -2252,6 +2298,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "The update's signature is invalid – nothing was installed."
+          }
+        }
+      }
+    },
+    "Die Skizze ist noch leer": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The sketch is still empty"
           }
         }
       }
@@ -3583,6 +3639,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Area %@"
+          }
+        }
+      }
+    },
+    "Fläche %lld": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Area %lld"
           }
         }
       }
@@ -5571,6 +5637,22 @@
         }
       }
     },
+    "Maßstab %@ · Maße in mm · Skizze %@ × %@": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Maßstab %1$@ · Maße in mm · Skizze %2$@ × %3$@"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scale %@ · dimensions in mm · sketch %@ × %@"
+          }
+        }
+      }
+    },
     "Maßstab (ISO 5455)": {
       "localizations": {
         "en": {
@@ -6230,6 +6312,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "PDF (all sheets, true to scale) …"
+          }
+        }
+      }
+    },
+    "PDF (mit allen Maßen) …": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "PDF (with all measures) …"
           }
         }
       }
@@ -7221,6 +7313,16 @@
         }
       }
     },
+    "SVG …": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SVG …"
+          }
+        }
+      }
+    },
     "Schaftfräser": {
       "localizations": {
         "en": {
@@ -7714,6 +7816,46 @@
           "stringUnit": {
             "state": "translated",
             "value": "Sketch dowel holes"
+          }
+        }
+      }
+    },
+    "Skizze als Zeichnung (DXF) …": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sketch as drawing (DXF) …"
+          }
+        }
+      }
+    },
+    "Skizze als Zeichnung (PDF) …": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sketch as drawing (PDF) …"
+          }
+        }
+      }
+    },
+    "Skizze als Zeichnung (SVG) …": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sketch as drawing (SVG) …"
+          }
+        }
+      }
+    },
+    "Skizze als Zeichnung exportieren": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Export sketch as drawing"
           }
         }
       }
@@ -9656,6 +9798,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Print drawing …"
+          }
+        }
+      }
+    },
+    "Zeichnung exportiert: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Drawing exported: %@"
           }
         }
       }
