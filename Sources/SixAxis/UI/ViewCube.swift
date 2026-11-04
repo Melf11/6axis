@@ -96,7 +96,15 @@ struct ViewCube: View {
                     } else if let r = region(at: p) { look(at: r) }
                 }
                 .help("Klick auf Fläche, Kante oder Ecke richtet die Ansicht aus · Pfeile drehen um 90° · Ziehen dreht")
+                .allowsHitTesting(!editor.isSketchViewLocked)
+                .opacity(editor.isSketchViewLocked ? 0.45 : 1)
             HStack(spacing: 2) {
+                if editor.sketchId != nil {
+                    IconButton(symbol: editor.isSketchViewLocked ? "lock.fill" : "lock.open",
+                               help: editor.isSketchViewLocked ? String(localized: "Ansicht eingerastet – klicken, um sie frei zu drehen")
+                                                               : String(localized: "Ansicht gerade auf die Skizze einrasten"),
+                               active: editor.isSketchViewLocked, size: 24) { editor.toggleSketchViewLock() }
+                }
                 IconButton(symbol: "house", help: String(localized: "Ausgangsansicht"), size: 24) { editor.homeView() }
                 IconButton(symbol: "arrow.up.left.and.arrow.down.right", help: String(localized: "Alles einpassen (⌘0)"), size: 24) { editor.fitAll() }
                 IconButton(symbol: "ruler", help: String(localized: "Messen (M)"), active: editor.measuring, size: 24) { editor.toggleMeasure() }
@@ -239,7 +247,7 @@ struct ViewCube: View {
             }
             ctx.stroke(outline, with: .color(edge), lineWidth: 0.8)
         }
-        if editor.camera.isAxisView { drawArrows(ctx) }
+        if editor.camera.isAxisView && !editor.isSketchViewLocked { drawArrows(ctx) }
     }
 
     private func drawArrows(_ ctx: GraphicsContext) {

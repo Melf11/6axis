@@ -47,11 +47,18 @@ struct NavigationSettings: View {
                     ForEach(AppSettings.SwipeAction.allCases) { Text($0.title).tag($0) }
                 }
                 .pickerStyle(.segmented)
-                Text("Mit ⇧ wird jeweils die andere Aktion ausgeführt. In Skizzen ist es umgekehrt, damit die Draufsicht erhalten bleibt.")
+                Text("Mit ⇧ wird jeweils die andere Aktion ausgeführt. In Skizzen verschieben zwei Finger immer die Ansicht.")
                     .font(.caption).foregroundStyle(.secondary)
                 Toggle("Drehrichtung umkehren", isOn: $s.invertTrackpadOrbit)
                 Toggle("Verschieberichtung umkehren", isOn: $s.invertTrackpadPan)
                 LabeledContent("Pinch") { Text("Zoomen").foregroundStyle(.secondary) }
+            }
+
+            Section("Skizzen") {
+                Toggle(isOn: $s.lockSketchView) {
+                    Text("Ansicht einrasten")
+                    Text("Die Ansicht bleibt gerade auf der Skizze und lässt sich nicht drehen. Auch über das Schloss beim Navigationswürfel umschaltbar.")
+                }
             }
 
             Section("Geschwindigkeit") {

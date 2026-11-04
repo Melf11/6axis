@@ -269,10 +269,10 @@ final class ViewportNSView: MTKView {
                 let sign: CGFloat = settings.invertWheelZoom ? -1 : 1
                 editor.zoom(factor: 1 - sign * dy * 0.01 * settings.zoomSpeed, at: p)
             } else {
-                // Base action from settings; ⇧ toggles; sketches swap so two fingers pan by default.
+                // Base action from settings; ⇧ toggles. In a sketch two fingers always move along its axes.
                 var orbit = settings.trackpadSwipe == .orbit
                 if event.modifierFlags.contains(.shift) { orbit.toggle() }
-                if editor.sketchId != nil { orbit.toggle() }
+                if editor.sketchId != nil { orbit = false }
                 if orbit {
                     let sign: CGFloat = settings.invertTrackpadOrbit ? -1 : 1
                     editor.orbit(dx: -dx * 1.4 * sign, dy: -dy * 1.4 * sign)

@@ -880,6 +880,36 @@
         }
       }
     },
+    "Ansicht eingerastet – klicken, um sie frei zu drehen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "View locked – click to turn it freely"
+          }
+        }
+      }
+    },
+    "Ansicht einrasten": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lock the view"
+          }
+        }
+      }
+    },
+    "Ansicht gerade auf die Skizze einrasten": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lock the view straight onto the sketch"
+          }
+        }
+      }
+    },
     "Ansicht von oben": {
       "localizations": {
         "en": {
@@ -2112,6 +2142,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Thickness"
+          }
+        }
+      }
+    },
+    "Die Ansicht bleibt gerade auf der Skizze und lässt sich nicht drehen. Auch über das Schloss beim Navigationswürfel umschaltbar.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The view stays straight onto the sketch and cannot be turned. The lock next to the view cube switches this too."
           }
         }
       }
@@ -5511,12 +5551,12 @@
         }
       }
     },
-    "Mit ⇧ wird jeweils die andere Aktion ausgeführt. In Skizzen ist es umgekehrt, damit die Draufsicht erhalten bleibt.": {
+    "Mit ⇧ wird jeweils die andere Aktion ausgeführt. In Skizzen verschieben zwei Finger immer die Ansicht.": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "With ⇧ the other action is performed. In sketches it is the other way round so the top view is kept."
+            "value": "⇧ performs the other action. In sketches two fingers always move the view."
           }
         }
       }

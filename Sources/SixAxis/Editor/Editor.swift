@@ -694,6 +694,7 @@ final class Editor {
     }
 
     func setView(direction: SIMD3<Float>, up: SIMD3<Float>) {
+        guard !isSketchViewLocked else { return }
         var c = camera
         c.orientation = Camera.lookOrientation(direction: direction, up: up)
         animateCamera(to: c)
@@ -701,12 +702,14 @@ final class Editor {
 
     /// View cube arrows: quarter turn about a camera axis, continuing from a running animation's goal.
     func turnView(axis: SIMD3<Float>, sign: Float) {
+        guard !isSketchViewLocked else { return }
         var c = cameraAnimation?.to ?? camera
         c.orientation = Camera.quarterTurn(c.orientation, axis: axis, sign: sign)
         animateCamera(to: c)
     }
 
     func homeView() {
+        if isSketchViewLocked { return lookAtSketchPlane() }
         var c = camera
         c.orientation = Camera.homeOrientation
         if let (lo, hi) = modelBounds(), simd_length(hi - lo) > 1e-3 { c.fit(min: lo, max: hi) }

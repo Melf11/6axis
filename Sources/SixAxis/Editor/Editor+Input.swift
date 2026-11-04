@@ -118,7 +118,16 @@ extension Editor {
 
     // MARK: - Navigation
 
+    /// The view stays straight onto the sketch: everything that would turn it does nothing.
+    var isSketchViewLocked: Bool { sketchId != nil && AppSettings.shared.lockSketchView }
+
+    func toggleSketchViewLock() {
+        AppSettings.shared.lockSketchView.toggle()
+        if isSketchViewLocked { lookAtSketchPlane() }
+    }
+
     func orbit(dx: CGFloat, dy: CGFloat) {
+        guard !isSketchViewLocked else { return }
         cameraAnimation = nil
         let speed = Float(AppSettings.shared.orbitSpeed)
         camera.orbit(dx: Float(dx) * speed, dy: Float(dy) * speed)

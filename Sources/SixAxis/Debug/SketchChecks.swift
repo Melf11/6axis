@@ -360,6 +360,69 @@ enum SketchChecks {
         editor.finishSketch()
         await pause()
         await polygonChecks(editor)
+        await viewLockChecks(editor)
+    }
+
+    /// A sketch keeps its view straight unless the lock is opened; two fingers only ever move along its axes.
+    static func viewLockChecks(_ editor: Editor) async {
+        guard let vp = NSApp.windows.lazy.compactMap({ findViewport($0.contentView) }).first else { return check("view lock: viewport", false) }
+        func swipe(shift: Bool = false) {
+            guard let e = CGEvent(scrollWheelEvent2Source: nil, units: .pixel, wheelCount: 2, wheel1: 30, wheel2: 40, wheel3: 0) else { return }
+            e.setIntegerValueField(.scrollWheelEventIsContinuous, value: 1)
+            e.flags = shift ? .maskShift : []
+            if let ns = NSEvent(cgEvent: e) { vp.scrollWheel(with: ns) }
+        }
+        func same(_ a: simd_quatf, _ b: simd_quatf) -> Bool { abs(abs(simd_dot(a, b)) - 1) < 1e-5 }
+        let settings = AppSettings.shared
+        let swipeSetting = settings.trackpadSwipe
+        settings.lockSketchView = true
+        editor.newDocument()
+        editor.beginSketch(on: .xy)
+        await pause(0.8)
+        await view(editor)
+        let straight = editor.camera.orientation
+        check("view lock: on by default in a sketch", editor.isSketchViewLocked)
+        editor.orbit(dx: 80, dy: 40)
+        check("view lock: dragging does not turn", same(editor.camera.orientation, straight))
+        editor.setView(direction: SIMD3(0, 1, 0), up: SIMD3(0, 0, 1))
+        editor.turnView(axis: SIMD3(1, 0, 0), sign: 1)
+        check("view lock: cube and view keys do not turn", same((editor.cameraAnimation?.to ?? editor.camera).orientation, straight))
+        editor.homeView()
+        check("view lock: home stays straight", same((editor.cameraAnimation?.to ?? editor.camera).orientation, straight))
+        for (setting, shift) in [(AppSettings.SwipeAction.orbit, false), (.pan, false), (.orbit, true), (.pan, true)] {
+            settings.trackpadSwipe = setting
+            let target = editor.camera.target
+            swipe(shift: shift)
+            check("view lock: two fingers move (\(setting), shift \(shift))",
+                  same(editor.camera.orientation, straight) && simd_distance(target, editor.camera.target) > 1e-3 && abs(editor.camera.target.z - target.z) < 1e-4)
+        }
+        if let dir = ProcessInfo.processInfo.environment["SIXAXIS_SNAPSHOTS"] { await DemoScript.snap(editor, "sketch-view-locked", URL(fileURLWithPath: dir)) }
+        // Opened: turning works, two fingers still only move; closing it turns back straight.
+        editor.toggleSketchViewLock()
+        editor.orbit(dx: 80, dy: 40)
+        let turned = editor.camera.orientation
+        check("view lock: open, dragging turns", !same(turned, straight))
+        settings.trackpadSwipe = .pan
+        swipe()
+        check("view lock: open, two fingers still only move", same(editor.camera.orientation, turned))
+        editor.toggleSketchViewLock()
+        // The goal of the animation: it only advances with frames, and those depend on the display being awake.
+        check("view lock: closing turns back to the sketch", same((editor.cameraAnimation?.to ?? editor.camera).orientation, straight))
+        editor.camera = editor.cameraAnimation?.to ?? editor.camera
+        editor.cameraAnimation = nil
+        settings.trackpadSwipe = swipeSetting
+        editor.finishSketch()
+        await pause(0.5)
+        let before = editor.camera.orientation
+        editor.orbit(dx: 80, dy: 40)
+        check("view lock: free again after the sketch", !same(editor.camera.orientation, before))
+    }
+
+    private static func findViewport(_ v: NSView?) -> ViewportNSView? {
+        guard let v else { return nil }
+        if let vp = v as? ViewportNSView { return vp }
+        for sub in v.subviews { if let f = findViewport(sub) { return f } }
+        return nil
     }
 
     /// Tool "Mittig" with corners, and a circle turned into polygons through the properties.

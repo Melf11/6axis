@@ -111,6 +111,8 @@ final class AppSettings {
     var zoomToCursor: Bool { didSet { save() } }
     var orbitSpeed: Double { didSet { save() } }
     var zoomSpeed: Double { didSet { save() } }
+    /// In a sketch the view stays straight onto its plane and cannot be turned.
+    var lockSketchView: Bool { didSet { save() } }
 
     // MARK: Display
 
@@ -160,6 +162,7 @@ final class AppSettings {
         invertTrackpadPan = bool("nav.invertPan", false)
         trackpadSwipe = SwipeAction(rawValue: string("nav.swipe", "orbit")) ?? .orbit
         zoomToCursor = bool("nav.zoomToCursor", true)
+        lockSketchView = bool("nav.lockSketchView", true)
         orbitSpeed = double("nav.orbitSpeed", 1)
         zoomSpeed = double("nav.zoomSpeed", 1)
         appearance = Appearance(rawValue: string("display.appearance", "system")) ?? .system
@@ -191,6 +194,7 @@ final class AppSettings {
         d.set(invertTrackpadOrbit, forKey: "nav.invertOrbit")
         d.set(invertTrackpadPan, forKey: "nav.invertPan")
         d.set(trackpadSwipe.rawValue, forKey: "nav.swipe")
+        d.set(lockSketchView, forKey: "nav.lockSketchView")
         d.set(zoomToCursor, forKey: "nav.zoomToCursor")
         d.set(orbitSpeed, forKey: "nav.orbitSpeed")
         d.set(zoomSpeed, forKey: "nav.zoomSpeed")
@@ -220,6 +224,7 @@ final class AppSettings {
         invertTrackpadPan = false
         trackpadSwipe = .orbit
         zoomToCursor = true
+        lockSketchView = true
         orbitSpeed = 1
         zoomSpeed = 1
     }

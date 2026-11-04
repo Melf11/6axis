@@ -1,6 +1,10 @@
 # English translations for Resources/Localizable.xcstrings (German source). Applied by
 # scripts/apply-translations.py; after that the catalog is the source of truth (edit it in Xcode or here).
 EN = {
+"Ansicht einrasten": "Lock the view", "Ansicht eingerastet – klicken, um sie frei zu drehen": "View locked – click to turn it freely",
+"Ansicht gerade auf die Skizze einrasten": "Lock the view straight onto the sketch", "Skizzen": "Sketches",
+"Die Ansicht bleibt gerade auf der Skizze und lässt sich nicht drehen. Auch über das Schloss beim Navigationswürfel umschaltbar.": "The view stays straight onto the sketch and cannot be turned. The lock next to the view cube switches this too.",
+"Mit ⇧ wird jeweils die andere Aktion ausgeführt. In Skizzen verschieben zwei Finger immer die Ansicht.": "⇧ performs the other action. In sketches two fingers always move the view.",
 "%lld Elemente": "%lld items", "Die Eckenzahl muss zwischen 3 und 64 liegen": "The number of corners must be between 3 and 64",
 "Eckig": "Angular", "Ecken": "Corners", "Größe klicken oder Breite eintippen": "Click the size or type the width",
 "Rund": "Round", "Schlüsselweite": "Across flats", "Vieleck": "Polygon",
@@ -94,7 +98,6 @@ EN = {
 "Maßlinie platzieren · Esc bricht ab": "Place the dimension line · Esc cancels", "Maßpositionen zurücksetzen": "Reset dimension positions",
 "Maßstab": "Scale", "Maßstab (ISO 5455)": "Scale (ISO 5455)", "Maßstab automatisch": "Automatic scale",
 "Mit gedrückter ⌘-Taste setzt du Punkte jederzeit frei. Vorhandene Punkte und Linien haben immer Vorrang.": "Hold ⌘ to place points freely at any time. Existing points and lines always take priority.",
-"Mit ⇧ wird jeweils die andere Aktion ausgeführt. In Skizzen ist es umgekehrt, damit die Draufsicht erhalten bleibt.": "With ⇧ the other action is performed. In sketches it is the other way round so the top view is kept.",
 "Mittelpunkt": "Midpoint", "Mittelpunkt klicken": "Click the centre", "Mittelpunkt klicken · ⌘ = frei setzen": "Click the centre · ⌘ = place freely",
 "Mittelpunkt-Rechteck": "Center rectangle", "Mittig": "Center", "Mittlere Taste ziehen": "Middle button drag", "Name": "Name",
 "Namen kannst du in jedem Wertfeld verwenden, z. B. „breite / 2“ oder „wand + 0,2 mm“.": "You can use names in any value field, e.g. “width / 2” or “wall + 0.2 mm”.",
