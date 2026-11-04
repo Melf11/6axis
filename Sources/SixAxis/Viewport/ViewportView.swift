@@ -138,7 +138,7 @@ final class ViewportNSView: MTKView {
         syncScene()
         let (hover, sel) = sceneBuilder?.highlightIds(selection: editor.selection, hover: editor.hover) ?? (0, [])
         return Renderer.FrameState(camera: editor.camera, hoverId: hover, selection: sel, dark: editor.darkMode, animating: animating || fineGrid < 1,
-                                   clip: editor.section?.clip, fineGrid: fineGrid)
+                                   clip: editor.section?.clip, fineGrid: fineGrid, syncWithOverlay: editor.sketchId != nil)
     }
 
     /// Window snapshot: Metal viewport plus the SwiftUI chrome on top.

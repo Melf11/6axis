@@ -143,9 +143,22 @@ extension Editor {
         return rest >= 0.25 ? 1 : Float(max(0, rest / 0.25))
     }
 
+    private func checkSketchViewStopped() {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.12) { [weak self] in
+            guard let self else { return }
+            if CACurrentMediaTime() - self.lastSketchPan < 0.12 { self.checkSketchViewStopped() } else { self.isSketchViewMoving = false }
+        }
+    }
+
     func pan(dx: CGFloat, dy: CGFloat) {
         cameraAnimation = nil
-        if sketchId != nil { lastSketchPan = CACurrentMediaTime() }
+        if sketchId != nil {
+            lastSketchPan = CACurrentMediaTime()
+            if !isSketchViewMoving {
+                isSketchViewMoving = true
+                checkSketchViewStopped()
+            }
+        }
         camera.pan(dx: Float(dx), dy: Float(dy))
         let plane = activePlane ?? .xy
         let t = camera.target

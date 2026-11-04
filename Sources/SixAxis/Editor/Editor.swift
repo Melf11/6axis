@@ -301,6 +301,8 @@ final class Editor {
     var editingDimension: Int?
     var dimensionFirst: Pick?
     @ObservationIgnored var lastSketchPan: CFTimeInterval = 0
+    /// The view of a sketch is being moved: its constraint symbols step aside until it stops.
+    var isSketchViewMoving = false
     @ObservationIgnored var chainStart: Int?
     @ObservationIgnored var sketchRollbackBefore: Int?
     var constraintPicks: [Pick] = []

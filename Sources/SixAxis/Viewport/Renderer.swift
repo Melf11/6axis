@@ -276,6 +276,8 @@ final class Renderer: NSObject, MTKViewDelegate {
         var clip: SIMD4<Float>? = nil
         /// Opacity of the grid's fine lines.
         var fineGrid: Float = 1
+        /// Present together with the SwiftUI layer on top.
+        var syncWithOverlay = false
     }
 
     init?(device: MTLDevice) {
@@ -553,12 +555,20 @@ final class Renderer: NSObject, MTKViewDelegate {
                 cmd.addCompletedHandler { _ in DispatchQueue.main.async { capture(copy) } }
             }
         }
-        cmd.present(drawable)
+        // While editing a sketch its symbols and dimensions lie over the model in a layer of their own. Presented
+        // within the same transaction the two stay together; otherwise they part while the view moves.
+        let inTransaction = frame.syncWithOverlay
+        if (view.layer as? CAMetalLayer)?.presentsWithTransaction != inTransaction { (view.layer as? CAMetalLayer)?.presentsWithTransaction = inTransaction }
+        if !inTransaction { cmd.present(drawable) }
         let stats = self.stats
         cmd.addCompletedHandler { cb in
             stats.lock.lock(); stats.gpu.append((cb.gpuEndTime - cb.gpuStartTime) * 1000); stats.lock.unlock()
         }
         cmd.commit()
+        if inTransaction {
+            cmd.waitUntilScheduled()
+            drawable.present()
+        }
         stats.lock.lock(); stats.frames += 1; stats.cpu.append((CACurrentMediaTime() - cpuStart) * 1000); stats.lock.unlock()
     }
 

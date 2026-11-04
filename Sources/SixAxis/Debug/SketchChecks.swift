@@ -566,8 +566,10 @@ enum SketchChecks {
         // The fine grid is off while the view moves and returns afterwards.
         editor.pan(dx: 3, dy: 0)
         check("grid: fine lines off while moving", editor.fineGridOpacity == 0, "\(editor.fineGridOpacity)")
+        check("symbols: step aside while moving", editor.isSketchViewMoving)
         await pause(0.5)
         check("grid: fine lines back afterwards", editor.fineGridOpacity == 1, "\(editor.fineGridOpacity)")
+        check("symbols: back afterwards", !editor.isSketchViewMoving)
         editor.finishSketch()
         await pause(0.4)
         editor.pan(dx: 3, dy: 0)

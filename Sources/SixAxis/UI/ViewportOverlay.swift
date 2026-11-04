@@ -25,7 +25,7 @@ struct ViewportOverlay: View {
             .allowsHitTesting(false)
 
             if editor.sketchId != nil {
-                constraintGlyphs
+                if !editor.isSketchViewMoving { constraintGlyphs }
                 dimensionLabels
                 splineHandleKnobs
                 toolInputBoxes
