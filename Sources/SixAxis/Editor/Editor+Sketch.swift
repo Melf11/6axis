@@ -187,13 +187,17 @@ extension Editor {
     func snap(at pt: CGPoint) -> SnapTarget? {
         guard let sid = sketchId, let sk = activeSketch, let raw = sketchPosition(at: pt) else { return nil }
         inference = nil
-        switch hover {
-        case let .sketchPoint(s, p) where s == sid:
-            if let pos = sk.point(p) { return SnapTarget(position: pos, point: p) }
-        case let .sketchCurve(s, c) where s == sid:
-            if let curve = sk.curve(c) { return SnapTarget(position: closestPoint(on: curve, sk, to: raw), curve: c) }
-        default:
-            break
+        setSmartGuides([], angle: nil)
+        let free = isFreePlacement
+        if !free {
+            switch hover {
+            case let .sketchPoint(s, p) where s == sid:
+                if let pos = sk.point(p) { return SnapTarget(position: pos, point: p) }
+            case let .sketchCurve(s, c) where s == sid:
+                if let curve = sk.curve(c) { return SnapTarget(position: closestPoint(on: curve, sk, to: raw), curve: c) }
+            default:
+                break
+            }
         }
         let grid = gridSnapActive
         var pos = grid ? snapToGrid(raw) : raw
@@ -201,17 +205,30 @@ extension Editor {
             // Circles snap their radius to the grid step instead of the rim point.
             pos = c + simd_normalize(raw - c) * snapLength(simd_distance(raw, c))
         }
-        if let start = toolPoints.last?.position, [.line, .rectangle, .centerRectangle].contains(sketchTool) || sketchTool == .arc {
+        guard !free, isDrawingTool else { return SnapTarget(position: pos, onGrid: grid) }
+        // A line follows the usual angles: its other coordinate (or along a slant its length) stays on the grid.
+        var direction: Vec2?
+        let start = toolPoints.last?.position
+        if let start, sketchTool == .line || (sketchTool == .arc && toolPoints.count == 1), let angle = usualAngle(from: start, to: raw) {
             let d = raw - start
-            let tol = 4.0 * Double(camera.worldPerPoint)
-            if sketchTool == .line, simd_length(d) > tol * 3 {
-                if abs(d.y) < tol * 1.5 || abs(d.y) < abs(d.x) * 0.035 {
-                    pos.y = start.y; inference = .horizontal
-                } else if abs(d.x) < tol * 1.5 || abs(d.x) < abs(d.y) * 0.035 {
-                    pos.x = start.x; inference = .vertical
-                }
+            switch angle {
+            case 0, 180:
+                pos.y = start.y
+                direction = Vec2(1, 0)
+                if sketchTool == .line { inference = .horizontal }
+            case 90, 270:
+                pos.x = start.x
+                direction = Vec2(0, 1)
+                if sketchTool == .line { inference = .vertical }
+            default:
+                let u = Vec2(cos(angle * .pi / 180), sin(angle * .pi / 180))
+                let length = grid ? snapLength(simd_length(d)) : simd_dot(d, u)
+                pos = start + u * length
+                direction = u
+                smartAngle = angle
             }
         }
+        pos = alignWithNotedPoints(pos, raw: raw, sketch: sk, start: start, direction: direction)
         return SnapTarget(position: pos, onGrid: grid)
     }
 
@@ -252,6 +269,7 @@ extension Editor {
     // MARK: - Tools
 
     func setSketchTool(_ tool: SketchTool) {
+        clearSmartGuides()
         guard sketchId != nil else {
             beginCommand(.sketchPlane, pendingTool: tool)
             return
@@ -1144,6 +1162,12 @@ extension Editor {
         switch ds.pick {
         case let .sketchPoint(_, p):
             if let pos = original.point(p) { targets[p] = grid ? snapToGrid(pos + (cur - start)) : pos + delta }
+            // Near another point or line it goes exactly there, on the grid or not, and connects when let go.
+            let drop = dropTarget(for: p, at: cur, in: activeSketch ?? original)
+            ds.dropPoint = drop?.point
+            ds.dropCurve = drop?.curve
+            if let drop { targets[p] = drop.position }
+            if dropMarker != drop?.position { dropMarker = drop?.position }
         case let .sketchCurve(_, c):
             guard let curve = original.curve(c) else { return }
             switch curve.geometry {

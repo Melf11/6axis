@@ -1,6 +1,7 @@
 # English translations for Resources/Localizable.xcstrings (German source). Applied by
 # scripts/apply-translations.py; after that the catalog is the source of truth (edit it in Xcode or here).
 EN = {
+"Verbinden nicht möglich – die Skizze wäre überbestimmt": "Cannot connect – the sketch would be over-constrained",
 "Fläche %@": "Area %@", "Umfang %@": "Perimeter %@", "Länge %@": "Length %@", "1 Fläche": "1 face", "%lld Flächen": "%lld faces",
 "1 Linie": "1 line", "%lld Linien": "%lld lines",
 "Ansicht einrasten": "Lock the view", "Ansicht eingerastet – klicken, um sie frei zu drehen": "View locked – click to turn it freely",

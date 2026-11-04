@@ -50,7 +50,9 @@ struct PatternPanel: View {
     }
 
     private func binding<T>(_ key: WritableKeyPath<PatternRequest, T>) -> Binding<T> {
-        Binding(get: { editor.patternRequest![keyPath: key] },
+        // Enter closes the dialog while a field still reads its value one last time.
+        let shown = editor.patternRequest!
+        return Binding(get: { (editor.patternRequest ?? shown)[keyPath: key] },
                 set: { editor.patternRequest?[keyPath: key] = $0; editor.requestRedraw() })
     }
 }

@@ -359,8 +359,215 @@ enum SketchChecks {
         check("projected outline is a profile", (editor.activeSketchBuild?.regions.count ?? 0) >= 1)
         editor.finishSketch()
         await pause()
+        await textEnterCheck(editor)
         await polygonChecks(editor)
         await viewLockChecks(editor)
+        await smartGuideChecks(editor)
+        await connectChecks(editor)
+    }
+
+    /// Enter in the text field of the text dialog closes it (crashed: the field read the closed dialog's values).
+    static func textEnterCheck(_ editor: Editor) async {
+        func findField(_ v: NSView?) -> NSTextField? {
+            guard let v else { return nil }
+            if let f = v as? NSTextField, f.isEditable { return f }
+            for sub in v.subviews { if let f = findField(sub) { return f } }
+            return nil
+        }
+        editor.newDocument()
+        editor.beginSketch(on: .xy)
+        await pause(0.8)
+        await view(editor)
+        editor.setSketchTool(.text)
+        click(editor, Vec2(10, 10))
+        await pause(0.6)
+        check("text: dialog opens", editor.textRequest != nil)
+        editor.textRequest?.text = "Hallo"
+        await pause(0.4)
+        guard let win = NSApp.windows.first(where: { $0.identifier?.rawValue.hasPrefix("main") == true }),
+              let field = findField(win.contentView) else { return check("text: field found", false) }
+        win.makeFirstResponder(field)
+        await pause(0.2)
+        if let fieldEditor = field.currentEditor() as? NSTextView {
+            fieldEditor.insertText("!", replacementRange: fieldEditor.selectedRange())
+            await pause(0.1)
+            fieldEditor.insertNewline(nil)
+        } else {
+            field.sendAction(field.action, to: field.target)
+        }
+        if editor.textRequest != nil { editor.commitText() }
+        await pause(0.6)
+        check("text: enter closes the dialog", editor.textRequest == nil)
+        check("text: enter creates the text", editor.activeSketch?.curves.contains(where: \.isText) == true)
+        editor.finishSketch()
+        await pause(0.3)
+    }
+
+    /// A dragged point connects to the point or line it is let go on, on the grid or not.
+    static func connectChecks(_ editor: Editor) async {
+        let settings = AppSettings.shared
+        let grid = settings.snapToGrid
+        settings.snapToGrid = true
+        settings.lockSketchView = true
+        defer { settings.snapToGrid = grid; editor.freePlacementInChecks = false }
+        editor.newDocument()
+        editor.beginSketch(on: .xy)
+        await pause(0.8)
+        await view(editor)
+        func line(_ a: Vec2, _ b: Vec2) {
+            editor.setSketchTool(.line)
+            click(editor, a)
+            click(editor, b)
+            editor.cancelSketchTool()
+            editor.setSketchTool(.select)
+        }
+        line(Vec2(0, 0), Vec2(60, 0))        // target line, off to the side of the grid in the middle
+        line(Vec2(20, 30), Vec2(40, 40))     // the end at 40/40 gets dragged
+        await pause()
+        // Let go over a point of the target line: exactly on its end.
+        drag(editor, from: Vec2(40, 40), to: Vec2(60.5, 0.5))
+        await pause()
+        if let sk = editor.activeSketch {
+            let lines = sk.curves.filter(\.isLine)
+            let shared = Set(lines[0].geometry.pointIds).intersection(lines[1].geometry.pointIds)
+            check("connect: lands on the other point and shares it", shared.count == 1, "\(lines)")
+            check("connect: no marker afterwards", editor.dropMarker == nil)
+        }
+        editor.undo()
+        await pause()
+        check("connect: undo takes the connection back", {
+            guard let sk = editor.activeSketch else { return false }
+            let lines = sk.curves.filter(\.isLine)
+            return lines.count == 2 && Set(lines[0].geometry.pointIds).isDisjoint(with: lines[1].geometry.pointIds)
+        }())
+        // Let go over the line, away from the grid: stays on it, also when the line moves later.
+        let off = Vec2(33.37, 0.4)
+        drag(editor, from: Vec2(40, 40), to: off)
+        await pause()
+        if let sk = editor.activeSketch, let moved = sk.curves.filter(\.isLine).last, case let .line(_, end) = moved.geometry, let p = sk.point(end) {
+            check("connect: lands on the line, off the grid", abs(p.y) < 1e-6 && abs(p.x - 33.37) < 0.2, "\(p)")
+            check("connect: stays connected", sk.constraints.contains { if case let .pointOnCurve(q, _) = $0.kind { return q == end }; return false })
+        }
+        editor.undo()
+        await pause()
+        // ⌘: no connection, on the spot.
+        editor.freePlacementInChecks = true
+        drag(editor, from: Vec2(40, 40), to: off)
+        await pause()
+        editor.freePlacementInChecks = false
+        check("connect: ⌘ does not connect", editor.activeSketch?.constraints.contains { if case .pointOnCurve = $0.kind { return true }; return false } == false)
+        editor.undo()
+        await pause()
+        // The other end of its own line is no target: the line would vanish.
+        drag(editor, from: Vec2(40, 40), to: Vec2(20.5, 30.5))
+        await pause()
+        check("connect: not onto its own line's other end", editor.activeSketch?.curves.filter(\.isLine).count == 2
+              && editor.activeSketch?.curves.last.map { Set($0.geometry.pointIds).count == 2 } == true)
+        editor.finishSketch()
+        await pause(0.4)
+
+        // Lines closed by dragging become a profile; a neighbouring one stays its own.
+        editor.newDocument()
+        editor.beginSketch(on: .xy)
+        await pause(0.8)
+        await view(editor)
+        line(Vec2(0, 0), Vec2(40, 0))
+        line(Vec2(40, 0), Vec2(40, 30))
+        line(Vec2(40, 30), Vec2(10, 30))
+        line(Vec2(10, 30), Vec2(5, 10))
+        await pause()
+        check("profile: open lines are none", editor.activeSketchBuild?.regions.isEmpty == true, "\(editor.activeSketchBuild?.regions.count ?? -1)")
+        drag(editor, from: Vec2(5, 10), to: Vec2(0.4, 0.4))
+        await pause(0.6)
+        check("profile: closing by dragging makes one", editor.activeSketchBuild?.regions.count == 1, "\(editor.activeSketchBuild?.regions.count ?? -1)")
+        // Three more sides against the right edge: two profiles side by side, each with its own measure.
+        line(Vec2(40, 0), Vec2(80, 0))
+        line(Vec2(80, 0), Vec2(80, 30))
+        line(Vec2(80, 30), Vec2(40, 30))
+        await pause(0.6)
+        let regions = editor.activeSketchBuild?.regions ?? []
+        check("profile: neighbours stay separate", regions.count == 2, "\(regions.count)")
+        if let id = editor.sketchId, let right = regions.first(where: { $0.center.x > 40 }) {
+            editor.selection = [.profile(id, right.index)]
+            await pause(0.4)
+            check("profile: a neighbour shows its own area", editor.selectionMeasure?.detail.contains("12.00 cm²") == true, "\(String(describing: editor.selectionMeasure))")
+            if let dir = ProcessInfo.processInfo.environment["SIXAXIS_SNAPSHOTS"] { await DemoScript.snap(editor, "sketch-neighbours", URL(fileURLWithPath: dir)) }
+            editor.selection.removeAll()
+        }
+        editor.finishSketch()
+        await pause(0.4)
+    }
+
+/// Resting on a point notes it, the cursor lines up with it; lines snap to the usual angles; ⌘ turns it all off.
+    static func smartGuideChecks(_ editor: Editor) async {
+        let settings = AppSettings.shared
+        let grid = settings.snapToGrid
+        settings.lockSketchView = true
+        defer { settings.snapToGrid = grid; editor.freePlacementInChecks = false }
+        editor.newDocument()
+        editor.beginSketch(on: .xy)
+        await pause(0.8)
+        await view(editor)
+        func hover(_ uv: Vec2) { if let pt = screen(editor, uv) { editor.updateHover(at: pt) } }
+        let step = 3 * Double(editor.camera.worldPerPoint)   // about 3 points on the screen: within reach
+        editor.setSketchTool(.line)
+        click(editor, Vec2(40, 30))
+        click(editor, Vec2(70, 30))
+        editor.cancelSketchTool()
+        settings.snapToGrid = false
+        await pause()
+        guard let noted = editor.activeSketch?.points.first(where: { simd_distance($0.position, Vec2(40, 30)) < 1e-6 })?.id else {
+            return check("guides: line drawn", false)
+        }
+
+        // A quick pass over a point notes nothing, resting does.
+        hover(Vec2(40, 30))
+        hover(Vec2(90, 90))
+        await pause(0.5)
+        check("guides: passing over a point notes nothing", editor.notedPoints.isEmpty)
+        hover(Vec2(40, 30))
+        await pause(0.5)
+        check("guides: resting on a point notes it", editor.notedPoints == [noted], "\(editor.notedPoints)")
+
+        // Lined up below it: the X locks, the guide shows the distance.
+        hover(Vec2(40 + step, 80))
+        let below = editor.cursor?.position ?? .zero
+        check("guides: lines up with the noted point", abs(below.x - 40) < 1e-9 && abs(below.y - 80) < 0.05, "\(below)")
+        check("guides: guide from the point to the cursor", editor.smartGuides == [SmartGuide(from: Vec2(40, 30), to: below)], "\(editor.smartGuides)")
+        if let dir = ProcessInfo.processInfo.environment["SIXAXIS_SNAPSHOTS"] { await DemoScript.snap(editor, "sketch-guide", URL(fileURLWithPath: dir)) }
+        hover(Vec2(55, 80))
+        check("guides: away from it no guide", editor.smartGuides.isEmpty && abs((editor.cursor?.position.x ?? 0) - 55) < 0.05)
+        hover(Vec2(40 + step, 80))
+        editor.freePlacementInChecks = true
+        hover(Vec2(40 + step, 80))
+        check("guides: ⌘ places freely", editor.smartGuides.isEmpty && abs((editor.cursor?.position.x ?? 0) - (40 + step)) < 0.05, "\(String(describing: editor.cursor))")
+        hover(Vec2(40, 30))
+        check("guides: ⌘ ignores points too", editor.cursor?.point == nil, "\(String(describing: editor.cursor))")
+        editor.freePlacementInChecks = false
+
+        // The usual angles from the start of a line.
+        settings.snapToGrid = true
+        click(editor, Vec2(-50, -50))
+        settings.snapToGrid = false
+        for (angle, near) in [(45.0, Vec2(-20, -19.4)), (30.0, Vec2(-10, -26.4)), (60.0, Vec2(-30, -15.6))] {
+            hover(near)
+            let d = (editor.cursor?.position ?? .zero) - Vec2(-50, -50)
+            let got = atan2(d.y, d.x) * 180 / .pi
+            check("guides: line snaps to \(Int(angle))°", abs(got - angle) < 1e-6 && editor.smartAngle == angle, "\(got) \(String(describing: editor.smartAngle))")
+        }
+        if let dir = ProcessInfo.processInfo.environment["SIXAXIS_SNAPSHOTS"] { await DemoScript.snap(editor, "sketch-guide-angle", URL(fileURLWithPath: dir)) }
+        hover(Vec2(-20, -40))
+        check("guides: another angle stays free", editor.smartAngle == nil && abs((editor.cursor?.position.y ?? 0) + 40) < 0.05, "\(String(describing: editor.cursor))")
+        hover(Vec2(0, -50 + step))
+        check("guides: horizontal keeps its constraint", editor.inference == .horizontal && abs((editor.cursor?.position.y ?? 0) + 50) < 1e-9)
+        editor.freePlacementInChecks = true
+        hover(Vec2(-20, -19.4))
+        check("guides: ⌘ ignores the angles", editor.smartAngle == nil && abs((editor.cursor?.position.y ?? 0) + 19.4) < 0.05)
+        editor.freePlacementInChecks = false
+        editor.setSketchTool(.select)
+        check("guides: leaving the tool forgets the points", editor.notedPoints.isEmpty && editor.smartGuides.isEmpty)
+        editor.finishSketch()
+        await pause(0.4)
     }
 
     /// A sketch keeps its view straight unless the lock is opened; two fingers only ever move along its axes.

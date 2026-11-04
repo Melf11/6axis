@@ -21,6 +21,7 @@ extension Editor {
         if newHover != hover { hover = newHover }
         if gridFacePick != shownGridFace { gridVersion &+= 1 }   // face grid follows the hovered face
         if sketchId != nil {
+            updateDwell()
             let s = snap(at: pt)
             if s != cursor { cursor = s }
         }
@@ -67,6 +68,7 @@ extension Editor {
         guard let ds = dragState else { return }
         dragState = nil
         if ds.moved {
+            if sketchId != nil { connectDraggedPoint(ds) }
             if sketchId != nil, ds.original != nil, doc != ds.snapshot, ds.pick != nil {
                 pushUndo(ds.snapshot)
             }

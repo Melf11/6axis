@@ -288,6 +288,15 @@ final class Editor {
     var toolInputFocus: Int?
     var cursor: SnapTarget?
     var inference: Inference?
+    /// Sketch points noted by resting on them while drawing, and the guides they give at the cursor.
+    var notedPoints: [Int] = []
+    var smartGuides: [SmartGuide] = []
+    /// The usual angle a line being drawn has snapped to (other than horizontal and vertical).
+    var smartAngle: Double?
+    /// Where a dragged sketch point will connect.
+    var dropMarker: Vec2?
+    @ObservationIgnored var dwellPoint: Int?
+    @ObservationIgnored var freePlacementInChecks = false
     var lastSolve: SolveResult?
     var editingDimension: Int?
     var dimensionFirst: Pick?
@@ -343,6 +352,9 @@ final class Editor {
         var startSketchPos: Vec2?
         var original: Sketch?
         var moved = false
+        /// What a dragged sketch point will connect to when it is let go.
+        var dropPoint: Int?
+        var dropCurve: Int?
     }
 
     init() {

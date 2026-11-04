@@ -47,7 +47,9 @@ struct TextPanel: View {
     }
 
     private func binding<T>(_ key: WritableKeyPath<TextRequest, T>) -> Binding<T> {
-        Binding(get: { editor.textRequest![keyPath: key] },
+        // Enter closes the dialog while the field still reads its value one last time.
+        let shown = editor.textRequest!
+        return Binding(get: { (editor.textRequest ?? shown)[keyPath: key] },
                 set: { editor.textRequest?[keyPath: key] = $0; editor.requestRedraw() })
     }
 }

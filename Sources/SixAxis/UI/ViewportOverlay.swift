@@ -12,6 +12,7 @@ struct ViewportOverlay: View {
         ZStack(alignment: .topLeading) {
             Canvas { ctx, _ in
                 drawToolPreview(ctx)
+                drawDropMarker(ctx)
                 drawDimensions(ctx)
                 drawExtrudeArrow(ctx)
                 drawHoleArrows(ctx)
@@ -102,6 +103,7 @@ struct ViewportOverlay: View {
                 ctx.stroke(Path(CGRect(x: snapPt.x - 4, y: snapPt.y - 4, width: 8, height: 8)), with: .color(accent), lineWidth: 1.5)
             }
         }
+        drawSmartGuides(ctx)
         drawCursorMarker(ctx, cur)
         guard let p0 = editor.toolPoints.first?.position else { return }
         let e = editor.effectiveToolEnd(c)
@@ -188,6 +190,40 @@ struct ViewportOverlay: View {
         let rect = CGRect(x: s.x + 14, y: s.y + 10, width: size.width + 12, height: size.height + 4)
         ctx.fill(Path(roundedRect: rect, cornerRadius: 5), with: .color(accent))
         ctx.draw(t, at: CGPoint(x: rect.midX, y: rect.midY))
+    }
+
+    /// Where a dragged point will connect when it is let go.
+    private func drawDropMarker(_ ctx: GraphicsContext) {
+        guard let p = editor.dropMarker, let s = screen(p) else { return }
+        ctx.stroke(Path(ellipseIn: CGRect(x: s.x - 8, y: s.y - 8, width: 16, height: 16)), with: .color(.orange), lineWidth: 2)
+    }
+
+    /// Noted points, the dotted lines from them with their distance, and a snapped angle.
+    private func drawSmartGuides(_ ctx: GraphicsContext) {
+        guard !editor.hasLockedInput, let sk = editor.activeSketch else { return }
+        for id in editor.notedPoints {
+            guard let p = sk.point(id), let s = screen(p) else { continue }
+            ctx.stroke(Path(ellipseIn: CGRect(x: s.x - 6, y: s.y - 6, width: 12, height: 12)), with: .color(.orange), lineWidth: 1.5)
+        }
+        for guide in editor.smartGuides {
+            guard let a = screen(guide.from), let b = screen(guide.to) else { continue }
+            var line = Path()
+            line.move(to: a)
+            line.addLine(to: b)
+            ctx.stroke(line, with: .color(.orange), style: StrokeStyle(lineWidth: 1, dash: [2, 3]))
+            guideLabel(ctx, formatValue(simd_distance(guide.from, guide.to)), at: CGPoint(x: (a.x + b.x) / 2, y: (a.y + b.y) / 2))
+        }
+        if let angle = editor.smartAngle, let c = editor.cursor.flatMap({ screen($0.position) }) {
+            guideLabel(ctx, editor.plainNumber(angle) + "°", at: CGPoint(x: c.x + 26, y: c.y - 14))
+        }
+    }
+
+    private func guideLabel(_ ctx: GraphicsContext, _ text: String, at p: CGPoint) {
+        let t = ctx.resolve(Text(text).font(.system(size: 10, weight: .semibold, design: .rounded)).foregroundStyle(.white))
+        let size = t.measure(in: CGSize(width: 200, height: 30))
+        let rect = CGRect(x: p.x - size.width / 2 - 5, y: p.y - size.height / 2 - 2, width: size.width + 10, height: size.height + 4)
+        ctx.fill(Path(roundedRect: rect, cornerRadius: 4), with: .color(.orange))
+        ctx.draw(t, at: p)
     }
 
     private func badge(_ ctx: GraphicsContext, _ text: String, at p: CGPoint) {
@@ -419,7 +455,9 @@ struct ViewportOverlay: View {
             guard let c = sk.curve(cid) else { return }
             let poly = sk.polyline(c, segments: 32)
             guard poly.count >= 2 else { return }
-            let mid = poly[poly.count / 2], next = poly[min(poly.count - 1, poly.count / 2 + 1)]
+            // A straight line has only its two ends: its middle lies between them.
+            let mid = poly.count == 2 ? (poly[0] + poly[1]) / 2 : poly[poly.count / 2]
+            let next = poly.count == 2 ? poly[1] : poly[min(poly.count - 1, poly.count / 2 + 1)]
             guard let s = screen(mid), let s2 = screen(next) else { return }
             let d = CGVector(dx: s2.x - s.x, dy: s2.y - s.y)
             let len = max(hypot(d.dx, d.dy), 1e-6)
@@ -433,7 +471,7 @@ struct ViewportOverlay: View {
             guard let p = sk.point(pid), let s = screen(p) else { return }
             let k = stack[-pid - 1, default: 0]
             stack[-pid - 1] = k + 1
-            out.append(Glyph(id: "\(con)-\(tag)", constraint: con, symbol: symbol, position: CGPoint(x: s.x + 12 + CGFloat(k) * 19, y: s.y - 12)))
+            out.append(Glyph(id: "\(con)-\(tag)", constraint: con, symbol: symbol, position: CGPoint(x: s.x + 17 + CGFloat(k) * 19, y: s.y - 12)))
         }
         // Constraints of copies (patterns, mirror) are shown by their dimension, not one glyph per copy.
         for c in sk.constraints where c.group == nil {
@@ -484,6 +522,8 @@ struct ViewportOverlay: View {
                     }
                     .help(g.constraint < 0 ? String(localized: "Fixiert") : (sketch?.constraints.first { $0.id == g.constraint }?.kind.displayName ?? ""))
                     .position(g.position)
+                    // While drawing the points and lines underneath must stay reachable.
+                    .allowsHitTesting(!editor.isDrawingTool)
             }
         }
     }
