@@ -41,6 +41,8 @@ public final class Shape: @unchecked Sendable {
     public var solidCount: Int { Int(ob_shape_solid_count(handle)) }
     public var volume: Double { ob_shape_volume(handle) }
     public var area: Double { ob_shape_area(handle) }
+    /// Length of all boundaries of its faces, holes included.
+    public var perimeter: Double { ob_shape_perimeter(handle) }
 
     public var boundingBox: (min: SIMD3<Double>, max: SIMD3<Double>)? {
         var lo = [0.0, 0.0, 0.0], hi = [0.0, 0.0, 0.0]

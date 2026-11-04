@@ -218,12 +218,24 @@ private struct BottomBar: View {
 
 }
 
-/// Volume and weight. A view of its own: they change during a drag, the rest of the bottom bar does not.
+/// Area and length of the selection, otherwise volume and weight. A view of its own: they change during a drag,
+/// the rest of the bottom bar does not.
 private struct PhysicalInfo: View {
     let editor: Editor
 
     var body: some View {
-        if let p = editor.physicalSummary {
+        if let m = editor.selectionMeasure {
+            VStack(alignment: .trailing, spacing: 2) {
+                Text(m.title).font(.system(size: 11, weight: .semibold))
+                Text(m.detail)
+                    .font(.system(size: 11, design: .rounded))
+                    .foregroundStyle(.secondary)
+                    .textSelection(.enabled)
+            }
+            .padding(.horizontal, 10)
+            .padding(.vertical, 6)
+            .floatingPanel(radius: 10)
+        } else if let p = editor.physicalSummary {
             let cm3 = p.volume / 1000
             let settings = AppSettings.shared
             // Body materials win; otherwise the 3D-printing material from the settings.

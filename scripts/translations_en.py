@@ -1,6 +1,8 @@
 # English translations for Resources/Localizable.xcstrings (German source). Applied by
 # scripts/apply-translations.py; after that the catalog is the source of truth (edit it in Xcode or here).
 EN = {
+"Fläche %@": "Area %@", "Umfang %@": "Perimeter %@", "Länge %@": "Length %@", "1 Fläche": "1 face", "%lld Flächen": "%lld faces",
+"1 Linie": "1 line", "%lld Linien": "%lld lines",
 "Ansicht einrasten": "Lock the view", "Ansicht eingerastet – klicken, um sie frei zu drehen": "View locked – click to turn it freely",
 "Ansicht gerade auf die Skizze einrasten": "Lock the view straight onto the sketch", "Skizzen": "Sketches",
 "Die Ansicht bleibt gerade auf der Skizze und lässt sich nicht drehen. Auch über das Schloss beim Navigationswürfel umschaltbar.": "The view stays straight onto the sketch and cannot be turned. The lock next to the view cube switches this too.",

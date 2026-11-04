@@ -693,4 +693,39 @@ final class ModellingTests: XCTestCase {
         XCTAssertNotNil(SketchEdit.trimPreview(sk, curve: circle, at: Vec2(10, 5)))
         XCTAssertNotNil(sk.curve(circle), "the preview must not change the sketch")
     }
+
+    // MARK: Measuring the selection
+
+    func testFacePerimeter() throws {
+        var doc = CADDocument()
+        let e = box(&doc)
+        let top = topFace(build(doc), e)
+        let plain = build(doc).bodies[e]!
+        let index = try XCTUnwrap(plain.resolve(top.face))
+        XCTAssertEqual(try XCTUnwrap(plain.facePerimeter(index)), 320, accuracy: 1e-6)
+        // A through hole adds its rim; on its wall both rims count, the seam does not.
+        var h = HoleFeature()
+        h.points = [.faceOffset(top, x: "50", y: "30")]
+        h.extent = .through
+        h.diameter = "10 mm"
+        doc.features.append(Feature(name: "B", kind: .hole(h)))
+        let body = build(doc).bodies[e]!
+        let rim = 10 * Double.pi
+        let topIndex = try XCTUnwrap(body.faceInfos.compactMap { $0 }.first { $0.isPlanar && abs($0.centroid.z - 20) < 1e-6 }?.index)
+        XCTAssertEqual(try XCTUnwrap(body.facePerimeter(topIndex)), 320 + rim, accuracy: 1e-6)
+        let wall = try XCTUnwrap(body.faceInfos.compactMap { $0 }.first { $0.surface == .cylinder }?.index)
+        XCTAssertEqual(try XCTUnwrap(body.facePerimeter(wall)), 2 * rim, accuracy: 1e-6)
+    }
+
+    func testSketchCurveLengths() {
+        var sk = Sketch(plane: .xy)
+        let line = sk.addLine(sk.addPoint(Vec2(0, 0)), sk.addPoint(Vec2(30, 40)))
+        XCTAssertEqual(sk.length(of: sk.curve(line)!), 50, accuracy: 1e-9)
+        let circle = sk.addCircle(center: sk.addPoint(Vec2(0, 0)), radius: 10)
+        XCTAssertEqual(sk.length(of: sk.curve(circle)!), 20 * .pi, accuracy: 1e-9)
+        sk.curves[sk.curveIndex(circle)!].polygon = RegularPolygon(sides: 4)
+        XCTAssertEqual(sk.length(of: sk.curve(circle)!), 80, accuracy: 1e-9)
+        let arc = sk.addArc(center: sk.addPoint(Vec2(0, 0)), start: sk.addPoint(Vec2(10, 0)), end: sk.addPoint(Vec2(0, 10)))
+        XCTAssertEqual(sk.length(of: sk.curve(arc)!), 5 * .pi, accuracy: 1e-3)
+    }
 }

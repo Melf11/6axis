@@ -88,6 +88,8 @@ OBShape *ob_shape_edge(const OBShape *s, int32_t index);
 double ob_distance(const OBShape *a, const OBShape *b, double outA[3], double outB[3]);
 double ob_shape_volume(const OBShape *s);
 double ob_shape_area(const OBShape *s);
+/// Length of all boundaries of the shape's faces, holes included; seams of closed surfaces do not count.
+double ob_shape_perimeter(const OBShape *s);
 int32_t ob_shape_bbox(const OBShape *s, double outMin[3], double outMax[3]);
 /// Exact bounds of the geometry (no tolerance gap; slower – for machining).
 int32_t ob_shape_bbox_exact(const OBShape *s, double outMin[3], double outMax[3]);

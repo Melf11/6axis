@@ -450,6 +450,25 @@ enum SketchChecks {
         await pause()
         check("Mittig without corners stays a rectangle", editor.activeSketch?.curves.filter(\.isLine).count == 4 + 1, "\(editor.activeSketch?.curves.count ?? 0) curves")
 
+        // Selecting a profile and a line shows their measures in the status bar.
+        if let sb = editor.activeSketchBuild, let id = editor.sketchId, let i = sb.regions.indices.first(where: { abs(sb.regions[$0].center.x - 20) < 1 }) {
+            editor.selection = [.profile(id, i)]
+            await pause(0.4)
+            let side = 20 * tan(Double.pi / 6)
+            let expected = 6 * side
+            let m = editor.selectionMeasure
+            check("status bar: a profile's area and perimeter", m?.title.contains("1") == true && m?.detail.contains(formatValue(expected)) == true && m?.detail.contains("cm²") == true,
+                  "\(String(describing: m)), expected \(formatValue(expected))")
+            if let line = editor.activeSketch?.curves.first(where: { $0.isLine && !$0.construction }) {
+                editor.selection = [.sketchCurve(id, line.id)]
+                await pause(0.4)
+                let sk = editor.activeSketch!
+                check("status bar: a line's length", editor.selectionMeasure?.detail.contains(formatValue(sk.length(of: line))) == true, "\(String(describing: editor.selectionMeasure))")
+                await DemoScript.snap(editor, "sketch-measure-line", URL(fileURLWithPath: ProcessInfo.processInfo.environment["SIXAXIS_SNAPSHOTS"] ?? NSTemporaryDirectory()))
+            }
+            editor.selection.removeAll()
+            check("status bar: nothing selected, no measure", editor.selectionMeasure == nil)
+        } else { check("status bar: profile found", false) }
         // A circle: select it, turn it into a square, set its size, back to round.
         editor.setSketchTool(.circle)
         click(editor, Vec2(20, 60))
@@ -470,6 +489,8 @@ enum SketchChecks {
             check("properties: size is the width across flats", abs(sk.radius(of: c) - 15) < 1e-6 && abs((sk.polygonCorners(c).map(\.x).max() ?? 0) - 35) < 1e-6, "\(sk.polygonCorners(c))")
             check("properties: the size is a dimension", editor.sizeText(c, in: sk) == "30 mm", editor.sizeText(c, in: sk))
         }
+        await pause(0.4)
+        check("status bar: a square's outline", editor.selectionMeasure?.detail.contains("120") == true, "\(String(describing: editor.selectionMeasure))")
         // The square's corner sticks out beyond the circle: picking follows the polygon.
         editor.selection.removeAll()
         click(editor, Vec2(34, 74))

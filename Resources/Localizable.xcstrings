@@ -181,6 +181,16 @@
         }
       }
     },
+    "%lld Flächen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld faces"
+          }
+        }
+      }
+    },
     "%lld Freiheitsgrade": {
       "localizations": {
         "en": {
@@ -207,6 +217,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "%lld bodies"
+          }
+        }
+      }
+    },
+    "%lld Linien": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld lines"
           }
         }
       }
@@ -251,12 +271,32 @@
         }
       }
     },
+    "1 Fläche": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 face"
+          }
+        }
+      }
+    },
     "1 Freiheitsgrad": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "1 degree of freedom"
+          }
+        }
+      }
+    },
+    "1 Linie": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 line"
           }
         }
       }
@@ -3527,6 +3567,16 @@
         }
       }
     },
+    "Fläche %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Area %@"
+          }
+        }
+      }
+    },
     "Fläche existiert nicht": {
       "extractionState": "manual",
       "localizations": {
@@ -5257,6 +5307,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Length"
+          }
+        }
+      }
+    },
+    "Länge %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Length %@"
           }
         }
       }
@@ -8382,6 +8442,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Rename"
+          }
+        }
+      }
+    },
+    "Umfang %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Perimeter %@"
           }
         }
       }

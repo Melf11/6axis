@@ -206,6 +206,24 @@ double ob_shape_area(const OBShape *s) {
     return p.Mass();
 }
 
+double ob_shape_perimeter(const OBShape *s) {
+    if (!s || s->shape.IsNull()) return 0;
+    double total = 0;
+    for (TopExp_Explorer faces(s->shape, TopAbs_FACE); faces.More(); faces.Next()) {
+        const TopoDS_Face face = TopoDS::Face(faces.Current());
+        TopTools_IndexedMapOfShape seen;
+        for (TopExp_Explorer edges(face, TopAbs_EDGE); edges.More(); edges.Next()) {
+            const TopoDS_Edge edge = TopoDS::Edge(edges.Current());
+            if (seen.Contains(edge) || BRep_Tool::Degenerated(edge) || BRep_Tool::IsClosed(edge, face)) continue;
+            seen.Add(edge);
+            GProp_GProps props;
+            BRepGProp::LinearProperties(edge, props);
+            total += props.Mass();
+        }
+    }
+    return total;
+}
+
 int32_t ob_shape_bbox(const OBShape *s, double outMin[3], double outMax[3]) {
     if (!s || s->shape.IsNull()) return 0;
     Bnd_Box box;

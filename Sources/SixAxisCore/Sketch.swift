@@ -431,6 +431,17 @@ public struct Sketch: Codable, Hashable, Sendable {
         }
     }
 
+    /// Length of a curve along what is drawn: a polygon's sides, a circle's circumference.
+    public func length(of curve: SketchCurve) -> Double {
+        switch curve.geometry {
+        case .circle where curve.polygon == nil: return 2 * .pi * radius(of: curve)
+        case .text: return 0
+        default:
+            let line = polyline(curve, segments: 720)
+            return zip(line, line.dropFirst()).reduce(0) { $0 + simd_distance($1.0, $1.1) }
+        }
+    }
+
     /// Corners of a circle drawn as a polygon; empty for anything else.
     public func polygonCorners(_ curve: SketchCurve) -> [Vec2] {
         guard let polygon = curve.polygon, case let .circle(c, r) = curve.geometry, let pc = point(c) else { return [] }

@@ -433,9 +433,47 @@ enum ModellingChecks {
         editor.cameraAnimation = nil
         await snap("m12-viewcube-arrows")
 
+        await selectionMeasureChecks(editor)
         await titleBarChecks()
         await dragHeavyPreview(editor)
         await dragLightPreview(editor)
+    }
+
+    /// Selected faces show area and perimeter in the status bar, edges their length.
+    static func selectionMeasureChecks(_ editor: Editor) async {
+        editor.newDocument()
+        var sk = Sketch(plane: .xy)
+        let c = [sk.addPoint(Vec2(0, 0)), sk.addPoint(Vec2(100, 0)), sk.addPoint(Vec2(100, 60)), sk.addPoint(Vec2(0, 60))]
+        for i in 0..<4 { sk.addLine(c[i], c[(i + 1) % 4]) }
+        let s = Feature(name: "S", kind: .sketch(sk))
+        var ex = ExtrudeFeature()
+        ex.profiles = [ProfileRef(sketch: s.id, sample: Vec2(50, 30))]
+        ex.distance = "20 mm"
+        let e = Feature(name: "E", kind: .extrude(ex))
+        editor.commit { $0.features = [s, e] }
+        await settle(editor)
+        guard let body = editor.state.bodies[e.id],
+              let top = body.faceInfos.compactMap({ $0 }).first(where: { $0.isPlanar && abs($0.centroid.z - 20) < 1e-6 }),
+              let edge = body.edgeInfos.compactMap({ $0 }).first(where: { abs($0.length - 100) < 1e-6 }) else {
+            return check("status bar: plate built", false)
+        }
+        editor.selection = [.face(e.id, top.index)]
+        await pause()
+        let face = editor.selectionMeasure
+        check("status bar: a face's area and perimeter", face?.detail.contains("60.00 cm²") == true && face?.detail.contains(formatValue(320)) == true, "\(String(describing: face))")
+        await snap(editor, "m13-face-measure")
+        editor.selection = [.edge(e.id, edge.index)]
+        check("status bar: an edge's length", editor.selectionMeasure?.detail.contains(formatValue(100)) == true, "\(String(describing: editor.selectionMeasure))")
+        editor.selection = [.face(e.id, top.index), .edge(e.id, edge.index)]
+        let both = editor.selectionMeasure
+        check("status bar: face and edge together", both?.detail.contains("cm²") == true && both?.detail.contains(formatValue(100)) == true, "\(String(describing: both))")
+        editor.selection = [.body(e.id)]
+        check("status bar: a whole body shows no face measure", editor.selectionMeasure == nil)
+        editor.selection.removeAll()
+    }
+
+    private static func snap(_ editor: Editor, _ name: String) async {
+        if let dir = ProcessInfo.processInfo.environment["SIXAXIS_SNAPSHOTS"] { await DemoScript.snap(editor, name, URL(fileURLWithPath: dir)) }
     }
 
     /// Dragging the extrude arrow on an ordinary model (the cabinet): a change per mouse event must not wait

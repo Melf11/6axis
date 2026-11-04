@@ -47,6 +47,18 @@ public final class BuiltBody: @unchecked Sendable {
     public private(set) lazy var volume: Double = shape.volume
     public private(set) lazy var area: Double = shape.area
 
+    /// Boundary length of one face, cached like `sharpEdges`: the status bar asks for it while it is selected.
+    public func facePerimeter(_ index: Int) -> Double? {
+        boundsLock.lock()
+        defer { boundsLock.unlock() }
+        if let known = cachedPerimeters[index] { return known }
+        guard let face = try? shape.face(index) else { return nil }
+        let perimeter = face.perimeter
+        cachedPerimeters[index] = perimeter
+        return perimeter
+    }
+    private var cachedPerimeters: [Int: Double] = [:]
+
     public private(set) lazy var faceInfos: [FaceInfo?] = (0..<shape.faceCount).map { shape.faceInfo($0) }
     public private(set) lazy var edgeInfos: [EdgeInfo?] = (0..<shape.edgeCount).map { shape.edgeInfo($0) }
 

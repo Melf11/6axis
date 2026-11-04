@@ -817,6 +817,52 @@ final class Editor {
     /// Volume/mass summary for the selection (or all visible bodies) — handy for 3D printing.
     /// Volume, area and – when every body has a material with known density – the mass in grams
     /// and a material label (single material name, or "gemischt").
+    /// What the status bar shows for selected faces, sketch profiles and lines; nil when none is selected.
+    var selectionMeasure: (title: String, detail: String)? {
+        var faces = 0, area = 0.0, perimeter = 0.0
+        var lines = 0, length = 0.0
+        var closed = true
+        for pick in selection {
+            switch pick {
+            case let .face(b, i):
+                guard let body = shownState.bodies[b], let info = body.faceInfo(at: i), let around = body.facePerimeter(i) else { continue }
+                faces += 1; area += info.area; perimeter += around
+            case let .profile(s, i):
+                guard let sb = shownState.sketches[s], sb.regions.indices.contains(i) else { continue }
+                faces += 1; area += sb.regions[i].face.area; perimeter += sb.regions[i].face.perimeter
+            case let .edge(b, i):
+                guard let e = shownState.bodies[b]?.edgeInfo(at: i) else { continue }
+                lines += 1; length += e.length
+                if e.kind != .circle { closed = false }
+            case let .sketchCurve(s, c):
+                guard let sk = shownState.sketches[s]?.sketch, let curve = sk.curve(c), !curve.isText else { continue }
+                lines += 1; length += sk.length(of: curve)
+                if case .circle = curve.geometry {} else { closed = false }
+            default:
+                continue
+            }
+        }
+        guard faces + lines > 0 else { return nil }
+        var parts: [String] = []
+        if faces > 0 {
+            parts.append(String(localized: "Fläche \(Self.formatArea(area))"))
+            parts.append(String(localized: "Umfang \(formatValue(perimeter))"))
+        }
+        if lines > 0 {
+            parts.append(closed ? String(localized: "Umfang \(formatValue(length))") : String(localized: "Länge \(formatValue(length))"))
+        }
+        let names = (faces > 0 ? [faces == 1 ? String(localized: "1 Fläche") : String(localized: "\(faces) Flächen")] : [])
+            + (lines > 0 ? [lines == 1 ? String(localized: "1 Linie") : String(localized: "\(lines) Linien")] : [])
+        return (names.joined(separator: " · "), parts.joined(separator: " · "))
+    }
+
+    /// mm² for small faces, cm² for most parts, m² for panels.
+    private static func formatArea(_ mm2: Double) -> String {
+        if mm2 >= 1_000_000 { return String(format: "%.3f m²", mm2 / 1_000_000) }
+        if mm2 >= 100 { return String(format: "%.2f cm²", mm2 / 100) }
+        return String(format: "%.1f mm²", mm2)
+    }
+
     var physicalSummary: (title: String, volume: Double, area: Double, mass: Double?, material: String?)? {
         let selectedBodies = Set(selection.compactMap(\.bodyId))
         let doc = shownDoc
