@@ -462,6 +462,17 @@ enum ModellingChecks {
         let face = editor.selectionMeasure
         check("status bar: a face's area and perimeter", face?.detail.contains("60.00 cm²") == true && face?.detail.contains(formatValue(320)) == true, "\(String(describing: face))")
         await snap(editor, "m13-face-measure")
+        // What it shows comes from the settings.
+        let settings = AppSettings.shared
+        settings.measureAreaUnit = .m2
+        check("status bar: the area's unit", editor.selectionMeasure?.detail.contains("0.006 m²") == true, "\(String(describing: editor.selectionMeasure))")
+        settings.measureAreaUnit = .automatic
+        settings.showMeasurePerimeter = false
+        check("status bar: perimeter can be hidden", editor.selectionMeasure?.detail.contains("cm²") == true && editor.selectionMeasure?.detail.contains(formatValue(320)) == false)
+        settings.showMeasureArea = false
+        check("status bar: all hidden, no measure", editor.selectionMeasure == nil)
+        settings.showMeasureArea = true
+        settings.showMeasurePerimeter = true
         editor.selection = [.edge(e.id, edge.index)]
         check("status bar: an edge's length", editor.selectionMeasure?.detail.contains(formatValue(100)) == true, "\(String(describing: editor.selectionMeasure))")
         editor.selection = [.face(e.id, top.index), .edge(e.id, edge.index)]

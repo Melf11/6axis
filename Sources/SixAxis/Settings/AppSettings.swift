@@ -128,6 +128,28 @@ final class AppSettings {
     /// Snap sketch points to the grid (⌘ = free).
     var snapToGrid: Bool { didSet { save() } }
 
+    // MARK: Measures at the bottom right
+
+    enum AreaUnit: String, CaseIterable, Identifiable {
+        case automatic, mm2, cm2, m2
+        var id: String { rawValue }
+        var title: String {
+            switch self {
+            case .automatic: return String(localized: "Automatisch")
+            case .mm2: return "mm²"
+            case .cm2: return "cm²"
+            case .m2: return "m²"
+            }
+        }
+    }
+
+    var showMeasureArea: Bool { didSet { save() } }
+    var showMeasurePerimeter: Bool { didSet { save() } }
+    var showMeasureLength: Bool { didSet { save() } }
+    var showMeasureVolume: Bool { didSet { save() } }
+    var showMeasureWeight: Bool { didSet { save() } }
+    var measureAreaUnit: AreaUnit { didSet { save() } }
+
     // MARK: 3D printing
 
     var stlQuality: STLQuality { didSet { save() } }
@@ -170,6 +192,12 @@ final class AppSettings {
         faceGrid = FaceGrid(rawValue: string("display.faceGrid", "positioning")) ?? .positioning
         defaultOrthographic = bool("display.ortho", false)
         snapToGrid = bool("sketch.snapToGrid", true)
+        showMeasureArea = bool("measure.area", true)
+        showMeasurePerimeter = bool("measure.perimeter", true)
+        showMeasureLength = bool("measure.length", true)
+        showMeasureVolume = bool("measure.volume", true)
+        showMeasureWeight = bool("measure.weight", true)
+        measureAreaUnit = AreaUnit(rawValue: string("measure.areaUnit", "automatic")) ?? .automatic
         shading = Shading(rawValue: string("display.shading", "studio")) ?? .studio
         showEdges = bool("display.edges", true)
         edgeWidth = double("display.edgeWidth", 1.4)
@@ -203,6 +231,12 @@ final class AppSettings {
         d.set(faceGrid.rawValue, forKey: "display.faceGrid")
         d.set(defaultOrthographic, forKey: "display.ortho")
         d.set(snapToGrid, forKey: "sketch.snapToGrid")
+        d.set(showMeasureArea, forKey: "measure.area")
+        d.set(showMeasurePerimeter, forKey: "measure.perimeter")
+        d.set(showMeasureLength, forKey: "measure.length")
+        d.set(showMeasureVolume, forKey: "measure.volume")
+        d.set(showMeasureWeight, forKey: "measure.weight")
+        d.set(measureAreaUnit.rawValue, forKey: "measure.areaUnit")
         d.set(shading.rawValue, forKey: "display.shading")
         d.set(showEdges, forKey: "display.edges")
         d.set(edgeWidth, forKey: "display.edgeWidth")

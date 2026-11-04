@@ -181,7 +181,7 @@ struct SceneBuilder {
                     fills.append(FillVertex(x: p.x, y: p.y, z: p.z, id: rid, color: color))
                 }
             }
-            scene.fills.append(FillBatch(vertices: fills, depthBias: 0.001, pickable: !active))
+            scene.fills.append(FillBatch(vertices: fills, depthBias: 0.001, pickable: true))
         }
 
         var lines: [LineInstance] = []

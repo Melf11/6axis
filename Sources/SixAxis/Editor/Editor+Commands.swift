@@ -244,6 +244,8 @@ extension Editor {
             switch p {
             case let .sketchPoint(s, _), let .sketchCurve(s, _), let .constraint(s, _): return s == sid
             case .edge, .face: return sketchTool == .project
+            // Closed areas of the sketch can be selected, not drawn on by accident.
+            case let .profile(s, _): return s == sid && sketchTool == .select
             default: return false
             }
         }

@@ -855,24 +855,30 @@ final class Editor {
             }
         }
         guard faces + lines > 0 else { return nil }
+        let settings = AppSettings.shared
         var parts: [String] = []
         if faces > 0 {
-            parts.append(String(localized: "Fläche \(Self.formatArea(area))"))
-            parts.append(String(localized: "Umfang \(formatValue(perimeter))"))
+            if settings.showMeasureArea { parts.append(String(localized: "Fläche \(Self.formatArea(area))")) }
+            if settings.showMeasurePerimeter { parts.append(String(localized: "Umfang \(formatValue(perimeter))")) }
         }
-        if lines > 0 {
+        if lines > 0 && settings.showMeasureLength {
             parts.append(closed ? String(localized: "Umfang \(formatValue(length))") : String(localized: "Länge \(formatValue(length))"))
         }
+        guard !parts.isEmpty else { return nil }
         let names = (faces > 0 ? [faces == 1 ? String(localized: "1 Fläche") : String(localized: "\(faces) Flächen")] : [])
             + (lines > 0 ? [lines == 1 ? String(localized: "1 Linie") : String(localized: "\(lines) Linien")] : [])
         return (names.joined(separator: " · "), parts.joined(separator: " · "))
     }
 
-    /// mm² for small faces, cm² for most parts, m² for panels.
+    /// In the unit from the settings; automatically mm² for small faces, cm² for most parts, m² for panels.
     private static func formatArea(_ mm2: Double) -> String {
-        if mm2 >= 1_000_000 { return String(format: "%.3f m²", mm2 / 1_000_000) }
-        if mm2 >= 100 { return String(format: "%.2f cm²", mm2 / 100) }
-        return String(format: "%.1f mm²", mm2)
+        var unit = AppSettings.shared.measureAreaUnit
+        if unit == .automatic { unit = mm2 >= 1_000_000 ? .m2 : (mm2 >= 100 ? .cm2 : .mm2) }
+        switch unit {
+        case .m2: return String(format: "%.3f m²", mm2 / 1_000_000)
+        case .cm2: return String(format: "%.2f cm²", mm2 / 100)
+        default: return String(format: "%.1f mm²", mm2)
+        }
     }
 
     var physicalSummary: (title: String, volume: Double, area: Double, mass: Double?, material: String?)? {

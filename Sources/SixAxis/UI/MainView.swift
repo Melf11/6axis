@@ -235,7 +235,7 @@ private struct PhysicalInfo: View {
             .padding(.horizontal, 10)
             .padding(.vertical, 6)
             .floatingPanel(radius: 10)
-        } else if let p = editor.physicalSummary {
+        } else if let p = editor.physicalSummary, AppSettings.shared.showMeasureVolume || AppSettings.shared.showMeasureWeight {
             let cm3 = p.volume / 1000
             let settings = AppSettings.shared
             // Body materials win; otherwise the 3D-printing material from the settings.
@@ -244,7 +244,9 @@ private struct PhysicalInfo: View {
             let weight = grams >= 1000 ? String(format: "%.2f kg", grams / 1000) : String(format: "%.1f g", grams)
             VStack(alignment: .trailing, spacing: 2) {
                 Text(p.title).font(.system(size: 11, weight: .semibold))
-                Text(String(format: "%.2f cm³ · ≈ ", cm3) + weight + (material.isEmpty ? "" : " " + material))
+                Text([settings.showMeasureVolume ? String(format: "%.2f cm³", cm3) : nil,
+                      settings.showMeasureWeight ? "≈ " + weight + (material.isEmpty ? "" : " " + material) : nil]
+                    .compactMap { $0 }.joined(separator: " · "))
                     .font(.system(size: 11, design: .rounded))
                     .foregroundStyle(.secondary)
             }

@@ -488,8 +488,15 @@ enum SketchChecks {
         let regions = editor.activeSketchBuild?.regions ?? []
         check("profile: neighbours stay separate", regions.count == 2, "\(regions.count)")
         if let id = editor.sketchId, let right = regions.first(where: { $0.center.x > 40 }) {
-            editor.selection = [.profile(id, right.index)]
+            editor.setSketchTool(.line)
+            click(editor, Vec2(60, 15))
+            check("profile: a drawing tool draws instead of selecting", editor.selection.isEmpty && editor.toolPoints.count == 1)
+            editor.cancelSketchTool()
+            editor.setSketchTool(.select)
             await pause(0.4)
+            click(editor, Vec2(60, 15))
+            await pause(0.4)
+            check("profile: a click selects it", editor.selection == [.profile(id, right.index)], "\(editor.selection)")
             check("profile: a neighbour shows its own area", editor.selectionMeasure?.detail.contains("12.00 cm²") == true, "\(String(describing: editor.selectionMeasure))")
             if let dir = ProcessInfo.processInfo.environment["SIXAXIS_SNAPSHOTS"] { await DemoScript.snap(editor, "sketch-neighbours", URL(fileURLWithPath: dir)) }
             editor.selection.removeAll()

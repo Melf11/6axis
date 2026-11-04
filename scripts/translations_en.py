@@ -1,6 +1,10 @@
 # English translations for Resources/Localizable.xcstrings (German source). Applied by
 # scripts/apply-translations.py; after that the catalog is the source of truth (edit it in Xcode or here).
 EN = {
+"Umfang": "Perimeter", "Volumen": "Volume",
+"Maße unten rechts": "Measures at the bottom right", "Länge von Linien und Kanten": "Length of lines and edges", "Gewicht": "Weight",
+"Einheit der Fläche": "Area unit", "Automatisch": "Automatic",
+"Fläche, Umfang und Länge erscheinen, wenn etwas ausgewählt ist, sonst Volumen und Gewicht.": "Area, perimeter and length appear when something is selected, otherwise volume and weight.",
 "Verbinden nicht möglich – die Skizze wäre überbestimmt": "Cannot connect – the sketch would be over-constrained",
 "Fläche %@": "Area %@", "Umfang %@": "Perimeter %@", "Länge %@": "Length %@", "1 Fläche": "1 face", "%lld Flächen": "%lld faces",
 "1 Linie": "1 line", "%lld Linien": "%lld lines",

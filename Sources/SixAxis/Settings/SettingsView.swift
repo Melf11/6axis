@@ -116,6 +116,19 @@ struct DisplaySettings: View {
                 }
                 .disabled(!s.showEdges)
             }
+            Section("Maße unten rechts") {
+                Toggle("Fläche", isOn: $s.showMeasureArea)
+                Toggle("Umfang", isOn: $s.showMeasurePerimeter)
+                Toggle("Länge von Linien und Kanten", isOn: $s.showMeasureLength)
+                Toggle("Volumen", isOn: $s.showMeasureVolume)
+                Toggle("Gewicht", isOn: $s.showMeasureWeight)
+                Picker("Einheit der Fläche", selection: $s.measureAreaUnit) {
+                    ForEach(AppSettings.AreaUnit.allCases) { Text($0.title).tag($0) }
+                }
+                Text("Fläche, Umfang und Länge erscheinen, wenn etwas ausgewählt ist, sonst Volumen und Gewicht.")
+                    .font(.caption).foregroundStyle(.secondary)
+            }
+
             Section("Ansichtsfenster") {
                 Toggle("Raster anzeigen", isOn: $s.showGrid)
                 Picker("Raster auf Flächen", selection: $s.faceGrid) {

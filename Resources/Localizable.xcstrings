@@ -2888,6 +2888,16 @@
         }
       }
     },
+    "Einheit der Fläche": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Area unit"
+          }
+        }
+      }
+    },
     "Einrichtung": {
       "localizations": {
         "en": {
@@ -3618,6 +3628,16 @@
         }
       }
     },
+    "Fläche, Umfang und Länge erscheinen, wenn etwas ausgewählt ist, sonst Volumen und Gewicht.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Area, perimeter and length appear when something is selected, otherwise volume and weight."
+          }
+        }
+      }
+    },
     "Flächen": {
       "localizations": {
         "en": {
@@ -3834,6 +3854,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Stopped"
+          }
+        }
+      }
+    },
+    "Gewicht": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Weight"
           }
         }
       }
@@ -5321,6 +5351,16 @@
         }
       }
     },
+    "Länge von Linien und Kanten": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Length of lines and edges"
+          }
+        }
+      }
+    },
     "Längs": {
       "localizations": {
         "en": {
@@ -5487,6 +5527,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Drag a dimension or view · ⌫ hides · D new dimension · E detail"
+          }
+        }
+      }
+    },
+    "Maße unten rechts": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Measures at the bottom right"
           }
         }
       }
@@ -8446,6 +8496,16 @@
         }
       }
     },
+    "Umfang": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Perimeter"
+          }
+        }
+      }
+    },
     "Umfang %@": {
       "localizations": {
         "en": {
@@ -9016,6 +9076,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Fully constrained"
+          }
+        }
+      }
+    },
+    "Volumen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Volume"
           }
         }
       }
