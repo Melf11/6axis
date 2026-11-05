@@ -194,7 +194,9 @@ extension Editor {
             case let .sketchPoint(s, p) where s == sid:
                 if let pos = sk.point(p) { return SnapTarget(position: pos, point: p) }
             case let .sketchCurve(s, c) where s == sid:
-                if let curve = sk.curve(c) { return SnapTarget(position: closestPoint(on: curve, sk, to: raw), curve: c) }
+                if let curve = sk.curve(c) {
+                    return SnapTarget(position: keepingAngleOrGuide(on: curve, sk, raw: raw) ?? closestPoint(on: curve, sk, to: raw), curve: c)
+                }
             default:
                 break
             }
@@ -209,23 +211,15 @@ extension Editor {
         // A line follows the usual angles: its other coordinate (or along a slant its length) stays on the grid.
         var direction: Vec2?
         let start = toolPoints.last?.position
-        if let start, sketchTool == .line || (sketchTool == .arc && toolPoints.count == 1), let angle = usualAngle(from: start, to: raw) {
+        if let start, let angle = lineAngle(from: start, to: raw) {
             let d = raw - start
+            direction = noteAngle(angle)
             switch angle {
-            case 0, 180:
-                pos.y = start.y
-                direction = Vec2(1, 0)
-                if sketchTool == .line { inference = .horizontal }
-            case 90, 270:
-                pos.x = start.x
-                direction = Vec2(0, 1)
-                if sketchTool == .line { inference = .vertical }
+            case 0, 180: pos.y = start.y
+            case 90, 270: pos.x = start.x
             default:
-                let u = Vec2(cos(angle * .pi / 180), sin(angle * .pi / 180))
-                let length = grid ? snapLength(simd_length(d)) : simd_dot(d, u)
-                pos = start + u * length
-                direction = u
-                smartAngle = angle
+                let u = direction ?? Vec2(1, 0)
+                pos = start + u * (grid ? snapLength(simd_length(d)) : simd_dot(d, u))
             }
         }
         pos = alignWithNotedPoints(pos, raw: raw, sketch: sk, start: start, direction: direction)

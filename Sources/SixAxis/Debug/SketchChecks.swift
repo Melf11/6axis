@@ -646,6 +646,57 @@ enum SketchChecks {
         check("guides: leaving the tool forgets the points", editor.notedPoints.isEmpty && editor.smartGuides.isEmpty)
         editor.finishSketch()
         await pause(0.4)
+
+        // Reaching a slanted line, a snapped angle stays: the point is where its line crosses the slant.
+        editor.newDocument()
+        editor.beginSketch(on: .xy)
+        await pause(0.8)
+        await view(editor)
+        settings.snapToGrid = true
+        editor.setSketchTool(.line)
+        click(editor, Vec2(0, 0))
+        click(editor, Vec2(60, 20))            // the slant: y = x / 3
+        editor.cancelSketchTool()
+        click(editor, Vec2(30, -30))           // a line straight up from here
+        settings.snapToGrid = false
+        await pause()
+        let nudge = 2 * Double(editor.camera.worldPerPoint)
+        hover(Vec2(30 + nudge, 10 + nudge / 3))
+        let up = editor.cursor
+        check("guides: on a slant a vertical line stays vertical", up?.curve != nil && abs((up?.position.x ?? 0) - 30) < 1e-6 && abs((up?.position.y ?? 0) - 10) < 1e-3 && editor.inference == .vertical,
+              "\(String(describing: up)) \(String(describing: editor.inference))")
+        editor.freePlacementInChecks = true
+        hover(Vec2(30 + nudge, 10 + nudge / 3))
+        check("guides: ⌘ gives up the angle on a slant too", editor.inference == nil && abs((editor.cursor?.position.x ?? 0) - (30 + nudge)) < 0.05)
+        editor.freePlacementInChecks = false
+        hover(Vec2(30 + nudge, 10 + nudge / 3))
+        if let pt = screen(editor, Vec2(30 + nudge, 10 + nudge / 3)) {
+            editor.mouseDown(at: pt, modifiers: [], clickCount: 1)
+            editor.mouseUp(at: pt, modifiers: [], clickCount: 1)
+        }
+        await pause()
+        if let sk = editor.activeSketch, let made = sk.curves.last, case let .line(a, b) = made.geometry, let pa = sk.point(a), let pb = sk.point(b) {
+            check("guides: the line ends exactly on the slant and upright", abs(pa.x - pb.x) < 1e-6 && abs(pb.y - pb.x / 3) < 1e-4, "\(pa) \(pb)")
+            check("guides: upright and connected are both kept", sk.constraints.contains { if case let .vertical(l) = $0.kind { return l == made.id }; return false }
+                  && sk.constraints.contains { if case let .pointOnCurve(p, _) = $0.kind { return p == b }; return false }, "\(sk.constraints.map(\.kind))")
+        }
+        editor.cancelSketchTool()
+        // A guide from a noted point stays on the slant in the same way.
+        settings.snapToGrid = true
+        click(editor, Vec2(45, -10))
+        click(editor, Vec2(55, -10))
+        editor.cancelSketchTool()
+        settings.snapToGrid = false
+        await pause()
+        hover(Vec2(45, -10))
+        await pause(0.5)
+        hover(Vec2(45 + nudge, 15 + nudge / 3))
+        let onGuide = editor.cursor
+        check("guides: on a slant a guide stays", onGuide?.curve != nil && abs((onGuide?.position.x ?? 0) - 45) < 1e-6 && abs((onGuide?.position.y ?? 0) - 15) < 1e-3 && editor.smartGuides.count == 1,
+              "\(String(describing: onGuide)) \(editor.smartGuides) noted \(editor.notedPoints)")
+        editor.setSketchTool(.select)
+        editor.finishSketch()
+        await pause(0.4)
     }
 
     /// A sketch keeps its view straight unless the lock is opened; two fingers only ever move along its axes.
