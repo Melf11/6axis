@@ -1163,11 +1163,22 @@ extension Editor {
         case let .sketchPoint(_, p):
             if let pos = original.point(p) { targets[p] = grid ? snapToGrid(pos + (cur - start)) : pos + delta }
             // Near another point or line it goes exactly there, on the grid or not, and connects when let go.
-            let drop = dropTarget(for: p, at: cur, in: activeSketch ?? original)
+            let live = activeSketch ?? original
+            let drop = dropTarget(for: p, at: cur, in: live, original: original)
             ds.dropPoint = drop?.point
             ds.dropCurve = drop?.curve
             if let drop { targets[p] = drop.position }
             if dropMarker != drop?.position { dropMarker = drop?.position }
+            // Otherwise the line keeps its direction or snaps to a usual angle, as when drawing it.
+            var mark: (position: Vec2, angle: Double)?
+            if drop == nil, !(freePlacementInChecks || NSEvent.modifierFlags.contains(.command)),
+               let keep = dragDirection(for: p, at: cur, in: live, original: original), !keep.held {
+                let length = simd_dot(cur - keep.from, keep.direction)
+                let position = keep.from + keep.direction * (grid ? snapLength(length) : length)
+                targets[p] = position
+                if let angle = keep.angle { mark = (position, angle) }
+            }
+            if dragAngleMark?.angle != mark?.angle || dragAngleMark?.position != mark?.position { dragAngleMark = mark }
         case let .sketchCurve(_, c):
             guard let curve = original.curve(c) else { return }
             switch curve.geometry {

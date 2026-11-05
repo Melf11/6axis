@@ -223,6 +223,9 @@ struct ViewportOverlay: View {
 
     /// Where a dragged point will connect when it is let go.
     private func drawDropMarker(_ ctx: GraphicsContext) {
+        if let mark = editor.dragAngleMark, let s = screen(mark.position) {
+            guideLabel(ctx, editor.plainNumber(mark.angle) + "°", at: CGPoint(x: s.x + 26, y: s.y - 14))
+        }
         guard let p = editor.dropMarker, let s = screen(p) else { return }
         ctx.stroke(Path(ellipseIn: CGRect(x: s.x - 8, y: s.y - 8, width: 16, height: 16)), with: .color(.orange), lineWidth: 2)
     }

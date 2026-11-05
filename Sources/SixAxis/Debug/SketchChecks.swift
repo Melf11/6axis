@@ -365,6 +365,7 @@ enum SketchChecks {
         await dimensionToolChecks(editor)
         await smartGuideChecks(editor)
         await connectChecks(editor)
+        await pullLineChecks(editor)
     }
 
     /// Enter in the text field of the text dialog closes it (crashed: the field read the closed dialog's values).
@@ -402,6 +403,67 @@ enum SketchChecks {
         check("text: enter creates the text", editor.activeSketch?.curves.contains(where: \.isText) == true)
         editor.finishSketch()
         await pause(0.3)
+    }
+
+    /// Pulling the end of a line onto a slant: it keeps its direction and ends where that crosses the slant.
+    static func pullLineChecks(_ editor: Editor) async {
+        let settings = AppSettings.shared
+        let grid = settings.snapToGrid
+        settings.lockSketchView = true
+        settings.snapToGrid = true
+        defer { settings.snapToGrid = grid; editor.freePlacementInChecks = false }
+        editor.newDocument()
+        editor.beginSketch(on: .xy)
+        await pause(0.8)
+        await view(editor, center: Vec2(40, 0))
+        func line(_ a: Vec2, _ b: Vec2) {
+            editor.setSketchTool(.line)
+            click(editor, a)
+            click(editor, b)
+            editor.cancelSketchTool()
+            editor.setSketchTool(.select)
+        }
+        func end(at old: Vec2?, _ curve: Int) -> Vec2? {
+            guard let sk = editor.activeSketch, let c = sk.curve(curve), case let .line(_, b) = c.geometry else { return nil }
+            return sk.point(b)
+        }
+        line(Vec2(0, 0), Vec2(60, 20))          // the slant: y = x / 3
+        line(Vec2(30, -30), Vec2(30, -10))      // upright, by constraint
+        line(Vec2(55, -30), Vec2(50, -20))      // slanted by itself: direction -1 : 2
+        await pause()
+        guard let curves = editor.activeSketch?.curves.filter(\.isLine), curves.count == 3 else { return check("pull: lines drawn", false) }
+        let upright = curves[1].id, free = curves[2].id, slant = curves[0].id
+        check("pull: the upright line has its constraint", editor.activeSketch?.constraints.contains { if case let .vertical(l) = $0.kind { return l == upright }; return false } == true)
+        // Upright: stays upright, even with the mouse beside it.
+        drag(editor, from: Vec2(30, -10), to: Vec2(32, 10.67))
+        await pause()
+        let a = end(at: nil, upright) ?? .zero
+        check("pull: an upright line ends on the slant, still upright", abs(a.x - 30) < 1e-4 && abs(a.y - 10) < 1e-3, "\(a)")
+        check("pull: it is connected", editor.activeSketch?.constraints.contains { if case let .pointOnCurve(_, c) = $0.kind { return c == slant }; return false } == true)
+        // Slanted by itself: pulled along its direction, it ends on the slant in that direction.
+        let crossing = Vec2(55 - 20.7142857, -30 + 2 * 20.7142857)
+        drag(editor, from: Vec2(50, -20), to: crossing + Vec2(0.15, 0.1))
+        await pause()
+        let b = end(at: nil, free) ?? .zero
+        check("pull: a slanted line keeps its direction onto the slant", simd_distance(b, crossing) < 1e-2, "\(b), expected \(crossing)")
+        editor.undo()
+        await pause()
+        // Pulled in free space along its direction it stays on it; a little to the side too.
+        drag(editor, from: Vec2(50, -20), to: Vec2(47.1, -14))
+        await pause()
+        let c = end(at: nil, free) ?? .zero
+        check("pull: a line pulled longer keeps its direction", abs((c.x - 55) * 2 + (c.y + 30)) < 1e-6, "\(c)")
+        editor.undo()
+        await pause()
+        // ⌘: exactly where the mouse is.
+        editor.freePlacementInChecks = true
+        drag(editor, from: Vec2(50, -20), to: Vec2(47.1, -14))
+        await pause()
+        let d = end(at: nil, free) ?? .zero
+        check("pull: ⌘ is free", abs((d.x - 55) * 2 + (d.y + 30)) > 0.01, "\(d)")
+        editor.freePlacementInChecks = false
+        editor.finishSketch()
+        await pause(0.4)
     }
 
     /// A dragged point connects to the point or line it is let go on, on the grid or not.

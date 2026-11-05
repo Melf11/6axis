@@ -295,6 +295,8 @@ final class Editor {
     var smartAngle: Double?
     /// Where a dragged sketch point will connect.
     var dropMarker: Vec2?
+    /// A dragged line's end snapped to a usual angle.
+    var dragAngleMark: (position: Vec2, angle: Double)?
     @ObservationIgnored var dwellPoint: Int?
     @ObservationIgnored var freePlacementInChecks = false
     var lastSolve: SolveResult?

@@ -58,9 +58,40 @@ extension Editor {
         if smartAngle != angle { smartAngle = angle }
     }
 
-    /// What a dragged point lands on near `cursor`: another point first, then a curve. Not the ones it already
-    /// belongs to, and not the other end of its own line (the line would vanish).
-    func dropTarget(for p: Int, at cursor: Vec2, in sk: Sketch) -> (point: Int?, curve: Int?, position: Vec2)? {
+    /// The direction a line keeps while its end is dragged: fixed by a constraint, or near its own direction
+    /// (pulling it longer) or a usual angle. Only for the free end of a single line.
+    func dragDirection(for p: Int, at cursor: Vec2, in sk: Sketch, original: Sketch) -> (from: Vec2, direction: Vec2, held: Bool, angle: Double?)? {
+        let own = sk.curves.filter { $0.geometry.pointIds.contains(p) }
+        guard own.count == 1, let line = own.first, case let .line(a, b) = line.geometry else { return nil }
+        let other = a == p ? b : a
+        guard let from = sk.point(other), let was = original.point(p), let wasFrom = original.point(other) else { return nil }
+        let held = sk.constraints.first { c in
+            switch c.kind {
+            case let .horizontal(l), let .vertical(l): return l == line.id
+            default: return false
+            }
+        }
+        if let held {
+            if case .horizontal = held.kind { return (from, Vec2(1, 0), true, nil) }
+            return (from, Vec2(0, 1), true, nil)
+        }
+        let d = cursor - from
+        let reach = Self.reach * Double(camera.worldPerPoint)
+        guard simd_length(d) > reach * 2 else { return nil }
+        let wasDirection = was - wasFrom
+        if simd_length(wasDirection) > 1e-9 {
+            let u = simd_normalize(wasDirection)
+            if abs(u.x * d.y - u.y * d.x) < reach, simd_dot(u, d) > 0 { return (from, u, false, nil) }
+        }
+        if let angle = usualAngle(from: from, to: cursor) {
+            return (from, Vec2(cos(angle * .pi / 180), sin(angle * .pi / 180)), false, angle)
+        }
+        return nil
+    }
+
+    /// What a dragged point lands on near `cursor`: another point first, then a curve, where the line's direction
+    /// crosses it if it keeps one. Not the curves it belongs to, and not the other end of its own line.
+    func dropTarget(for p: Int, at cursor: Vec2, in sk: Sketch, original: Sketch) -> (point: Int?, curve: Int?, position: Vec2)? {
         guard !(freePlacementInChecks || NSEvent.modifierFlags.contains(.command)) else { return nil }
         let reach = 8 * Double(camera.worldPerPoint)
         let own = sk.curves.filter { $0.geometry.pointIds.contains(p) }
@@ -69,11 +100,19 @@ extension Editor {
             .min { simd_distance($0.position, cursor) < simd_distance($1.position, cursor) }
         if let q = nearPoint { return (q.id, nil, q.position) }
         let ownIds = Set(own.map(\.id))
+        let keep = dragDirection(for: p, at: cursor, in: sk, original: original)
+        let along = keep.map { $0.from + $0.direction * simd_dot(cursor - $0.from, $0.direction) } ?? cursor
         var best: (curve: Int, position: Vec2, distance: Double)?
         for curve in sk.curves where !ownIds.contains(curve.id) && !curve.isText && curve.polygon == nil {
-            let on = closestPoint(on: curve, sk, to: cursor)
-            let distance = simd_distance(on, cursor)
-            if distance < reach, distance < best?.distance ?? .infinity { best = (curve.id, on, distance) }
+            var on: Vec2?
+            if let keep { on = crossing(of: curve, sk, through: keep.from, keep.direction, near: along) }
+            if on == nil, keep?.held != true {
+                let closest = closestPoint(on: curve, sk, to: cursor)
+                if simd_distance(closest, cursor) < reach { on = closest }
+            }
+            guard let on else { continue }
+            let distance = simd_distance(on, along)
+            if distance < best?.distance ?? .infinity { best = (curve.id, on, distance) }
         }
         return best.map { (nil, $0.curve, $0.position) }
     }
@@ -81,6 +120,7 @@ extension Editor {
     /// Connects a dragged point to what it was let go on. A connection the sketch cannot satisfy is left out.
     func connectDraggedPoint(_ ds: DragState) {
         dropMarker = nil
+        if dragAngleMark != nil { dragAngleMark = nil }
         guard case let .sketchPoint(_, p)? = ds.pick, ds.dropPoint != nil || ds.dropCurve != nil, let id = sketchId, var sk = activeSketch else { return }
         if let q = ds.dropPoint {
             sk.merge(point: p, into: q)
