@@ -429,7 +429,7 @@ enum SketchChecks {
         }
         line(Vec2(0, 0), Vec2(60, 20))          // the slant: y = x / 3
         line(Vec2(30, -30), Vec2(30, -10))      // upright, by constraint
-        line(Vec2(55, -30), Vec2(50, -20))      // slanted by itself: direction -1 : 2
+        line(Vec2(55, -30), Vec2(50, -10))      // slanted by itself, far from any usual angle: direction -1 : 4
         await pause()
         guard let curves = editor.activeSketch?.curves.filter(\.isLine), curves.count == 3 else { return check("pull: lines drawn", false) }
         let upright = curves[1].id, free = curves[2].id, slant = curves[0].id
@@ -441,26 +441,26 @@ enum SketchChecks {
         check("pull: an upright line ends on the slant, still upright", abs(a.x - 30) < 1e-4 && abs(a.y - 10) < 1e-3, "\(a)")
         check("pull: it is connected", editor.activeSketch?.constraints.contains { if case let .pointOnCurve(_, c) = $0.kind { return c == slant }; return false } == true)
         // Slanted by itself: pulled along its direction, it ends on the slant in that direction.
-        let crossing = Vec2(55 - 20.7142857, -30 + 2 * 20.7142857)
-        drag(editor, from: Vec2(50, -20), to: crossing + Vec2(0.15, 0.1))
+        let crossing = Vec2(55 - 5 * 145.0 / 65, -30 + 20 * 145.0 / 65)
+        drag(editor, from: Vec2(50, -10), to: crossing + Vec2(0.15, 0.1))
         await pause()
         let b = end(at: nil, free) ?? .zero
         check("pull: a slanted line keeps its direction onto the slant", simd_distance(b, crossing) < 1e-2, "\(b), expected \(crossing)")
         editor.undo()
         await pause()
         // Pulled in free space along its direction it stays on it; a little to the side too.
-        drag(editor, from: Vec2(50, -20), to: Vec2(47.1, -14))
+        drag(editor, from: Vec2(50, -10), to: Vec2(48.1, -2))
         await pause()
         let c = end(at: nil, free) ?? .zero
-        check("pull: a line pulled longer keeps its direction", abs((c.x - 55) * 2 + (c.y + 30)) < 1e-6, "\(c)")
+        check("pull: a line pulled longer keeps its direction", abs((c.x - 55) * 4 + (c.y + 30)) < 1e-6, "\(c)")
         editor.undo()
         await pause()
         // ⌘: exactly where the mouse is.
         editor.freePlacementInChecks = true
-        drag(editor, from: Vec2(50, -20), to: Vec2(47.1, -14))
+        drag(editor, from: Vec2(50, -10), to: Vec2(48.1, -2))
         await pause()
         let d = end(at: nil, free) ?? .zero
-        check("pull: ⌘ is free", abs((d.x - 55) * 2 + (d.y + 30)) > 0.01, "\(d)")
+        check("pull: ⌘ is free", abs((d.x - 55) * 4 + (d.y + 30)) > 0.01, "\(d)")
         editor.freePlacementInChecks = false
         editor.finishSketch()
         await pause(0.4)
