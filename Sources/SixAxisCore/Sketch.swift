@@ -258,11 +258,24 @@ public struct Sketch: Codable, Hashable, Sendable {
         return nextId
     }
 
-    public func pointIndex(_ id: Int) -> Int? { points.firstIndex { $0.id == id } }
-    public func curveIndex(_ id: Int) -> Int? { curves.firstIndex { $0.id == id } }
+    // Ids grow with every new element, so the arrays are nearly always sorted and a binary search finds the element;
+    // only a miss has to look through everything. This keeps sketches with thousands of curves workable.
+    private static func search<T>(_ items: [T], _ id: Int, _ idOf: (T) -> Int) -> Int? {
+        var low = 0, high = items.count - 1
+        while low <= high {
+            let middle = (low + high) / 2
+            let found = idOf(items[middle])
+            if found == id { return middle }
+            if found < id { low = middle + 1 } else { high = middle - 1 }
+        }
+        return items.firstIndex { idOf($0) == id }
+    }
 
-    public func point(_ id: Int) -> Vec2? { points.first { $0.id == id }?.position }
-    public func curve(_ id: Int) -> SketchCurve? { curves.first { $0.id == id } }
+    public func pointIndex(_ id: Int) -> Int? { Self.search(points, id) { $0.id } }
+    public func curveIndex(_ id: Int) -> Int? { Self.search(curves, id) { $0.id } }
+
+    public func point(_ id: Int) -> Vec2? { pointIndex(id).map { points[$0].position } }
+    public func curve(_ id: Int) -> SketchCurve? { curveIndex(id).map { curves[$0] } }
 
     public mutating func setPoint(_ id: Int, _ p: Vec2) {
         if let i = pointIndex(id) { points[i].position = p }

@@ -435,12 +435,93 @@ enum ModellingChecks {
 
         await selectionMeasureChecks(editor)
         await contextMenuChecks(editor)
+        await dwgImportChecks(editor)
         await titleBarChecks()
         await dragHeavyPreview(editor)
         await dragLightPreview(editor)
     }
 
     /// A right click offers what fits the object under the mouse, and the commands work on it.
+    /// A small DWG file written by the core tests (R2004: rectangle with a hole, arc, block, text, dimension).
+    private static let dwgSample = "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"
+
+    /// The way of a DWG file through the app: read in the background, a sketch in the timeline, closed areas found,
+    /// the view fitted, one step to undo. `SIXAXIS_DWG_CHECK` names another file to measure on (no files in the repo).
+    static func dwgImportChecks(_ editor: Editor) async {
+        editor.newDocument()
+        let url = FileManager.default.temporaryDirectory.appendingPathComponent("6axis-check-\(UUID().uuidString).dwg")
+        defer { try? FileManager.default.removeItem(at: url) }
+        try? Data(base64Encoded: dwgSample)?.write(to: url)
+        let before = editor.camera.distance
+        editor.importDWG(from: url)
+        await CAMChecks.waitFor(10) { editor.doc.features.count == 1 && editor.state.sketches.count == 1 }
+        await settle(editor)
+        let feature = editor.doc.features.first
+        check("dwg: arrives as a sketch named after the file", feature.map { if case .sketch = $0.kind { return $0.name == url.deletingPathExtension().lastPathComponent } else { return false } } ?? false)
+        let build = feature.flatMap { editor.state.sketches[$0.id] }
+        check("dwg: finds the closed areas", (build?.regions.count ?? 0) >= 2, "\(build?.regions.count ?? -1) regions")
+        check("dwg: says what stayed out", editor.toast?.contains("1") == true, editor.toast ?? "no message")
+        await CAMChecks.waitFor(3) { editor.camera.distance != before }
+        check("dwg: view fits the drawing", editor.camera.distance != before)
+        if let feature {
+            editor.editSketch(feature.id)
+            await settle(editor)
+            check("dwg: sketch opens for editing", editor.sketchId == feature.id)
+            editor.finishSketch()
+            await settle(editor)
+        }
+        editor.undo()
+        await settle(editor)
+        check("dwg: import is one undo step", editor.doc.features.isEmpty)
+
+        let broken = FileManager.default.temporaryDirectory.appendingPathComponent("6axis-check-\(UUID().uuidString).dwg")
+        defer { try? FileManager.default.removeItem(at: broken) }
+        try? Data("keine Zeichnung, nur Text in einer Datei, aber lang genug fuer den Kopf".utf8 + [UInt8](repeating: 0, count: 300)).write(to: broken)
+        editor.importDWG(from: broken)
+        await CAMChecks.waitFor(5) { editor.toast?.contains("DWG") == true && editor.toast != String(localized: "DWG wird gelesen …") }
+        check("dwg: a wrong file only brings a message", editor.doc.features.isEmpty && editor.toast != nil, editor.toast ?? "")
+
+        guard let path = ProcessInfo.processInfo.environment["SIXAXIS_DWG_CHECK"] else { return }
+        // How long does the window stop answering while a large drawing comes in, opens and gets edited?
+        func longestPause(_ seconds: Double, until done: () -> Bool = { false }) async -> Double {
+            var longest = 0.0
+            var last = CACurrentMediaTime()
+            let start = last
+            while CACurrentMediaTime() - start < seconds, !done() {
+                try? await Task.sleep(nanoseconds: 5_000_000)
+                let now = CACurrentMediaTime()
+                longest = max(longest, now - last)
+                last = now
+            }
+            return longest
+        }
+        editor.newDocument()
+        let t = CACurrentMediaTime()
+        editor.importDWG(from: URL(fileURLWithPath: path))
+        let importPause = await longestPause(120) { editor.doc.features.count == 1 && !editor.isRebuilding && !editor.state.sketches.isEmpty }
+        let imported = CACurrentMediaTime() - t
+        guard let big = editor.doc.features.first else { return check("dwg perf: file imported", false, editor.toast ?? "") }
+        print("DWGPERF import \(imported) s, longest pause \(importPause) s, \(editor.toast ?? "")")
+        let t2 = CACurrentMediaTime()
+        editor.editSketch(big.id)
+        let openPause = await longestPause(3)
+        print("DWGPERF open sketch \(CACurrentMediaTime() - t2) s, longest pause \(openPause) s, sketch \(editor.sketchId != nil)")
+        guard case let .sketch(sketch) = big.kind, let last = sketch.points.last else { return }
+        var moved = sketch
+        let t3 = CACurrentMediaTime()
+        SketchSolver().drag(&moved, points: [last.id: last.position + Vec2(5, 5)])
+        print("DWGPERF one drag step, solver: \((CACurrentMediaTime() - t3) * 1000) ms")
+        let t4 = CACurrentMediaTime()
+        editor.commit { d in
+            guard let i = d.features.firstIndex(where: { $0.id == big.id }) else { return }
+            d.features[i].kind = .sketch(moved)
+        }
+        let editPause = await longestPause(60) { !editor.isRebuilding && CACurrentMediaTime() - t4 > 0.2 }
+        print("DWGPERF change until rebuilt: \(CACurrentMediaTime() - t4) s, longest pause \(editPause) s")
+        fflush(stdout)
+        editor.finishSketch()
+    }
+
     static func contextMenuChecks(_ editor: Editor) async {
         editor.newDocument()
         var sk = Sketch(plane: .xy)

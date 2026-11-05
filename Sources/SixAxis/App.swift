@@ -113,6 +113,7 @@ struct AppCommands: Commands {
         CommandGroup(after: .saveItem) {
             Divider()
             Button("STEP importieren …") { editor.importSTEP() }.keyboardShortcut("i")
+            Button("DWG importieren …") { editor.importDWG() }
             Menu("Exportieren") {
                 Button("STL (3D-Druck) …") { editor.exportSTL() }.keyboardShortcut("e")
                 Button("3MF (3D-Druck, mit Einheiten) …") { editor.export3MF() }

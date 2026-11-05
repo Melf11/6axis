@@ -181,6 +181,26 @@
     "%lld %%": {
       "shouldTranslate": false
     },
+    "%lld 3D-Objekte": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld 3D objects"
+          }
+        }
+      }
+    },
+    "%lld Bemaßungen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld dimensions"
+          }
+        }
+      }
+    },
     "%lld Elemente": {
       "localizations": {
         "en": {
@@ -241,12 +261,52 @@
         }
       }
     },
+    "%lld Schraffuren": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld hatches"
+          }
+        }
+      }
+    },
     "%lld ausgewählt": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "%lld selected"
+          }
+        }
+      }
+    },
+    "%lld gedrehte Texte": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld rotated texts"
+          }
+        }
+      }
+    },
+    "%lld schräg liegende Objekte": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld tilted objects"
+          }
+        }
+      }
+    },
+    "%lld sonstige Objekte": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld other objects"
           }
         }
       }
@@ -297,6 +357,26 @@
         }
       }
     },
+    "1 3D-Objekt": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 3D object"
+          }
+        }
+      }
+    },
+    "1 Bemaßung": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 dimension"
+          }
+        }
+      }
+    },
     "1 Fläche": {
       "localizations": {
         "en": {
@@ -323,6 +403,46 @@
           "stringUnit": {
             "state": "translated",
             "value": "1 line"
+          }
+        }
+      }
+    },
+    "1 Schraffur": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 hatch"
+          }
+        }
+      }
+    },
+    "1 gedrehter Text": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 rotated text"
+          }
+        }
+      }
+    },
+    "1 schräg liegendes Objekt": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 tilted object"
+          }
+        }
+      }
+    },
+    "1 sonstiges Objekt": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 other object"
           }
         }
       }
@@ -1976,6 +2096,52 @@
         }
       }
     },
+    "DWG importieren": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Import DWG"
+          }
+        }
+      }
+    },
+    "DWG importieren …": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Import DWG …"
+          }
+        }
+      }
+    },
+    "DWG wird gelesen …": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reading DWG …"
+          }
+        }
+      }
+    },
+    "DWG übernommen: %lld Kurven, %lld Texte, in %@": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "new",
+            "value": "DWG übernommen: %1$lld Kurven, %2$lld Texte, in %3$@"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DWG imported: %lld curves, %lld texts, in %@"
+          }
+        }
+      }
+    },
     "DXF exportiert": {
       "localizations": {
         "en": {
@@ -2042,6 +2208,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "The current design has unsaved changes."
+          }
+        }
+      }
+    },
+    "Das ist keine DWG-Datei.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This is not a DWG file."
           }
         }
       }
@@ -2263,6 +2439,36 @@
         }
       }
     },
+    "Die DWG-Datei enthält im Modellbereich keine 2D-Geometrie, die sich übernehmen lässt.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The DWG file has no 2D geometry in its model space that can be imported."
+          }
+        }
+      }
+    },
+    "Die DWG-Datei ist beschädigt und konnte nicht gelesen werden.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The DWG file is damaged and could not be read."
+          }
+        }
+      }
+    },
+    "Die DWG-Datei ist mit einem Passwort geschützt.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The DWG file is password protected."
+          }
+        }
+      }
+    },
     "Die Datei wurde mit einer neueren 6axis-Version gesichert (Dateiformat %lld). Bitte 6axis aktualisieren.": {
       "localizations": {
         "en": {
@@ -2339,6 +2545,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "The version in the update does not match the release"
+          }
+        }
+      }
+    },
+    "Die Zeichnung ist zu groß: Eine Skizze nimmt höchstens %lld Linien und Bögen auf.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The drawing is too large: a sketch holds at most %lld lines and arcs."
+          }
+        }
+      }
+    },
+    "Diese DWG-Version wird nicht unterstützt (%@). Lesbar sind die Formate R13 bis 2018.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This DWG version is not supported (%@). Formats R13 to 2018 can be read."
           }
         }
       }
@@ -3775,6 +4001,16 @@
         }
       }
     },
+    "Fuß": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ft"
+          }
+        }
+      }
+    },
     "Für dein Konto ist der Fehlerbericht-Chat nicht freigeschaltet": {
       "localizations": {
         "en": {
@@ -4211,6 +4447,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Height"
+          }
+        }
+      }
+    },
+    "Höhen wurden auf die Ebene gelegt": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Heights were flattened onto the plane"
           }
         }
       }
@@ -5725,6 +5971,16 @@
         }
       }
     },
+    "Meilen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "miles"
+          }
+        }
+      }
+    },
     "Meine Berichte": {
       "localizations": {
         "en": {
@@ -6061,6 +6317,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Not connected"
+          }
+        }
+      }
+    },
+    "Nicht übernommen: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not imported: %@"
           }
         }
       }
@@ -10101,6 +10367,16 @@
         }
       }
     },
+    "Zoll": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "inch"
+          }
+        }
+      }
+    },
     "Zoomen": {
       "localizations": {
         "en": {
@@ -10388,6 +10664,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "mm"
+          }
+        }
+      }
+    },
+    "mm (ohne Einheit in der Datei)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "mm (no unit in the file)"
           }
         }
       }

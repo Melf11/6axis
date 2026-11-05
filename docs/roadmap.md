@@ -150,6 +150,12 @@ Ausführlich: [docs/cam.md](cam.md). Ziel: vom Modell bis zum Fräsen in einem M
 
 ---
 
+## DWG-Import ✅
+
+- Eigener Leser ohne neue Abhängigkeit (`Sources/SixAxisCore/DWG`), nach der öffentlichen ODA-Formatbeschreibung; R13 bis 2018. LibreDWG und libdxfrw scheiden wegen GPL aus.
+- Der Modellbereich wird zu einer Skizze auf XY: Linien, Kreise, Bögen, Polylinien, Ellipsen und Splines (als Splines durch Punkte), Blöcke aufgelöst, Einheit in mm umgerechnet, Texte als Hilfstexte.
+- Nicht übernommen und nach dem Import genannt: Bemaßungen, Schraffuren, 3D-Objekte, schräg liegende Objekte, gedrehte Texte. Layer gehen verloren. Prüfen mit echten Dateien: `SIXAXIS_DWG_SAMPLES=ordner swift test --filter DWGImportTests` (Dateien liegen wegen ihrer Lizenzen nicht im Repository).
+
 ## Feature-Sammlung
 
 Ideen ohne feste Version; Reihenfolge nach Bedarf.

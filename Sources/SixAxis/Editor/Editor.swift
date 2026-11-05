@@ -462,6 +462,10 @@ final class Editor {
         let stillRunning = generation != rebuildGeneration
         if stillRunning != isRebuilding { isRebuilding = stillRunning }
         state = newState
+        if fitAfterRebuild, !stillRunning {
+            fitAfterRebuild = false
+            fitAll()
+        }
         assignBodyNames()
         sceneVersion &+= 1
         modelRevision &+= 1
@@ -699,6 +703,9 @@ final class Editor {
         }
         return any ? (lo, hi) : nil
     }
+
+    /// Set by imports: the new geometry's size is only known once the rebuild has finished.
+    @ObservationIgnored var fitAfterRebuild = false
 
     func fitAll(animated: Bool = true) {
         var c = camera

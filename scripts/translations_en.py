@@ -1,6 +1,22 @@
 # English translations for Resources/Localizable.xcstrings (German source). Applied by
 # scripts/apply-translations.py; after that the catalog is the source of truth (edit it in Xcode or here).
 EN = {
+"DWG importieren": "Import DWG", "DWG importieren …": "Import DWG …", "DWG wird gelesen …": "Reading DWG …",
+"Das ist keine DWG-Datei.": "This is not a DWG file.",
+"Diese DWG-Version wird nicht unterstützt (%@). Lesbar sind die Formate R13 bis 2018.": "This DWG version is not supported (%@). Formats R13 to 2018 can be read.",
+"Die DWG-Datei ist mit einem Passwort geschützt.": "The DWG file is password protected.",
+"Die DWG-Datei ist beschädigt und konnte nicht gelesen werden.": "The DWG file is damaged and could not be read.",
+"Die DWG-Datei enthält im Modellbereich keine 2D-Geometrie, die sich übernehmen lässt.": "The DWG file has no 2D geometry in its model space that can be imported.",
+"Die Zeichnung ist zu groß: Eine Skizze nimmt höchstens %lld Linien und Bögen auf.": "The drawing is too large: a sketch holds at most %lld lines and arcs.",
+"DWG übernommen: %lld Kurven, %lld Texte, in %@": "DWG imported: %lld curves, %lld texts, in %@",
+"mm (ohne Einheit in der Datei)": "mm (no unit in the file)",
+"%lld Bemaßungen": "%lld dimensions", "%lld Schraffuren": "%lld hatches", "%lld 3D-Objekte": "%lld 3D objects",
+"%lld schräg liegende Objekte": "%lld tilted objects", "%lld gedrehte Texte": "%lld rotated texts",
+"%lld sonstige Objekte": "%lld other objects", "Nicht übernommen: %@": "Not imported: %@",
+"Höhen wurden auf die Ebene gelegt": "Heights were flattened onto the plane",
+"Zoll": "inch", "Fuß": "ft", "Meilen": "miles",
+"1 Bemaßung": "1 dimension", "1 Schraffur": "1 hatch", "1 3D-Objekt": "1 3D object", "1 schräg liegendes Objekt": "1 tilted object",
+"1 gedrehter Text": "1 rotated text", "1 sonstiges Objekt": "1 other object",
 "%@ bearbeiten": "Edit %@", "Körper ausblenden": "Hide body", "Skizze ausblenden": "Hide sketch", "%@ als Zeichnung": "%@ as drawing", "Skizze löschen": "Delete sketch",
 "Skizze auf dieser Fläche": "Sketch on this face", "Bemaßen": "Dimension", "Normale Linie": "Regular line", "Maß ändern": "Change dimension",
 "Punkt, Linie oder Kreis wählen": "Choose a point, line or circle", "Klick platziert die Länge · zweites Objekt für Abstand oder Winkel": "A click places the length · a second object for a distance or angle",

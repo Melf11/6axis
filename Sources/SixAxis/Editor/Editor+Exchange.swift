@@ -167,6 +167,39 @@ extension Editor {
             showToast(String(localized: "Import fehlgeschlagen: \(error.localizedDescription)"))
         }
     }
+
+    func importDWG() {
+        let panel = NSOpenPanel()
+        panel.allowedContentTypes = [UTType(filenameExtension: "dwg")].compactMap { $0 }
+        guard panel.runModal() == .OK, let url = panel.url else { return }
+        importDWG(from: url)
+    }
+
+    /// Reads the file off the main thread: a large drawing takes a moment, and the window stays usable meanwhile.
+    func importDWG(from url: URL) {
+        showToast(String(localized: "DWG wird gelesen …"))
+        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+            let result = Result { try DWGImporter.importFile(at: url) }
+            DispatchQueue.main.async { self?.finishImportDWG(result, name: url.deletingPathExtension().lastPathComponent) }
+        }
+    }
+
+    private func finishImportDWG(_ result: Result<DWGImportResult, Error>, name: String) {
+        switch result {
+        case let .success(imported):
+            if command != nil { commitCommand() }
+            if sketchId != nil { finishSketch() }
+            let f = Feature(name: name, kind: .sketch(imported.sketch))
+            fitAfterRebuild = true
+            commit { d in
+                d.features.insert(f, at: d.activeCount)
+                if let r = d.rollback { d.rollback = r + 1 }
+            }
+            showToast(imported.summary)
+        case let .failure(error):
+            showToast(String(localized: "Import fehlgeschlagen: \(error.localizedDescription)"))
+        }
+    }
 }
 
 import simd

@@ -171,7 +171,13 @@ public final class SketchRegion: @unchecked Sendable {
         self.index = index
         self.face = face
         self.area = face.area
-        let mesh = try? face.mesh(linearDeflection: 0.02, angularDeflection: 0.2)
+        // The fine value holds up to about 100 mm; a region as big as a hall needs no hundredths of a millimetre.
+        let size = face.boundingBox.map { simd_length($0.max - $0.min) } ?? 0
+        // The mesher's time grows with the square of its nodes, so an outline of thousands of edges (imported drawings)
+        // gets a coarse fill. It is only the fill: the outline itself is drawn from the curves.
+        let mesh = face.edgeCount > 200
+            ? try? face.mesh(linearDeflection: size * 0.005, angularDeflection: 0.8)
+            : try? face.mesh(linearDeflection: max(0.02, size * 0.0002), angularDeflection: 0.2)
         self.mesh = mesh
         var best = Vec2.zero
         var bestArea = -1.0

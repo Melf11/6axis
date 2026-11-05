@@ -20,6 +20,8 @@ public struct SolveResult: Sendable {
 public struct SketchSolver {
     public var evaluator: Evaluator
     public var tolerance = 1e-7
+    /// Above this many variables the solver works with sparse rows (see SketchSolverSparse.swift).
+    var denseLimit = 500
 
     public init(evaluator: Evaluator = Evaluator()) {
         self.evaluator = evaluator
@@ -459,6 +461,7 @@ public struct SketchSolver {
     func levenberg(_ x: inout [Double], blocks: [Block]) -> Bool {
         let n = x.count
         guard n > 0, !blocks.isEmpty else { return true }
+        if n > denseLimit { return levenbergSparse(&x, blocks: blocks) }
         var r = residuals(x, blocks)
         var cost = r.reduce(0) { $0 + $1 * $1 }
         var lambda = 1e-6
@@ -533,6 +536,7 @@ public struct SketchSolver {
         var xs = x
         let rows = blocks.reduce(0) { $0 + $1.count }
         guard rows > 0 else { return (n, [Bool](repeating: false, count: n)) }
+        if n > denseLimit { return analyzeFreedomSparse(x: x, blocks: blocks, varCount: n) }
         var M = jacobian(&xs, blocks, rows: rows)
         // Reduced row echelon form.
         var pivotCols: [Int] = []

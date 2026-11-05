@@ -71,6 +71,7 @@ extension Editor {
             EditorCommand(id: "step", title: String(localized: "Als STEP exportieren"), symbol: "square.and.arrow.up.on.square", keywords: "export cad", available: hasBodies) { self.exportSTEP() },
             EditorCommand(id: "slicer", title: String(localized: "Im Slicer öffnen"), symbol: "printer.fill", keywords: "print druck prusa bambu orca cura", available: hasBodies) { self.openInSlicer() },
             EditorCommand(id: "import", title: "STEP importieren", symbol: "square.and.arrow.down", keywords: "import", available: true) { self.importSTEP() },
+            EditorCommand(id: "importDWG", title: String(localized: "DWG importieren"), symbol: "square.and.arrow.down.on.square", keywords: "import dwg autocad zeichnung plan grundriss skizze", available: true) { self.importDWG() },
             EditorCommand(id: "fit", title: String(localized: "Alles einpassen"), symbol: "arrow.up.left.and.arrow.down.right", keywords: "zoom fit", available: true) { self.fitAll() },
             EditorCommand(id: "home", title: String(localized: "Ausgangsansicht"), symbol: "house", keywords: "home view", available: true) { self.homeView() },
             EditorCommand(id: "ortho", title: String(localized: "Orthografisch / Perspektive"), symbol: "perspective", shortcut: "O", keywords: "projection", available: true) { self.toggleProjection() },
