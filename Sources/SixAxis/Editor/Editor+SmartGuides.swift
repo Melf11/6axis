@@ -24,10 +24,13 @@ extension Editor {
         }
     }
 
-    /// ⌘ held while drawing: no snapping of any kind.
-    var isFreePlacement: Bool {
-        isDrawingTool && (freePlacementInChecks || NSEvent.modifierFlags.contains(.command))
+    /// ⌘ is held. Automated runs ignore the real keyboard: someone working at the Mac meanwhile must not change them.
+    var isCommandHeld: Bool {
+        Self.isAutomatedRun ? freePlacementInChecks : NSEvent.modifierFlags.contains(.command)
     }
+
+    /// ⌘ held while drawing: no snapping of any kind.
+    var isFreePlacement: Bool { isDrawingTool && isCommandHeld }
 
     /// Notes the point under the cursor once it has rested there for a moment.
     func updateDwell() {
@@ -92,7 +95,7 @@ extension Editor {
     /// What a dragged point lands on near `cursor`: another point first, then a curve, where the line's direction
     /// crosses it if it keeps one. Not the curves it belongs to, and not the other end of its own line.
     func dropTarget(for p: Int, at cursor: Vec2, in sk: Sketch, original: Sketch) -> (point: Int?, curve: Int?, position: Vec2)? {
-        guard !(freePlacementInChecks || NSEvent.modifierFlags.contains(.command)) else { return nil }
+        guard !isCommandHeld else { return nil }
         let reach = 8 * Double(camera.worldPerPoint)
         let own = sk.curves.filter { $0.geometry.pointIds.contains(p) }
         let neighbours = Set(own.flatMap(\.geometry.pointIds))

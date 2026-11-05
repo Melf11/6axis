@@ -144,7 +144,7 @@ extension Editor {
 
     /// Grid snapping is on by default; holding ⌘ places points freely.
     var gridSnapActive: Bool {
-        AppSettings.shared.snapToGrid && !NSEvent.modifierFlags.contains(.command)
+        AppSettings.shared.snapToGrid && !isCommandHeld
     }
 
     /// The planar body face under the cursor that shows its own grid (setting "Raster auf Flächen").
@@ -820,7 +820,7 @@ extension Editor {
             // The second point completes it at once: the true distance, or along an axis when they lie on one
             // or with ⇧ (horizontal) or ⌥ (vertical). The label goes outside the sketch.
             anchor = (pa + pb) / 2
-            let flags = NSEvent.modifierFlags
+            let flags: NSEvent.ModifierFlags = Self.isAutomatedRun ? [] : NSEvent.modifierFlags
             let d = pb - pa
             let tiny = 1e-6
             let horizontal = flags.contains(.shift) || (abs(d.y) < tiny && !flags.contains(.option))
@@ -1171,7 +1171,7 @@ extension Editor {
             if dropMarker != drop?.position { dropMarker = drop?.position }
             // Otherwise the line keeps its direction or snaps to a usual angle, as when drawing it.
             var mark: (position: Vec2, angle: Double)?
-            if drop == nil, !(freePlacementInChecks || NSEvent.modifierFlags.contains(.command)),
+            if drop == nil, !isCommandHeld,
                let keep = dragDirection(for: p, at: cur, in: live, original: original), !keep.held {
                 let length = simd_dot(cur - keep.from, keep.direction)
                 let position = keep.from + keep.direction * (grid ? snapLength(length) : length)
