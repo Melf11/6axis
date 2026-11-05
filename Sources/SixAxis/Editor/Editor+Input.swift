@@ -115,6 +115,9 @@ extension Editor {
 
     func rightClick(at pt: CGPoint) {
         updateHover(at: pt)
+        // The menu is about what was clicked: it becomes the selection, so the commands work on it.
+        markingMenuTarget = command == nil && !measuring && camEdit == nil ? hover : nil
+        if let target = markingMenuTarget, !selection.contains(target) { selection = [target] }
         markingMenu = pt
     }
 

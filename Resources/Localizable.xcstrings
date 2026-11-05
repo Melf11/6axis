@@ -88,6 +88,16 @@
         }
       }
     },
+    "%@ als Zeichnung": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ as drawing"
+          }
+        }
+      }
+    },
     "%@ an dieser Stelle nullen": {
       "localizations": {
         "en": {
@@ -1484,6 +1494,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Examples"
+          }
+        }
+      }
+    },
+    "Bemaßen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dimension"
           }
         }
       }
@@ -5271,6 +5291,16 @@
         }
       }
     },
+    "Körper ausblenden": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hide body"
+          }
+        }
+      }
+    },
     "Körper auswählen, die zusammen ein Bauteil bilden": {
       "localizations": {
         "en": {
@@ -5605,6 +5635,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Drag a dimension or view · ⌫ hides · D new dimension · E detail"
+          }
+        }
+      }
+    },
+    "Maß ändern": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Change dimension"
           }
         }
       }
@@ -6073,6 +6113,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Normal"
+          }
+        }
+      }
+    },
+    "Normale Linie": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Regular line"
           }
         }
       }
@@ -7892,6 +7942,26 @@
         }
       }
     },
+    "Skizze auf dieser Fläche": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sketch on this face"
+          }
+        }
+      }
+    },
+    "Skizze ausblenden": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hide sketch"
+          }
+        }
+      }
+    },
     "Skizze bearbeiten": {
       "localizations": {
         "en": {
@@ -7968,6 +8038,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Sketch is over-constrained or contradictory"
+          }
+        }
+      }
+    },
+    "Skizze löschen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete sketch"
           }
         }
       }

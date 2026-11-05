@@ -1,6 +1,8 @@
 # English translations for Resources/Localizable.xcstrings (German source). Applied by
 # scripts/apply-translations.py; after that the catalog is the source of truth (edit it in Xcode or here).
 EN = {
+"%@ bearbeiten": "Edit %@", "Körper ausblenden": "Hide body", "Skizze ausblenden": "Hide sketch", "%@ als Zeichnung": "%@ as drawing", "Skizze löschen": "Delete sketch",
+"Skizze auf dieser Fläche": "Sketch on this face", "Bemaßen": "Dimension", "Normale Linie": "Regular line", "Maß ändern": "Change dimension",
 "Punkt, Linie oder Kreis wählen": "Choose a point, line or circle", "Klick platziert die Länge · zweites Objekt für Abstand oder Winkel": "A click places the length · a second object for a distance or angle",
 "Zweiten Punkt wählen: das Maß erscheint · ⇧ waagerecht · ⌥ senkrecht": "Choose the second point: the dimension appears · ⇧ horizontal · ⌥ vertical",
 "Als Zeichnung exportieren": "Export as drawing", "PDF (mit allen Maßen) …": "PDF (with all measures) …", "SVG …": "SVG …", "DXF …": "DXF …",

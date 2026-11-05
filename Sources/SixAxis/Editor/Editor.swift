@@ -322,6 +322,8 @@ final class Editor {
     var showCommandPalette = false
     var showParameters = false
     var markingMenu: CGPoint?
+    /// What was under the mouse when the menu opened; nil on empty space.
+    @ObservationIgnored var markingMenuTarget: Pick?
     /// Pointer position while the marking menu is open (drives the direction guide).
     var markingMenuPointer: CGPoint?
     var browserVisible = true

@@ -434,9 +434,85 @@ enum ModellingChecks {
         await snap("m12-viewcube-arrows")
 
         await selectionMeasureChecks(editor)
+        await contextMenuChecks(editor)
         await titleBarChecks()
         await dragHeavyPreview(editor)
         await dragLightPreview(editor)
+    }
+
+    /// A right click offers what fits the object under the mouse, and the commands work on it.
+    static func contextMenuChecks(_ editor: Editor) async {
+        editor.newDocument()
+        var sk = Sketch(plane: .xy)
+        let c = [sk.addPoint(Vec2(0, 0)), sk.addPoint(Vec2(100, 0)), sk.addPoint(Vec2(100, 60)), sk.addPoint(Vec2(0, 60))]
+        for i in 0..<4 { sk.addLine(c[i], c[(i + 1) % 4]) }
+        var other = Sketch(plane: .xy)
+        let o = [other.addPoint(Vec2(150, 0)), other.addPoint(Vec2(200, 0)), other.addPoint(Vec2(200, 40)), other.addPoint(Vec2(150, 40))]
+        for i in 0..<4 { other.addLine(o[i], o[(i + 1) % 4]) }
+        let s = Feature(name: "Grundriss", kind: .sketch(sk))
+        let s2 = Feature(name: "Deckel", kind: .sketch(other))
+        var ex = ExtrudeFeature()
+        ex.profiles = [ProfileRef(sketch: s.id, sample: Vec2(50, 30))]
+        ex.distance = "20 mm"
+        let e = Feature(name: "Platte", kind: .extrude(ex))
+        editor.commit { $0.features = [s, e, s2] }
+        await settle(editor)
+        func ids(on pick: Pick?) -> [String] {
+            editor.markingMenuTarget = pick
+            return editor.markingMenuCommands.map(\.id)
+        }
+        func run(_ id: String) { editor.markingMenuCommands.first { $0.id == id }?.run() }
+        guard let body = editor.state.bodies[e.id],
+              let top = body.faceInfos.compactMap({ $0 }).first(where: { $0.isPlanar && abs($0.centroid.z - 20) < 1e-6 }) else {
+            return check("menu: plate built", false)
+        }
+        check("menu: empty space keeps the usual commands", ids(on: nil).contains("sketch") && !ids(on: nil).contains("editSketch"))
+        let forProfile = ids(on: .profile(s2.id, 0))
+        check("menu: a sketch offers editing", forProfile.first == "editSketch" && forProfile.contains("extrude") && forProfile.contains("hideSketch"), "\(forProfile)")
+        let forCurve = ids(on: .sketchCurve(s2.id, 2))
+        check("menu: its line does too", forCurve.first == "editSketch", "\(forCurve)")
+        let forFace = ids(on: .face(e.id, top.index))
+        check("menu: a face offers a sketch on it and its step", forFace.contains("sketchOnFace") && forFace.contains("hole") && forFace.contains("editStep") && forFace.contains("hideBody"), "\(forFace)")
+        check("menu: the step is named", editor.markingMenuCommands.first { $0.id == "editStep" }?.title.contains("Platte") == true)
+        let forEdge = ids(on: .edge(e.id, 0))
+        check("menu: an edge offers rounding", forEdge.contains("fillet") && forEdge.contains("chamfer"), "\(forEdge)")
+        check("menu: at most eight entries", [forProfile, forCurve, forFace, forEdge].allSatisfy { $0.count <= 8 })
+        // Through the real right click on the model, then running an entry.
+        let plane = Plane.xy
+        if let pt = editor.camera.project(plane.point(Vec2(50, 30)) + Vec3(0, 0, 20)) {
+            editor.rightClick(at: pt)
+            await pause()
+            check("menu: a right click selects what it hit", !editor.selection.isEmpty, "\(editor.selection)")
+            editor.markingMenu = nil
+        }
+        editor.selection = [.profile(s2.id, 0)]
+        _ = ids(on: .profile(s2.id, 0))
+        run("editSketch")
+        await settle(editor)
+        check("menu: editing opens the sketch", editor.sketchId == s2.id, "\(String(describing: editor.sketchId))")
+        // Inside the sketch: the line's own commands.
+        if let line = editor.activeSketch?.curves.first(where: \.isLine) {
+            let inside = ids(on: .sketchCurve(s2.id, line.id))
+            check("menu: a line in the sketch", inside.contains("dimensionOn") && inside.contains("constructionToggle") && inside.contains("deleteSelected") && !inside.contains("editSketch"), "\(inside)")
+            run("constructionToggle")
+            check("menu: helper line toggles", editor.activeSketch?.curve(line.id)?.construction == true)
+            editor.undo()
+            await settle(editor)
+            _ = ids(on: .sketchCurve(s2.id, line.id))
+            editor.lastMouse = editor.camera.project(editor.activePlane?.point(Vec2(160, 60)) ?? .zero) ?? .zero
+            run("dimensionOn")
+            check("menu: dimensioning starts on it", editor.dimensionFirst == .sketchCurve(s2.id, line.id) && editor.sketchTool == .dimension)
+            editor.cancelSketchTool()
+            editor.setSketchTool(.select)
+        }
+        if let point = editor.activeSketch?.points.first(where: { $0.id != Sketch.originId })?.id {
+            let inside = ids(on: .sketchPoint(s2.id, point))
+            check("menu: a point in the sketch", inside.contains("dimensionOn") && inside.contains("deleteSelected"), "\(inside)")
+        }
+        editor.markingMenuTarget = nil
+        editor.finishSketch()
+        await settle(editor)
+        editor.selection = []
     }
 
     /// Selected faces show area and perimeter in the status bar, edges their length.

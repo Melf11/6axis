@@ -85,13 +85,70 @@ extension Editor {
         return c
     }
 
-    /// Eight context-dependent entries for the right-click marking menu.
+    /// The entries of the right-click menu: about the object that was clicked, otherwise the usual commands.
     var markingMenuCommands: [EditorCommand] {
         let all = Dictionary(uniqueKeysWithValues: allCommands.map { ($0.id, $0) })
-        let ids = sketchId != nil
-            ? ["line", "rect", "circle", "dim", "finish", "arc", "undo", "c-coincident"]
-            : ["sketch", "extrude", "fillet", "undo", "shell", "revolve", "chamfer", "fit"]
-        return ids.compactMap { all[$0] }
+        func general(_ ids: [String]) -> [EditorCommand] { ids.compactMap { all[$0] } }
+        guard let target = markingMenuTarget else {
+            return general(sketchId != nil
+                ? ["line", "rect", "circle", "dim", "finish", "arc", "undo", "c-coincident"]
+                : ["sketch", "extrude", "fillet", "undo", "shell", "revolve", "chamfer", "fit"])
+        }
+        func command(_ id: String, _ title: String, _ symbol: String, available: Bool = true, run: @escaping () -> Void) -> EditorCommand {
+            EditorCommand(id: id, title: title, symbol: symbol, available: available, run: run)
+        }
+        func editStep(_ feature: UUID?) -> [EditorCommand] {
+            guard let feature, let f = doc.feature(feature) else { return [] }
+            return [command("editStep", String(localized: "\(f.name) bearbeiten"), "slider.horizontal.3") { self.editFeature(feature) }]
+        }
+        func hideBody(_ b: UUID) -> EditorCommand {
+            command("hideBody", String(localized: "Körper ausblenden"), "eye.slash") { self.toggleBodyVisibility(b) }
+        }
+        let tidy = general(["undo", "fit"])
+        let inSketch = general(["undo", "finish"])
+        let delete = command("deleteSelected", String(localized: "Löschen"), "trash") { self.deleteSketchSelection() }
+        func dimension(_ pick: Pick) -> EditorCommand {
+            command("dimensionOn", String(localized: "Bemaßen"), "ruler") { self.startDimension(on: pick) }
+        }
+
+        switch target {
+        case let .profile(s, _) where s != sketchId, let .sketchCurve(s, _) where s != sketchId:
+            let name = doc.feature(s)?.name ?? ""
+            return [command("editSketch", String(localized: "Skizze bearbeiten"), "pencil.and.outline") { self.editFeature(s) }]
+                + general(["extrude", "revolve"])
+                + [command("hideSketch", String(localized: "Skizze ausblenden"), "eye.slash") { self.toggleSketchVisibility(s) },
+                   command("sketchDrawing2", String(localized: "\(name) als Zeichnung"), "doc.text") { self.exportSketchDrawing(s, as: .pdf) },
+                   command("deleteSketch", String(localized: "Skizze löschen"), "trash") { self.deleteFeature(s) }]
+                + tidy
+        case let .face(b, i):
+            let planar = state.bodies[b]?.faceInfo(at: i)?.isPlanar == true
+            return [command("sketchOnFace", String(localized: "Skizze auf dieser Fläche"), "pencil.and.outline", available: planar) { self.beginCommand(.sketchPlane) }]
+                + (planar ? general(["extrude", "hole"]) : [])
+                + general(["shell"])
+                + editStep(state.bodies[b]?.sourceFeature)
+                + [hideBody(b)]
+                + tidy
+        case let .edge(b, _):
+            return general(["fillet", "chamfer"]) + editStep(state.bodies[b]?.sourceFeature) + [hideBody(b)] + tidy
+        case let .body(b):
+            return general(["fillet", "chamfer", "shell"]) + editStep(state.bodies[b]?.sourceFeature) + [hideBody(b)] + tidy
+        case .sketchPoint:
+            return [dimension(target), delete] + general(["c-coincident"]) + inSketch
+        case let .sketchCurve(_, c):
+            let helper = activeSketch?.curve(c)?.construction == true
+            return [dimension(target),
+                    command("constructionToggle", helper ? String(localized: "Normale Linie") : String(localized: "Hilfslinie"), "line.diagonal.arrow") { self.setConstruction([c], !helper) },
+                    delete] + general(["trim", "offset"]) + inSketch
+        case let .constraint(_, c):
+            let isDimension = activeSketch?.constraints.first { $0.id == c }?.kind.isDimension == true
+            return (isDimension ? [command("editDimension", String(localized: "Maß ändern"), "ruler") { self.editingDimension = c }] : []) + [delete] + inSketch
+        case .profile:
+            return general(["finish", "undo", "dim", "line"])
+        default:
+            return general(sketchId != nil
+                ? ["line", "rect", "circle", "dim", "finish", "arc", "undo", "c-coincident"]
+                : ["sketch", "extrude", "fillet", "undo", "shell", "revolve", "chamfer", "fit"])
+        }
     }
 }
 

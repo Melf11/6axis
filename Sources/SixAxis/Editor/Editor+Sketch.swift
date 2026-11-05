@@ -753,6 +753,13 @@ extension Editor {
 
     // MARK: - Dimensions
 
+    /// Starts a dimension on what was right-clicked, as if it had been clicked with the tool.
+    func startDimension(on pick: Pick) {
+        setSketchTool(.dimension)
+        hover = pick
+        dimensionClick(lastMouse)
+    }
+
     private func dimensionClick(_ pt: CGPoint) {
         guard let sid = sketchId, let sk = activeSketch, let pos = sketchPosition(at: pt) else { return }
         let picked: Pick? = {
